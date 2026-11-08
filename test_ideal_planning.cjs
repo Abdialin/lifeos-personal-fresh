@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict');const p=require('./ideal_planning');
+const start=new Date(2026,10,9,0,0).getTime(),end=new Date(2026,10,16,0,0).getTime();
+const r={id:'r1',name:'Study',dayOfWeek:1,start:'09:30',durationMinutes:90};
+assert.equal(p.validateRoutine(r),true);
+assert.throws(()=>p.validateRoutine({...r,start:'25:00'}));
+assert.throws(()=>p.validateRoutine({...r,durationMinutes:-1}));
+const slots=p.project([r],start,end);assert.equal(slots.length,1);assert.equal(new Date(slots[0].startAt).getHours(),9);
+assert.equal(new Date(slots[0].startAt).getMinutes(),30);
+assert.equal(slots[0].endAt-slots[0].startAt,90*60000);
+const reviewed=p.review(slots,[{id:'busy',startAt:slots[0].startAt+60000,endAt:slots[0].endAt}]);assert.deepEqual(reviewed[0].conflicts,['busy']);
+assert.equal(reviewed[0].requiresApproval,true);
+const approved=p.approvedPlan(reviewed[0],'plan-1',123);assert.equal(approved.idealProposalId,slots[0].id);
+assert.equal(approved.status,'planned');assert.throws(()=>p.approvedPlan(slots[0],'x',123));
+assert.throws(()=>p.project([r],start,end+40*86400000));
+console.log('Batch F ideal planning: 12 checks passed');

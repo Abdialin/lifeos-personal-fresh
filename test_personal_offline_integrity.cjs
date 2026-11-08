@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');const {inspect}=require('./personal_offline_integrity');
+const w={version:1,sessions:[]};const e={id:'a',createdAt:100,snapshot:w};
+assert.equal(inspect(w,[],{revision:null,dirty:false}).safeToAutoSync,true);
+assert.equal(inspect(w,[e],{revision:0,dirty:true}).safeToAutoSync,true);
+assert.equal(inspect(w,[e,e],{revision:0,dirty:true}).issues.includes('duplicate-operation-id'),true);
+assert.equal(inspect(w,[e],{revision:0,dirty:false}).warnings.includes('pending-journal-marked-clean'),true);
+assert.equal(inspect(w,[e],{revision:0,dirty:true}).changed,false);
+assert.equal(inspect(w,[{...e,snapshot:{version:1,sessions:[{id:'x'}]}}],{revision:0,dirty:true}).requiresReview,true);
+assert.equal(inspect(w,[],{revision:-1,dirty:false}).issues.includes('invalid-revision'),true);
+assert.equal(inspect(w,null,{revision:null,dirty:false}).safeToAutoSync,false);
+console.log('Offline integrity: 8 checks passed');

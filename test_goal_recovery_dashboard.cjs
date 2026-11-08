@@ -1,0 +1,5 @@
+const assert=require('node:assert/strict');
+const {summarize}=require('./personal_goal_recovery_dashboard');
+const start=new Date('2026-11-02T00:00:00').getTime(),end=new Date('2026-11-09T00:00:00').getTime();
+const result=summarize([{id:'a',name:'Quran',target:5,unit:'pages'},{id:'b',name:'Fitness',target:0}],g=>g.id==='a'?6:0,[{category:'Sleep',date:'2026-11-03',minutes:420,precision:'measured'},{category:'Sleep',date:'2026-11-04',minutes:480,precision:'estimated'},{category:'Sleep',date:'2026-11-05',precision:'unknown'},{category:'Sleep',date:'2026-10-31',minutes:120,precision:'measured'}],start,end);
+assert.equal(result.goalsMet,1);assert.equal(result.goalsEvaluable,1);assert.equal(result.goals[0].percent,120);assert.equal(result.goals[1].percent,null);assert.equal(result.sleep.totalLogs,3);assert.equal(result.sleep.measuredAverageMinutes,420);assert.equal(result.sleep.estimatedAverageMinutes,480);assert.equal(result.sleep.unknownCount,1);assert.throws(()=>summarize([],null,[],start,end));console.log('Goal/recovery dashboard checks passed');

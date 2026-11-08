@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const {evaluate,review}=require('./personal_reminders.js');
+const t=1700000000000;
+const p={id:'a',name:'Study',status:'planned',sessionId:null,reminder:true,startAt:t+5*60000,endAt:t+65*60000};
+assert.equal(evaluate([p],t).length,1);
+assert.equal(evaluate([p],t)[0].phase,'upcoming');
+assert.equal(evaluate([p],t+6*60000)[0].phase,'due');
+assert.equal(evaluate([p],t+66*60000)[0].phase,'missed');
+assert.equal(evaluate([review(p,'snooze',t)],t).length,0);
+assert.equal(evaluate([review(p,'snooze',t)],t+11*60000).length,1);
+assert.equal(evaluate([review(p,'dismiss',t)],t+90*60000).length,0);
+assert.equal(evaluate([review(p,'confirm-not-started',t)],t+90*60000).length,0);
+assert.equal(evaluate([review(review(p,'dismiss',t),'reset',t)],t).length,1);
+assert.equal(evaluate([{...p,sessionId:'x'}],t).length,0);
+assert.equal(evaluate([{...p,reminder:false}],t).length,0);
+assert.throws(()=>review(p,'complete',t));
+assert.equal(p.reminderReview,undefined);
+console.log('Batch H: 13 reminder assertions passed');

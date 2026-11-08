@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');const m=require('./predictive_intelligence.js');
+const D=86400000,start=Date.UTC(2026,0,1),sessions=[];
+for(let i=0;i<28;i++)sessions.push({name:'Study',precision:'measured',segments:[{start:start+i*D+3600000,end:start+i*D+7200000}]});
+const a=m.assess({sessions,start,end:start+28*D});assert.equal(a.trackedDays,28);assert.equal(a.confidence,'moderate');assert.equal(a.eligibleForSuggestions,true);assert.equal(a.recommendation.requiresApproval,true);assert.equal(a.averageUniqueMinutesPerDay,60);assert.equal(a.days[0].unloggedMinutes,1380);
+const b=m.assess({sessions,start,end:start+7*D});assert.equal(b.confidence,'insufficient');assert.equal(b.recommendation,null);
+const c=m.assess({sessions,start,end:start+28*D,recovery:'strained'});assert.equal(c.eligibleForSuggestions,false);
+const d=m.assess({sessions,start,end:start+28*D,capacityMinutes:120});assert.equal(d.eligibleForSuggestions,false);
+const e=m.assess({sessions:sessions.map(s=>({...s,precision:'approximate'})),start,end:start+28*D});assert.equal(e.confidence,'insufficient');
+const overlap=m.coverageMs([{start:0,end:60000},{start:30000,end:90000}]);assert.equal(overlap,90000);
+const overnight=m.dailyEvidence([{name:'Night',segments:[{start:start+D-1800000,end:start+D+1800000}]}],start,start+2*D);assert.equal(overnight[0].uniqueMinutes,30);assert.equal(overnight[1].uniqueMinutes,30);
+assert.throws(()=>m.assess({start:10,end:0}),/Invalid/);
+console.log('Batch E predictive intelligence: 14 assertions passed');

@@ -1,0 +1,7 @@
+/* Batch L: pure, read-only import comparison. No Google API calls or writes. */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.LifeOSPersonalCalendarReview=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+'use strict';
+function compare(external=[],plans=[]){const index=new Map();for(const p of plans){if(p&&p.calendarKey)index.set(String(p.calendarKey),p)}const seen=new Set(),changes=[];for(const event of external){if(!event||typeof event.key!=='string'||!event.key||!Number.isFinite(event.startAt)||!Number.isFinite(event.endAt)||event.endAt<=event.startAt)continue;if(seen.has(event.key))continue;seen.add(event.key);const existing=index.get(event.key);const type=!existing?'new':existing.startAt!==event.startAt||existing.endAt!==event.endAt||existing.name!==event.name?'changed':'unchanged';changes.push({key:event.key,type,event,planId:existing?.id||null,requiresApproval:type!=='unchanged'});}return changes;}
+function decision(change,choice){if(!change||!['approve','reject','skip'].includes(choice))throw Error('Invalid decision');return {proposalKey:change.key,choice,requiresServerCommit:true,approvedForLifeOSOnly:choice==='approve',writesGoogleCalendar:false};}
+return {compare,decision};
+});

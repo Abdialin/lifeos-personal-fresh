@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const html=fs.readFileSync(__dirname+'/index.html','utf8');
+const source=html.match(/function goalProgress\(g,begin,end\)\{[\s\S]*?\n\}/)[0];
+const ctx={data:{personalLogs:[{date:'2026-11-02',category:'Quran',quantity:2,unit:'pages'},{date:'2026-11-03',category:'Quran',quantity:3,unit:'repetitions'},{date:'2026-11-04',category:'Quran',quantity:1,unit:'PAGES'},{date:'2026-11-05',category:'Quran',quantity:null,unit:'pages'}],sessions:[],workouts:[]},fitnessGoalRecords:()=>[]};
+vm.createContext(ctx);vm.runInContext(source+';this.goalProgress=goalProgress',ctx);
+const a=new Date('2026-11-02').getTime(),b=new Date('2026-11-09').getTime();
+assert.equal(ctx.goalProgress({category:'personal',match:'Quran',unit:'quantity',quantityUnit:'pages'},a,b),3);
+assert.equal(ctx.goalProgress({category:'personal',match:'Quran',unit:'quantity',quantityUnit:'repetitions'},a,b),3);
+assert.equal(ctx.goalProgress({category:'personal',match:'Quran',unit:'sessions'},a,b),4);
+assert.ok(html.includes('id="goalQuantityUnit"'));
+assert.ok(html.includes("unit==='quantity'&&!quantityUnit"));
+console.log('Quantity unit integration checks passed');

@@ -1,0 +1,16 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const html=fs.readFileSync(__dirname+'/index.html','utf8');
+const js=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+new vm.Script(js);
+assert(js.includes("KEY='lifeos-live-v1'"),'existing browser key must be preserved');
+assert(js.includes("'/api/state'"),'existing API must be preserved');
+assert(js.includes('queueCurrentState()'),'new changes must be journaled during upload');
+const snippet=js.slice(js.indexOf('function todayDuration('),js.indexOf('function tick(){'));
+const now=new Date(2026,10,8,12,0).getTime();
+const run=(segments)=>{const ctx={now:()=>now};vm.createContext(ctx);vm.runInContext(snippet+';result=todayDuration({segments}, nowValue)',Object.assign(ctx,{segments,nowValue:now}));return ctx.result};
+const at=(day,h,m=0)=>new Date(2026,10,day,h,m).getTime();
+assert.strictEqual(run([{start:at(7,23),end:at(8,2)}]),2*3600000,'overnight clips to today');
+assert.strictEqual(run([{start:at(6,9),end:at(7,10)}]),0,'prior days excluded');
+assert.strictEqual(run([{start:at(8,10),end:null}]),2*3600000,'open session clips to now');
+assert.strictEqual(run([{start:at(8,9),end:at(8,10)},{start:at(8,11),end:null}]),2*3600000,'paused gap excluded');
+console.log('PASS: JavaScript syntax, existing storage/API compatibility, overnight/prior-day/open/paused duration');

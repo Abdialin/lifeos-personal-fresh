@@ -1,0 +1,679 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020"><title>LifeOS — Live Tracker</title><style>
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#eaf0ff;background:#090d19}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0%,#20335a 0,transparent 35%),#090d19}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}.wrap{max-width:1100px;margin:auto;padding:22px 18px 70px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:28px}.brand{display:flex;align-items:center;gap:12px}.logo{display:grid;place-items:center;background:linear-gradient(140deg,#70e2cc,#5489fc);width:42px;height:42px;border-radius:13px;color:#091326;font-size:22px;font-weight:900}.brand b{font-size:19px}.muted{color:#99a8c6}.small{font-size:12px}.pill{background:#18372f;border:1px solid #2a7c62;border-radius:100px;color:#8bf0c4;padding:6px 11px;font-size:12px}.layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(270px,1fr);gap:20px}.panel{background:#121a2d;border:1px solid #28344d;border-radius:20px;padding:20px;margin-bottom:18px;box-shadow:0 12px 34px #0002}.panel h2{font-size:17px;margin:0 0 5px}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.sub{font-size:13px;color:#9ba9c6}.clock{font-variant-numeric:tabular-nums;font-weight:750;letter-spacing:-1.8px;font-size:clamp(34px,5vw,57px);margin:14px 0 4px}.session{padding:17px;border:1px solid #314360;border-radius:17px;background:#18243a;margin-bottom:12px}.session-top{display:flex;justify-content:space-between;align-items:center;gap:12px}.session-title{font-weight:700;font-size:16px}.session .clock{font-size:35px;margin:9px 0}.tag{border-radius:30px;padding:5px 9px;background:#153e35;color:#8ce5c6;font-size:12px}.tag.paused{background:#47351d;color:#ffd18a}.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.btn{border:0;border-radius:11px;padding:11px 15px;background:#263750;color:#e9f1ff;font-weight:650}.btn.primary{background:#7de2c9;color:#07261e}.btn.danger{background:#4d2834;color:#ffb9c6}.btn.outline{background:transparent;border:1px solid #455873}.btn:hover{filter:brightness(1.1)}.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #7de2c9;outline-offset:2px}.quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.quick button{background:#1c2942;border:1px solid #344767;border-radius:12px;padding:15px 10px;text-align:left;color:#eaf0ff;font-weight:600}.quick button span{display:block;font-size:20px;margin-bottom:7px}.field{width:100%;padding:12px;background:#0d1628;border:1px solid #354661;border-radius:11px;color:#eaf0ff;margin:8px 0 12px}.statrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#1a2840;border-radius:13px;padding:15px}.stat strong{display:block;font-size:24px;font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:#a9b6d0}.history{max-height:350px;overflow:auto}.todo-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #2a3851}.todo-row label{flex:1;min-width:0;overflow-wrap:anywhere}.todo-row.done label{text-decoration:line-through;color:#99a8c6}.todo-row button{padding:7px 10px}.metric-detail{font-size:12px;color:#aebbd5;margin-top:8px}.item{padding:11px 0;border-bottom:1px solid #2a3851;display:flex;justify-content:space-between;gap:12px}.item:last-child{border:0}.item strong{font-size:13px}.item .sub{margin-top:5px}.empty{padding:27px 12px;text-align:center;color:#9ba9c6;border:1px dashed #35435e;border-radius:14px}.note{line-height:1.5;font-size:12px;color:#aebbd5}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.divider{height:1px;background:#2b3851;margin:18px 0}.tiny{font-size:11px}.modal{position:fixed;inset:0;background:#000b;display:grid;place-items:center;padding:16px;z-index:10}.modal[hidden]{display:none}.modal-card{background:#152139;border:1px solid #43516a;border-radius:20px;padding:22px;width:min(100%,430px)}.modal-card h3{margin:0 0 8px}.modal-card label{font-size:13px;color:#b9c7df}.footer{margin-top:22px;text-align:center;font-size:12px;color:#8190ad}@media(max-width:750px){.layout{grid-template-columns:1fr}.wrap{padding:16px 13px 55px}.panel{padding:16px}.top{margin-bottom:20px}.clock{font-size:42px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.analytics-bars{display:grid;gap:7px}.analytics-bar{display:grid;grid-template-columns:minmax(85px,1fr) 2fr auto;align-items:center;gap:8px;font-size:12px}.analytics-track{height:12px;background:#253550;border-radius:8px;overflow:hidden}.analytics-fill{height:100%;background:#7de2c9;border-radius:8px}.day-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:12px 0}.day-col{text-align:center;font-size:11px;color:#aebbd5}.day-track{height:90px;background:#22314c;display:flex;align-items:flex-end;border-radius:8px;overflow:hidden;margin:5px 0}.day-fill{width:100%;background:#7de2c9;min-height:0}.timeline{position:relative;height:44px;border:1px solid #354661;border-radius:9px;background:repeating-linear-gradient(to right,#19253b 0,#19253b calc(100% / 24 - 1px),#3a4a63 calc(100% / 24 - 1px),#3a4a63 calc(100% / 24));overflow:hidden}.timeline-seg{position:absolute;top:7px;height:28px;background:#7de2c9;border-radius:3px;opacity:.75}.timeline-seg.distraction{background:#ffad8a}.timeline-labels{display:flex;justify-content:space-between;color:#aebbd5;font-size:11px;margin:6px 0}.analytics-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}.analytics-summary .stat strong{font-size:21px}.analytics-detail{max-height:280px;overflow:auto}
+.schedule-entry{padding:12px;border:1px solid #344767;border-radius:12px;margin:8px 0;background:#18243a}.schedule-entry .row{justify-content:space-between}.schedule-status{font-size:12px;color:#9ba9c6}.schedule-alert{padding:10px;background:#47351d;color:#ffe2a9;border-radius:10px;margin:8px 0}.schedule-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.schedule-actions .btn{padding:7px 10px;font-size:12px}
+
+/* Unified Personal navigation: progressive enhancement, no changes to persisted data. */
+.lifeos-nav{position:sticky;top:0;z-index:8;display:flex;gap:7px;overflow-x:auto;padding:12px 4px;background:#090d19f2;border-bottom:1px solid #33435d;margin-bottom:18px;scrollbar-width:thin}
+.lifeos-nav button{flex:0 0 auto;border:1px solid #344767;border-radius:12px;background:#1b2941;color:#d7e5fa;padding:11px 14px;font-weight:650;min-height:44px}
+.lifeos-nav button[aria-current="page"]{background:#7de2c9;color:#09251f;border-color:#7de2c9}
+.lifeos-nav button:focus-visible{outline:3px solid #a7d9ff;outline-offset:2px}
+.lifeos-view-title{font-size:19px;font-weight:750;margin:0 0 12px}
+.lifeos-hidden-panel{display:none!important}
+@media(max-width:750px){.lifeos-nav{position:sticky;top:0;margin:0 -13px 15px;padding:9px 13px}.lifeos-nav button{padding:10px 12px}.wrap{padding-bottom:92px}.lifeos-nav{position:fixed;bottom:0;top:auto;left:0;right:0;margin:0;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));justify-content:space-between;box-shadow:0 -8px 30px #0009}.lifeos-nav button{font-size:12px;flex:1;min-width:0;padding:10px 3px;white-space:nowrap}.lifeos-view-title{margin-top:10px}}
+</style></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="pill" id="status">● Ready</div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><div class="layout"><div><section class="panel"><div class="head"><div><h2>Active sessions</h2><div class="sub">Multiple activities can run alongside each other.</div></div><span class="pill" id="activeCount">0 active</span></div><div id="sessions"><div class="empty">Nothing running yet. Start an activity below.</div></div></section><section class="panel" id="trackingRecoveryPanel"><h2>Tracking recovery · Batch G</h2><p class="sub">Review possibly forgotten timers. Nothing is ended automatically. The end time you choose is recorded as approximate.</p><button class="btn outline" type="button" id="reviewForgotten">Review timers running over 4 hours</button><div class="sub" id="forgottenResults" role="status"></div></section><section class="panel" id="activityHierarchyPanel"><h2>Activity hierarchy · Batch G continuation</h2><p class="sub">Link a tracked subactivity to a parent without changing either timer or counting time twice. These relationships are descriptive; analytics still calculate unique occupied time from intervals.</p><label class="sub" for="hierarchyChild">Subactivity</label><select class="field" id="hierarchyChild"></select><label class="sub" for="hierarchyParent">Parent activity (optional)</label><select class="field" id="hierarchyParent"></select><button class="btn outline" id="saveHierarchy" type="button">Save relationship</button><div id="hierarchyStatus" class="sub" role="status"></div><div id="hierarchyOverview" class="sub"></div></section><section class="panel"><div class="head"><div><h2>Quick start</h2><div class="sub">One tap starts a new, independent timer.</div></div></div><div class="quick" id="quick"></div><p class="note">Start alongside keeps other timers running. To switch, use the Switch button on an active session.</p><div class="divider"></div><label class="sub" for="customName">Custom activity</label><div class="row"><input class="field" style="flex:1;min-width:150px;margin:8px 0" id="customName" placeholder="e.g. Laundry, LifeOS planning" maxlength="80"><button class="btn primary" id="startCustom">▶ Start</button></div></section><section class="panel"><div class="head"><div><h2>To-do list</h2><div class="sub">Tasks stay separate from tracked activities.</div></div></div><form id="todoForm"><label class="sub" for="todoName">New task</label><input class="field" id="todoName" maxlength="120" required placeholder="What needs to be done?"><div class="statrow"><div><label class="sub" for="todoDue">Due date (optional)</label><input class="field" id="todoDue" type="date"></div><div><label class="sub" for="todoPriority">Priority</label><select class="field" id="todoPriority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></div></div><label class="sub" for="todoCategory">Category (optional)</label><input class="field" id="todoCategory" maxlength="40" placeholder="Study, work, family…"><button class="btn primary" type="submit">+ Add task</button></form><div class="row" id="todoTemplates" aria-label="Task templates"></div><div class="sub" id="todoSummary" role="status"></div><div id="todoList" style="margin-top:12px"></div></section><section class="panel"><div class="head"><div><h2>Distraction quick tracker</h2><div class="sub">One tap to start, one tap to finish; can overlap other activities.</div></div></div><div class="row"><button class="btn danger" id="distractionToggle">▶ Start distraction</button><span class="sub" id="distractionHint">No distraction timer running</span></div><p class="note">Unlogged time and breaks are not automatically classified as distractions.</p></section><section class="panel" id="calendarHandoffPanel"><h2>Calendar planning transfer · Stage 27</h2><p class="sub">Approved calendar candidates can become planned activities only after you confirm here. No tracked sessions or Google Calendar events are changed.</p><div id="calendarHandoffStatus" class="sub">Checking pending transfer…</div><button class="btn primary" id="calendarHandoffApply" type="button">Review and add candidates to my schedule</button><button class="btn outline" id="calendarHandoffDiscard" type="button">Discard pending transfer</button></section><section class="panel" id="calendarChangePanel"><h2>Calendar change approvals · Stage 31</h2><p class="sub">Review each proposed reschedule or possible cancellation. A missing event is not proof of cancellation. Your tracked sessions are never changed.</p><div id="calendarChangeQueue"></div><p class="note">Stage 31: previously committed decisions are hidden even if an interrupted handoff cleanup leaves them in storage. Export your audit and backup before clearing browser data.</p><div class="divider"></div><h3>Change history & recovery</h3><p class="sub">Undo is available only if the plan has not been edited since the recorded change. Audit entries are saved with the workspace and its offline journal.</p><div id="calendarAuditHistory" role="region" aria-label="Calendar change history"></div><button class="btn outline" type="button" id="calendarAuditExport">Export calendar audit JSON</button></section><section class="panel" id="smartSchedulePanel"><h2>Smart Schedule · Three Views</h2><p class="sub">My Reality is tracked time. My Predicted Week currently shows existing plans, not a learned forecast. My Ideal Schedule is a future personal goal view. Nothing changes automatically.</p><div class="row"><button class="btn outline" type="button" id="smartReality">My Reality</button><button class="btn outline" type="button" id="smartPredicted">My Predicted Week</button><button class="btn outline" type="button" id="smartIdeal">My Ideal Schedule</button></div><div id="smartScheduleOutput" class="sub" role="status">Select a view.</div><details><summary>Configure ideal weekly routines (review required)</summary><p class="sub">Ideal routines are preferences, not confirmed availability. Proposals never change your schedule until approved.</p><form id="idealRoutineForm"><input class="field" id="idealRoutineName" maxlength="80" required placeholder="Routine name"><label class="sub" for="idealRoutineDay">Day</label><select class="field" id="idealRoutineDay"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select><label class="sub" for="idealRoutineTime">Local start time</label><input class="field" id="idealRoutineTime" type="time" value="09:00" required><label class="sub" for="idealRoutineMinutes">Duration (minutes)</label><input class="field" id="idealRoutineMinutes" type="number" min="5" max="1440" value="60" required><button class="btn outline" type="submit">Add ideal routine</button></form><div id="idealRoutineList" class="sub"></div><button class="btn outline" type="button" id="idealReview">Review ideal suggestions for this week</button><div id="idealProposalList" class="sub" role="status"></div></details></section><section class="panel" id="personalCompletionPanel"><h2>LifeOS Personal · Feature Completion</h2><p class="sub">Review-only planning, calendar change previews and workspace health. These tools do not automatically alter your schedule or Google Calendar.</p><div class="row"><button class="btn outline" type="button" id="personalReviewWeek">Review suggested week</button><button class="btn outline" type="button" id="personalCheckHealth">Check workspace data</button></div><div class="sub" id="personalCompletionResults" role="status">Choose an action to review.</div><details><summary>Feature roadmap and verification</summary><p class="sub">Live tracking, recovery, reminders, analytics, personal logs, goals, ideal routines, predictive review, and calendar review have foundations. Background notifications, complete mobile onboarding, live Google OAuth, multi-device browser testing, and production deployment remain unverified or incomplete.</p></details></section><section class="panel" id="weeklyDashboardPanel"><h2>Weekly Reality &amp; Data Quality</h2><p class="sub">Seven local calendar days. Recorded time can exceed unique occupied time when activities overlap. Unlogged gaps are unknown.</p><button class="btn outline" type="button" id="weeklyDashboardRefresh">Review last 7 days</button><div class="sub" id="weeklyDashboardResults" role="status">Choose Review to calculate.</div></section><section class="panel" id="goalRecoveryPanel"><h2>Goals &amp; Recovery · Weekly Snapshot</h2><p class="sub">Read-only progress for this week, with measured and estimated sleep shown separately. Sleep is not automatically interpreted as recovery quality.</p><button class="btn outline" type="button" id="goalRecoveryRefresh">Review goals &amp; sleep</button><div class="sub" id="goalRecoveryResults" role="status">Choose Review to calculate.</div></section><section class="panel" id="qualityPanel"><h2>Analytics &amp; Data Quality · Batch I</h2><p class="sub">Read-only local-day report. Planned activities and tracked time remain separate. Gaps are unknown, not automatically free time.</p><label class="sub" for="qualityDate">Choose local date</label><input class="field" id="qualityDate" type="date"><button class="btn outline" type="button" id="qualityAnalyze">Review daily quality</button><div id="qualityResults" class="sub" role="status">Select a date and review.</div></section><section class="panel" id="intelligencePanel"><h2>Activity Patterns &amp; Confidence · Batch E</h2><p class="sub">Read-only analysis of the last 28 complete UTC days. No automatic schedule changes. Missing time is unknown, not available time.</p><button class="btn outline" type="button" id="analyzePatterns">Analyze tracking evidence</button><div class="sub" id="patternResults" role="status">Select Analyze to review your evidence.</div></section><div class="head"><div><h2>My schedule</h2><div class="sub">Plan activities independently of actual tracked time.</div></div></div><form id="scheduleForm"><label class="sub" for="scheduleName">Planned activity</label><input class="field" id="scheduleName" maxlength="80" required placeholder="e.g. Study, gym, meeting"><div class="statrow"><div><label class="sub" for="scheduleStart">Start</label><input class="field" id="scheduleStart" type="datetime-local" required></div><div><label class="sub" for="scheduleEnd">End</label><input class="field" id="scheduleEnd" type="datetime-local" required></div></div><label class="sub" for="scheduleNotes">Notes (optional)</label><textarea class="field" id="scheduleNotes" rows="2" maxlength="500"></textarea><label class="row sub" style="margin:4px 0 12px"><input id="scheduleReminder" type="checkbox" checked> Show an in-app reminder 10 minutes before</label><button class="btn primary" type="submit">+ Add to schedule</button></form><div class="divider"></div><label class="sub" for="scheduleDay">Schedule for date</label><input class="field" type="date" id="scheduleDay"><div id="scheduleAlert" role="status" aria-live="polite"></div><div id="reminderReview" role="region" aria-label="Schedule reminder review"></div><div id="scheduleList"></div><p class="note">Reminders appear only while LifeOS is open. Planned activities are never counted as completed tracking. Use Start to link a real timer, or Skip to record that the plan was not followed.</p></section><section class="panel"><div class="head"><div><h2>Log a past activity</h2><div class="sub">For anything you did before opening the live tracker.</div></div></div><form id="pastForm"><label class="sub" for="pastName">Activity</label><input class="field" id="pastName" maxlength="80" required placeholder="e.g. Laundry, app development"><div class="statrow"><div><label class="sub" for="pastStart">Started</label><input class="field" type="datetime-local" id="pastStart" required></div><div><label class="sub" for="pastEnd">Finished</label><input class="field" type="datetime-local" id="pastEnd" required></div></div><label class="sub" for="pastNotes">Notes (optional)</label><textarea class="field" id="pastNotes" rows="2" placeholder="Optional details"></textarea><button class="btn primary" type="submit">+ Save past activity</button><p class="note">Past activities are separate from live timers. Overlaps are allowed. Use approximate times if you are unsure.</p></form></section><section class="panel" id="analyticsPanel"><div class="head"><div><h2>Activity analytics</h2><div class="sub">Confirmed records only · overlaps are calculated, not guessed.</div></div></div><label class="sub" for="analyticsDate">Explore day</label><input class="field" type="date" id="analyticsDate"><div class="analytics-summary"><div class="stat"><strong id="anaTotal">0h 00m</strong><span>Summed active time</span></div><div class="stat"><strong id="anaUnique">0h 00m</strong><span>Unique occupied time</span></div><div class="stat"><strong id="anaOverlap">0h 00m</strong><span>Additional overlapping time</span></div><div class="stat"><strong id="anaSessions">0</strong><span>Sessions touching day</span></div></div><h3 style="font-size:14px">24-hour activity timeline</h3><div id="anaTimeline" class="timeline" aria-label="Recorded activity intervals"></div><div class="timeline-labels"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div><p class="note">Colored intervals show recorded active time. Empty space means no recorded activity; it is not automatically a distraction or confirmed free time.</p><h3 style="font-size:14px">Activity breakdown</h3><div id="anaBreakdown" class="analytics-bars"></div><h3 style="font-size:14px;margin-top:18px">Last 7 days · unique time</h3><div id="anaWeek" class="day-grid"></div><p class="note">Daily charts use local calendar days. Paused intervals are excluded; concurrent activities count once in unique time.</p><h3 style="font-size:14px">Sessions on selected day</h3><div id="anaDaySessions" class="analytics-detail"></div></section><section class="panel"><div class="head"><div><h2>Recent sessions</h2><div class="sub">Edit or delete previous activities. Saved locally and optionally synced.</div></div><button class="btn outline" id="exportCsv">Export CSV</button></div><div class="history" id="history"></div></section></div><aside><section class="panel"><h2>Today's overview</h2><div class="sub" id="todayDate"></div><div class="statrow" style="margin-top:16px"><div class="stat"><strong id="tracked">00:00</strong><span>Activity duration total*</span></div><div class="stat"><strong id="completed">0</strong><span>Finished sessions</span></div></div><div class="statrow" style="margin-top:10px"><div class="stat"><strong id="uniqueTime">00:00</strong><span>Unique occupied time</span></div><div class="stat"><strong id="overlapTime">00:00</strong><span>Concurrent activity time</span></div></div><p class="note">*Sum of session durations; overlapping activities count separately. This is not unique clock coverage.</p></section><section class="panel"><h2>Session tools</h2><p class="sub">Correct a start time or back up your activity records.</p><button class="btn outline" id="backup" style="width:100%;margin:6px 0">↓ Download JSON backup</button><label class="btn outline" style="display:block;text-align:center;margin:6px 0;cursor:pointer">↑ Restore JSON backup<input type="file" id="restore" accept="application/json,.json" hidden></label><p class="note">Data stays in this browser's local storage. Clearing browser data or opening the file in another browser can hide your sessions. Back up regularly.</p></section><section class="panel"><h2>Connected LifeOS database</h2><p class="sub">Your existing Google Sheets tracker is separate from this prototype.</p><a href="https://docs.google.com/spreadsheets/d/1bXCyVqiZfuxT43gpNTr64dRu7ddplfoSWZoV3GJpAt0/edit#gid=1900401500" target="_blank" rel="noopener" style="color:#8ae9d2">Open Live Sessions ↗</a><p class="note">Google Sheets synchronization is not implemented. This hosted version can sync with its own SQLite database. Never assume the two databases are connected.</p></section><section class="panel"><h2>Cloud sync</h2><p class="sub">Connect to your privately hosted LifeOS server. Data remains local until you connect.</p><label class="sub" for="syncToken">Private sync token</label><input id="syncToken" class="field" type="password" autocomplete="off" placeholder="Enter your server token"><div class="row"><button class="btn primary" id="connectSync">Connect</button><button class="btn outline" id="pullSync">Load from server</button><button class="btn outline" id="pushSync">Upload local data</button></div><p id="syncStatus" class="note" role="status">Local storage · cloud not connected</p><details class="note" id="recoveryTools"><summary>Offline recovery & diagnostics</summary><p>Read-only inspection. Export the recovery bundle before changing devices or clearing browser data. Never share this file: it contains your activity history.</p><div class="row"><button class="btn outline" id="inspectJournal" type="button">Inspect pending changes</button><button class="btn outline" id="exportRecovery" type="button">Export recovery bundle</button><button class="btn outline" id="compareServer" type="button">Compare with server</button><button class="btn outline" id="exportConflict" type="button">Export both versions</button><button class="btn danger" id="adoptServerReviewed" type="button">Replace local with reviewed server copy</button></div><div class="card" style="margin-top:12px"><h3>Record-level conflict review</h3><p class="small muted">Review individual differences. Select server records to copy locally; unselected local records remain unchanged. This does not update the server.</p><button id="inspectRecords" type="button">Inspect record differences</button> <button id="adoptSelected" type="button">Copy selected server records locally</button><div id="recordReview" role="region" aria-label="Record differences"></div></div><pre id="conflictDetails" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre><pre id="journalDetails" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details></section><section class="panel"><h2>Fitness Studio</h2><p class="sub">Optional workout details; independent of timers until you link a session.</p><form id="fitnessForm"><label class="sub" for="fitnessType">Activity</label><select class="field" id="fitnessType"><option>Gym</option><option>Walking</option><option>Running</option><option>Boxing</option><option>Cycling</option><option>Swimming</option><option>Yoga</option><option>Team sports</option><option>Other</option></select><label class="sub" for="fitnessDate">Date</label><input class="field" id="fitnessDate" type="date" required><label class="sub" for="fitnessMinutes">Duration (minutes, optional)</label><input class="field" id="fitnessMinutes" type="number" min="0" max="1440" step="1" placeholder="Minutes"><label class="sub" for="fitnessDetail">Workout details (optional)</label><textarea class="field" id="fitnessDetail" rows="2" maxlength="500" placeholder="Distance, pace, sets, reps, weights or rounds"></textarea><label class="sub" for="fitnessSession">Link to a finished Fitness timer (optional)</label><select class="field" id="fitnessSession"><option value="">Independent workout log</option></select><button class="btn primary" type="submit">+ Save workout</button></form><div class="sub" id="fitnessSummary"></div><div id="fitnessList" class="history"></div><p class="note">Linked workout details use the existing timer duration. They never create duplicate tracked time. Unlinked workouts remain separate records.</p></section><section class="panel"><h2>Nutrition</h2><p class="sub">Record meals separately from eating and cooking timers.</p><form id="mealForm"><label class="sub" for="mealName">Meal</label><input class="field" id="mealName" maxlength="100" required placeholder="e.g. Lunch"><label class="sub" for="mealDate">Date</label><input class="field" id="mealDate" type="date" required><label class="sub" for="mealCalories">Calories (optional estimate)</label><input class="field" id="mealCalories" type="number" min="0" max="10000" step="1" placeholder="kcal"><label class="sub" for="mealProtein">Protein (grams, optional)</label><input class="field" id="mealProtein" type="number" min="0" max="1000" step="0.1" placeholder="g"><button class="btn primary" type="submit">+ Save meal</button></form><div class="sub" id="nutritionSummary"></div><div id="mealList" class="history"></div><p class="note">Calorie values are user-entered, not AI-verified estimates.</p></section><section class="panel" id="personalActivityPanel"><h2>Personal routines &amp; recovery · Batch J</h2><p class="sub">Optional personal logs for sleep, Quran, prayer, Arabic, Hadith, reading, family and recovery. Logs do not create timer sessions or double-count tracked time.</p><form id="personalLogForm"><label class="sub" for="personalLogCategory">Category</label><select class="field" id="personalLogCategory"><option>Sleep</option><option>Quran</option><option>Prayer</option><option>Arabic</option><option>Hadith</option><option>Reading</option><option>Family</option><option>Study</option><option>Recovery</option><option>Other</option></select><label class="sub" for="personalLogDate">Date</label><input class="field" id="personalLogDate" type="date" required><label class="sub" for="personalLogMinutes">Minutes (optional)</label><input class="field" id="personalLogMinutes" type="number" min="0" max="1440" step="1" placeholder="Leave empty if unknown"><label class="sub" for="personalLogQuantity">Quantity (optional)</label><input class="field" id="personalLogQuantity" type="number" min="0" step="any" placeholder="e.g. pages"><label class="sub" for="personalLogUnit">Quantity unit (optional)</label><input class="field" id="personalLogUnit" maxlength="30" placeholder="pages, repetitions…"><label class="sub" for="personalLogPrecision">Time precision</label><select class="field" id="personalLogPrecision"><option value="estimated">Estimated</option><option value="measured">Measured</option><option value="unknown">Unknown</option></select><label class="sub" for="personalLogNotes">Notes (optional)</label><textarea class="field" id="personalLogNotes" maxlength="500" rows="2"></textarea><button class="btn primary" type="submit">+ Save personal log</button></form><div id="personalLogSummary" class="sub" role="status"></div><div id="personalLogList" class="history"></div><p class="note">Personal logs are separate from timed activities. Any time-based dashboard must avoid adding both as distinct occupied time.</p></section><section class="panel"><h2>Weekly goals</h2><p class="sub">Track activity sessions or hours; grouped fitness goals can include multiple workout types.</p><form id="goalForm"><label class="sub" for="goalName">Goal name</label><input class="field" id="goalName" maxlength="80" required placeholder="e.g. Study or Fitness"><label class="sub" for="goalCategory">What counts?</label><select class="field" id="goalCategory"><option value="fitness">All Fitness Studio workouts</option><option value="sessions">Tracked sessions matching a name</option><option value="personal">Personal routine logs (Quran, sleep, reading…)</option></select><label class="sub" for="goalMatch">Session name contains (for tracked sessions)</label><input class="field" id="goalMatch" maxlength="80" placeholder="e.g. Studying"><label class="sub" for="goalQuantityUnit">Quantity unit (required for personal quantity goals)</label><input class="field" id="goalQuantityUnit" maxlength="30" placeholder="e.g. pages"><label class="sub" for="goalTarget">Weekly target</label><input class="field" id="goalTarget" type="number" min="1" max="168" step="1" value="3" required><label class="sub" for="goalUnit">Unit</label><select class="field" id="goalUnit"><option value="sessions">Sessions</option><option value="hours">Hours (tracked sessions only)</option><option value="quantity">Logged quantity (personal routines only)</option></select><p class="note">For personal routines, enter a category in “Session name contains” (for example Quran). Choose Sessions to count log entries, or Logged quantity to total pages/repetitions. Missing quantities and quantities in other units do not count. Older quantity goals without a unit should be reviewed.</p><button class="btn primary" type="submit">+ Save goal</button></form><div id="goalList" class="history"></div><div class="divider"></div><h3 style="font-size:14px">Two-week goal review</h3><p class="sub">Uses the last two completed Monday–Sunday weeks, not the current incomplete week.</p><label class="sub" for="weeklyCapacity">Optional available hours per week</label><input class="field" id="weeklyCapacity" type="number" min="0" max="168" step="0.5" placeholder="Leave blank if unknown"><label class="sub" for="reviewRecovery">Recovery and workload (optional)</label><select class="field" id="reviewRecovery"><option value="unknown">Not provided</option><option value="good">Good recovery / manageable workload</option><option value="strained">Strained recovery / high workload</option></select><div id="goalReview" aria-live="polite"></div><p class="note">Suggestions are conservative and never change targets automatically. Fitness Studio records and tracked timer sessions remain separate to avoid counting the same record twice.</p></section></aside></div><section class="panel" style="margin-top:16px"><h2>Stage 23 · Calendar review</h2><p class="sub">Import a Google Calendar .ics export into a separate, read-only review area. Nothing is written to Google Calendar or your activity history.</p><a class="btn primary" href="/calendar.html">Open Calendar Review</a></section><footer class="footer">Spend less time tracking your life. Spend more time living it.</footer></main><div class="modal" id="editModal" hidden><div class="modal-card"><h3>Edit session</h3><p class="sub" id="editTitle"></p><label for="editName">Activity name</label><input class="field" id="editName" maxlength="80"><label for="editStart">Start date and time</label><input class="field" id="editStart" type="datetime-local"><label for="editEnd">End date and time (finished activities only)</label><input class="field" id="editEnd" type="datetime-local"><p class="note">For paused or resumed timers, only the first start and final end can be adjusted; intermediate segments are preserved.</p><label for="editNote">Optional notes</label><textarea class="field" id="editNote" rows="2" placeholder="What did you work on?"></textarea><div class="row" style="justify-content:flex-end"><button class="btn danger" id="deleteEdit">Delete</button><button class="btn outline" id="cancelEdit">Cancel</button><button class="btn primary" id="saveEdit">Save changes</button></div></div></div><script src="personal_schedule_evidence.js"></script><script src="personal_predictive_planner.js"></script><script src="personal_calendar_review.js"></script><script src="personal_readiness.js"></script><script src="personal_activity_modules.js"></script><script src="personal_progress.js"></script><script src="personal_management.js"></script><script src="smart_schedule.js"></script><script src="predictive_intelligence.js"></script><script src="ideal_planning.js"></script><script src="personal_reminders.js"></script>
+<script src="personal_continuity.js"></script><script src="personal_offline_integrity.js"></script><script src="personal_analytics_quality.js"></script><script src="personal_weekly_dashboard.js"></script><script src="personal_goal_recovery_dashboard.js"></script><script>
+(()=>{'use strict';const KEY='lifeos-live-v1';const categories=[['💼','Business · App Development'],['📚','Studying'],['📖','Reading'],['🕌','Prayer'],['🌙','Quran'],['🏋️','Fitness'],['🍽️','Eating'],['🧺','Laundry'],['📱','Distraction'],['💤','Sleep']];let data={version:1,sessions:[],events:[],todos:[],workouts:[],meals:[],goals:[],schedule:[],personalLogs:[]},editId=null;const $=id=>document.getElementById(id);const pad=n=>String(n).padStart(2,'0');const fmt=ms=>{let s=Math.max(0,Math.floor(ms/1000));return `${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`};const short=ms=>{let s=Math.max(0,Math.floor(ms/60000));return `${Math.floor(s/60)}h ${pad(s%60)}m`};const localDate=t=>{let d=new Date(t);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};const time=t=>new Date(t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});const uid=()=>typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2);const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const now=()=>Date.now();function persist(){try{localStorage.setItem(KEY,JSON.stringify(data));$('status').textContent='● Saved locally';return true}catch(e){$('status').textContent='⚠ Storage unavailable';alert('Could not save to browser storage. Please export a backup.');return false}}function event(s,type,t=now(),extra={}){data.events.push({id:uid(),sessionId:s.id,type,time:t,...extra})}function ensureModules(){for(const key of ['todos','workouts','meals','goals','schedule','personalLogs'])if(!Array.isArray(data[key]))data[key]=[]}
+function weeklyStart(t){const d=new Date(t);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime()}
+function goalWeekBounds(offset=0){const d=new Date(weeklyStart(now()));d.setDate(d.getDate()+offset*7);const e=new Date(d);e.setDate(e.getDate()+7);return[d.getTime(),e.getTime()]}
+function availableFitnessSessions(){const linked=new Set(data.workouts.map(w=>w.sessionId).filter(Boolean));return data.sessions.filter(s=>s.status==='finished'&&/fitness|gym|walk|run|box|cycl|swim|yoga|sport/i.test(s.name)&&!linked.has(s.id)).sort((a,b)=>b.endAt-a.endAt)}
+function fitnessGoalRecords(begin,end){const ids=new Set(),records=[];for(const w of data.workouts){const linked=w.sessionId?data.sessions.find(s=>s.id===w.sessionId):null;if(w.sessionId&&!linked)continue;const t=linked?linked.endAt:new Date(w.date+'T12:00:00').getTime();if(t>=begin&&t<end){const key=linked?'session:'+linked.id:'workout:'+w.id;if(!ids.has(key)){ids.add(key);records.push(w)}}}return records}
+function goalProgress(g,begin,end){
+ if(g.category==='personal'){const matches=(data.personalLogs||[]).filter(x=>{const t=new Date(x.date+'T12:00:00').getTime();return t>=begin&&t<end&&String(x.category||'').toLowerCase()===String(g.match||'').trim().toLowerCase()});return g.unit==='quantity'?matches.filter(x=>!g.quantityUnit||String(x.unit||'').trim().toLowerCase()===String(g.quantityUnit).trim().toLowerCase()).reduce((sum,x)=>sum+(Number.isFinite(Number(x.quantity))&&x.quantity!==null&&Number(x.quantity)>0?Number(x.quantity):0),0):matches.length;}
+ if(g.category==='fitness')return fitnessGoalRecords(begin,end).length;
+ const sessions=data.sessions.filter(s=>s.status==='finished'&&s.name.toLowerCase().includes((g.match||'').toLowerCase())&&s.endAt>=begin&&s.endAt<end);
+ return g.unit==='hours'?sessions.reduce((sum,s)=>sum+elapsed(s,s.endAt)/3600000,0):sessions.length;
+}
+function goalReviewRecommendation(g,values,otherUnderperforming,capacity,recovery){
+ const [first,second]=values,met=first>=g.target&&second>=g.target;
+ if(!met)return{kind:'improve',message:'Keep target and review obstacles before increasing it.'};
+ if(otherUnderperforming)return{kind:'maintain',message:'Maintain target: another goal needs attention.'};
+ if(recovery==='strained')return{kind:'maintain',message:'Maintain target: recovery or workload is strained.'};
+ if(capacity!==null&&g.unit==='hours'&&g.target+0.5>capacity)return{kind:'maintain',message:'Maintain target: suggested increase exceeds stated available hours.'};
+ if(capacity!==null&&g.category==='fitness'&&capacity===0)return{kind:'maintain',message:'Maintain target: no weekly capacity reported.'};
+ const step=g.unit==='hours'?0.5:1;
+ return{kind:'increase',target:Number((g.target+step).toFixed(2)),message:'Optional increase to '+(g.target+step)+' '+g.unit+' per week. Review capacity before approving.'};
+}
+function renderGoalReview(){
+ const box=$('goalReview');if(!box)return;const weeks=[goalWeekBounds(-2),goalWeekBounds(-1)];
+ if(!data.goals.length){box.innerHTML='<div class="empty">Create a goal to see a review.</div>';return}
+ const results=data.goals.map(g=>({g,values:weeks.map(([a,b])=>goalProgress(g,a,b))}));
+ const otherBelow=id=>results.some(r=>r.g.id!==id&&r.values.some(v=>v<r.g.target));
+ const raw=$('weeklyCapacity').value,capacity=raw===''?null:Number(raw),recovery=$('reviewRecovery').value;
+ box.innerHTML=results.map(({g,values})=>{const rec=g.category==='personal'?{kind:'maintain',message:'Personal routine targets are tracked; automatic increases are disabled until evidence quality and units are reviewed.'}:goalReviewRecommendation(g,values,otherBelow(g.id),capacity,recovery);return `<div class="session"><strong>${escape(g.name)}</strong><div class="sub">Two completed weeks: ${values.map(v=>Number(v.toFixed(2))).join(' / ')} · target ${g.target} ${escape(g.unit)} per week</div><p class="note">${escape(rec.message)}</p>${rec.kind==='increase'?`<button class="btn outline" data-goal-approve="${escape(g.id)}" data-target="${rec.target}">Approve new target</button>`:''}</div>`}).join('');
+}
+function approveGoal(id,target){const g=data.goals.find(x=>x.id===id);if(!g||!Number.isFinite(target)||target<=g.target)return;const weeks=[goalWeekBounds(-2),goalWeekBounds(-1)];const results=data.goals.map(x=>({g:x,values:weeks.map(([a,b])=>goalProgress(x,a,b))}));const otherUnderperforming=results.some(r=>r.g.id!==id&&r.values.some(v=>v<r.g.target));const capacity=$('weeklyCapacity').value===''?null:Number($('weeklyCapacity').value);const rec=goalReviewRecommendation(g,weeks.map(([a,b])=>goalProgress(g,a,b)),otherUnderperforming,capacity,$('reviewRecovery').value);if(rec.kind!=='increase'||rec.target!==target)return;if(!confirm('Change '+g.name+' weekly target from '+g.target+' to '+target+'?'))return;g.target=target;g.updatedAt=now();persist();render()}
+function renderFitnessSessionOptions(){const select=$('fitnessSession');if(!select)return;const selected=select.value;select.innerHTML='<option value="">Independent workout log</option>'+availableFitnessSessions().map(s=>`<option value="${escape(s.id)}">${escape(s.name)} · ${escape(time(s.endAt))} · ${short(elapsed(s,s.endAt))}</option>`).join('');if([...select.options].some(o=>o.value===selected))select.value=selected}
+function renderStage3(){ensureModules();const m=window.LifeOSPersonalManagement;if(m){const date=localDate(now()),food=m.mealTotals(data.meals,date),start=localDate(now()-6*86400000),fit=m.fitnessSummary(data.workouts,start,date);$('nutritionSummary').textContent=`Today: ${food.count} meals · ${food.caloriesKnown}/${food.count} calorie values (${food.calories} kcal entered) · ${food.proteinKnown}/${food.count} protein values (${food.proteinGrams} g entered)`;$('fitnessSummary').textContent=`Last 7 calendar dates: ${fit.sessions} sessions · ${fit.recordedMinutes} logged minutes (${fit.minutesKnown}/${fit.sessions} with duration)`;} renderFitnessSessionOptions();const items=(arr,id,label)=>{$(id).innerHTML=arr.length?arr.slice().reverse().slice(0,12).map(x=>`<div class="item"><div><strong>${escape(label(x))}</strong><div class="sub">${escape(x.date||'')}</div></div><button class="btn outline tiny" data-delete="${escape(x.id)}" style="padding:6px">Delete</button></div>`).join(''):'<div class="empty">No records yet.</div>'};items(data.workouts,'fitnessList',x=>x.type+(x.sessionId?' · linked timer':(x.minutes?' · '+x.minutes+' min':''))+(x.details?' · '+x.details:''));items(data.meals,'mealList',x=>x.name+(x.calories!=null?' · '+x.calories+' kcal':'')+(x.proteinGrams!=null?' · '+x.proteinGrams+'g protein':''));const [a,b]=goalWeekBounds(0);$('goalList').innerHTML=data.goals.length?data.goals.map(g=>{const count=goalProgress(g,a,b);return `<div class="item"><div><strong>${escape(g.name)}</strong><div class="sub">${Number(count.toFixed(1))} / ${g.target} ${escape(g.unit)} this week</div></div><button class="btn outline tiny" data-delete="${escape(g.id)}" style="padding:6px">Delete</button></div>`}).join(''):'<div class="empty">No goals yet.</div>';renderGoalReview()}
+function addStage3(e,kind){e.preventDefault();const date=kind==='workouts'?$('fitnessDate').value:$('mealDate').value;if(!date)return;const id=uid();if(kind==='workouts'){const raw=$('fitnessMinutes').value;const sessionId=$('fitnessSession').value||null;const linked=sessionId?data.sessions.find(s=>s.id===sessionId&&s.status==='finished'):null;if(sessionId&&(!linked||data.workouts.some(w=>w.sessionId===sessionId))){alert('This timer is unavailable or already linked.');return}data.workouts.push({id,date:linked?localDate(linked.endAt):date,type:$('fitnessType').value,minutes:linked?Math.round(elapsed(linked,linked.endAt)/60000):(raw===''?null:Number(raw)),details:$('fitnessDetail').value.trim(),sessionId});$('fitnessForm').reset();$('fitnessDate').value=localDate(now())}else{const raw=$('mealCalories').value;const name=$('mealName').value.trim();if(!name)return;data.meals.push({id,date,name,calories:raw===''?null:Number(raw),proteinGrams:$('mealProtein').value===''?null:Number($('mealProtein').value)});$('mealForm').reset();$('mealDate').value=localDate(now())}persist();render()}
+function addGoal(e){e.preventDefault();const name=$('goalName').value.trim(),category=$('goalCategory').value,match=$('goalMatch').value.trim(),unit=$('goalUnit').value,target=Number($('goalTarget').value),quantityUnit=$('goalQuantityUnit').value.trim();if(!name||!Number.isFinite(target)||target<=0||(category==='sessions'||category==='personal')&&!match||category==='fitness'&&unit!=='sessions'||category==='personal'&&unit==='hours'||category==='sessions'&&unit==='quantity'||category==='personal'&&unit==='quantity'&&!quantityUnit){alert('Check goal details. Fitness goals currently support session counts only.');return}data.goals.push({id:uid(),name,category,match,unit,target,quantityUnit:category==='personal'&&unit==='quantity'?quantityUnit:null});persist();$('goalForm').reset();render()}
+function deleteStage3(kind,id){if(!confirm('Delete this record?'))return;data[kind]=data[kind].filter(x=>x.id!==id);persist();render()}
+// Validate all imported/synced records before allowing them to replace local state.
+// Older v1 backups may omit optional modules, but malformed sessions are rejected.
+function validateWorkspace(d){
+ if(!d||typeof d!=='object'||Array.isArray(d)||d.version!==1||!Array.isArray(d.sessions)||!Array.isArray(d.events))throw new Error('Unsupported LifeOS workspace');
+ const ids=new Set();
+ for(const s of d.sessions){
+  if(!s||typeof s!=='object'||typeof s.id!=='string'||!s.id||ids.has(s.id)||typeof s.name!=='string'||!s.name.trim()||!['running','paused','finished'].includes(s.status)||!Number.isFinite(s.startAt)||!Array.isArray(s.segments)||!s.segments.length)throw new Error('Invalid or duplicate session');
+  ids.add(s.id);let previousEnd=-Infinity,open=0;
+  for(let i=0;i<s.segments.length;i++){
+   const seg=s.segments[i];if(!seg||!Number.isFinite(seg.start)||seg.start<previousEnd||!(seg.end===null||Number.isFinite(seg.end))||(seg.end!==null&&seg.end<seg.start))throw new Error('Invalid activity interval');
+   if(seg.end===null){open++;if(i!==s.segments.length-1)throw new Error('Open interval must be last')}else previousEnd=seg.end;
+  }
+  if(s.segments[0].start!==s.startAt)throw new Error('Session start mismatch');
+  if(s.status==='running'&&open!==1||s.status!=='running'&&open!==0)throw new Error('Session status and intervals disagree');
+  if(s.status==='finished'&&(!Number.isFinite(s.endAt)||s.endAt<s.segments[s.segments.length-1].end))throw new Error('Invalid session finish');
+ }
+ for(const key of ['todos','workouts','meals','goals','schedule','personalLogs'])if(d[key]!==undefined&&!Array.isArray(d[key]))throw new Error('Invalid '+key+' records');
+ return d;
+}
+
+function load(){try{let d=JSON.parse(localStorage.getItem(KEY)||'null');if(d){data=validateWorkspace(d);ensureModules()}}catch(e){console.warn('Invalid saved data',e)}}function elapsed(s,t=now()){let total=0;for(let seg of s.segments||[]){let end=seg.end??t;if(end>seg.start)total+=end-seg.start}return total}function start(name,plannedId=null){let t=now(),s={id:uid(),name,status:'running',createdAt:t,startAt:t,endAt:null,segments:[{start:t,end:null}],notes:'',precision:'measured',source:'local-web-app',plannedId};data.sessions.push(s);if(plannedId){const plan=data.schedule.find(p=>p.id===plannedId);if(plan&&plan.status==='planned'&&!plan.sessionId){plan.sessionId=s.id;plan.status='started'}}event(s,'START',t);persist();render()}function pause(id){let s=data.sessions.find(x=>x.id===id);if(!s||s.status!=='running')return;let t=now();let seg=s.segments[s.segments.length-1];if(seg&&!seg.end)seg.end=t;s.status='paused';event(s,'PAUSE',t);persist();render()}function resume(id){let s=data.sessions.find(x=>x.id===id);if(!s||s.status!=='paused')return;let t=now();s.segments.push({start:t,end:null});s.status='running';event(s,'RESUME',t);persist();render()}function finish(id){let s=data.sessions.find(x=>x.id===id);if(!s||s.status==='finished')return;let t=now();if(s.status==='running'){let seg=s.segments[s.segments.length-1];if(seg&&!seg.end)seg.end=t}s.status='finished';s.endAt=t;event(s,'FINISH',t);persist();render()}function switchSession(id){const old=data.sessions.find(s=>s.id===id);if(!old||old.status==='finished')return;const name=prompt('Switch from '+old.name+' to which activity?');if(name===null)return;const clean=name.trim();if(!clean||clean.length>80)return alert('Enter an activity name (1–80 characters).');try{LifeOSLiveTrackingV2.switchActivity(data,id,clean,now(),uid());persist();render()}catch(e){alert('Could not switch activity: '+e.message)}}function toInput(t){let d=new Date(t);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`};function openEdit(id){let s=data.sessions.find(x=>x.id===id);if(!s)return;editId=id;$('editTitle').textContent=s.name;$('editStart').value=toInput(s.startAt);$('editName').value=s.name;$('editEnd').value=s.endAt?toInput(s.endAt):'';$('editEnd').disabled=s.status!=='finished';$('editNote').value=s.notes||'';$('editModal').hidden=false}function saveEdit(){let s=data.sessions.find(x=>x.id===editId);if(!s)return;let newName=$('editName').value.trim(),newStart=new Date($('editStart').value).getTime(),newEnd=s.status==='finished'?new Date($('editEnd').value).getTime():s.endAt;if(!newName||newName.length>80){alert('Enter a valid activity name.');return}if(!Number.isFinite(newStart)||newStart>now()||(s.status==='finished'&&(!Number.isFinite(newEnd)||newEnd>now()||newEnd<=newStart))){alert('Check start and end times.');return}let first=s.segments[0],last=s.segments[s.segments.length-1];if(!first){alert('Missing segment.');return}if(first.end!==null&&newStart>first.end){alert('Start cannot be later than the first pause or finish.');return}if(s.status==='finished'&&last&&newEnd<last.start){alert('End cannot be before the last active segment.');return}let before={name:s.name,startAt:s.startAt,endAt:s.endAt,notes:s.notes};s.name=newName;s.startAt=newStart;first.start=newStart;if(s.status==='finished'){s.endAt=newEnd;if(last)last.end=newEnd}s.precision='manually-corrected';s.notes=$('editNote').value;event(s,'EDIT',now(),{before,after:{name:s.name,startAt:s.startAt,endAt:s.endAt,notes:s.notes}});persist();$('editModal').hidden=true;editId=null;render()}
+function deleteSession(){let s=data.sessions.find(x=>x.id===editId);if(!s)return;if(!confirm('Delete '+s.name+'? This removes it from your dashboard and totals. Export a backup first if needed.'))return;event(s,'DELETE',now(),{snapshot:structuredClone(s)});data.sessions=data.sessions.filter(x=>x.id!==s.id);for(const child of data.sessions.filter(x=>x.parentId===s.id)){child.parentId=null;event(child,'ACTIVITY_PARENT_REMOVED',now(),{deletedParentId:s.id});}for(const w of data.workouts||[])if(w.sessionId===s.id){w.sessionId=null;w.unlinkedFromDeletedSession=s.id}persist();$('editModal').hidden=true;editId=null;render()}
+function savePast(e){e.preventDefault();let name=$('pastName').value.trim(),start=new Date($('pastStart').value).getTime(),end=new Date($('pastEnd').value).getTime();if(!name||!Number.isFinite(start)||!Number.isFinite(end)||start>=end||end>now()){alert('Please enter an activity with a start before the end, and an end no later than now.');return}let s={id:uid(),name,status:'finished',createdAt:now(),startAt:start,endAt:end,segments:[{start,end}],notes:$('pastNotes').value,precision:'retrospective-approximate',source:'manual-past-entry'};data.sessions.push(s);event(s,'RETROSPECTIVE_ADD',now(),{start,end});persist();$('pastForm').reset();render()}
+
+// Stage 4 analytics are derived exclusively from existing sessions; no new persisted schema.
+function analyticsIntervals(start,end,at=now()){
+ const result=[];
+ for(const s of data.sessions){for(const seg of s.segments||[]){const a=Math.max(Number(seg.start),start),b=Math.min(seg.end==null?at:Number(seg.end),end,at);if(Number.isFinite(a)&&Number.isFinite(b)&&b>a)result.push({a,b,name:s.name||'Unnamed',id:s.id,precision:s.precision||'unknown'});}}
+ return result;
+}
+function analyticsMetrics(intervals){
+ const sorted=intervals.slice().sort((x,y)=>x.a-y.a);let total=0,unique=0,lastStart=null,lastEnd=null;
+ for(const {a,b} of sorted){total+=b-a;if(lastStart===null){lastStart=a;lastEnd=b;}else if(a<=lastEnd){lastEnd=Math.max(lastEnd,b);}else{unique+=lastEnd-lastStart;lastStart=a;lastEnd=b;}}
+ if(lastStart!==null)unique+=lastEnd-lastStart;
+ return{total,unique,overlap:Math.max(0,total-unique)};
+}
+function analyticsDayBounds(dateStr){if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr))return null;const [y,m,d]=dateStr.split('-').map(Number);const start=new Date(y,m-1,d);if(start.getFullYear()!==y||start.getMonth()!==m-1||start.getDate()!==d)return null;return[start.getTime(),new Date(y,m-1,d+1).getTime()];}
+function renderAnalytics(){const day=$('analyticsDate').value||localDate(now()),bounds=analyticsDayBounds(day);if(!bounds)return;const [start,end]=bounds,intervals=analyticsIntervals(start,end),metrics=analyticsMetrics(intervals);const ids=new Set(intervals.map(x=>x.id));
+ $('anaTotal').textContent=short(metrics.total);$('anaUnique').textContent=short(metrics.unique);$('anaOverlap').textContent=short(metrics.overlap);$('anaSessions').textContent=String(ids.size);
+ $('anaTimeline').innerHTML=intervals.map(x=>`<div class="timeline-seg ${x.name.toLowerCase().includes('distraction')?'distraction':''}" title="${escape(x.name)}" style="left:${(x.a-start)/(end-start)*100}%;width:${(x.b-x.a)/(end-start)*100}%"></div>`).join('');
+ const byName=new Map();for(const x of intervals)byName.set(x.name,(byName.get(x.name)||0)+x.b-x.a);const groups=[...byName].sort((a,b)=>b[1]-a[1]);$('anaBreakdown').innerHTML=groups.length?groups.slice(0,12).map(([name,ms])=>`<div class="analytics-bar"><span title="${escape(name)}">${escape(name)}</span><div class="analytics-track"><div class="analytics-fill" style="width:${metrics.total?ms/metrics.total*100:0}%"></div></div><span>${short(ms)}</span></div>`).join(''):'<div class="sub">No recorded active time on this day.</div>';
+ const selected=[...data.sessions].filter(s=>ids.has(s.id)).sort((a,b)=>a.startAt-b.startAt);$('anaDaySessions').innerHTML=selected.length?selected.map(s=>{const ms=intervals.filter(x=>x.id===s.id).reduce((a,x)=>a+x.b-x.a,0);return `<div class="item"><div><strong>${escape(s.name)}</strong><div class="sub">${escape(s.status)} · ${escape(s.precision||'unknown')}</div></div><strong>${short(ms)}</strong></div>`}).join(''):'<div class="sub">No sessions on this day.</div>';
+ const today=new Date();today.setHours(0,0,0,0);const week=[];for(let i=6;i>=0;i--){const a=new Date(today);a.setDate(a.getDate()-i);const b=new Date(a);b.setDate(b.getDate()+1);const m=analyticsMetrics(analyticsIntervals(a.getTime(),b.getTime()));week.push({date:a,ms:m.unique});}const max=Math.max(1,...week.map(x=>x.ms));$('anaWeek').innerHTML=week.map(x=>`<div class="day-col"><span>${escape(x.date.toLocaleDateString(undefined,{weekday:'short'}))}</span><div class="day-track" title="${short(x.ms)}"><div class="day-fill" style="height:${x.ms/max*100}%"></div></div><span>${short(x.ms)}</span></div>`).join('');
+}
+function renderWeeklyDashboard(){try{const result=window.LifeOSWeeklyDashboard.build(data,localDate(now()),window.LifeOSQuality,now());const h=x=>(x/3600000).toFixed(1)+'h';const measured=result.measuredShare==null?'Not enough data':Math.round(result.measuredShare*100)+'%';$('weeklyDashboardResults').textContent='Recorded '+h(result.recordedMs)+' · Unique '+h(result.uniqueMs)+' · Overlap '+h(result.overlapMs)+' · Measured share '+measured+' · Unlogged gaps '+h(result.unloggedMs)+' (unknown, not free time) · Planned entries '+result.plannedCount+'. '+result.days.map(x=>x.date.slice(5)+': '+h(x.uniqueMs)).join(' | ');}catch(e){$('weeklyDashboardResults').textContent='Weekly report unavailable: '+e.message;}}
+$('analyticsDate').value=localDate(now());$('analyticsDate').addEventListener('change',renderAnalytics);
+$('weeklyDashboardRefresh').onclick=renderWeeklyDashboard;
+$('goalRecoveryRefresh').onclick=()=>{try{const [a,b]=goalWeekBounds(0);const report=window.LifeOSGoalRecoveryDashboard.summarize(data.goals||[],goalProgress,data.personalLogs||[],a,b);const sleep=report.sleep;const fmt=m=>m===null?'insufficient data':(m/60).toFixed(1)+'h';const lines=['Goals met: '+report.goalsMet+'/'+report.goalsEvaluable+' evaluable targets',...report.goals.map(g=>g.name+': '+(g.percent===null?'not evaluable':g.achieved+' / '+g.target+' '+g.unit+' ('+g.percent+'%)')),'Sleep: '+sleep.totalLogs+' logs · measured average '+fmt(sleep.measuredAverageMinutes)+' ('+sleep.measuredCount+' logs) · estimated average '+fmt(sleep.estimatedAverageMinutes)+' ('+sleep.estimatedCount+' logs) · unknown '+sleep.unknownCount,report.note];$('goalRecoveryResults').textContent=lines.join(' | ');}catch(e){$('goalRecoveryResults').textContent='Report unavailable: '+e.message;}};
+function renderQualityReport(){try{const day=$('qualityDate').value||localDate(now());const [a,b]=LifeOSQuality.localDayBounds(day);const m=LifeOSQuality.compute(data,a,b,now());const mins=x=>Math.round(x/60000)+' min';$('qualityResults').textContent='Recorded '+mins(m.totalMs)+' · Unique '+mins(m.uniqueMs)+' · Overlap '+mins(m.overlapMs)+' · Measured '+mins(m.precisionMs.measured)+' · Estimated '+mins(m.precisionMs.estimated)+' · Unclassified precision '+mins(m.precisionMs.unknown)+' · Unlogged gaps (45+ min): '+m.unloggedGaps.length+' ('+mins(m.unloggedMs)+') · Planned entries '+m.plannedCount+'. Unlogged time is unknown.';}catch(e){$('qualityResults').textContent='Could not calculate quality report: '+e.message;}}
+$('qualityDate').value=localDate(now());$('qualityAnalyze').addEventListener('click',renderQualityReport);
+
+
+// Stage 6: scheduling remains independent from actual session duration.
+function scheduleDateTime(t){return new Date(t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+function addSchedule(e){e.preventDefault();ensureModules();const name=$('scheduleName').value.trim(),startAt=new Date($('scheduleStart').value).getTime(),endAt=new Date($('scheduleEnd').value).getTime();if(!name||name.length>80||!Number.isFinite(startAt)||!Number.isFinite(endAt)||endAt<=startAt){alert('Enter a name and valid start/end times.');return}data.schedule.push({id:uid(),name,startAt,endAt,notes:$('scheduleNotes').value.trim(),reminder:$('scheduleReminder').checked,status:'planned',sessionId:null,createdAt:now()});persist();$('scheduleForm').reset();$('scheduleReminder').checked=true;$('scheduleDay').value=localDate(startAt);render()}
+function scheduleAction(action,id){ensureModules();const p=data.schedule.find(x=>x.id===id);if(!p)return;if(action==='start'){if(p.status!=='planned'||p.sessionId)return;start(p.name,p.id);return}if(action==='skip'){if(p.sessionId||p.status!=='planned')return;p.status='skipped';p.updatedAt=now();persist();render();return}if(action==='delete'){if(!confirm('Delete this planned activity? Linked tracked sessions will be kept.'))return;data.schedule=data.schedule.filter(x=>x.id!==id);persist();render()}}
+function scheduleMetrics(p){const s=p.sessionId?data.sessions.find(x=>x.id===p.sessionId):null;const planned=p.endAt-p.startAt;const actual=s?elapsed(s,s.endAt??now()):null;return {s,planned,actual}}
+function renderSchedule(){ensureModules();const selected=$('scheduleDay').value||localDate(now());const plans=data.schedule.filter(p=>localDate(p.startAt)===selected).sort((a,b)=>a.startAt-b.startAt);$('scheduleList').innerHTML=plans.length?plans.map(p=>{const m=scheduleMetrics(p),status=p.status==='skipped'?'Skipped':m.s?(m.s.status==='finished'?'Completed (tracked)':'Tracking '+m.s.status):p.status==='started'?'Linked session unavailable':'Planned';const compare=m.s?` · planned ${short(m.planned)} / tracked ${short(m.actual)}`:'';return `<div class="schedule-entry"><div class="row"><strong>${escape(p.name)}</strong><span class="schedule-status">${escape(status)}</span></div><div class="sub">${escape(scheduleDateTime(p.startAt))} – ${escape(scheduleDateTime(p.endAt))}${escape(compare)}</div>${p.notes?`<div class="sub">${escape(p.notes)}</div>`:''}<div class="schedule-actions">${p.status==='planned'&&!p.sessionId?`<button class="btn primary" data-schedule-act="start" data-schedule-id="${escape(p.id)}">▶ Start tracked session</button><button class="btn outline" data-schedule-act="skip" data-schedule-id="${escape(p.id)}">Skip</button>`:''}<button class="btn danger" data-schedule-act="delete" data-schedule-id="${escape(p.id)}">Delete plan</button></div></div>`}).join(''):'<div class="empty">No planned activities for this date.</div>';checkScheduleReminders()}
+function checkScheduleReminders(){
+ const api=window.LifeOSPersonalReminders,box=$('reminderReview');if(!api||!box)return;
+ const due=api.evaluate(data.schedule,now());box.replaceChildren();
+ const alertBox=$('scheduleAlert');if(alertBox)alertBox.textContent=due.length?due.length+' planned activities need attention. No activity is assumed completed.':'';
+ for(const item of due.slice(0,8)){
+  const row=document.createElement('div');row.className='schedule-entry';
+  const label=document.createElement('span');label.textContent=item.name+' · '+item.phase+' · '+scheduleDateTime(item.startAt);row.append(label);
+  for(const [action,title] of [['snooze','Remind in 10 min'],['dismiss','Dismiss reminder'],['confirm-not-started','Confirm not started']]){
+   const button=document.createElement('button');button.className='btn outline tiny';button.type='button';button.textContent=title;
+   button.onclick=()=>{const i=data.schedule.findIndex(p=>p.id===item.id);if(i<0)return;const previous=data.schedule[i];try{data.schedule[i]=api.review(previous,action,now());if(!persist()){data.schedule[i]=previous;return;}checkScheduleReminders();renderSchedule();}catch(e){data.schedule[i]=previous;alert(e.message);}};row.append(button);
+  }
+  box.append(row);
+ }
+}
+
+function refreshHierarchyParent(){
+ const child=$('hierarchyChild').value;
+ const selected=data.sessions.find(s=>s.id===child);
+ const choices=[{id:'',name:'No parent (independent activity)'},...data.sessions.filter(s=>s.id!==child)];
+ $('hierarchyParent').replaceChildren();
+ for(const s of choices){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+(s.id?' · '+new Date(s.startAt).toLocaleString():'');$('hierarchyParent').append(o);}
+ $('hierarchyParent').value=selected?.parentId||'';
+}
+function renderHierarchy(){
+ const child=$('hierarchyChild');if(!child)return;
+ const current=child.value;
+ child.replaceChildren();
+ const recent=[...data.sessions].sort((a,b)=>b.startAt-a.startAt).slice(0,100);
+ for(const s of recent){const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+new Date(s.startAt).toLocaleString();child.append(o);}
+ if(recent.some(s=>s.id===current))child.value=current;
+ refreshHierarchyParent();
+ const links=data.sessions.filter(s=>s.parentId);
+ $('hierarchyOverview').textContent=links.length?links.length+' linked subactivities · '+links.slice(-5).map(s=>s.name+' → '+(data.sessions.find(p=>p.id===s.parentId)?.name||'missing parent')).join('; '):'No linked subactivities yet.';
+}
+function saveHierarchy(){
+ const childId=$('hierarchyChild').value,parentId=$('hierarchyParent').value||null;
+ if(!childId)return;
+ const api=window.LifeOSTrackingRecovery;
+ if(!api){$('hierarchyStatus').textContent='Tracking module unavailable.';return;}
+ const previous=structuredClone(data);
+ try{
+  api.attachParent(data.sessions,childId,parentId);
+  const s=data.sessions.find(s=>s.id===childId);
+  event(s,'ACTIVITY_PARENT_CHANGED',now(),{previousParentId:previous.sessions.find(x=>x.id===childId)?.parentId||null,parentId});
+  if(!persist())throw Error('Unable to save changes; original workspace restored.');
+  $('hierarchyStatus').textContent='Relationship saved. Tracked intervals were not changed.';
+  render();
+ }catch(e){data=previous;render();$('hierarchyStatus').textContent='No changes saved: '+e.message;}
+}
+function render(){renderHierarchy();renderSchedule();renderAnalytics();renderTodos();renderDistraction();renderStage3();let active=data.sessions.filter(s=>s.status!=='finished').sort((a,b)=>b.startAt-a.startAt);$('activeCount').textContent=`${active.length} open`;$('sessions').innerHTML=active.length?active.map(s=>`<div class="session"><div class="session-top"><div class="session-title">${escape(s.name)}</div><span class="tag ${s.status==='paused'?'paused':''}">${s.status==='paused'?'Ⅱ Paused':'● Running'}</span></div><div class="clock" data-timer="${escape(s.id)}">${fmt(elapsed(s))}</div><div class="sub">Started ${escape(time(s.startAt))}${s.precision!=='measured'?' · corrected':''}</div><div class="controls">${s.status==='running'?`<button class="btn outline" data-act="pause" data-id="${escape(s.id)}">Ⅱ Pause</button>`:`<button class="btn primary" data-act="resume" data-id="${escape(s.id)}">▶ Resume</button>`}<button class="btn danger" data-act="finish" data-id="${escape(s.id)}">■ Finish</button><button class="btn outline" data-act="switch" data-id="${escape(s.id)}">⇄ Switch</button><button class="btn outline" data-act="edit" data-id="${escape(s.id)}">✎ Edit</button></div></div>`).join(''):'<div class="empty">Nothing running yet. Start an activity below.</div>';let finished=data.sessions.filter(s=>s.status==='finished').sort((a,b)=>b.endAt-a.endAt);$('history').innerHTML=finished.length?finished.slice(0,25).map(s=>`<div class="item"><div><strong>${escape(s.name)}</strong><div class="sub">${escape(time(s.startAt))} – ${escape(time(s.endAt))}</div></div><div style="text-align:right"><strong>${fmt(elapsed(s,s.endAt))}</strong><div><button class="btn outline tiny" style="padding:5px 8px;margin-top:5px" data-act="edit" data-id="${escape(s.id)}">Edit</button></div></div></div>`).join(''):'<div class="empty">Finished sessions will appear here.</div>';$('completed').textContent=finished.filter(s=>localDate(s.endAt)===localDate(now())).length;$('todayDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});tick()}function renderTodos(){ensureModules();const m=window.LifeOSPersonalManagement;if(m){const v=m.todoSummary(data.todos,localDate(now()));$('todoSummary').textContent=`${v.open} open · ${v.completed} completed · ${v.overdue} overdue · ${v.highPriority} high priority`;} const list=[...data.todos].sort((a,b)=>Number(a.done)-Number(b.done)||Number(b.priority==='high')-Number(a.priority==='high')||(a.due||'9999').localeCompare(b.due||'9999'));$('todoList').innerHTML=list.length?list.map(t=>`<div class="todo-row ${t.done?'done':''}"><input type="checkbox" data-todo-act="toggle" data-todo-id="${escape(t.id)}" ${t.done?'checked':''} aria-label="Complete ${escape(t.name)}"><label>${escape(t.name)}<div class="sub">${t.due?'Due '+escape(t.due)+' · ':''}${escape(t.priority||'normal')} priority${t.category?' · '+escape(t.category):''}</div></label><button class="btn outline" data-todo-act="delete" data-todo-id="${escape(t.id)}" aria-label="Delete task">×</button></div>`).join(''):'<div class="sub">No tasks yet.</div>'}function renderDistraction(){let active=data.sessions.filter(s=>s.name==='Distraction'&&s.status!=='finished');$('distractionToggle').textContent=active.length?'■ Finish distraction':'▶ Start distraction';$('distractionHint').textContent=active.length?active.length+' open distraction timer(s)':'No distraction timer running'}function addTodo(e){e.preventDefault();let name=$('todoName').value.trim();if(!name)return;data.todos??=[];data.todos.push({id:uid(),name,due:$('todoDue').value||null,priority:$('todoPriority').value,category:$('todoCategory').value.trim()||null,done:false,createdAt:now(),completedAt:null});persist();$('todoForm').reset();renderTodos()}function todoAction(e){let b=e.target.closest('[data-todo-act]');if(!b)return;let t=(data.todos||[]).find(x=>x.id===b.dataset.todoId);if(!t)return;if(b.dataset.todoAct==='delete'){if(!confirm('Delete this task?'))return;data.todos=data.todos.filter(x=>x.id!==t.id)}else{t.done=b.checked;t.completedAt=t.done?now():null}persist();renderTodos()}function distractionToggle(){let open=data.sessions.filter(s=>s.name==='Distraction'&&s.status!=='finished');if(open.length){for(const s of open)finish(s.id)}else start('Distraction');renderDistraction()}function intervalMetrics(t=now()){const d=new Date(t),dayStart=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),intervals=[];for(const s of data.sessions)for(const seg of s.segments||[]){const a=Math.max(Number(seg.start),dayStart),b=Math.min(seg.end==null?t:Number(seg.end),t);if(Number.isFinite(a)&&Number.isFinite(b)&&b>a)intervals.push([a,b])}intervals.sort((a,b)=>a[0]-b[0]);let total=0,unique=0,from=null,to=null;for(const [a,b] of intervals){total+=b-a;if(from===null){from=a;to=b}else if(a<=to)to=Math.max(to,b);else{unique+=to-from;from=a;to=b}}if(from!==null)unique+=to-from;return{total,unique,overlap:total-unique}}function todayDuration(s,t=now()){const d=new Date(t),dayStart=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();let total=0;for(const seg of s.segments||[]){const start=Math.max(Number(seg.start),dayStart),end=Math.min(seg.end==null?t:Number(seg.end),t);if(Number.isFinite(start)&&Number.isFinite(end)&&end>start)total+=end-start}return total}function tick(){let t=now(),metrics=intervalMetrics(t);$('tracked').textContent=short(metrics.total);$('uniqueTime').textContent=short(metrics.unique);$('overlapTime').textContent=short(metrics.overlap);for(let el of document.querySelectorAll('[data-timer]')){let s=data.sessions.find(x=>x.id===el.dataset.timer);if(s)el.textContent=fmt(elapsed(s,t))}}function download(filename,body,type){let blob=new Blob([body],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}function csv(){let rows=[['Session ID','Activity','Status','Start ISO','End ISO','Active minutes','Precision','Notes']];for(let s of data.sessions)rows.push([s.id,s.name,s.status,new Date(s.startAt).toISOString(),s.endAt?new Date(s.endAt).toISOString():'',(elapsed(s,s.endAt??now())/60000).toFixed(2),s.precision,s.notes||'']);download('LifeOS_sessions_'+localDate(now())+'.csv',rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8')}function backup(){download('LifeOS_backup_'+localDate(now())+'.json',JSON.stringify(data,null,2),'application/json')}async function restore(file){if(!file)return;try{let d=JSON.parse(await file.text());validateWorkspace(d);if(!confirm('Replace all locally stored LifeOS sessions with this backup?'))return;stopSync();if(!writeOutbox([]))return;syncMeta={revision:null,dirty:true};saveSyncMeta();data=d;ensureModules();persist();render();syncStatus('Backup restored locally. Reconnect before syncing; server was not overwritten.')}catch(e){alert('Could not restore: '+e.message)}}$('todoForm').addEventListener('submit',addTodo);const templates=window.LifeOSPersonalManagement?.TEMPLATES||[];$('todoTemplates').innerHTML=templates.map((t,i)=>`<button class="btn outline tiny" type="button" data-template="${i}">${escape(t.name)}</button>`).join('');$('todoTemplates').addEventListener('click',e=>{const b=e.target.closest('[data-template]');if(!b)return;const t=templates[Number(b.dataset.template)];if(!t)return;$('todoName').value=t.name;$('todoPriority').value=t.priority;$('todoCategory').value=t.category;$('todoName').focus();});$('todoList').addEventListener('click',e=>{if(e.target.closest('[data-todo-act=delete]'))todoAction(e)});$('todoList').addEventListener('change',todoAction);$('reviewForgotten').onclick=()=>{const api=window.LifeOSTrackingRecovery;if(!api)return;const stale=api.staleSessions(data.sessions,now());const el=$('forgottenResults');el.replaceChildren();if(!stale.length){el.textContent='No running timers older than four hours.';return;}for(const item of stale){const row=document.createElement('div');row.className='row';const label=document.createElement('span');label.textContent=item.name+' · '+item.elapsedMinutes+' minutes running';const button=document.createElement('button');button.className='btn outline tiny';button.textContent='Review end time';button.onclick=()=>{const proposed=prompt('When did '+item.name+' actually finish? Enter local date and time (YYYY-MM-DDTHH:mm). Leave blank to keep running.',toInput(now()));if(proposed===null||!proposed.trim())return;const endAt=new Date(proposed).getTime();try{const snapshot=structuredClone(data);api.recoverSession(data,item.id,endAt,now());if(!persist()){data=snapshot;throw Error('Could not save recovery safely');}render();$('reviewForgotten').click();}catch(err){alert('Recovery not saved: '+err.message);}};row.append(label,button);el.append(row);}};$('saveHierarchy').onclick=saveHierarchy; $('hierarchyChild').addEventListener('change',refreshHierarchyParent);$('distractionToggle').onclick=distractionToggle;$('quick').innerHTML=categories.map(([icon,name])=>`<button data-name="${escape(name)}"><span>${icon}</span>${escape(name)}</button>`).join('');$('quick').addEventListener('click',e=>{let b=e.target.closest('[data-name]');if(b)start(b.dataset.name)});$('sessions').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(!b)return;({pause,resume,finish,switch:switchSession,edit:openEdit}[b.dataset.act])(b.dataset.id)});$('history').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(b&&b.dataset.act==='edit')openEdit(b.dataset.id)});$('startCustom').onclick=()=>{let n=$('customName').value.trim();if(!n)return alert('Enter an activity name.');start(n);$('customName').value=''};$('customName').addEventListener('keydown',e=>{if(e.key==='Enter')$('startCustom').click()});$('cancelEdit').onclick=()=>{$('editModal').hidden=true;editId=null};$('saveEdit').onclick=saveEdit;$('deleteEdit').onclick=deleteSession;$('pastForm').addEventListener('submit',savePast);$('exportCsv').onclick=csv;$('backup').onclick=backup;$('restore').onchange=e=>{restore(e.target.files[0]);e.target.value=''};document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
+let syncRevision=null,syncToken='',syncBusy=false,syncReady=false,syncEpoch=0;
+// Durable, ordered snapshot-operation journal. Server API remains revision-CAS
+// /api/state; this is NOT an independently replayable server-side event API.
+const OUTBOX_KEY='lifeos-v4-stage11-outbox',SYNC_META_KEY='lifeos-v4-sync-meta';
+let syncMeta={revision:null,dirty:false},syncTimer=null,syncSuppressed=false;
+let outbox=[],outboxCorrupt=false;
+try{const stored=JSON.parse(localStorage.getItem(SYNC_META_KEY)||'null');if(stored&&typeof stored==='object')syncMeta={revision:Number.isInteger(stored.revision)?stored.revision:null,dirty:stored.dirty===true}}catch(_e){syncMeta.dirty=true}
+try{
+ const raw=localStorage.getItem(OUTBOX_KEY);
+ if(raw!==null){
+  const stored=JSON.parse(raw);
+  if(!Array.isArray(stored)||!stored.every(x=>x&&typeof x.id==='string'&&Number.isFinite(x.createdAt)&&x.snapshot&&x.snapshot.version===1))throw new Error('Invalid offline journal');
+  outbox=stored;
+ }
+}catch(_e){outboxCorrupt=true;syncMeta.dirty=true}
+function journalDiagnostic(){
+ const raw=localStorage.getItem(OUTBOX_KEY);
+ let entries=null,problem=null;
+ if(raw!==null){try{const parsed=JSON.parse(raw);if(!Array.isArray(parsed))throw new Error('Journal is not an array');entries=parsed;}catch(e){problem=String(e.message||e)}}
+ const pending=Array.isArray(entries)?entries.length:null;
+ const dates=Array.isArray(entries)?entries.map(x=>Number.isFinite(x&&x.createdAt)?x.createdAt:null).filter(x=>x!==null):[];
+ return {status:outboxCorrupt?'blocked':problem?'unreadable':syncMeta.dirty?'pending':'clean',pending,oldest:dates.length?new Date(Math.min(...dates)).toISOString():null,newest:dates.length?new Date(Math.max(...dates)).toISOString():null,revision:syncMeta.revision,dirty:syncMeta.dirty,corrupt:outboxCorrupt,problem};
+}
+function inspectJournal(){const result=journalDiagnostic();let integrity=null;try{integrity=LifeOSOfflineIntegrity.inspect(data,outbox,syncMeta)}catch(e){integrity={requiresReview:true,issues:['integrity-check-unavailable'],detail:String(e.message||e)}}$('journalDetails').textContent=JSON.stringify({journal:result,integrity},null,2)+'\nRead-only review: no records were changed. Review warnings before reconnecting.';return {journal:result,integrity}}
+function recoveryBundle(){return {format:'lifeos-recovery-v1',exportedAt:new Date().toISOString(),workspace:data,offlineJournalRaw:localStorage.getItem(OUTBOX_KEY),syncMetadataRaw:localStorage.getItem(SYNC_META_KEY),diagnostic:journalDiagnostic()}}
+function exportRecovery(){
+ const bundle=recoveryBundle();
+ const blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='lifeos-recovery-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+ $('journalDetails').textContent='Recovery export initiated. Confirm the download exists before clearing any browser data.';
+}
+// Stage 16: read-only, revision-bound conflict inspection. No merge or overwrite.
+let conflictPreview=null;
+function workspaceSummary(w){
+ const keys=['sessions','events','todos','workouts','meals','goals','schedule'];
+ const summary={};for(const k of keys)summary[k]=Array.isArray(w&&w[k])?w[k].length:0;
+ return summary;
+}
+function workspaceDifferences(local,remote){
+ const keys=['sessions','events','todos','workouts','meals','goals','schedule'];
+ const result={};
+ for(const key of keys){
+  const a=new Map((Array.isArray(local[key])?local[key]:[]).map(x=>[String(x.id),x]));
+  const b=new Map((Array.isArray(remote[key])?remote[key]:[]).map(x=>[String(x.id),x]));
+  let localOnly=0,serverOnly=0,modified=0;
+  for(const [id,v] of a){if(!b.has(id))localOnly++;else if(!sameSnapshot(v,b.get(id)))modified++}
+  for(const id of b.keys())if(!a.has(id))serverOnly++;
+  result[key]={localOnly,serverOnly,modified};
+ }
+ return result;
+}
+async function compareServer(){
+ const el=$('conflictDetails');conflictPreview=null;
+ const token=$('syncToken').value.trim();if(!token){el.textContent='Enter your server token first.';return}
+ const epoch=syncEpoch;
+ el.textContent='Reading server state without modifying either copy…';
+ try{
+  const res=await fetch('/api/state',{headers:{'X-LifeOS-Token':token},cache:'no-store'});
+  const remote=await res.json();if(!res.ok)throw new Error(remote.error||'HTTP '+res.status);
+  if(epoch!==syncEpoch||token!==$('syncToken').value.trim()){el.textContent='Connection changed. Run comparison again.';return}
+  if(remote.data)validateWorkspace(remote.data);
+  const localCopy=JSON.parse(JSON.stringify(data));
+  const serverCopy=remote.data===null?null:JSON.parse(JSON.stringify(remote.data));
+  conflictPreview={revision:remote.revision,local:localCopy,server:serverCopy,comparedAt:new Date().toISOString(),journal:journalDiagnostic()};
+  const report={serverRevision:remote.revision,localBaseRevision:syncMeta.revision,unsentOperations:outbox.length,local:workspaceSummary(localCopy),server:workspaceSummary(serverCopy),differences:workspaceDifferences(localCopy,serverCopy||{}),identical:serverCopy!==null&&sameSnapshot(localCopy,serverCopy)};
+  el.textContent=JSON.stringify(report,null,2)+'\nRead-only comparison. No changes applied. Export both versions before resolving conflicts.';
+ }catch(e){el.textContent='Comparison failed: '+e.message}
+}
+function exportConflict(){
+ if(!conflictPreview){$('conflictDetails').textContent='Compare with server first. No export was created.';return}
+ const payload={format:'lifeos-conflict-review-v1',...conflictPreview};
+ download('LifeOS_conflict_review_'+localDate(now())+'.json',JSON.stringify(payload,null,2),'application/json');
+ $('conflictDetails').textContent+='\nConflict review export initiated. Confirm download before any manual recovery.';
+}
+// Stage 19: reviewed, selective server-to-local recovery. No server writes.
+const RECORD_KINDS=['sessions','events','todos','workouts','meals','goals','schedule','personalLogs'];
+function recordDiffs(local,remote){
+ const changes=[];
+ for(const kind of RECORD_KINDS){
+  const left=new Map((local[kind]||[]).map(x=>[String(x.id),x]));
+  const right=new Map((remote[kind]||[]).map(x=>[String(x.id),x]));
+  for(const id of new Set([...left.keys(),...right.keys()])){
+   const a=left.get(id),b=right.get(id);
+   if(a!==undefined&&b!==undefined&&sameSnapshot(a,b))continue;
+   changes.push({kind,id,change:a===undefined?'server-only':b===undefined?'local-only':'different'});
+  }
+ }
+ return changes;
+}
+function applyServerSelections(local,remote,selections){
+ const next=JSON.parse(JSON.stringify(local));
+ for(const {kind,id} of selections){
+  if(!RECORD_KINDS.includes(kind))throw new Error('Invalid record category');
+  const source=(remote[kind]||[]).find(x=>String(x.id)===id);
+  if(!source)throw new Error('Selected server record no longer exists: '+kind+'/'+id);
+  const records=next[kind]||[];
+  const at=records.findIndex(x=>String(x.id)===id);
+  if(at<0)records.push(JSON.parse(JSON.stringify(source)));
+  else records[at]=JSON.parse(JSON.stringify(source));
+  next[kind]=records;
+ }
+ return validateWorkspace(next);
+}
+function inspectRecords(){
+ const box=$('recordReview'),preview=conflictPreview;
+ if(!preview||!preview.server){box.textContent='Compare with server first.';return}
+ const changes=recordDiffs(preview.local,preview.server);
+ box.replaceChildren();
+ if(!changes.length){box.textContent='No record differences.';return}
+ for(const item of changes){
+  const line=document.createElement('label');line.style.display='block';line.style.margin='8px 0';
+  const check=document.createElement('input');check.type='checkbox';check.dataset.kind=item.kind;check.dataset.recordId=item.id;
+  check.disabled=item.change==='local-only';
+  line.append(check,document.createTextNode(' '+item.kind+' / '+item.id+' — '+item.change+(check.disabled?' (kept locally)':'')));
+  box.append(line);
+ }
+}
+async function adoptSelectedRecords(){
+ const el=$('conflictDetails'),preview=conflictPreview,box=$('recordReview');
+ if(!preview||!preview.server){el.textContent='Compare with server and inspect records first.';return}
+ const selected=[...box.querySelectorAll('input[type="checkbox"]:checked')].map(x=>({kind:x.dataset.kind,id:x.dataset.recordId}));
+ if(!selected.length){el.textContent='Select at least one server record.';return}
+ const valid=recordDiffs(preview.local,preview.server).filter(x=>x.change!=='local-only');
+ if(selected.some(x=>!valid.some(y=>x.kind===y.kind&&x.id===y.id))){el.textContent='Invalid selection. Compare again.';return}
+ if(outboxCorrupt||outbox.length||syncMeta.dirty||syncBusy){el.textContent='Pending changes or unsafe journal. Export recovery first; no changes applied.';return}
+ const epoch=syncEpoch,token=$('syncToken').value.trim();
+ if(!sameSnapshot(data,preview.local)){el.textContent='Local data changed. Compare again.';return}
+ let next;try{next=applyServerSelections(data,preview.server,selected)}catch(e){el.textContent='Selection invalid: '+e.message;return}
+ if(!confirm('Copy '+selected.length+' selected server records into LOCAL data? Unselected local records stay.'))return;
+ if(prompt('Type COPY RECORDS to confirm:')!=='COPY RECORDS')return;
+ try{
+  const response=await fetch('/api/state',{headers:{'X-LifeOS-Token':token},cache:'no-store'});
+  const current=await response.json();if(!response.ok)throw new Error(current.error||'HTTP '+response.status);
+  if(current.data)validateWorkspace(current.data);
+  if(!canAdoptReviewed(preview,current.revision,current.data,epoch,token)){
+   el.textContent='Server or local state changed. Compare again.';return;
+  }
+  exportRecovery();exportConflict();
+  if(!confirm('Verify BOTH recovery downloads were saved. Proceed with local copy?'))return;
+  if(!canAdoptReviewed(preview,current.revision,current.data,epoch,token)){el.textContent='State changed. Cancelled.';return}
+  const old=JSON.parse(JSON.stringify(data)),oldMeta={...syncMeta};
+  stopSync();syncSuppressed=true;
+  try{
+   data=next;ensureModules();if(!persist())throw new Error('Local storage failed');
+   // A selective merge diverges from server; do not claim it is synchronized.
+   syncMeta={revision:current.revision,dirty:true};
+   if(!saveSyncMeta())throw new Error('Sync metadata storage failed');
+   render();conflictPreview=null;box.textContent='';
+   el.textContent='Selected records copied locally. Server unchanged. Local workspace marked unsynchronized; export a backup before reconnecting.';
+  }catch(e){data=old;syncMeta=oldMeta;persist();saveSyncMeta();render();el.textContent='Copy failed; attempted rollback. Check recovery exports: '+e.message}
+  finally{syncSuppressed=false}
+ }catch(e){el.textContent='Copy failed without modifying server: '+e.message}
+}
+// Stage 17: explicit, guarded server-to-local resolution. No remote overwrite or automatic merge.
+function canAdoptReviewed(preview,currentRevision,currentLocal,epoch,token){
+ return !!preview && preview.server!==null && preview.revision===currentRevision &&
+  epoch===syncEpoch && token===$('syncToken').value.trim() &&
+  !outboxCorrupt && !outbox.length && !syncMeta.dirty && !syncBusy &&
+  sameSnapshot(data,preview.local) && sameSnapshot(currentLocal,preview.server);
+}
+async function adoptReviewedServer(){
+ const el=$('conflictDetails');const preview=conflictPreview;
+ if(!preview||preview.server===null){el.textContent='Compare with server first; no server workspace is available.';return}
+ if(outboxCorrupt||outbox.length||syncMeta.dirty||syncBusy){el.textContent='Resolution blocked: pending, damaged or unsaved local changes. Export recovery data and resolve them first.';return}
+ const epoch=syncEpoch,token=$('syncToken').value.trim();
+ if(!sameSnapshot(data,preview.local)){el.textContent='Local workspace changed since comparison. Compare again.';return}
+ if(!confirm('This replaces your LOCAL workspace with the reviewed SERVER copy. No server data will be changed. Continue to a second confirmation?'))return;
+ if(prompt('Type REPLACE LOCAL to confirm this irreversible local replacement:')!=='REPLACE LOCAL'){el.textContent='Cancelled. No data replaced.';return}
+ try{
+  const res=await fetch('/api/state',{headers:{'X-LifeOS-Token':token},cache:'no-store'});
+  const remote=await res.json();if(!res.ok)throw new Error(remote.error||'HTTP '+res.status);
+  if(remote.data)validateWorkspace(remote.data);
+  if(!canAdoptReviewed(preview,remote.revision,remote.data,epoch,token)){
+   el.textContent='Resolution blocked: server revision, connection, local data or pending changes changed. Compare again.';return;
+  }
+  // A download cannot be verified by the browser; ask user to confirm the backup exists.
+  exportRecovery();exportConflict();
+  if(!confirm('Recovery and comparison exports were initiated. Confirm BOTH downloads are saved before replacing local data. Continue?'))return;
+  if(!canAdoptReviewed(preview,remote.revision,remote.data,epoch,token)){
+   el.textContent='Resolution cancelled: workspace or connection changed during confirmation.';return;
+  }
+  const old=JSON.parse(JSON.stringify(data)),oldMeta={...syncMeta};
+  stopSync();syncSuppressed=true;
+  try{
+   data=JSON.parse(JSON.stringify(remote.data));ensureModules();
+   if(!persist())throw new Error('Local workspace storage failed');
+   syncMeta={revision:remote.revision,dirty:false};
+   if(!saveSyncMeta())throw new Error('Sync metadata storage failed');
+   render();conflictPreview=null;
+   el.textContent='Local workspace replaced with reviewed server revision '+remote.revision+'. Server unchanged. Reconnect to synchronize future edits.';
+  }catch(e){
+   data=old;syncMeta=oldMeta;persist();saveSyncMeta();render();
+   el.textContent='Replacement failed; attempted to restore prior local workspace: '+e.message+'. Check your exported recovery files.';
+  }finally{syncSuppressed=false}
+ }catch(e){el.textContent='Resolution failed without applying server changes: '+e.message}
+}
+function syncStatus(t){$('syncStatus').textContent=t}
+function writeOutbox(next){if(outboxCorrupt){syncStatus('SYNC BLOCKED: offline journal invalid.');return false}try{localStorage.setItem(OUTBOX_KEY,JSON.stringify(next));outbox=next;return true}catch(e){syncStatus('⚠ Offline queue storage failed. Export a backup.');return false}}
+function saveSyncMeta(){try{localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta));return true}catch(_e){syncStatus('Warning: sync metadata could not be stored. Export a backup.');return false}}
+function stopSync(){syncEpoch++;syncReady=false;syncRevision=null;if(syncTimer!==null){clearTimeout(syncTimer);syncTimer=null}}
+function safeBackupBeforeReplace(){backup();return confirm('A local JSON backup was downloaded. Continue replacing local data? Check the download completed first. Cancel to keep local data.')}
+function queueCurrentState(){
+ if(outboxCorrupt){syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');return false}
+ const entry={id:uid(),createdAt:now(),snapshot:JSON.parse(JSON.stringify(data))};
+ if(!writeOutbox([...outbox,entry]))return false;
+ syncMeta.dirty=true;saveSyncMeta();if(syncReady)scheduleSync(150);return true;
+}
+function scheduleSync(delay=1500){if(syncTimer!==null)clearTimeout(syncTimer);if(!syncReady||syncRevision===null||!outbox.length)return;syncTimer=setTimeout(()=>{syncTimer=null;push()},delay)}
+async function requestState(method='GET',payload=null){let res=await fetch('/api/state',{method,headers:{'X-LifeOS-Token':syncToken,...(payload?{'Content-Type':'application/json'}:{})},body:payload?JSON.stringify(payload):undefined,cache:'no-store'});let obj=await res.json();if(!res.ok)throw Object.assign(new Error(obj.error||('HTTP '+res.status)),{status:res.status});return obj}
+// A timed-out PUT may have committed. Confirm the server snapshot before retrying.
+function canonical(v){if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])]));return v}
+function sameSnapshot(a,b){return JSON.stringify(canonical(a))===JSON.stringify(canonical(b))}
+async function reconcileRemote(remote){
+ let rev=remote.revision,changed=false;
+ while(outbox.length&&sameSnapshot(remote.data,outbox[0].snapshot)){
+  if(!writeOutbox(outbox.slice(1)))throw new Error('Cannot acknowledge operation locally');
+  changed=true;
+ }
+ if(changed){syncMeta.revision=rev;syncMeta.dirty=outbox.length>0;saveSyncMeta()}
+ return rev;
+}
+async function connect(){
+ if(outboxCorrupt)return syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');
+ if(syncBusy)return syncStatus('Wait for the current upload to finish.');
+ stopSync();syncToken=$('syncToken').value.trim();if(!syncToken)return syncStatus('Enter your private token.');
+ const epoch=syncEpoch;
+ try{
+  const remote=await requestState();if(epoch!==syncEpoch)return;
+  syncRevision=await reconcileRemote(remote);
+  if(outbox.length){
+   if(syncMeta.revision!==null&&remote.revision!==syncMeta.revision){stopSync();syncStatus('SYNC CONFLICT: remote revision differs from queued changes. Local changes retained.');return}
+   if(syncMeta.revision===null&&remote.revision!==0){stopSync();syncStatus('SYNC CONFLICT: queue has no trusted base revision. Export a backup.');return}
+   syncReady=true;syncStatus('Connected · '+outbox.length+' queued changes; syncing.');scheduleSync(100);return;
+  }
+  if(syncMeta.dirty){stopSync();syncStatus('Local unsynced changes have no operation journal. Export backup and choose an explicit upload.');return}
+  syncStatus(remote.data?'Connected · server has saved data. Choose Load or Upload.':'Connected · server empty. Choose Upload to initialize.');
+ }catch(e){if(epoch===syncEpoch){stopSync();syncStatus('Could not connect: '+e.message)}}
+}
+async function pull(){
+ if(outboxCorrupt)return syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');
+ if(syncBusy)return syncStatus('Wait for current upload to finish.');
+ if(!syncToken)return syncStatus('Connect first.');
+ const epoch=syncEpoch;
+ try{
+  const r=await requestState();if(epoch!==syncEpoch)return;
+  if(!r.data)return syncStatus('Server has no sessions.');
+  validateWorkspace(r.data);
+  if(outbox.length&&!confirm('You have '+outbox.length+' unsent changes. Loading server data will discard the pending queue. Continue?'))return;
+  if(!safeBackupBeforeReplace())return;
+  if(!writeOutbox([]))return;
+  stopSync();syncSuppressed=true;
+  try{data=r.data;ensureModules();syncRevision=r.revision;syncReady=true;persist();render()}
+  finally{syncSuppressed=false}
+  syncMeta={revision:r.revision,dirty:false};saveSyncMeta();syncStatus('Loaded from server · revision '+syncRevision);
+ }catch(e){syncStatus('Load failed: '+e.message)}
+}
+async function push(){
+ if(outboxCorrupt)return syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');
+ if(syncRevision===null)return syncStatus('Connect first.');
+ if(syncBusy)return;
+ syncBusy=true;const epoch=syncEpoch;
+ try{
+  while(outbox.length&&syncReady&&epoch===syncEpoch){
+   const entry=outbox[0];
+   validateWorkspace(entry.snapshot); // Refuse to upload an invalid queued workspace.
+   // Preserve operation order; each PUT uses the acknowledged revision.
+   // Stage 35: calendar decisions and their workspace snapshot commit together.
+   // A timed-out commit is retried with the SAME decision ID and immutable snapshot.
+   const pending=Array.isArray(entry.snapshot.calendarAuditPending)?entry.snapshot.calendarAuditPending:[];
+   const decision=pending.length?pending[0]:null;
+   let r;
+   if(decision){
+    const response=await fetch('/api/calendar/commit',{method:'POST',headers:{'X-LifeOS-Token':syncToken,'Content-Type':'application/json'},body:JSON.stringify({revision:syncRevision,data:entry.snapshot,decision}),cache:'no-store'});
+    r=await response.json();
+    if(!response.ok||!['committed','duplicate'].includes(r.status))throw Object.assign(new Error(r.error||r.status||'Atomic commit failed'),{status:response.status});
+    if(r.status==='duplicate'){
+     // An ID alone does not prove that this particular workspace was committed.
+     const remote=await requestState();
+     if(!sameSnapshot(remote.data,entry.snapshot))throw Object.assign(new Error('Decision already exists but remote workspace differs; manual review required'),{status:409});
+     r.revision=remote.revision;
+    }
+   }else r=await requestState('PUT',{revision:syncRevision,data:entry.snapshot});
+   if(epoch!==syncEpoch)return;
+   syncRevision=r.revision;syncMeta.revision=r.revision;
+   const remaining=outbox.filter(x=>x.id!==entry.id).map(x=>{
+    if(!decision)return x;
+    const snapshot=JSON.parse(JSON.stringify(x.snapshot));
+    if(Array.isArray(snapshot.calendarAuditPending))snapshot.calendarAuditPending=snapshot.calendarAuditPending.filter(d=>d.id!==decision.id);
+    return {...x,snapshot};
+   });
+   if(decision&&Array.isArray(data.calendarAuditPending))data.calendarAuditPending=data.calendarAuditPending.filter(d=>d.id!==decision.id);
+   if(!atomicCommit(data,remaining,{revision:r.revision,dirty:remaining.length>0}))throw new Error('Server saved, but atomic acknowledgement failed');
+   if(!writeOutbox(remaining))syncStatus('Saved atomically; legacy journal mirror unavailable');
+   syncMeta.dirty=outbox.length>0;saveSyncMeta();
+   syncStatus(outbox.length?`Saved revision ${syncRevision} · ${outbox.length} queued`:`Synced to server · revision ${syncRevision}`);if(!outbox.length)scheduleCalendarAuditUpload();
+  }
+ }catch(e){
+  if(epoch!==syncEpoch)return;
+  syncMeta.dirty=true;saveSyncMeta();
+  if(e.status===409){stopSync();syncStatus('SYNC CONFLICT: server changed. Local operations retained. Reconnect to check whether a timed-out write succeeded.')}
+  else{syncStatus('Sync interrupted · '+outbox.length+' operations retained.');if(syncReady)scheduleSync(5000)}
+ }finally{syncBusy=false}
+}
+// Manual uploads must never bypass the trusted server revision preflight.
+// Explicitly reject unresolved queued operations or an unknown sync base.
+async function manualUpload(){
+ if(outboxCorrupt)return syncStatus('SYNC BLOCKED: offline journal invalid.');
+ if(syncBusy)return syncStatus('Wait for current upload to finish.');
+ if(!syncToken)return syncStatus('Connect and authenticate before uploading.');
+ if(outbox.length)return syncStatus('Pending changes already exist. Reconnect to resolve the queue before manually uploading.');
+ const epoch=syncEpoch;
+ try{
+  const remote=await requestState();
+  if(epoch!==syncEpoch)return;
+  if(syncMeta.revision===null&&remote.revision!==0)return syncStatus('SYNC CONFLICT: no trusted base revision. Compare with server before uploading.');
+  if(syncMeta.revision!==null&&syncMeta.revision!==remote.revision)return syncStatus('SYNC CONFLICT: server revision changed. Compare with server before uploading.');
+  validateWorkspace(data);
+  if(!confirm('Upload the current local workspace to server revision '+remote.revision+'? This may replace server records.'))return;
+  // A remote change between the GET and PUT is protected by revision-CAS.
+  syncRevision=remote.revision;syncReady=true;
+  if(queueCurrentState())await push();
+ }catch(e){if(epoch===syncEpoch)syncStatus('Upload preflight failed: '+e.message)}
+}
+window.addEventListener('online',()=>{if(syncReady&&outbox.length)scheduleSync(100)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&syncReady&&outbox.length)scheduleSync(100)});
+setInterval(()=>{if(syncReady&&outbox.length&&!syncBusy)scheduleSync(100)},15000);
+$('scheduleForm').addEventListener('submit',addSchedule);$('scheduleList').addEventListener('click',e=>{const b=e.target.closest('[data-schedule-act]');if(b)scheduleAction(b.dataset.scheduleAct,b.dataset.scheduleId)});$('scheduleDay').addEventListener('change',renderSchedule);$('scheduleDay').value=localDate(now());$('scheduleStart').value=toInput(now()+3600000);$('scheduleEnd').value=toInput(now()+7200000);setInterval(checkScheduleReminders,30000);checkScheduleReminders();function renderPersonalLogs(){ensureModules();const list=data.personalLogs||[];const today=localDate(now());const week=localDate(now()-6*86400000);const stats=window.LifeOSPersonalActivities.summary(list,week,today);$('personalLogSummary').textContent=`Last 7 dates: ${stats.records} logs · ${Object.entries(stats.byCategory).map(([name,v])=>name+': '+v.records).join(' · ')||'No records'}`;const progress=window.LifeOSPersonalProgress.summarize(list,week,today);const sleep=progress.sleep;const q=progress.quran;$('personalProgressSummary').textContent=`Quran: ${q.newPages} new page(s), ${q.revisionPages} revision page(s), ${q.days} day(s) logged${q.uncategorizedLogs?' · '+q.uncategorizedLogs+' log(s) without a recognized page type':''}. Sleep: ${sleep.measuredAverageMinutes===null?'no measured durations':Math.round(sleep.measuredAverageMinutes/60*10)/10+'h measured average ('+sleep.measuredCount+' log(s))'}; ${sleep.estimatedAverageMinutes===null?'no estimated durations':Math.round(sleep.estimatedAverageMinutes/60*10)/10+'h estimated average ('+sleep.estimatedCount+' log(s))'}.`; $('personalLogList').innerHTML=list.slice().reverse().slice(0,12).map(x=>`<div class="item"><div><strong>${escape(x.category)}</strong><div class="sub">${escape(x.date)} · ${x.minutes===null?'duration unknown':x.minutes+' min'} · ${escape(x.precision)}${x.quantity===null?'':' · '+x.quantity+' '+escape(x.unit)}</div></div><button type="button" class="btn outline tiny" data-personal-delete="${escape(x.id)}">Delete</button></div>`).join('')||'<div class="empty">No personal routine logs yet.</div>'}
+$('personalLogDate').value=localDate(now());$('personalLogForm').addEventListener('submit',e=>{e.preventDefault();try{const val=id=>$(id).value.trim();const record=window.LifeOSPersonalActivities.createLog({id:uid(),category:val('personalLogCategory'),date:val('personalLogDate'),minutes:val('personalLogMinutes')===''?null:Number(val('personalLogMinutes')),quantity:val('personalLogQuantity')===''?null:Number(val('personalLogQuantity')),unit:val('personalLogUnit'),notes:val('personalLogNotes'),precision:val('personalLogPrecision')});data.personalLogs.push(record);if(!persist()){data.personalLogs.pop();return;}$('personalLogForm').reset();$('personalLogDate').value=localDate(now());renderPersonalLogs();}catch(err){alert(err.message)}});$('personalLogList').addEventListener('click',e=>{const b=e.target.closest('[data-personal-delete]');if(!b)return;if(!confirm('Delete this personal log?'))return;const i=data.personalLogs.findIndex(x=>x.id===b.dataset.personalDelete);if(i<0)return;const [removed]=data.personalLogs.splice(i,1);if(!persist()){data.personalLogs.splice(i,0,removed);return;}renderPersonalLogs()});renderPersonalLogs();
+$('fitnessForm').addEventListener('submit',e=>addStage3(e,'workouts'));$('mealForm').addEventListener('submit',e=>addStage3(e,'meals'));$('goalForm').addEventListener('submit',addGoal);for(const [element,kind] of [['fitnessList','workouts'],['mealList','meals'],['goalList','goals']])$(element).addEventListener('click',e=>{const b=e.target.closest('[data-delete]');if(b)deleteStage3(kind,b.dataset.delete)});$('weeklyCapacity').addEventListener('input',renderGoalReview);$('reviewRecovery').addEventListener('change',renderGoalReview);$('goalReview').addEventListener('click',e=>{const b=e.target.closest('[data-goal-approve]');if(b)approveGoal(b.dataset.goalApprove,Number(b.dataset.target))});$('fitnessDate').value=localDate(now());$('mealDate').value=localDate(now());$('connectSync').onclick=connect;$('pullSync').onclick=pull;$('pushSync').onclick=manualUpload;
+// Hook writes without changing the existing timer engine. Local save always happens first.
+// Stage 21: one-key atomic commit for workspace + offline journal.
+// localStorage writes are atomic per key only; legacy keys remain compatibility mirrors.
+const ATOMIC_KEY='lifeos-v4-stage21-atomic';
+let atomicBlocked=false;
+function atomicRecord(workspace,journal,meta){
+ validateWorkspace(workspace);
+ if(!Array.isArray(journal)||!journal.every(x=>x&&typeof x.id==='string'&&Number.isFinite(x.createdAt)&&x.snapshot&&x.snapshot.version===1))throw new Error('Invalid journal');
+ return {format:1,workspace:JSON.parse(JSON.stringify(workspace)),journal:JSON.parse(JSON.stringify(journal)),meta:{revision:Number.isInteger(meta.revision)?meta.revision:null,dirty:meta.dirty===true},committedAt:Date.now()};
+}
+function atomicCommit(workspace,journal,meta){
+ if(atomicBlocked||outboxCorrupt)return false;
+ try{
+  const record=atomicRecord(workspace,journal,meta);
+  localStorage.setItem(ATOMIC_KEY,JSON.stringify(record)); // commit point
+  return true;
+ }catch(e){syncStatus('⚠ Atomic save failed; existing saved state retained. Export a backup.');return false}
+}
+function recoverAtomic(){
+ const raw=localStorage.getItem(ATOMIC_KEY);
+ if(raw===null)return false;
+ try{
+  const record=JSON.parse(raw);
+  if(!record||record.format!==1)throw new Error('Unsupported atomic record');
+  const valid=atomicRecord(record.workspace,record.journal,record.meta||{});
+  data=valid.workspace;outbox=valid.journal;syncMeta=valid.meta;
+  // Refresh compatibility mirrors; failure does not invalidate canonical commit.
+  try{localStorage.setItem(KEY,JSON.stringify(data));localStorage.setItem(OUTBOX_KEY,JSON.stringify(outbox));localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta))}catch(_e){}
+  return true;
+ }catch(e){atomicBlocked=true;outboxCorrupt=true;syncMeta.dirty=true;syncStatus('SYNC BLOCKED: atomic recovery record invalid. Export recovery data.');return false}
+}
+const originalPersist=persist;
+persist=function(){
+ if(atomicBlocked||outboxCorrupt){syncStatus('⚠ Save blocked: recovery data invalid. Export a backup.');return false}
+ const shouldQueue=!syncSuppressed;
+ const next=shouldQueue?[...outbox,{id:uid(),createdAt:now(),snapshot:JSON.parse(JSON.stringify(data))}]:outbox;
+ const nextMeta={...syncMeta,dirty:shouldQueue?true:syncMeta.dirty};
+ if(!atomicCommit(data,next,nextMeta))return false;
+ outbox=next;syncMeta=nextMeta;
+ // Mirrors are best-effort: canonical record contains all three together.
+ try{localStorage.setItem(KEY,JSON.stringify(data));localStorage.setItem(OUTBOX_KEY,JSON.stringify(outbox));localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta));$('status').textContent='● Saved locally'}
+ catch(_e){$('status').textContent='● Saved (recovery journal)'}
+ if(shouldQueue&&syncReady)scheduleSync(150);
+ return true;
+};
+
+const CAL_CHANGE_HANDOFF='lifeos-stage29-change-handoff-v1';
+function calendarPlanFingerprint(p){return JSON.stringify([p.id,p.calendarKey,p.name,p.startAt,p.endAt,p.status]);}
+// Stable decision identity prevents replay if a crash occurs after workspace commit
+// but before the separate handoff key can be cleared.
+function calendarProposalId(c){return JSON.stringify([c.planId,c.calendarKey,c.baseline,c.type,c.newName??null,c.newStart??null,c.newEnd??null]);}
+function calendarProposalResolved(c){return calendarAudit().some(a=>a.proposalId===calendarProposalId(c));}
+function pendingCalendarChanges(){return readCalendarChangeQueue().filter(c=>!calendarProposalResolved(c));}
+function readCalendarChangeQueue(){try{const x=JSON.parse(localStorage.getItem(CAL_CHANGE_HANDOFF)||'null');if(!x||x.format!==CAL_CHANGE_HANDOFF||!Array.isArray(x.candidates)||x.candidates.length>100)return [];return x.candidates;}catch{return [];}}
+function showCalendarChanges(){const target=$('calendarChangeQueue');if(!target)return;const changes=pendingCalendarChanges();target.replaceChildren();if(!changes.length){target.textContent='No pending calendar change proposals.';return;}for(const [index,c] of changes.entries()){const box=document.createElement('div');box.className='card';box.style.margin='10px 0';const plan=data.schedule.find(p=>p.id===c.planId);const valid=plan&&plan.calendarKey===c.calendarKey&&calendarPlanFingerprint(plan)===c.baseline&&plan.status!=='skipped'&&(c.type==='missing'||(c.type==='changed'&&typeof c.newName==='string'&&c.newName.trim()&&c.newName.length<=200&&Number.isSafeInteger(c.newStart)&&Number.isSafeInteger(c.newEnd)&&c.newEnd>c.newStart&&c.newEnd-c.newStart<=366*86400000));const heading=document.createElement('strong');heading.textContent=(c.type==='missing'?'Possible cancellation: ':'Reschedule: ')+(plan?.name||c.oldName||'Unknown plan');box.append(heading);const detail=document.createElement('p');detail.className='sub';detail.textContent=c.type==='missing'?'This event was absent from a complete preview. Confirm independently before marking skipped.':`Proposed: ${c.newName} · ${new Date(c.newStart).toLocaleString()} – ${new Date(c.newEnd).toLocaleString()}`;box.append(detail);if(!valid){const warning=document.createElement('p');warning.textContent='Stale or invalid proposal. Reject and refresh from Google Calendar.';box.append(warning);}for(const [action,label] of [['approve',c.type==='missing'?'Mark planned event as skipped':'Apply reschedule'],['reject','Reject proposal']]){const b=document.createElement('button');b.className=action==='approve'?'btn primary':'btn outline';b.textContent=label;b.disabled=action==='approve'&&!valid;b.onclick=()=>resolveCalendarChange(index,action);box.append(b);}target.append(box);}}
+// Stage 33: pending decisions live inside the atomically saved workspace.
+// The server journal is a secondary durable copy, not an atomic workspace transaction.
+function serverAuditEntry(e){return {id:e.id,at:e.at,action:e.action==='rejected'?'reject':e.action==='skipped'?'skip':e.action==='rescheduled'?'reschedule':e.action,planId:e.planId,proposalId:e.proposalId,calendarKey:e.calendarKey,before:e.before,after:e.after};}
+let calendarAuditBusy=false,calendarAuditTimer=null;
+function scheduleCalendarAuditUpload(delay=500){if(calendarAuditTimer!==null)clearTimeout(calendarAuditTimer);calendarAuditTimer=setTimeout(()=>{calendarAuditTimer=null;flushCalendarAudit();},delay);}
+async function flushCalendarAudit(){
+ if(calendarAuditBusy||!syncReady||!syncToken||outboxCorrupt||atomicBlocked||outbox.length)return;
+ // Stage 35: never write calendar audit separately from the workspace.
+ return;
+ calendarAuditBusy=true;
+ try{
+  // Preserve FIFO order. A timeout may mean the server already stored the ID.
+  while(syncReady&&!outbox.length&&Array.isArray(data.calendarAuditPending)&&data.calendarAuditPending.length){
+   const entry=data.calendarAuditPending[0];
+   const res=await fetch('/api/calendar/audit',{method:'POST',headers:{'X-LifeOS-Token':syncToken,'Content-Type':'application/json'},body:JSON.stringify(entry),cache:'no-store'});
+   if(!res.ok){if(res.status===409||res.status===400){syncStatus('Calendar audit blocked: server rejected a decision. Export recovery data.');return;}throw Error('Audit upload HTTP '+res.status);}
+   const result=await res.json();if(result.status!=='stored'||result.id!==entry.id)throw Error('Audit acknowledgement invalid');
+   const old=data.calendarAuditPending;
+   data.calendarAuditPending=old.slice(1);
+   if(!persist()){data.calendarAuditPending=old;return;}
+   // Wait for workspace sync before acknowledging further audit entries.
+   if(outbox.length)break;
+  }
+ }catch(_e){syncStatus('Calendar audit upload interrupted; decisions remain queued locally.');}
+ finally{calendarAuditBusy=false;}
+}
+window.addEventListener('online',()=>scheduleCalendarAuditUpload(300));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleCalendarAuditUpload(300)});
+setInterval(()=>scheduleCalendarAuditUpload(100),15000);
+const CAL_AUDIT_LIMIT=200;
+function calendarAudit(){return Array.isArray(data.calendarAudit)?data.calendarAudit:[];}
+function calendarPlanSnapshot(p){return {name:p.name,startAt:p.startAt,endAt:p.endAt,status:p.status,calendarKey:p.calendarKey};}
+function auditEntry(type,plan,before,after,proposal){return {id:uid(),at:new Date().toISOString(),action:type,planId:plan?.id||proposal.planId,calendarKey:proposal.calendarKey,before,after,proposalType:proposal.type,proposalId:calendarProposalId(proposal),undoneAt:null};}
+function recordCalendarDecision(entry){
+ const previous=data.calendarAudit,previousPending=data.calendarAuditPending;
+ data.calendarAudit=[...calendarAudit(),entry].slice(-CAL_AUDIT_LIMIT);
+ data.calendarAuditPending=[...(Array.isArray(previousPending)?previousPending:[]),serverAuditEntry(entry)];
+ if(!persist()){if(previous===undefined)delete data.calendarAudit;else data.calendarAudit=previous;if(previousPending===undefined)delete data.calendarAuditPending;else data.calendarAuditPending=previousPending;return false;}
+ scheduleCalendarAuditUpload();return true;
+}
+function resolveCalendarChange(index,action){
+ const queue=pendingCalendarChanges(),c=queue[index];if(!c||!['approve','reject'].includes(action)||calendarProposalResolved(c))return;
+ if(outboxCorrupt||atomicBlocked){alert('Recovery or sync journal is blocked. No changes made.');return;}
+ const plan=data.schedule.find(p=>p.id===c.planId);
+ if(action==='approve'&&(!plan||plan.calendarKey!==c.calendarKey||calendarPlanFingerprint(plan)!==c.baseline||plan.status==='skipped')){alert('Plan changed since review. Refresh calendar changes.');return;}
+ const before=plan?calendarPlanSnapshot(plan):null;
+ if(action==='approve'){
+  if(c.type==='changed'){
+   if(typeof c.newName!=='string'||!c.newName.trim()||c.newName.length>200||!Number.isSafeInteger(c.newStart)||!Number.isSafeInteger(c.newEnd)||c.newEnd<=c.newStart||c.newEnd-c.newStart>366*86400000){alert('Invalid reschedule proposal');return;}
+   const overlaps=data.schedule.filter(p=>p.id!==plan.id&&p.status!=='skipped'&&c.newStart<p.endAt&&p.startAt<c.newEnd).length;
+   if(!confirm(`Apply this calendar reschedule to ${plan.name}? ${overlaps} other planned activities overlap. Tracked sessions are unchanged.`))return;
+   plan.name=c.newName.slice(0,80);plan.startAt=c.newStart;plan.endAt=c.newEnd;plan.calendarKey=c.calendarKey.split('|').slice(0,-1).join('|')+'|'+c.newStart;
+  }else if(c.type==='missing'){
+   if(!confirm('Mark this planned activity as skipped? This does not delete it or change tracked sessions.'))return;
+   plan.status='skipped';
+  }else return;
+ }
+ const after=plan?calendarPlanSnapshot(plan):null;
+ const entry=auditEntry(action==='reject'?'rejected':c.type==='missing'?'skipped':'rescheduled',plan,before,after,c);
+ if(!recordCalendarDecision(entry)){if(plan&&before)Object.assign(plan,before);return;}
+ // Remove handoff only after the workspace and audit have committed.
+ try{queue.splice(index,1);const remaining=readCalendarChangeQueue().filter(x=>!calendarProposalResolved(x));if(remaining.length)localStorage.setItem(CAL_CHANGE_HANDOFF,JSON.stringify({format:CAL_CHANGE_HANDOFF,createdAt:Date.now(),candidates:remaining}));else localStorage.removeItem(CAL_CHANGE_HANDOFF);}catch(_e){syncStatus('Calendar decision saved; pending proposal may reappear. Review before acting again.');}
+ render();showCalendarChanges();renderCalendarAudit();
+}
+function undoCalendarAudit(id){
+ if(outboxCorrupt||atomicBlocked)return alert('Recovery blocked. Export a backup first.');
+ const entry=calendarAudit().find(x=>x.id===id);
+ if(!entry||entry.undoneAt||!['rescheduled','skipped'].includes(entry.action))return;
+ const plan=data.schedule.find(p=>p.id===entry.planId);
+ if(!plan||JSON.stringify(calendarPlanSnapshot(plan))!==JSON.stringify(entry.after))return alert('Undo blocked: the plan changed after this decision.');
+ if(!confirm('Restore the previous planned event? This does not alter tracked activities or Google Calendar.'))return;
+ const current=calendarPlanSnapshot(plan),oldAudit=data.calendarAudit,oldPending=data.calendarAuditPending;
+ Object.assign(plan,entry.before);
+ const undoneAt=new Date().toISOString();
+ data.calendarAudit=calendarAudit().map(x=>x.id===id?{...x,undoneAt}:x);
+ data.calendarAuditPending=[...(Array.isArray(oldPending)?oldPending:[]),{id:uid(),at:undoneAt,action:'undo',planId:entry.planId,proposalId:entry.proposalId,undoOf:id}];
+ if(!persist()){Object.assign(plan,current);data.calendarAudit=oldAudit;if(oldPending===undefined)delete data.calendarAuditPending;else data.calendarAuditPending=oldPending;return;}
+ scheduleCalendarAuditUpload();render();renderCalendarAudit();
+}
+function renderCalendarAudit(){
+ const target=$('calendarAuditHistory');if(!target)return;target.replaceChildren();const entries=[...calendarAudit()].reverse();
+ if(!entries.length){target.textContent='No calendar decisions recorded yet.';return;}
+ for(const e of entries){const box=document.createElement('div');box.className='card';box.style.margin='8px 0';const label=document.createElement('p');label.textContent=`${e.action} · ${e.at} · ${e.before?.name||e.planId}${e.undoneAt?' · UNDONE':''}`;box.append(label);
+ const plan=data.schedule.find(p=>p.id===e.planId);
+ if(!e.undoneAt&&['rescheduled','skipped'].includes(e.action)&&plan&&JSON.stringify(calendarPlanSnapshot(plan))===JSON.stringify(e.after)){
+ const b=document.createElement('button');b.className='btn outline';b.textContent='Undo this change';b.onclick=()=>undoCalendarAudit(e.id);box.append(b);
+ }target.append(box);}
+}
+function exportCalendarAudit(){const payload={format:'lifeos-stage30-calendar-audit',exportedAt:new Date().toISOString(),entries:calendarAudit()};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='lifeos-calendar-audit.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+$('calendarAuditExport').onclick=exportCalendarAudit;
+
+const CAL_HANDOFF='lifeos-stage27-plan-handoff-v1';
+function readCalendarHandoff(){try{const raw=localStorage.getItem(CAL_HANDOFF);if(!raw)return null;const x=JSON.parse(raw);if(x.format!=='lifeos-stage27-plan-handoff-v1'||!Array.isArray(x.candidates)||x.candidates.length>100)throw Error('Invalid handoff');return x}catch(e){$('calendarHandoffStatus').textContent='Invalid handoff: '+e.message;return null}}
+function showCalendarHandoff(){const x=readCalendarHandoff();if(x)$('calendarHandoffStatus').textContent=x.candidates.length+' calendar candidates waiting for review.';else if(!localStorage.getItem(CAL_HANDOFF))$('calendarHandoffStatus').textContent='No pending calendar transfer.'}
+$('calendarHandoffApply').onclick=()=>{const x=readCalendarHandoff();if(!x){alert('No valid transfer to import.');return}if(outboxCorrupt||atomicBlocked){alert('LifeOS recovery or sync journal is blocked. Resolve that before importing.');return}ensureModules();const existing=new Set(data.schedule.filter(p=>typeof p.calendarKey==='string').map(p=>p.calendarKey));const incoming=[];for(const e of x.candidates){if(!e||typeof e.key!=='string'||e.key.length>500||typeof e.name!=='string'||!e.name.trim()||e.name.length>80||!Number.isSafeInteger(e.startAt)||!Number.isSafeInteger(e.endAt)||e.endAt<=e.startAt||e.endAt-e.startAt>366*86400000||!['google','ics-import'].includes(e.source)) {alert('Transfer contains invalid candidate data; no changes made.');return}if(existing.has(e.key))continue;existing.add(e.key);incoming.push(e)}if(!incoming.length){localStorage.removeItem(CAL_HANDOFF);showCalendarHandoff();alert('All candidates are already in the schedule.');return}const overlaps=incoming.filter(e=>data.schedule.some(p=>p.status!=='skipped'&&e.startAt<p.endAt&&p.startAt<e.endAt));const message=`Add ${incoming.length} calendar candidates to your LifeOS schedule? ${overlaps.length} overlap existing plans.\n\nThis does not change tracked activities or Google Calendar.`;if(!confirm(message))return;const created=now();const added=incoming.map(e=>({id:uid(),name:e.name,startAt:e.startAt,endAt:e.endAt,notes:'Imported calendar planning candidate ('+e.source+')',reminder:false,status:'planned',sessionId:null,createdAt:created,calendarKey:e.key,calendarSource:e.source}));data.schedule.push(...added);if(!persist()){data.schedule.splice(data.schedule.length-added.length,added.length);return}localStorage.removeItem(CAL_HANDOFF);render();renderIdealRoutines();showCalendarHandoff();alert('Added '+added.length+' plans. Existing activity tracking was not changed.')};
+$('calendarHandoffDiscard').onclick=()=>{if(!localStorage.getItem(CAL_HANDOFF))return;if(confirm('Discard pending calendar candidates?')){localStorage.removeItem(CAL_HANDOFF);showCalendarHandoff()}};
+if(!recoverAtomic()&&!atomicBlocked)load();ensureModules();scheduleCalendarAuditUpload(2000);render();renderIdealRoutines();showCalendarHandoff();if(outboxCorrupt)syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');$('pastStart').value=toInput(now()-3600000);$('pastEnd').value=toInput(now());setInterval(tick,1000);setInterval(renderAnalytics,30000);
+$('inspectJournal').addEventListener('click',inspectJournal);
+$('exportRecovery').addEventListener('click',exportRecovery);
+$('compareServer').addEventListener('click',compareServer);
+$('exportConflict').addEventListener('click',exportConflict);
+$('adoptServerReviewed').addEventListener('click',adoptReviewedServer);
+$('inspectRecords').addEventListener('click',inspectRecords);
+$('adoptSelected').addEventListener('click',adoptSelectedRecords);
+// Batch D: read-only three-view planner, deliberately separate from calendar approvals.
+let smartView='reality';
+function renderSmartSchedule(){
+ const el=$('smartScheduleOutput'),m=window.LifeOSSmartSchedule;if(!el||!m)return;
+ const start=new Date($('scheduleDay').value||localDate(now())+'T00:00:00').getTime();
+ const end=new Date(start);end.setDate(end.getDate()+7);
+ const ideal=window.LifeOSIdealPlanning.project(Array.isArray(data.idealRoutines)?data.idealRoutines:[],start,end.getTime());
+ const v=m.threeViews({sessions:data.sessions,schedule:data.schedule,start,end:end.getTime(),ideal});
+ const entries=smartView==='reality'?v.reality:smartView==='predicted'?v.predicted:v.ideal;
+ const heading=smartView==='reality'?'Tracked activity':smartView==='predicted'?'Existing plans (not a forecast)':'Ideal routine preferences (not confirmed plans)';
+ const summary=smartView==='predicted'?` · ${v.conflicts.length} plan overlap(s) detected`:'';
+ el.innerHTML=`<p>${escape(heading)} · ${entries.length} item(s)${escape(summary)}</p>`+(entries.length?entries.slice(0,30).map(p=>`<div class="schedule-entry"><strong>${escape(p.name||'Activity')}</strong><div class="sub">${escape(scheduleDateTime(p.startAt))} – ${escape(scheduleDateTime(p.endAt))}</div></div>`).join(''):'<p>No entries in this view for the selected seven-day period.</p>');
+}
+window.lifeosReadOnlyWorkspace=()=>JSON.parse(JSON.stringify({sessions:data.sessions||[]}));
+let idealReviewQueue=[];
+function renderIdealRoutines(){const el=$('idealRoutineList');if(!el)return;el.replaceChildren();for(const r of (data.idealRoutines||[])){const row=document.createElement('div');row.className='schedule-entry';const label=document.createElement('span');label.textContent=r.name+' · '+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][r.dayOfWeek]+' '+r.start+' · '+r.durationMinutes+' min';const remove=document.createElement('button');remove.className='btn outline tiny';remove.textContent='Remove';remove.onclick=()=>{const old=data.idealRoutines;data.idealRoutines=old.filter(x=>x.id!==r.id);if(!persist())data.idealRoutines=old;idealReviewQueue=[];renderIdealRoutines();renderSmartSchedule();$('idealProposalList').textContent='Review suggestions again after changing routines.';};row.append(label,remove);el.append(row);}}
+$('idealRoutineForm').addEventListener('submit',e=>{e.preventDefault();const r={id:uid(),name:$('idealRoutineName').value.trim(),dayOfWeek:Number($('idealRoutineDay').value),start:$('idealRoutineTime').value,durationMinutes:Number($('idealRoutineMinutes').value)};try{window.LifeOSIdealPlanning.validateRoutine(r);}catch(err){alert(err.message);return;}const old=data.idealRoutines;data.idealRoutines=[...(old||[]),r];if(!persist()){data.idealRoutines=old;return;}idealReviewQueue=[];$('idealRoutineName').value='';renderIdealRoutines();renderSmartSchedule();$('idealProposalList').textContent='Review suggestions to approve individual schedule additions.';});
+$('idealReview').onclick=()=>{const start=new Date($('scheduleDay').value||localDate(now())+'T00:00:00').getTime(),end=new Date(start);end.setDate(end.getDate()+7);idealReviewQueue=window.LifeOSIdealPlanning.review(window.LifeOSIdealPlanning.project(data.idealRoutines||[],start,end.getTime()),data.schedule||[]).filter(p=>!(data.schedule||[]).some(s=>s.idealProposalId===p.id));const box=$('idealProposalList');box.replaceChildren();if(!idealReviewQueue.length){box.textContent='No new suggestions for this period.';return;}for(const proposal of idealReviewQueue){const row=document.createElement('div');row.className='schedule-entry';const label=document.createElement('span');label.textContent=proposal.name+' · '+scheduleDateTime(proposal.startAt)+' · '+proposal.conflicts.length+' existing overlap(s)';const btn=document.createElement('button');btn.className='btn outline tiny';btn.textContent='Approve to LifeOS schedule';btn.onclick=()=>{if(outboxCorrupt||atomicBlocked){alert('Resolve synchronization recovery before approving.');return;}if((data.schedule||[]).some(p=>p.idealProposalId===proposal.id)){alert('Already added.');return;}if(!confirm('Add this proposed routine to your LifeOS schedule? This may overlap other plans. It will not update Google Calendar.'))return;const plan=window.LifeOSIdealPlanning.approvedPlan(proposal,uid(),now());data.schedule.push(plan);if(!persist()){data.schedule.pop();return;}btn.disabled=true;btn.textContent='Added';renderSmartSchedule();};row.append(label,btn);box.append(row);}};
+renderIdealRoutines();
+for(const [id,view] of [['smartReality','reality'],['smartPredicted','predicted'],['smartIdeal','ideal']])$(id).addEventListener('click',()=>{smartView=view;renderSmartSchedule()});
+$('analyzePatterns').addEventListener('click',()=>{
+ const midnight=new Date();midnight.setUTCHours(0,0,0,0);
+ const result=window.LifeOSIntelligence.assess({sessions:data.sessions,start:midnight.getTime()-28*86400000,end:midnight.getTime()});
+ const fmt=n=>(n/60).toFixed(1)+' h';
+ $('patternResults').innerHTML=`<p><strong>Evidence: ${escape(result.confidence)}</strong> · ${result.trackedDays}/${result.observedDays} days with records · ${Math.round(result.measuredRatio*100)}% measured precision among occupied time</p><p>Average unique tracked time: ${fmt(result.averageUniqueMinutesPerDay)}/day · Additional overlapping time: ${fmt(result.overlapMinutes)} across 28 days</p><p>${escape(result.reasons.join('; ')||'Evidence threshold met; review suggestions manually.')}</p><p>${result.recommendation?escape(result.recommendation.description):'Not enough reliable evidence for a schedule recommendation yet.'}</p><p>Unlogged time is not classified as leisure or distraction. UTC day boundaries; local-time validation pending.</p>`;
+});
+$('personalReviewWeek').addEventListener('click',()=>{try{const from=new Date();from.setHours(0,0,0,0);const to=new Date(from);to.setDate(to.getDate()+7);const result=LifeOSPersonalPlanner.build({routines:data.idealRoutines||[],schedule:data.schedule||[],sessions:data.sessions||[],from:from.getTime(),to:to.getTime()});const evidence=LifeOSScheduleEvidence.assess(data.sessions||[]);const el=$('personalCompletionResults');el.textContent='';const heading=document.createElement('p');heading.textContent='Review-only: '+result.proposals.length+' suggested routine(s). Recent tracking: '+evidence.trackedDays+'/28 days, '+Math.round(evidence.measuredRatio*100)+'% measured records. Evidence: '+evidence.confidence+'. Nothing has been scheduled.';el.appendChild(heading);for(const suggestion of result.proposals.slice(0,25)){const line=document.createElement('p');line.textContent=new Date(suggestion.startAt).toLocaleString()+' · '+suggestion.name+(suggestion.conflicts.length?' · '+suggestion.conflicts.length+' conflict(s)':'')+(suggestion.actualConflicts?.length?' · '+suggestion.actualConflicts.length+' recorded-session conflict(s)':'')+' · Approval required';el.appendChild(line);}}catch(e){$('personalCompletionResults').textContent='Could not generate suggestions: '+e.message;}});
+$('personalCheckHealth').addEventListener('click',()=>{const r=LifeOSPersonalReadiness.inspect(data);$('personalCompletionResults').textContent=(r.ok?'Local data structure looks consistent.':'Review issues: '+r.issues.join('; '))+' Record counts: '+Object.entries(r.counts).map(([k,v])=>k+' '+v).join(', ')+'. Production verification remains pending.';});
+$('scheduleDay').addEventListener('change',renderSmartSchedule);
+renderSmartSchedule();
+showCalendarChanges();renderCalendarAudit();
+})();
+</script><script src="live_tracking_v2.js"></script><script src="personal_tracking_recovery.js"></script><script src="personal_unified_navigation.js" defer></script><script src="personal_pattern_suggestions.js"></script><script src="personal_phase1_insights_ui.js"></script></body></html>

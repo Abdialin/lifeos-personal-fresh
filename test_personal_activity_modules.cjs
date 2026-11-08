@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict');const m=require('./personal_activity_modules.js');
+const a=m.createLog({id:'a',category:'Quran',date:'2026-11-08',minutes:30,quantity:2,unit:'pages',precision:'measured'});
+const b=m.createLog({id:'b',category:'Quran',date:'2026-11-08',minutes:null,precision:'unknown'});
+const c=m.createLog({id:'c',category:'Sleep',date:'2026-11-07',minutes:420});
+assert.equal(m.summary([a,b,c],'2026-11-07','2026-11-08').records,3);
+assert.equal(m.summary([a,b,c],'2026-11-08','2026-11-08').byCategory.Quran.minutes,30);
+assert.equal(m.summary([a,b,c],'2026-11-08','2026-11-08').byCategory.Quran.durationKnown,1);
+assert.equal(m.goalProgress([a,b,c],'Quran','2026-11-07','2026-11-08','days'),1);
+assert.equal(m.goalProgress([a,b,c],'Quran','2026-11-07','2026-11-08','sessions'),2);
+assert.equal(m.goalProgress([a,b,c],'Sleep','2026-11-07','2026-11-08','minutes'),420);
+assert.throws(()=>m.createLog({id:'x',category:'Quran',date:'2026-02-30'}));
+assert.throws(()=>m.createLog({id:'x',category:'Quran',date:'2026-11-08',minutes:-1}));
+assert.throws(()=>m.createLog({id:'x',category:'Quran',date:'2026-11-08',precision:'fiction'}));
+console.log('Batch J: 9 assertions passed');

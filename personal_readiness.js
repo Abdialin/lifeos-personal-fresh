@@ -1,0 +1,7 @@
+/* Batch M/N: non-destructive feature and data health checks. */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.LifeOSPersonalReadiness=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+'use strict';
+function inspect(data){const issues=[];if(!data||typeof data!=='object')return {ok:false,issues:['Workspace missing'],counts:{}};const counts={};for(const key of ['sessions','schedule','todos','workouts','meals','goals','personalLogs']){if(!Array.isArray(data[key]))issues.push(key+' is not an array');else counts[key]=data[key].length;}const ids=new Set();for(const s of Array.isArray(data.sessions)?data.sessions:[]){if(!s||!s.id||ids.has(s.id))issues.push('Duplicate or missing session ID');else ids.add(s.id);if(s&&Array.isArray(s.segments))for(const seg of s.segments){if(!Number.isFinite(seg.start)||(seg.end!==null&&(!Number.isFinite(seg.end)||seg.end<seg.start)))issues.push('Invalid activity interval');}}
+return {ok:issues.length===0,issues,counts,productionVerified:false,limitations:['Full browser tests pending','Live OAuth pending','Real PostgreSQL pending','Backup restore pending']};}
+return {inspect};
+});

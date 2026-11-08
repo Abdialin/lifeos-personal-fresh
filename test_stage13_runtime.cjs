@@ -1,0 +1,20 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const html=fs.readFileSync(__dirname+'/index.html','utf8');
+const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+new Function(script);
+function part(a,b){const i=script.indexOf(a);assert(i>=0,a);const j=script.indexOf(b,i+a.length);assert(j>i,b);return script.slice(i,j)}
+const ctx=vm.createContext({console,Date,JSON,Set,Number,Object,Array,Error});
+vm.runInContext(part('function validateWorkspace(d){','function load(){')+'\n'+part('function canonical(v){','async function reconcileRemote(remote){'),ctx);
+const validate=d=>vm.runInContext('validateWorkspace('+JSON.stringify(d)+')',ctx);
+const base=()=>({version:1,sessions:[],events:[],todos:[],workouts:[],meals:[],goals:[],schedule:[]});
+validate(base());
+const session={id:'a',name:'Study',status:'finished',startAt:1000,endAt:3000,segments:[{start:1000,end:3000}]};
+const valid=base();valid.sessions=[session];validate(valid);
+const duplicate=base();duplicate.sessions=[session,{...session}];assert.throws(()=>validate(duplicate),/duplicate/);
+const reversed=base();reversed.sessions=[{...session,segments:[{start:3000,end:1000}]}];assert.throws(()=>validate(reversed),/interval/);
+const openFinished=base();openFinished.sessions=[{...session,segments:[{start:1000,end:null}]}];assert.throws(()=>validate(openFinished),/status/);
+const overlapping=base();overlapping.sessions=[{...session,segments:[{start:1000,end:2200},{start:2000,end:3000}]}];assert.throws(()=>validate(overlapping),/interval/);
+assert(vm.runInContext('sameSnapshot({b:2,a:{y:3,x:1}},{a:{x:1,y:3},b:2})',ctx));
+assert(!vm.runInContext('sameSnapshot({a:1},{a:2})',ctx));
+assert(script.includes('outboxCorrupt=true')&&script.includes('SYNC BLOCKED: offline journal invalid'));
+console.log('PASS: Stage 13 executable workspace validation, duplicate/interval rejection, canonical snapshot equality, corrupt-journal guard');
