@@ -1,0 +1,17 @@
+const fs=require('fs'),assert=require('assert'),vm=require('vm');
+const html=fs.readFileSync('index.html','utf8'),script=html.match(/<script>([\s\S]*?)<\/script>/)[1];new Function(script);
+assert(script.includes("const ATOMIC_KEY='lifeos-v4-stage21-atomic'"));
+assert(script.includes('function atomicCommit('));assert(script.includes('function recoverAtomic('));
+assert(script.includes('if(!recoverAtomic()&&!atomicBlocked)load()'));
+assert(script.includes('if(!atomicCommit(data,remaining,'));
+const part=script.slice(script.indexOf('function atomicRecord('),script.indexOf('const originalPersist=persist;'));
+const storage=new Map(),localStorage={getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,v)};
+const context={localStorage,JSON,Date,Number,Array,Error,atomicBlocked:false,outboxCorrupt:false,syncMeta:{revision:null,dirty:false},syncStatus:()=>{},validateWorkspace:x=>{if(x.version!==1)throw Error('invalid');return x}};
+vm.createContext(context);
+vm.runInContext('const ATOMIC_KEY="lifeos-v4-stage21-atomic";'+part+';globalThis.f={atomicRecord,atomicCommit,recoverAtomic}',context);
+const state={version:1,sessions:[],events:[]},journal=[{id:'one',createdAt:1,snapshot:state}];
+assert.equal(context.f.atomicCommit(state,journal,{revision:3,dirty:true}),true);
+assert.equal(JSON.parse(storage.get('lifeos-v4-stage21-atomic')).journal.length,1);
+assert.equal(context.f.atomicCommit({version:0},journal,{revision:4,dirty:false}),false);
+assert.equal(JSON.parse(storage.get('lifeos-v4-stage21-atomic')).meta.revision,3);
+console.log('Stage 21 atomic commit tests passed');
