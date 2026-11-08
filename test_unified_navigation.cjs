@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const n=require('./personal_unified_navigation.js');
+assert.equal(n.resolveView('tracking'),'tracking');
+assert.equal(n.resolveView('invalid'),'dashboard');
+assert.equal(n.VIEWS.length,6);
+for(let i=0;i<26;i++)assert.ok(n.getVisibleIndices('tracking',26).includes(i)||['dashboard','schedule','goals','analytics','life'].some(v=>n.getVisibleIndices(v,26).includes(i)));
+for(const v of n.VIEWS)assert.ok(n.getVisibleIndices(v[0],26).length>0);
+assert.ok(n.getVisibleIndices('dashboard',26).includes(0));
+assert.ok(n.getVisibleIndices('dashboard',26).includes(11));
+assert.ok(!n.getVisibleIndices('analytics',26).includes(7));
+console.log('Unified navigation checks passed');

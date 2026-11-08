@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict');
+const fs=require('fs'),vm=require('vm');
+const code=fs.readFileSync('calendar.js','utf8');
+const stub={value:'all',textContent:'',innerHTML:'',addEventListener(){},onclick:null};
+const elements={search:{...stub,value:''},'source-filter':{...stub},'conflict-filter':{...stub},'approval-filter':{...stub}};
+const ctx={module:{exports:{}},localStorage:{getItem:()=>null,setItem(){}},document:{getElementById:id=>elements[id]||(elements[id]={...stub}),addEventListener(){}},fetch:()=>Promise.resolve({json:()=>Promise.resolve({configured:false})}),Date,console};
+vm.runInNewContext(code,ctx);
+const {reviewSummary,filteredEvents,eventKey}=ctx.module.exports;
+const events=[{uid:'a',title:'Study',start:100,end:200,source:'google',conflicts:['Work']},{uid:'b',title:'Gym',start:300,end:400,source:'ics-import',conflicts:[]}];
+assert.deepEqual(JSON.parse(JSON.stringify(reviewSummary(events,['a|100']))),{total:2,conflicts:1,approved:1,pending:1});
+const filter={search:'stud',source:'google',conflict:'conflicts',approval:'approved',approved:['a|100']};
+assert.equal(filteredEvents(events,filter).length,1);
+assert.equal(filteredEvents(events,{...filter,approval:'pending'}).length,0);
+assert.equal(eventKey(events[0]),'a|100');
+console.log('Stage 26 dashboard filters, approvals and conflict metrics passed');

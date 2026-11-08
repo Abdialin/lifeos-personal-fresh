@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('index.html','utf8');
+const api=require('./personal_tracking_recovery.js');
+for(const id of ['activityHierarchyPanel','hierarchyChild','hierarchyParent','saveHierarchy','hierarchyStatus','hierarchyOverview'])assert.ok(html.includes(`id="${id}"`),id);
+assert.match(html,/function saveHierarchy\(/);
+assert.match(html,/function renderHierarchy\(/);
+assert.match(html,/ACTIVITY_PARENT_CHANGED/);
+assert.match(html,/ACTIVITY_PARENT_REMOVED/);
+assert.match(html,/if\(!persist\(\)\)throw Error\('Unable to save changes/);
+const sessions=[{id:'study',name:'Study'},{id:'reading',name:'Reading'},{id:'notes',name:'Notes'}];
+api.attachParent(sessions,'reading','study');api.attachParent(sessions,'notes','reading');
+assert.throws(()=>api.attachParent(sessions,'study','notes'),/cycle/);
+assert.equal(sessions[0].parentId,undefined);
+api.attachParent(sessions,'notes',null);assert.equal(sessions[2].parentId,null);
+console.log('Batch G continuation: hierarchy UI contract and module safety checks passed');

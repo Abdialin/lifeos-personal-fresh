@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm');
+const code=fs.readFileSync('calendar.js','utf8');
+const stub={value:'all',textContent:'',innerHTML:'',addEventListener(){},onclick:null};
+const elements={search:{...stub,value:''},'source-filter':{...stub},'conflict-filter':{...stub},'approval-filter':{...stub}};
+const ctx={module:{exports:{}},localStorage:{getItem:()=>null,setItem(){}},document:{getElementById:id=>elements[id]||(elements[id]={...stub}),addEventListener(){}},fetch:()=>Promise.resolve({json:()=>Promise.resolve({configured:false})}),Date,console};
+vm.runInNewContext(code,ctx);
+const {prepareHandoff,planningKey}=ctx.module.exports;
+const events=[{uid:'abc',title:'Study',start:100,end:200,source:'google',conflicts:[]},{uid:'def',title:'Gym',start:300,end:400,source:'ics-import',conflicts:['Work']}];
+assert.equal(prepareHandoff(events,['abc|100'],{schedule:[]}).length,1);
+assert.equal(prepareHandoff(events,['abc|100'],{schedule:[{calendarKey:'google|abc|100'}]}).length,0);
+assert.equal(prepareHandoff(events,[],{schedule:[]}).length,0);
+assert.equal(planningKey(events[0]),'google|abc|100');
+assert.match(fs.readFileSync('index.html','utf8'),/calendarHandoffApply/);
+console.log('Stage 27 approved-only handoff and duplicate filtering passed');

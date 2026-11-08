@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const js=fs.readFileSync('calendar.js','utf8');
+const dom={getElementById:()=>({addEventListener(){},value:'',innerHTML:'',textContent:'',onclick:null,disabled:false}),addEventListener(){}};
+const storage={getItem:()=>null,setItem(){},removeItem(){}};
+const ctx={document:dom,localStorage:storage,module:{exports:{}},Date,console,fetch:async()=>({json:async()=>({configured:false})})};
+vm.runInNewContext(js,ctx);const {reconcileCalendar,prepareChangeHandoff,proposalFingerprint}=ctx.module.exports;
+const plan={id:'p1',calendarKey:'google|u1|1000',name:'Meeting',startAt:1000,endAt:2000,status:'planned'};
+const ws={schedule:[plan]};const incoming=[{uid:'u1',source:'google',title:'Meeting moved',start:3000,end:4000}];
+const proposals=reconcileCalendar(incoming,ws,'google',true,0,5000);assert.equal(proposals.length,1);assert.equal(proposals[0].type,'changed');
+const prepared=prepareChangeHandoff(proposals,ws);assert.equal(prepared.length,1);assert.equal(prepared[0].baseline,proposalFingerprint(plan));
+assert.equal(prepareChangeHandoff([{...proposals[0],newEnd:3000}],ws).length,0);
+assert.equal(reconcileCalendar([],ws,'google',false,0,5000).length,0);
+assert.equal(reconcileCalendar([],ws,'google',true,0,5000)[0].type,'missing');
+assert.equal(prepareChangeHandoff([{type:'ambiguous',planId:'p1',calendarKey:plan.calendarKey}],ws).length,0);
+const html=fs.readFileSync('index.html','utf8');assert(html.includes('calendarPlanFingerprint(plan)!==c.baseline'));assert(html.includes("plan.status='skipped'"));assert(html.includes('if(!persist())'));
+console.log('Stage 29 controlled review tests passed');

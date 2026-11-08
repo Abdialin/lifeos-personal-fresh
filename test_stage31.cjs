@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const html=fs.readFileSync('index.html','utf8');
+const extract=(name)=>{const start=html.indexOf('function '+name+'(');assert(start>=0,name);let i=html.indexOf('{',start),depth=0;for(let j=i;j<html.length;j++){if(html[j]==='{')depth++;else if(html[j]==='}'&&!--depth)return html.slice(start,j+1)}throw Error('unclosed '+name)};
+const ctx={data:{calendarAudit:[]},JSON};vm.createContext(ctx);vm.runInContext(['calendarProposalId','calendarAudit','calendarProposalResolved'].map(extract).join('\n'),ctx);
+const proposal={planId:'p1',calendarKey:'google|e1',baseline:'b1',type:'changed',newName:'Class',newStart:1000,newEnd:2000};
+const id=ctx.calendarProposalId(proposal);assert.equal(ctx.calendarProposalResolved(proposal),false);
+ctx.data.calendarAudit.push({proposalId:id,action:'rescheduled'});assert.equal(ctx.calendarProposalResolved(proposal),true);
+assert.equal(ctx.calendarProposalResolved({...proposal,newStart:3000}),false);
+assert.match(html,/const queue=pendingCalendarChanges\(\),c=queue\[index\]/);
+assert.match(html,/filter\(x=>!calendarProposalResolved\(x\)\)/);
+assert.match(html,/if\(!recordCalendarDecision\(entry\)\)/);
+console.log('Stage 31 replay recovery tests passed');

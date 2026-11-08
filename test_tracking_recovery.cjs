@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');const r=require('./personal_tracking_recovery.js');let checks=0;const test=(x)=>{x();checks++};
+const now=1_800_000_000_000, h=3600000;
+test(()=>assert.equal(r.staleSessions([{id:'a',name:'Study',status:'running',segments:[{start:now-5*h,end:null}]}],now).length,1));
+test(()=>assert.equal(r.staleSessions([{id:'a',status:'paused',segments:[{start:now-5*h,end:now-h}]}],now).length,0));
+test(()=>{let w={sessions:[{id:'a',status:'running',startAt:now-5*h,segments:[{start:now-5*h,end:null}],precision:'measured'}],events:[]};r.recoverSession(w,'a',now-h,now);assert.equal(w.sessions[0].status,'finished');assert.equal(w.sessions[0].precision,'retrospective-approximate');assert.equal(w.events[0].type,'RECOVER_FORGOTTEN_TIMER')});
+test(()=>{let w={sessions:[{id:'a',status:'running',segments:[{start:now-5*h,end:null}]}],events:[]};assert.throws(()=>r.recoverSession(w,'a',now+h,now));assert.equal(w.sessions[0].status,'running')});
+test(()=>{let s=[{id:'a'},{id:'b'}];r.attachParent(s,'b','a');assert.equal(s[1].parentId,'a');assert.throws(()=>r.attachParent(s,'a','b'))});
+test(()=>{let g=r.unloggedGaps([{segments:[{start:now,end:now+h},{start:now+h/2,end:now+2*h}]}],now,now+4*h);assert.equal(g.length,1);assert.equal(g[0].minutes,120);assert.equal(g[0].classification,'unknown')});
+test(()=>assert.equal(r.unloggedGaps([],now,now+30*60000).length,0));
+console.log('Batch G recovery tests:',checks,'passed');

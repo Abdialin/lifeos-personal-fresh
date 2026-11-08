@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict');
+const dashboard=require('./personal_weekly_dashboard.js');
+const quality=require('./personal_analytics_quality.js');
+const at=new Date(2026,10,8,12).getTime();
+const a=new Date(2026,10,7,9).getTime();
+const workspace={sessions:[{id:'a',status:'finished',precision:'measured',segments:[{start:a,end:a+3600000}]},{id:'b',status:'finished',precision:'estimated',segments:[{start:a+1800000,end:a+5400000}]}],schedule:[]};
+const result=dashboard.build(workspace,'2026-11-08',quality,at);
+assert.equal(result.days.length,7);
+assert.equal(result.recordedMs,7200000);
+assert.equal(result.uniqueMs,5400000);
+assert.equal(result.overlapMs,1800000);
+assert.equal(result.precisionMs.measured,3600000);
+assert.equal(result.precisionMs.estimated,3600000);
+assert.equal(result.measuredShare,0.5);
+assert.throws(()=>dashboard.build(workspace,'2026-02-30',quality,at));
+assert.equal(dashboard.build({sessions:[],schedule:[]},'2026-11-08',quality,at).measuredShare,null);
+console.log('Weekly dashboard: 9 assertions passed');

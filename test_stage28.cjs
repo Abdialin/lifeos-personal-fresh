@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm');
+const stub={value:'all',textContent:'',innerHTML:'',addEventListener(){},onclick:null};const elements={search:{...stub,value:''},'source-filter':{...stub},'conflict-filter':{...stub},'approval-filter':{...stub}};
+const ctx={module:{exports:{}},localStorage:{getItem:()=>null,setItem(){}},document:{getElementById:id=>elements[id]||(elements[id]={...stub}),addEventListener(){}},fetch:()=>Promise.resolve({json:()=>Promise.resolve({configured:false})}),Date,console};vm.runInNewContext(fs.readFileSync('calendar.js','utf8'),ctx);
+const {reconcileCalendar,safeReconcile}=ctx.module.exports;
+const plan={id:'p1',calendarKey:'google|abc|100',name:'Study',startAt:100,endAt:200};const ws={schedule:[plan]};const event={uid:'abc',source:'google',title:'Study',start:150,end:250};
+assert.equal(reconcileCalendar([event],ws).length,1);assert.equal(reconcileCalendar([{...event,start:100,end:200}],ws).length,0);
+assert.equal(reconcileCalendar([],ws).at(0).type,'missing');assert.equal(safeReconcile([],ws,{complete:false,source:'google'}).proposals.length,0);
+assert.equal(safeReconcile([],ws,{complete:true,source:'google',truncated:true}).proposals.length,0);
+assert.equal(safeReconcile([],ws,{complete:true,source:'google'}).proposals.length,1);
+assert.equal(reconcileCalendar([{...event,source:'ics-import'}],ws,'ics-import').length,0);
+assert.equal(plan.startAt,100);console.log('Stage 28 reconciliation safeguards passed');
