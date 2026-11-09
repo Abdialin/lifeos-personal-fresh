@@ -146,6 +146,20 @@ body[data-lifeos-view="tracking"] #activityHierarchyPanel{order:3}
 #lifeosTrackAdvanced{display:block;margin-top:14px;background:transparent;border:1px solid #425c79;color:#c5d4ea;border-radius:12px;padding:11px 14px;font:inherit;font-size:13px;min-height:44px}
 body[data-lifeos-view="tracking"] .lifeos-track-actions button{min-width:0}
 @media(max-width:750px){body[data-lifeos-view="tracking"] .layout{grid-template-columns:minmax(0,1fr)!important}body[data-lifeos-view="tracking"] .layout>div{min-width:0}}
+</style><style id="lifeos-stage33-track-focus">
+/* Stage 33: keep existing controls and listeners; only rearrange Track surfaces. */
+body[data-lifeos-view="tracking"] .layout>div>.panel:has(#quick){order:-2!important}
+body[data-lifeos-view="tracking"] .layout>div>.panel:has(#sessions){order:-1!important}
+body[data-lifeos-view="tracking"] .layout>div>.panel:has(#distractionToggle){order:2!important}
+body[data-lifeos-view="tracking"] .layout>div>.panel:has(#pastForm){order:3!important}
+body[data-lifeos-view="tracking"] .layout>div>.panel:has(#history){order:4!important}
+body[data-lifeos-view="tracking"] #trackingRecoveryPanel{order:5!important}
+body[data-lifeos-view="tracking"] .lifeos-stage33-collapsible:not(.lifeos-stage33-open)>:not(.head):not(.lifeos-stage33-toggle){display:none!important}
+body[data-lifeos-view="tracking"] .lifeos-stage33-collapsible:not(.lifeos-stage33-open)>.head{margin-bottom:0}
+.lifeos-stage33-toggle{display:none;cursor:pointer;border:1px solid #43536d;background:#20314a;color:#eef5ff;border-radius:10px;padding:9px 13px;font:inherit;font-weight:650;margin:10px 0 0}
+body[data-lifeos-view="tracking"] .lifeos-stage33-toggle{display:inline-flex;align-items:center;gap:7px}
+body[data-lifeos-view="tracking"] .lifeos-stage33-collapsible{scroll-margin-top:75px}
+@media(max-width:750px){body[data-lifeos-view="tracking"] .lifeos-track-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="pill" id="status">● Ready</div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><section id="lifeosTrackHub" class="lifeos-track-hub" aria-label="Track activity control center">
  <div class="lifeos-track-header"><div><div class="lifeos-track-kicker">TRACK · LIVE ACTIVITY</div><h2>Manage your time</h2><p>Start a session, manage timers, or review forgotten activities.</p></div><span id="lifeosTrackStatus" aria-live="polite">Ready</span></div>
  <div class="lifeos-track-stats"><div><small>Active sessions</small><strong id="lifeosTrackActive">0</strong></div><div><small>Tracked today</small><strong id="lifeosTrackTotal">00:00</strong></div><div><small>Unique time</small><strong id="lifeosTrackUnique">00:00</strong></div></div>
@@ -932,6 +946,30 @@ function setup(){
  if(quick){Array.from(quick.children).forEach((node,i)=>node.classList.toggle('lifeos-quick-extra',i>=4));}
  // Preserve all original timer and data handlers. This release changes layout only.
 }
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
+})();
+</script><script id="lifeos-stage33-track-script">
+(function(){'use strict';
+function setup(){
+ const specs=[['distractionToggle','Distraction tracker'],['pastForm','Log a past activity'],['history','Recent sessions'],['trackingRecoveryPanel','Forgotten timer recovery']];
+ for(const [id,label] of specs){
+  const target=document.getElementById(id);if(!target)continue;
+  const panel=target.classList.contains('panel')?target:target.closest('.panel');
+  if(!panel||panel.classList.contains('lifeos-stage33-collapsible'))continue;
+  panel.classList.add('lifeos-stage33-collapsible');
+  const button=document.createElement('button');button.type='button';button.className='lifeos-stage33-toggle';
+  button.setAttribute('aria-expanded','false');button.textContent='＋ Open '+label;
+  button.addEventListener('click',()=>setOpen(panel,!panel.classList.contains('lifeos-stage33-open'),button,label));
+  const head=panel.querySelector(':scope > .head');if(head)head.insertAdjacentElement('afterend',button);else panel.insertBefore(button,panel.children[1]||null);
+ }
+ // Existing Stage 31 quick actions still scroll to the original targets; expand collapsed cards first.
+ document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-track-target]');if(!b)return;
+  const target=document.getElementById(b.dataset.trackTarget);const panel=target?.closest('.lifeos-stage33-collapsible');
+  if(panel){const btn=panel.querySelector('.lifeos-stage33-toggle');if(btn&&!panel.classList.contains('lifeos-stage33-open'))btn.click();}
+ },true);
+}
+function setOpen(panel,open,button,label){panel.classList.toggle('lifeos-stage33-open',open);button.setAttribute('aria-expanded',String(open));button.textContent=(open?'− Close ':'＋ Open ')+label;}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
 })();
 </script></body></html>

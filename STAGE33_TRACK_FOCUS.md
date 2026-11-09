@@ -1,0 +1,1 @@
+Stage 33: Move Quick Start immediately after Track overview, followed by Active Sessions. Collapse distraction, past logging, recent sessions and recovery on Track only. Quick action links expand their target. Original controls, listeners and storage logic are unchanged. Visual and functional verification required after deployment.
