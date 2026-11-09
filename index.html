@@ -108,7 +108,31 @@ body[data-lifeos-view="dashboard"] .lifeos-back-to-top{display:none!important}
  #lifeosScheduleEditor .statrow{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  #lifeosScheduleEditor input[type="datetime-local"]{font-size:14px;min-width:0;width:100%}
 }
-</style></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="pill" id="status">● Ready</div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
+</style><style id="lifeos-stage31-track-style">
+#lifeosTrackHub{display:none}
+body[data-lifeos-view="tracking"] #lifeosTrackHub{display:block}
+.lifeos-track-hub{padding:20px;margin:0 0 18px;border:1px solid #354861;border-radius:22px;background:linear-gradient(145deg,#112940,#09152c);color:#edf3ff}
+.lifeos-track-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.lifeos-track-kicker{font-size:12px;color:#7de2c9;font-weight:700;letter-spacing:.05em}
+.lifeos-track-header h2{margin:6px 0;font-size:25px}
+.lifeos-track-header p{margin:0 0 16px;color:#b4c2d8;font-size:14px}
+#lifeosTrackStatus{border:1px solid #31695c;color:#7de2c9;border-radius:20px;padding:5px 10px;font-size:12px}
+.lifeos-track-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.lifeos-track-stats>div{background:#1c2b43;border:1px solid #344a68;border-radius:13px;padding:13px;min-width:0}
+.lifeos-track-stats small{display:block;color:#b4c2d8;font-size:12px}
+.lifeos-track-stats strong{display:block;font-size:22px;margin-top:6px;overflow-wrap:anywhere}
+.lifeos-track-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}
+.lifeos-track-actions button{min-height:46px;border:1px solid #43637b;border-radius:12px;background:#203550;color:#f2f6ff;font:inherit;font-weight:650;padding:10px;text-align:left}
+.lifeos-track-actions button:first-child{background:#006b55;border-color:#21866c}
+.lifeos-track-actions button:focus-visible{outline:3px solid #a8ddff}
+.lifeos-track-help{font-size:12px;color:#aabbd1;margin:14px 0 0}
+@media(max-width:480px){.lifeos-track-hub{padding:15px}.lifeos-track-header h2{font-size:21px}.lifeos-track-stats strong{font-size:19px}.lifeos-track-stats>div{padding:10px}.lifeos-track-actions button{font-size:13px}}
+</style></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="pill" id="status">● Ready</div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><section id="lifeosTrackHub" class="lifeos-track-hub" aria-label="Track activity control center">
+ <div class="lifeos-track-header"><div><div class="lifeos-track-kicker">TRACK · LIVE ACTIVITY</div><h2>Manage your time</h2><p>Start a session, manage timers, or review forgotten activities.</p></div><span id="lifeosTrackStatus" aria-live="polite">Ready</span></div>
+ <div class="lifeos-track-stats"><div><small>Active sessions</small><strong id="lifeosTrackActive">0</strong></div><div><small>Tracked today</small><strong id="lifeosTrackTotal">00:00</strong></div><div><small>Unique time</small><strong id="lifeosTrackUnique">00:00</strong></div></div>
+ <div class="lifeos-track-actions"><button type="button" data-track-target="quick">▶ Start activity</button><button type="button" data-track-target="sessions">◉ Manage timers</button><button type="button" data-track-target="trackingRecoveryPanel">↺ Review forgotten timers</button><button type="button" data-track-target="pastForm">＋ Log past activity</button><button type="button" data-track-target="history">▤ Recent sessions</button></div>
+ <p class="lifeos-track-help">Starting alongside does not stop existing timers. Use Switch on an active session to change activities. Forgotten timers are never stopped automatically.</p>
+</section><article class="today-overview" id="todayOverview" aria-label="Today's overview">
   <div class="today-welcome"><div><div class="today-eyebrow" id="todayFullDate">Today</div><h2>Your day at a glance</h2><p>See your recorded activity, priorities and next steps.</p></div><span class="today-live-dot">● Live view</span></div>
   <div class="today-stats">
     <div class="today-stat"><span>Recorded today</span><strong id="todayRecorded">—</strong><small>Includes overlapping sessions</small></div>
@@ -848,5 +872,31 @@ function setup(){
  });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
+})();
+</script><script id="lifeos-stage31-track-script">
+(function(){
+'use strict';
+function updateTrack(){
+ const count=document.getElementById('activeCount')?.textContent||'0';
+ const n=(count.match(/\d+/)||['0'])[0];
+ const a=document.getElementById('lifeosTrackActive');if(a)a.textContent=n;
+ const total=document.getElementById('tracked')?.textContent;
+ const unique=document.getElementById('uniqueTime')?.textContent;
+ if(total)document.getElementById('lifeosTrackTotal').textContent=total;
+ if(unique)document.getElementById('lifeosTrackUnique').textContent=unique;
+ const status=document.getElementById('lifeosTrackStatus');
+ if(status)status.textContent=Number(n)>0?n+' active':'Ready';
+}
+document.addEventListener('click',function(e){
+ const b=e.target.closest('[data-track-target]');if(!b)return;
+ const target=document.getElementById(b.dataset.trackTarget);
+ if(!target)return;
+ target.scrollIntoView({behavior:'smooth',block:'start'});
+ const focusable=target.matches('button,input,select')?target:target.querySelector('button,input,select');
+ if(focusable)focusable.focus({preventScroll:true});
+});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateTrack,{once:true});else updateTrack();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateTrack()});
+setInterval(()=>{if(!document.hidden)updateTrack()},3000);
 })();
 </script></body></html>
