@@ -720,45 +720,57 @@ function atomicCommit(workspace,journal,meta){
  catch(e){lastSaveFailure=e.message||String(e);syncStatus('⚠ Save failed: '+lastSaveFailure+'. Export a backup.');return false}
 }
 function recoverAtomic(){
- let raw;
- try{raw=localStorage.getItem(ATOMIC_KEY)}catch(e){atomicBlocked=true;syncStatus('⚠ Cannot access browser storage: '+e.message);return false}
- if(raw===null)return false;
- try{
-  const record=JSON.parse(raw);
-  if(!record||record.format!==1)throw new Error('Unsupported atomic record');
-  const valid=atomicRecord(record.workspace,record.journal,record.meta||{});
-  // Never overwrite a legacy workspace that has additional session records.
-  // Retain both raw keys untouched until the next explicit successful save.
-  let legacy=null;
-  try{const rawLegacy=localStorage.getItem(KEY);if(rawLegacy)legacy=validateWorkspace(JSON.parse(rawLegacy))}catch(_e){}
-  const atomicIds=new Set(valid.workspace.sessions.map(x=>x.id));
-  const legacyHasExtra=legacy&&legacy.sessions.some(x=>!atomicIds.has(x.id));
-  if(legacyHasExtra){
-   data=legacy;outbox=valid.journal;syncMeta={...valid.meta,dirty:true};
-   syncStatus('⚠ Legacy storage contains sessions absent from recovery snapshot. Preserved legacy data; export recovery before editing.');
-  }else{data=valid.workspace;outbox=valid.journal;syncMeta=valid.meta;}
-  return true;
- }catch(e){atomicBlocked=true;outboxCorrupt=true;syncMeta.dirty=true;syncStatus('SYNC BLOCKED: invalid atomic record. Export recovery data before changing anything.');return false}
+ // Read-only migration: never write to, delete, or overwrite existing storage on boot.
+ const candidates=[];
+ for(const key of [KEY,ATOMIC_KEY]){
+  try{
+   const raw=localStorage.getItem(key);if(!raw)continue;
+   const parsed=JSON.parse(raw);const w=key===ATOMIC_KEY?parsed.workspace:parsed;
+   validateWorkspace(w);
+   const sessions=Array.isArray(w.sessions)?w.sessions:[];
+   const maxTime=Math.max(0,...sessions.map(x=>Number(x.createdAt||x.startAt||0)).filter(Number.isFinite));
+   candidates.push({key,workspace:w,count:sessions.length,maxTime,record:parsed});
+  }catch(e){lastSaveFailure+=' '+key+': '+e.message;}
+ }
+ if(!candidates.length)return false;
+ // Prefer the record containing the most sessions; use latest session timestamp as tie-breaker.
+ candidates.sort((a,b)=>b.count-a.count||b.maxTime-a.maxTime||(a.key===KEY?-1:1));
+ data=candidates[0].workspace;
+ if(candidates[0].key===ATOMIC_KEY){
+  const rec=candidates[0].record;
+  if(Array.isArray(rec.journal))outbox=rec.journal;
+  if(rec.meta&&typeof rec.meta==='object')syncMeta=rec.meta;
+ }
+ return true;
 }
 const originalPersist=persist;
 persist=function(){
- if(atomicBlocked||outboxCorrupt){lastSaveFailure='Recovery data invalid';syncStatus('⚠ Save blocked. Export recovery data.');return false}
- const shouldQueue=!syncSuppressed;
- // Collapse redundant unsent snapshots only while disconnected. A complete
- // workspace snapshot includes all prior unsent edits. Do not alter the queue
- // during an active cloud sync, when the upload loop may be using its head.
- const entry=shouldQueue?{id:uid(),createdAt:now(),snapshot:JSON.parse(JSON.stringify(data))}:null;
- const next=shouldQueue?(syncReady?[...outbox,entry]:[entry]):outbox;
- const nextMeta={...syncMeta,dirty:shouldQueue?true:syncMeta.dirty};
- if(!atomicCommit(data,next,nextMeta)){
-  $('status').textContent='⚠ NOT SAVED';
-  alert('LifeOS could not save this change: '+lastSaveFailure+'. The action will be reverted. Keep browser data and export a backup.');
+ // The workspace is the canonical source of truth. Commit and read back before success.
+ // Do not require the legacy atomic journal to be writable; it can exceed mobile quota.
+ let serialized;
+ try{
+  validateWorkspace(data);
+  serialized=JSON.stringify(data);
+  localStorage.setItem(KEY,serialized);
+  if(localStorage.getItem(KEY)!==serialized)throw Error('Read-back mismatch');
+ }catch(e){
+  lastSaveFailure=e.message||String(e);
+  $('status').textContent='⚠ NOT SAVED: '+lastSaveFailure;
+  alert('LifeOS could not save this activity: '+lastSaveFailure);
   return false;
  }
- outbox=next;syncMeta=nextMeta;
- try{localStorage.setItem(KEY,JSON.stringify(data));localStorage.setItem(OUTBOX_KEY,JSON.stringify(outbox));localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta));$('status').textContent='● Saved locally'}
- catch(_e){$('status').textContent='● Saved (atomic recovery record)'}
- if(shouldQueue&&syncReady)scheduleSync(150);
+ lastSaveFailure='';
+ // Keep cloud sync metadata as best-effort mirrors; never block the local activity save.
+ if(!syncSuppressed){
+  const pending={id:uid(),createdAt:now(),snapshot:JSON.parse(serialized)};
+  outbox=syncReady?[...outbox,pending]:[pending];
+  syncMeta={...syncMeta,dirty:true};
+ }
+ try{localStorage.setItem(OUTBOX_KEY,JSON.stringify(outbox))}catch(e){lastSaveFailure='Offline queue could not be mirrored: '+e.message}
+ try{localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta))}catch(e){}
+ // Do not rewrite the large legacy atomic record: preserve it for manual recovery.
+ $('status').textContent='● Saved locally (verified)';
+ if(!syncSuppressed&&syncReady)scheduleSync(150);
  return true;
 };
 // Protect the primary timer actions from showing unsaved changes as completed.
@@ -1058,6 +1070,36 @@ function setup(){
 }
 function setOpen(panel,open,button,label){panel.classList.toggle('lifeos-stage33-open',open);button.setAttribute('aria-expanded',String(open));button.textContent=(open?'− Close ':'＋ Open ')+label;}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
+})();
+</script>
+<script id="lifeos-stage34-final-independent-recovery">
+(function(){'use strict';
+ const KEYS=['lifeos-live-v1','lifeos-v4-stage21-atomic'];
+ const journal='lifeos-v4-stage16-outbox';
+ function details(){return document.getElementById('journalDetails')}
+ function show(message){const el=details();if(el){el.style.whiteSpace='pre-wrap';el.textContent=message;}else alert(message)}
+ function inspect(){
+  const report={checkedAt:new Date().toISOString(),keys:{}};
+  for(const key of KEYS){try{const raw=localStorage.getItem(key);let count=null;
+   if(raw){const obj=JSON.parse(raw),w=key===KEYS[1]?obj.workspace:obj;count=Array.isArray(w&&w.sessions)?w.sessions.length:null}
+   report.keys[key]={present:raw!==null,characters:raw?raw.length:0,sessions:count};
+  }catch(e){report.keys[key]={error:String(e)}}}
+  for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&/lifeos/i.test(key)&&!report.keys[key]){try{report.keys[key]={characters:(localStorage.getItem(key)||'').length}}catch(e){report.keys[key]={error:String(e)}}}}
+  show(JSON.stringify(report,null,2));
+ }
+ function exportData(){
+  const raw={format:'lifeos-stage34-final-readonly-recovery',exportedAt:new Date().toISOString(),keys:{}};
+  for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&/lifeos/i.test(key)){try{raw.keys[key]=localStorage.getItem(key)}catch(e){raw.keys[key]='READ ERROR: '+e.message}}}
+  const blob=new Blob([JSON.stringify(raw,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='lifeos-recovery-full-'+Date.now()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  show('Recovery download requested. Check Samsung Internet Downloads. File size: '+blob.size+' bytes.');
+ }
+ // Capture handlers work even if the main app throws before attaching its own handlers.
+ document.addEventListener('click',function(e){
+  const button=e.target.closest&&e.target.closest('#inspectJournal,#exportRecovery');if(!button)return;
+  e.preventDefault();e.stopImmediatePropagation();
+  try{button.id==='inspectJournal'?inspect():exportData()}catch(err){show('Recovery tool error: '+(err.message||err))}
+ },true);
 })();
 </script>
 <script id="lifeos-timer-reliability-fix">
