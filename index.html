@@ -376,7 +376,10 @@ function journalDiagnostic(){
  const dates=Array.isArray(entries)?entries.map(x=>Number.isFinite(x&&x.createdAt)?x.createdAt:null).filter(x=>x!==null):[];
  return {status:outboxCorrupt?'blocked':problem?'unreadable':syncMeta.dirty?'pending':'clean',pending,oldest:dates.length?new Date(Math.min(...dates)).toISOString():null,newest:dates.length?new Date(Math.max(...dates)).toISOString():null,revision:syncMeta.revision,dirty:syncMeta.dirty,corrupt:outboxCorrupt,problem};
 }
-function inspectJournal(){const result=journalDiagnostic();let integrity=null;try{integrity=LifeOSOfflineIntegrity.inspect(data,outbox,syncMeta)}catch(e){integrity={requiresReview:true,issues:['integrity-check-unavailable'],detail:String(e.message||e)}}$('journalDetails').textContent=JSON.stringify({journal:result,integrity},null,2)+'\nRead-only review: no records were changed. Review warnings before reconnecting.';return {journal:result,integrity}}
+function inspectJournal(){const result=journalDiagnostic();let integrity=null;try{integrity=LifeOSOfflineIntegrity.inspect(data,outbox,syncMeta)}catch(e){integrity={requiresReview:true,issues:['integrity-check-unavailable'],detail:String(e.message||e)}}
+ const sizes={};for(const key of [KEY,OUTBOX_KEY,SYNC_META_KEY,'lifeos-v4-stage21-atomic']){try{sizes[key]=(localStorage.getItem(key)||'').length}catch(e){sizes[key]='read error: '+e.message}}
+ const report={journal:result,integrity,storageCharacters:sizes,activeSessions:data.sessions.filter(s=>s.status!=='finished').length,allSessions:data.sessions.length,lastSaveFailure:lastSaveFailure||null};
+ $('journalDetails').textContent=JSON.stringify(report,null,2)+'\nRead-only inspection; nothing changed.';return report}
 function recoveryBundle(){
  const read=(key)=>{try{return localStorage.getItem(key)}catch(e){return 'READ ERROR: '+e.message}};
  return {format:'lifeos-recovery-v2',exportedAt:new Date().toISOString(),workspace:data,
@@ -708,7 +711,12 @@ function atomicRecord(workspace,journal,meta){
 }
 function atomicCommit(workspace,journal,meta){
  if(atomicBlocked||outboxCorrupt){lastSaveFailure='Storage is blocked by an invalid recovery record';return false}
- try{localStorage.setItem(ATOMIC_KEY,JSON.stringify(atomicRecord(workspace,journal,meta)));lastSaveFailure='';return true}
+ try{
+  const serialized=JSON.stringify(atomicRecord(workspace,journal,meta));
+  localStorage.setItem(ATOMIC_KEY,serialized);
+  if(localStorage.getItem(ATOMIC_KEY)!==serialized)throw new Error('Storage read-back did not match');
+  lastSaveFailure='';return true;
+ }
  catch(e){lastSaveFailure=e.message||String(e);syncStatus('⚠ Save failed: '+lastSaveFailure+'. Export a backup.');return false}
 }
 function recoverAtomic(){
@@ -719,8 +727,16 @@ function recoverAtomic(){
   const record=JSON.parse(raw);
   if(!record||record.format!==1)throw new Error('Unsupported atomic record');
   const valid=atomicRecord(record.workspace,record.journal,record.meta||{});
-  data=valid.workspace;outbox=valid.journal;syncMeta=valid.meta;
-  try{localStorage.setItem(KEY,JSON.stringify(data));localStorage.setItem(OUTBOX_KEY,JSON.stringify(outbox));localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta))}catch(_e){}
+  // Never overwrite a legacy workspace that has additional session records.
+  // Retain both raw keys untouched until the next explicit successful save.
+  let legacy=null;
+  try{const rawLegacy=localStorage.getItem(KEY);if(rawLegacy)legacy=validateWorkspace(JSON.parse(rawLegacy))}catch(_e){}
+  const atomicIds=new Set(valid.workspace.sessions.map(x=>x.id));
+  const legacyHasExtra=legacy&&legacy.sessions.some(x=>!atomicIds.has(x.id));
+  if(legacyHasExtra){
+   data=legacy;outbox=valid.journal;syncMeta={...valid.meta,dirty:true};
+   syncStatus('⚠ Legacy storage contains sessions absent from recovery snapshot. Preserved legacy data; export recovery before editing.');
+  }else{data=valid.workspace;outbox=valid.journal;syncMeta=valid.meta;}
   return true;
  }catch(e){atomicBlocked=true;outboxCorrupt=true;syncMeta.dirty=true;syncStatus('SYNC BLOCKED: invalid atomic record. Export recovery data before changing anything.');return false}
 }
@@ -871,9 +887,10 @@ function readCalendarHandoff(){try{const raw=localStorage.getItem(CAL_HANDOFF);i
 function showCalendarHandoff(){const x=readCalendarHandoff();if(x)$('calendarHandoffStatus').textContent=x.candidates.length+' calendar candidates waiting for review.';else if(!localStorage.getItem(CAL_HANDOFF))$('calendarHandoffStatus').textContent='No pending calendar transfer.'}
 $('calendarHandoffApply').onclick=()=>{const x=readCalendarHandoff();if(!x){alert('No valid transfer to import.');return}if(outboxCorrupt||atomicBlocked){alert('LifeOS recovery or sync journal is blocked. Resolve that before importing.');return}ensureModules();const existing=new Set(data.schedule.filter(p=>typeof p.calendarKey==='string').map(p=>p.calendarKey));const incoming=[];for(const e of x.candidates){if(!e||typeof e.key!=='string'||e.key.length>500||typeof e.name!=='string'||!e.name.trim()||e.name.length>80||!Number.isSafeInteger(e.startAt)||!Number.isSafeInteger(e.endAt)||e.endAt<=e.startAt||e.endAt-e.startAt>366*86400000||!['google','ics-import'].includes(e.source)) {alert('Transfer contains invalid candidate data; no changes made.');return}if(existing.has(e.key))continue;existing.add(e.key);incoming.push(e)}if(!incoming.length){localStorage.removeItem(CAL_HANDOFF);showCalendarHandoff();alert('All candidates are already in the schedule.');return}const overlaps=incoming.filter(e=>data.schedule.some(p=>p.status!=='skipped'&&e.startAt<p.endAt&&p.startAt<e.endAt));const message=`Add ${incoming.length} calendar candidates to your LifeOS schedule? ${overlaps.length} overlap existing plans.\n\nThis does not change tracked activities or Google Calendar.`;if(!confirm(message))return;const created=now();const added=incoming.map(e=>({id:uid(),name:e.name,startAt:e.startAt,endAt:e.endAt,notes:'Imported calendar planning candidate ('+e.source+')',reminder:false,status:'planned',sessionId:null,createdAt:created,calendarKey:e.key,calendarSource:e.source}));data.schedule.push(...added);if(!persist()){data.schedule.splice(data.schedule.length-added.length,added.length);return}localStorage.removeItem(CAL_HANDOFF);render();renderIdealRoutines();showCalendarHandoff();alert('Added '+added.length+' plans. Existing activity tracking was not changed.')};
 $('calendarHandoffDiscard').onclick=()=>{if(!localStorage.getItem(CAL_HANDOFF))return;if(confirm('Discard pending calendar candidates?')){localStorage.removeItem(CAL_HANDOFF);showCalendarHandoff()}};
-if(!recoverAtomic()&&!atomicBlocked)load();ensureModules();scheduleCalendarAuditUpload(2000);render();renderIdealRoutines();showCalendarHandoff();if(outboxCorrupt)syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');$('pastStart').value=toInput(now()-3600000);$('pastEnd').value=toInput(now());setInterval(tick,1000);setInterval(renderAnalytics,30000);
-$('inspectJournal').addEventListener('click',inspectJournal);
+// Bind recovery actions BEFORE any startup render can throw. Always provide visible errors.
+$('inspectJournal').addEventListener('click',()=>{try{inspectJournal()}catch(e){$('journalDetails').textContent='Inspection failed: '+(e.message||e)}});
 $('exportRecovery').addEventListener('click',exportRecovery);
+if(!recoverAtomic()&&!atomicBlocked)load();ensureModules();scheduleCalendarAuditUpload(2000);render();renderIdealRoutines();showCalendarHandoff();if(outboxCorrupt)syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');$('pastStart').value=toInput(now()-3600000);$('pastEnd').value=toInput(now());setInterval(tick,1000);setInterval(renderAnalytics,30000);
 $('compareServer').addEventListener('click',compareServer);
 $('exportConflict').addEventListener('click',exportConflict);
 $('adoptServerReviewed').addEventListener('click',adoptReviewedServer);
