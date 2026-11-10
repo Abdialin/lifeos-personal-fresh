@@ -1370,4 +1370,49 @@ document.addEventListener('lifeos:updated',render);window.addEventListener('focu
 render();
 })();
 </script>
-</body></html>
+<style id="lifeos-stage48-style">
+#s48Experience{margin:18px 0 22px;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(250px,.8fr);gap:14px;color:inherit}
+#s48Experience .s48-panel{min-width:0;border:1px solid rgba(160,165,210,.23);background:linear-gradient(145deg,rgba(118,95,221,.13),rgba(33,51,93,.09));border-radius:22px;padding:18px}
+#s48Experience .s48-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:13px}
+#s48Experience h3{font-size:17px;letter-spacing:-.02em;margin:0}#s48Experience .s48-muted{font-size:12px;opacity:.72;line-height:1.5;margin:5px 0}
+#s48Experience .s48-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
+#s48Experience .s48-day{border:1px solid rgba(150,160,200,.2);border-radius:14px;background:rgba(255,255,255,.045);color:inherit;min-width:0;min-height:95px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:5px;cursor:pointer}
+#s48Experience .s48-day[aria-pressed=true]{border-color:#a28bff;background:rgba(139,108,255,.2);box-shadow:inset 0 0 0 1px rgba(139,108,255,.4)}
+#s48Experience .s48-day small{font-size:11px;opacity:.75}#s48Experience .s48-day strong{font-size:17px}#s48Experience .s48-day em{font-size:10px;font-style:normal;opacity:.8}
+#s48Experience .s48-dot{height:5px;width:24px;max-width:70%;border-radius:9px;background:#7183a7}#s48Experience .s48-dot.has{background:#8f79f2}
+#s48Experience .s48-details{margin-top:13px;display:grid;gap:8px}#s48Experience .s48-event{display:flex;gap:12px;align-items:flex-start;padding:11px 12px;border:1px solid rgba(160,165,210,.17);border-radius:13px;background:rgba(255,255,255,.04)}
+#s48Experience .s48-time{font-size:12px;font-weight:750;min-width:80px;opacity:.8}#s48Experience .s48-event b{font-size:13px;display:block;overflow-wrap:anywhere}#s48Experience .s48-event small{font-size:11px;opacity:.7}
+#s48Experience .s48-actions{display:flex;gap:8px;flex-wrap:wrap}#s48Experience .s48-btn{background:rgba(142,111,243,.16);color:inherit;border:1px solid rgba(160,140,235,.35);border-radius:12px;padding:9px 12px;min-height:40px;cursor:pointer;font-size:12px;font-weight:700}
+#s48Experience .s48-ring{--p:0%;width:118px;height:118px;border-radius:50%;display:grid;place-items:center;margin:12px auto;background:conic-gradient(#8d7af2 var(--p),rgba(143,151,180,.17) 0)}
+#s48Experience .s48-ring-inner{width:94px;height:94px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:var(--viz-card,#1b2237)}#s48Experience .s48-ring-inner strong{font-size:24px}#s48Experience .s48-ring-inner small{font-size:10px;opacity:.75}
+#s48Experience .s48-mini{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(160,165,210,.15);font-size:12px}#s48Experience .s48-mini:last-child{border:0}#s48Experience .s48-mini b{font-size:13px}
+#s48Experience button:focus-visible{outline:3px solid #b2a2ff;outline-offset:2px}
+@media(max-width:750px){#s48Experience{grid-template-columns:1fr}#s48Experience .s48-panel{padding:14px}#s48Experience .s48-day{min-height:82px;padding:7px 2px}#s48Experience .s48-day strong{font-size:15px}#s48Experience .s48-day em{font-size:9px}}
+@media(max-width:350px){#s48Experience .s48-days{gap:3px}#s48Experience .s48-day{border-radius:10px}}
+</style><script id="lifeos-stage48-experience-script">
+(function(){'use strict';
+const host=document.getElementById('s42Dashboard');if(!host)return;
+const root=document.createElement('section');root.id='s48Experience';root.setAttribute('aria-label','Daily experience and seven-day preview');
+root.innerHTML='<div class="s48-panel"><div class="s48-heading"><div><h3>✦ Your next seven days</h3><p class="s48-muted">Select a day to explore your upcoming commitments</p></div><div class="s48-actions"><button type="button" class="s48-btn" id="s48Today">Today</button><button type="button" class="s48-btn" id="s48Calendar">Full calendar →</button></div></div><div class="s48-days" id="s48Days" role="group" aria-label="Choose a day"></div><div class="s48-details" id="s48Details" aria-live="polite"></div></div><div class="s48-panel"><div class="s48-heading"><div><h3>◉ Daily snapshot</h3><p class="s48-muted">Scheduled time · not completed time</p></div></div><div class="s48-ring" id="s48Ring"><div class="s48-ring-inner"><strong id="s48Hours">—</strong><small>planned hours</small></div></div><div class="s48-mini"><span>Scheduled activities</span><b id="s48Count">—</b></div><div class="s48-mini"><span>Next activity</span><b id="s48Next">—</b></div><div class="s48-mini"><span>Weekly goals</span><b id="s48Goals">—</b></div><p class="s48-muted">A snapshot of existing plans. Unlogged time is not automatically free time.</p></div>';
+const stats=host.querySelector('.s42-stats');if(stats)stats.insertAdjacentElement('afterend',root);else host.appendChild(root);
+const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dayKey=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+const startOfDay=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+const nowDay=startOfDay(new Date());let selected=dayKey(nowDay);
+function getPlans(){try{const plans=typeof data!=='undefined'&&Array.isArray(data.schedule)?data.schedule:[];return plans.map(p=>{const a=new Date(p.startAt??p.start??p.startTime??p.from),b=new Date(p.endAt??p.end??p.endTime??p.to);return {...p,_a:a,_b:b}}).filter(p=>Number.isFinite(p._a.getTime())&&Number.isFinite(p._b.getTime())&&p._b>p._a)}catch(e){return []}}
+function eventsFor(date,plans){const d=startOfDay(date),end=new Date(d.getTime()+86400000);return plans.filter(p=>p._a<end&&p._b>d).sort((a,b)=>a._a-b._a)}
+function render(){try{const plans=getPlans(),days=[];for(let i=0;i<7;i++){const d=new Date(nowDay);d.setDate(d.getDate()+i);days.push(d)}if(!days.some(d=>dayKey(d)===selected))selected=dayKey(nowDay);
+$('s48Days').innerHTML=days.map(d=>{const k=dayKey(d),count=eventsFor(d,plans).length;return '<button type="button" class="s48-day" data-day="'+k+'" aria-pressed="'+(selected===k)+'"><small>'+esc(d.toLocaleDateString(undefined,{weekday:'short'}))+'</small><strong>'+d.getDate()+'</strong><span class="s48-dot '+(count?'has':'')+'"></span><em>'+count+' plans</em></button>'}).join('');
+const chosen=days.find(d=>dayKey(d)===selected)||days[0],ev=eventsFor(chosen,plans),fmt=d=>d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+$('s48Details').innerHTML=ev.length?ev.slice(0,5).map(p=>'<div class="s48-event"><span class="s48-time">'+fmt(p._a)+'–'+fmt(p._b)+'</span><div><b>'+esc(p.name||p.title||p.category||'Planned activity')+'</b><small>'+esc(p.category||'Scheduled')+(dayKey(p._a)!==dayKey(p._b)?' · Overnight':'')+'</small></div></div>').join('')+(ev.length>5?'<p class="s48-muted">+'+(ev.length-5)+' more activities in the calendar</p>':''):'<p class="s48-muted">No planned activities available for this day.</p>';
+const today=eventsFor(nowDay,plans);const start=nowDay.getTime(),end=start+86400000;const intervals=today.map(p=>[Math.max(start,p._a.getTime()),Math.min(end,p._b.getTime())]).sort((a,b)=>a[0]-b[0]);let total=0,finish=start;for(const [a,b] of intervals){if(b>finish){total+=b-Math.max(a,finish);finish=b}}
+const hours=total/3600000;$('s48Hours').textContent=hours.toFixed(1)+'h';$('s48Ring').style.setProperty('--p',Math.min(100,hours/24*100)+'%');$('s48Count').textContent=String(today.length);
+const next=plans.filter(p=>p._b>new Date()).sort((a,b)=>a._a-b._a)[0];$('s48Next').textContent=next?fmt(next._a):'None scheduled';
+const goalCount=typeof data!=='undefined'&&Array.isArray(data.goals)?data.goals.length:0;$('s48Goals').textContent=String(goalCount);
+}catch(e){$('s48Details').textContent='Daily preview is temporarily unavailable. Your existing dashboard remains accessible.'}}
+$('s48Days').addEventListener('click',e=>{const btn=e.target.closest('button[data-day]');if(btn){selected=btn.dataset.day;render()}});
+$('s48Today').addEventListener('click',()=>{selected=dayKey(nowDay);render()});
+$('s48Calendar').addEventListener('click',()=>{const nav=document.querySelector('#lifeosNavigation [data-view="schedule"]');if(nav)nav.click();const calendar=document.getElementById('s41Calendar')||document.querySelector('[id*="Calendar"]');if(calendar)calendar.scrollIntoView({behavior:'smooth',block:'start'})});
+window.addEventListener('focus',render);document.addEventListener('lifeos:updated',render);render();
+})();
+</script></body></html>
