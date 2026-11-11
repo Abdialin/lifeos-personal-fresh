@@ -78,6 +78,27 @@ class BrowserSmoke(unittest.TestCase):
         toggle.click()
         self.assertEqual(page.evaluate('document.documentElement.dataset.lifeosTheme'), before)
 
+    def test_all_sections_and_advanced_controls(self):
+        page = self.page
+        tabs = ['dashboard', 'tracking', 'schedule', 'goals', 'analytics', 'life']
+        for tab in tabs:
+            page.locator(f'#lifeosNavigation button[data-view="{tab}"]').click()
+            page.wait_for_function('(v) => document.body.dataset.lifeosView === v', arg=tab)
+            self.assertTrue(page.locator('#lifeosViewIntro').is_visible())
+            self.assertNotEqual(page.locator('#lifeosViewIntro').inner_text().strip(), '')
+        page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+        recovery = page.locator('#trackingRecoveryPanel')
+        self.assertTrue(recovery.is_visible())
+        toggle = recovery.locator('.lo-advanced-toggle')
+        self.assertTrue(toggle.is_visible())
+        self.assertEqual(toggle.get_attribute('aria-expanded'), 'false')
+        self.assertFalse(recovery.locator('#reviewForgotten').is_visible())
+        toggle.click()
+        self.assertEqual(toggle.get_attribute('aria-expanded'), 'true')
+        self.assertTrue(recovery.locator('#reviewForgotten').is_visible())
+        toggle.click()
+        self.assertFalse(recovery.locator('#reviewForgotten').is_visible())
+
     def test_no_runtime_errors_and_mobile_overflow(self):
         self.assertEqual([], self.failed_assets)
         self.assertEqual([], self.errors)
