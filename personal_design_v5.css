@@ -387,3 +387,30 @@ body[data-lifeos-view="schedule"] #v4Plan>.v4-card:first-child{grid-column:1/-1}
  .v4-section .v4-insight-detail{padding:13px;border-radius:14px}
 }
 @media(prefers-reduced-motion:reduce){.v4-section .v4-chart-day{transition:none!important}}
+
+/* V6.4 — plan versus reality weekday comparison */
+.v4-section .v6-plan-week{align-items:stretch;gap:7px}
+.v4-section .v6-plan-day{appearance:none;background:transparent;border:1px solid transparent;border-radius:12px;color:var(--lo-muted);cursor:pointer;padding:8px 3px;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px}
+.v4-section .v6-plan-day:hover{background:var(--lo-surface-2)}
+.v4-section .v6-plan-day[aria-pressed="true"]{border-color:var(--lo-accent);background:var(--lo-accent-dark);color:var(--lo-text)}
+.v4-section .v6-plan-day:focus-visible{outline:3px solid var(--lo-accent)!important;outline-offset:2px}
+.v4-section .v6-plan-day .v5-week-track{width:min(100%,54px)}
+.v4-section .v6-plan-day span{font-size:11px;font-weight:700}
+.v4-section .v6-plan-details{margin-top:16px;border:1px solid var(--lo-border);border-radius:16px;padding:16px;background:var(--lo-surface-2)}
+.v4-section .v6-plan-detail-head{display:flex;align-items:center;justify-content:space-between;gap:6px 12px;flex-wrap:wrap;margin-bottom:14px}
+.v4-section .v6-plan-detail-head strong{font-size:15px;color:var(--lo-text)}
+.v4-section .v6-plan-detail-head span{font-size:11px;color:var(--lo-muted)}
+.v4-section .v6-plan-details .v4-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.v4-section .v6-plan-details .v4-metrics>div{padding:11px}
+.v4-section .v6-plan-details .v4-metrics strong{font-size:clamp(18px,2.2vw,25px)}
+.v4-section .v6-plan-details .v4-muted{margin-bottom:0}
+@media(max-width:750px){
+ .v4-section .v6-plan-week{gap:3px}
+ .v4-section .v6-plan-day{padding:7px 2px}
+ .v4-section .v6-plan-day .v5-week-track{width:100%}
+ .v4-section .v6-plan-details{padding:12px}
+ .v4-section .v6-plan-details .v4-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .v4-section .v6-plan-details .v4-metrics>div{padding:9px 6px}
+ .v4-section .v6-plan-details .v4-metrics strong{font-size:17px}
+ .v4-section .v6-plan-details .v4-metrics span{font-size:10px}
+}
