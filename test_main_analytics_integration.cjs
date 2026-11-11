@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const html=fs.readFileSync('index.html','utf8');
+const engine=require('./lifeos_unified_analytics.js');
+for(const name of ['intervalMetrics','analyticsIntervals','analyticsMetrics'])assert.equal((html.match(new RegExp('function '+name+'\\(','g'))||[]).length,1,name+' must exist once');
+assert.match(html,/function intervalMetrics\(t=now\(\)\).*?LifeOSUnifiedAnalytics\.summarize/);
+assert.match(html,/function analyticsIntervals\(start,end,at=now\(\)\).*?if\(at<=start\)return \[\]/);
+assert.match(html,/function analyticsMetrics\(intervals\).*?LifeOSUnifiedAnalytics\.unionDuration/);
+assert.match(html,/id="personalProgressSummary"/);
+const t=Date.now(),h=3600000;
+const m=engine.summarize({sessions:[{id:'a',name:'A',status:'finished',segments:[{start:t-2*h,end:t}]},{id:'b',name:'B',status:'running',segments:[{start:t-h,end:null}]}]},{start:t-3*h,end:t,now:t});
+assert.equal(m.summedRecordedMs,3*h);assert.equal(m.uniqueRecordedMs,2*h);assert.equal(m.overlapRecordedMs,h);
+console.log('Today + Activity Analytics integration checks PASS');
