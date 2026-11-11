@@ -1,4 +1,4 @@
-// Ensure every local JavaScript reference is served by the Python static-asset route.
+// Ensure every local JavaScript and stylesheet reference is served by the Python static-asset route.
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
@@ -10,7 +10,8 @@ const allowed=new Set([...match[1].matchAll(/'([^']+)'/g)].map(m=>m[1]));
 let checked=0;
 for(const page of ['index.html','calendar.html']){
  const html=fs.readFileSync(path.join(root,page),'utf8');
- for(const m of html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi)){
+ const resources=[...html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi),...html.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["']/gi)];
+ for(const m of resources){
   const src=m[1];if(/^(https?:)?\/\//i.test(src))continue;
   const asset=src.split(/[?#]/)[0].replace(/^\//,'');
   assert.ok(!asset.includes('..'),'Unsafe script path: '+src);
@@ -20,5 +21,6 @@ for(const page of ['index.html','calendar.html']){
  }
 }
 assert.ok(checked>0,'No local scripts detected');
-for(const essential of ['lifeos_unified_analytics.js','personal_dashboard_live.js','personal_visual_intelligence_v4.js'])assert.ok(allowed.has(essential),'Critical script not allowlisted: '+essential);
-console.log('Static asset route regression PASS ('+checked+' script references checked)');
+for(const essential of ['lifeos_unified_analytics.js','personal_dashboard_live.js','personal_visual_intelligence_v4.js','personal_visual_experience_v5.js','personal_design_v5.css'])assert.ok(allowed.has(essential),'Critical script not allowlisted: '+essential);
+assert.match(server,/text\/css; charset=utf-8/,'CSS must be served with text/css MIME type');
+console.log('Static asset route regression PASS ('+checked+' asset references checked)');
