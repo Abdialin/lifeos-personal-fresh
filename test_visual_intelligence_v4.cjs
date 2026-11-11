@@ -30,4 +30,8 @@ assert.match(visual,/Recorded during planned time/,'Plan-reality alignment must 
 assert.match(visual,/Overlapping planned hours/,'Plan overlaps must be visible');
 assert.match(visual,/planner\.build\(\{routines:ws\.idealRoutines\|\|\[\]/,'Ideal proposals should use the existing approval-only planner');
 assert.match(visual,/All require your approval in Plan/,'No visual proposal should imply automatic approval');
+assert.match(visual,/data-v4-review-ideal/,'Ideal cards must provide a review action');
+assert.match(visual,/button\.click\(\)/,'Ideal review must delegate to existing approval workflow');
+assert.match(html,/const fresh=window\.LifeOSIdealPlanning\.review\(\[proposal\],data\.schedule\|\|\[\]\)\[0\]/,'Approval must recalculate conflicts against current schedule');
+assert.match(html,/LifeOSPersonalPlanner\.approve\(/,'Approval must use guarded planner method');
 console.log('V4 visual integration PASS');
