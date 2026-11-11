@@ -165,6 +165,51 @@ function enhanceViews(){
   togglePlanForm(false);
  }
 }
-function start(){init();enhanceViews();}
+/* V11: read-only storage health visibility. Never repairs, replaces or writes activity data. */
+function initStorageHealth(){
+ const active=document.getElementById('trackActivePanel');
+ if(!active||document.getElementById('loStorageHealth'))return;
+ const indicator=document.createElement('div');indicator.id='loStorageHealth';
+ indicator.className='lo-storage-health';indicator.setAttribute('role','status');
+ indicator.setAttribute('aria-live','off');
+ indicator.innerHTML='<strong>Storage status</strong><span class="lo-storage-health-state">Checking this device…</span><small>Local data stays on this device unless private cloud sync is connected.</small>';
+ active.insertAdjacentElement('afterend',indicator);
+ const status=indicator.querySelector('.lo-storage-health-state');
+ const detail=indicator.querySelector('small');
+ function inspect(){
+  if(document.body.dataset.lifeosView!=='tracking')return;
+  try{
+   const raw=localStorage.getItem('lifeos-v4-stage21-atomic');
+   const journalRaw=localStorage.getItem('lifeos-v4-stage11-outbox');
+   const syncRaw=localStorage.getItem('lifeos-v4-sync-meta');
+   const legacy=localStorage.getItem('lifeos-live-v1');
+   const record=raw===null?null:JSON.parse(raw);
+   const valid=record&&record.format===1&&record.workspace?.version===1&&Array.isArray(record.workspace.sessions)&&Array.isArray(record.journal)&&record.meta&&typeof record.meta==='object';
+   if(raw!==null&&!valid)throw new Error('Recovery record needs review');
+   const queue=valid?record.journal:(journalRaw===null?[]:JSON.parse(journalRaw));
+   if(!Array.isArray(queue))throw new Error('Offline journal needs review');
+   const meta=valid?record.meta:(syncRaw?JSON.parse(syncRaw):{});
+   const pending=queue.length;
+   const hasLocal=!!valid||!!legacy;
+   const revision=Number.isInteger(meta?.revision)?meta.revision:null;
+   const hasSyncMessage=(document.getElementById('syncStatus')?.textContent||'');
+   const connected=/^Synced to server|^Loaded from server/.test(hasSyncMessage)&&pending===0;
+   indicator.dataset.health='ok';
+   status.textContent=!hasLocal?'No stored sessions yet':connected?'Synced server copy available':pending?'Saved on device · '+pending+' change'+(pending===1?'':'s')+' not confirmed on server':'Saved on device';
+   detail.textContent=hasLocal?(revision===null?'Browser storage confirmed · cloud sync not verified':'Server revision '+revision+' last acknowledged · current data kept locally'):'Activity history will be stored here when you start tracking.';
+  }catch(_){
+   indicator.dataset.health='warning';
+   status.textContent='Storage needs attention';
+   detail.textContent='The saved record could not be inspected. Do not clear browser data. Review recovery options in Track.';
+  }
+ }
+ document.getElementById('lifeosNavigation')?.addEventListener('click',()=>setTimeout(inspect,80));
+ window.addEventListener('focus',inspect);
+ window.addEventListener('storage',inspect);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)inspect()});
+ setInterval(()=>{if(!document.hidden)inspect()},15000);
+ setTimeout(inspect,70);
+}
+function start(){init();enhanceViews();initStorageHealth();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
