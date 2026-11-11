@@ -139,6 +139,24 @@ class BrowserSmoke(unittest.TestCase):
               delete window.__lifeosOriginalRead;
             }""")
 
+    def test_calendar_today_shortcut_and_selected_date(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+        page.locator('#v4Plan').wait_for(state='visible', timeout=6000)
+        selected = page.locator('#v4Plan [data-v4-day][aria-pressed="true"]')
+        self.assertEqual(selected.count(), 1)
+        first_date = selected.get_attribute('data-v4-day')
+        page.locator('#v4Plan [data-v4-month="1"]').click()
+        page.wait_for_function('(previous) => document.querySelector("#v4Plan [data-v4-day][aria-pressed=true]")?.dataset.v4Day !== previous', arg=first_date)
+        page.locator('#v4Plan [data-v4-today]').click()
+        self.assertEqual(page.locator('#v4Plan [data-v4-day][aria-pressed="true"]').get_attribute('data-v4-day'), first_date)
+        self.assertTrue(page.locator('#v4Plan [data-v4-today]').is_focused())
+        next_date = page.locator('#v4Plan [data-v4-day]').nth(1)
+        key = next_date.get_attribute('data-v4-day')
+        next_date.click()
+        self.assertEqual(page.locator('#v4Plan [data-v4-day][aria-pressed="true"]').get_attribute('data-v4-day'), key)
+        self.assertTrue(page.locator('#v4Plan [data-v4-day][aria-pressed="true"]').is_focused())
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
