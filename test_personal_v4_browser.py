@@ -399,6 +399,44 @@ class BrowserSmoke(unittest.TestCase):
         self.assertEqual(page.locator('#lifeosNavigation button[data-view="tracking"]').get_attribute('aria-current'),'page')
         self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
 
+    def test_local_activity_survives_refresh_with_atomic_recovery_record(self):
+        """Use an isolated browser context; never access the user's real activities."""
+        context = self.browser.new_context(viewport={'width':390,'height':844})
+        try:
+            page = context.new_page()
+            url = f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html'
+            page.goto(url,wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+            page.locator('#loStorageHealth').wait_for(state='visible',timeout=6000)
+            page.locator('#customName').fill('Isolated persistence smoke')
+            page.locator('#startCustom').click()
+            page.locator('#sessions .session').first.wait_for(state='visible',timeout=4000)
+            page.locator('#sessions [data-act="finish"]').first.click()
+            page.wait_for_function("""() => {
+                const raw=localStorage.getItem('lifeos-v4-stage21-atomic');
+                if(!raw)return false;
+                const saved=JSON.parse(raw);
+                return saved.workspace?.sessions?.some(x=>x.name==='Isolated persistence smoke'&&x.status==='finished');
+            }""")
+            saved=page.evaluate("""() => {
+                const item=JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'));
+                return {id:item.workspace.sessions.find(x=>x.name==='Isolated persistence smoke').id,
+                        journal:item.journal.length,format:item.format};
+            }""")
+            self.assertEqual(saved['format'],1)
+            self.assertGreaterEqual(saved['journal'],1)
+            page.reload(wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+            page.locator('#trackHistoryPanel').wait_for(state='visible',timeout=6000)
+            self.assertIn('Isolated persistence smoke',page.locator('#history').inner_text())
+            current=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic')).workspace.sessions.find(x=>x.name==='Isolated persistence smoke')""")
+            self.assertEqual(current['id'],saved['id'])
+            self.assertEqual(current['status'],'finished')
+            self.assertTrue(page.locator('#loStorageHealth').is_visible())
+            self.assertIn('Saved on device',page.locator('#loStorageHealth').inner_text())
+        finally:
+            context.close()
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
