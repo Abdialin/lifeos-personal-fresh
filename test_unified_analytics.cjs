@@ -11,4 +11,8 @@ assert.equal(x.summedRecordedMs,2*h);
 x=A.summarize({sessions:[{segments:[]}]},{start:0,end:4*h,now});assert.equal(x.summedRecordedMs,0);
 x=A.summarize({schedule:[{startAt:0,endAt:2*h}]},{start:0,end:4*h,now});assert.equal(x.summedPlannedMs,2*h);assert.equal(x.summedRecordedMs,0);
 const day=A.localDayBounds(2026,11,11);assert.ok(day.end>day.start);
+x=A.summarize({sessions:[{status:'running',startAt:7*h}]},{start:6*h,end:11*h,now});assert.equal(x.summedRecordedMs,3*h);
+x=A.summarize({sessions:[{status:'finished',segments:[{start:8*h,end:12*h}]}]},{start:0,end:13*h,now});assert.equal(x.summedRecordedMs,2*h);
+x=A.summarize({schedule:[{startAt:11*h,endAt:12*h}]},{start:0,end:13*h,now});assert.equal(x.summedPlannedMs,h);
+x=A.summarize({sessions:[{status:'running',segments:[{start:11*h,end:null}]}]},{start:11*h,end:13*h,now});assert.equal(x.summedRecordedMs,0);
 console.log('Unified Analytics regression: PASS');
