@@ -320,6 +320,39 @@ class BrowserSmoke(unittest.TestCase):
             self.assertFalse(page.locator('#' + form_id).is_visible())
         self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
 
+    def test_all_six_views_at_mobile_tablet_and_desktop_widths(self):
+        url = f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html'
+        views = [('dashboard','#todayOverview'),('tracking','#trackActivePanel'),
+                 ('schedule','#v4Plan'),('goals','#loGoalsVisual'),
+                 ('analytics','#v4Insights'),('life','#loLifeVisual')]
+        for width in (320,390,768,1280):
+            context = self.browser.new_context(viewport={'width':width,'height':844}, device_scale_factor=1)
+            try:
+                page = context.new_page()
+                page.goto(url,wait_until='load',timeout=30000)
+                for name,selector in views:
+                    page.locator(f'#lifeosNavigation button[data-view="{name}"]').click()
+                    page.locator(selector).wait_for(state='visible',timeout=6000)
+                    result = page.evaluate("""() => {
+                        const nav=document.querySelector('#lifeosNavigation');
+                        const rect=nav.getBoundingClientRect();
+                        const active=nav.querySelectorAll('[aria-current=page]');
+                        const body=document.body;
+                        return {
+                            overflow: document.documentElement.scrollWidth-innerWidth,
+                            selected:active.length,
+                            navWidth:rect.width,
+                            navVisible:rect.width>100 && rect.height>40,
+                            intro:!!document.querySelector('#lifeosViewIntro')?.textContent.trim()
+                        };
+                    }""")
+                    self.assertLessEqual(result['overflow'],2,f'{width}px {name}: horizontal overflow {result}')
+                    self.assertEqual(result['selected'],1,f'{width}px {name}: selected navigation {result}')
+                    self.assertTrue(result['navVisible'],f'{width}px {name}: navigation missing')
+                    self.assertTrue(result['intro'],f'{width}px {name}: view heading missing')
+            finally:
+                context.close()
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
@@ -330,7 +363,7 @@ class BrowserSmoke(unittest.TestCase):
             try:
                 page = context.new_page()
                 page.goto(url, wait_until='load', timeout=30000)
-                for view, panel in [('dashboard', '#v4Today'), ('schedule', '#v4Plan'), ('analytics', '#v4Insights'), ('goals', '#loGoalsVisual'), ('life', '#loLifeVisual')]:
+                for view, panel in [('dashboard', '#v4Today'), ('schedule', '#v4Plan'), ('analytics', '#v4Insights'), ('tracking', '#trackActivePanel'), ('goals', '#loGoalsVisual'), ('life', '#loLifeVisual')]:
                     page.locator(f'#lifeosNavigation button[data-view="{view}"]').click()
                     page.locator(panel).wait_for(state='visible', timeout=5000)
                     page.screenshot(path=str(output / f'{device}-{view}.png'), full_page=True, animations='disabled')
