@@ -36,3 +36,11 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Test actual LifeOS Personal UI in Chromium
         run: python -m unittest -v test_personal_v4_browser
+      - name: Upload mobile and desktop UI screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lifeos-personal-ui-screenshots
+          path: artifacts/ui/*.png
+          if-no-files-found: ignore
+          retention-days: 14
