@@ -5,7 +5,7 @@ const visual=fs.readFileSync('personal_visual_intelligence_v4.js','utf8');
 const analytics=require('./lifeos_unified_analytics.js');
 assert.doesNotThrow(()=>new Function(visual));
 assert.match(html,/<script src="personal_visual_intelligence_v4\.js" defer><\/script>/);
-assert.match(html,/lifeosReadOnlyWorkspace=\(\)=>JSON\.parse\(JSON\.stringify\(\{sessions:data\.sessions\|\|\[\],schedule:data\.schedule\|\|\[\]\}\)\)/);
+assert.match(html,/lifeosReadOnlyWorkspace=\(\)=>JSON\.parse\(JSON\.stringify\(\{sessions:data\.sessions\|\|\[\],schedule:data\.schedule\|\|\[\],idealRoutines:data\.idealRoutines\|\|\[\]\}\)\)/);
 for(const id of ['v4Today','v4Insights','v4Plan'])assert.ok(visual.includes(id));
 assert.ok(visual.includes('section.hidden=true'),'Visual panels should start hidden');
 assert.ok(!/\bpersist\s*\(|\blocalStorage\.setItem\s*\(/.test(visual),'Visualization must not write storage');
@@ -28,4 +28,6 @@ assert.match(visual,/Observed weekday frequency, not a forecast/,'Observed patte
 assert.match(visual,/overlapping plan pair\(s\) this week/,'Weekly plan conflicts must be explained');
 assert.match(visual,/Recorded during planned time/,'Plan-reality alignment must be visible');
 assert.match(visual,/Overlapping planned hours/,'Plan overlaps must be visible');
+assert.match(visual,/planner\.build\(\{routines:ws\.idealRoutines\|\|\[\]/,'Ideal proposals should use the existing approval-only planner');
+assert.match(visual,/All require your approval in Plan/,'No visual proposal should imply automatic approval');
 console.log('V4 visual integration PASS');
