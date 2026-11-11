@@ -50,7 +50,14 @@ function planningComparison(ws,now){
   if(minutes>0)conflicts.push({a:a.name,b:b.name,minutes});
  }
  const conflictView=conflicts.length?'<p class="v4-muted">'+conflicts.length+' overlapping plan pair(s) this week. Review them in Plan:</p>'+conflicts.slice(0,5).map(x=>'<p class="v4-muted">'+esc(x.a)+' / '+esc(x.b)+' · '+x.minutes+' min overlap</p>').join(''):'<p class="v4-muted">No overlapping planned intervals detected this week.</p>';
- const ideal='<p class="v4-muted">Ideal routines are managed separately. Review your desired weekly routine against existing plans before approving any changes.</p>';
+ let ideal='<p class="v4-muted">No ideal routines defined. Add routines in Plan to see review-only proposals.</p>';
+ if(planner&&typeof planner.build==='function'){
+  const nextMonday=new Date(monday);nextMonday.setDate(nextMonday.getDate()+7);
+  const result=planner.build({routines:ws.idealRoutines||[],schedule:ws.schedule||[],sessions:ws.sessions||[],from:weekStart,to:nextMonday.getTime()});
+  const proposals=result.proposals;
+  ideal=proposals.length?'<p class="v4-muted">'+proposals.length+' routine proposal(s) for this week. All require your approval in Plan.</p>'+proposals.slice(0,8).map(p=>'<div class="v4-event"><span>'+new Date(p.startAt).toLocaleDateString(undefined,{weekday:'short'})+' '+new Date(p.startAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span><strong>'+esc(p.name)+'</strong><em>'+(p.conflicts.length||p.actualConflicts.length?'Conflict · review':'Review required')+'</em></div>').join(''):'<p class="v4-muted">No routine proposals for this week. Manage your ideal routines in Plan.</p>';
+  ideal+='<p class="v4-muted">Routine-based suggestions only, not learned forecasts. Nothing is automatically scheduled.</p>';
+ }
  return chartCard('My Reality · this week','<div class="v4-metrics"><div><strong>'+fmt(recorded)+'</strong><span>Unique recorded</span></div><div><strong>'+fmt(report.overlapRecordedMs)+'</strong><span>Overlapping records</span></div></div><p class="v4-muted">Only recorded time through now is counted.</p>')+
  chartCard('My Predicted Week · review only','<div class="v4-metrics"><div><strong>'+fmt(planned)+'</strong><span>Currently planned</span></div><div><strong>'+fmt(matched)+'</strong><span>Recorded during planned time</span></div><div><strong>'+fmt(planOverlap)+'</strong><span>Overlapping planned hours</span></div></div>'+predicted+conflictView)+
  chartCard('My Ideal Schedule',ideal);
