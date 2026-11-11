@@ -157,6 +157,27 @@ class BrowserSmoke(unittest.TestCase):
         self.assertEqual(page.locator('#v4Plan [data-v4-day][aria-pressed="true"]').get_attribute('data-v4-day'), key)
         self.assertTrue(page.locator('#v4Plan [data-v4-day][aria-pressed="true"]').evaluate('(el) => document.activeElement === el'))
 
+    def test_interactive_insights_day_drilldown(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="analytics"]').click()
+        page.locator('#v4Insights').wait_for(state='visible', timeout=6000)
+        days = page.locator('#v4Insights [data-v4-insight-day]')
+        self.assertEqual(days.count(), 7)
+        self.assertEqual(page.locator('#v4Insights [data-v4-insight-day][aria-pressed="true"]').count(), 1)
+        selected = days.nth(0)
+        key = selected.get_attribute('data-v4-insight-day')
+        selected.click()
+        active = page.locator('#v4Insights [data-v4-insight-day][aria-pressed="true"]')
+        self.assertEqual(active.count(), 1)
+        self.assertEqual(active.get_attribute('data-v4-insight-day'), key)
+        self.assertTrue(active.evaluate('(el) => document.activeElement === el'))
+        self.assertTrue(page.locator('#v4Insights .v4-insight-detail').is_visible())
+        detail = page.locator('#v4Insights .v4-insight-detail').inner_text()
+        self.assertIn('Recorded', detail)
+        self.assertIn('Unique', detail)
+        self.assertIn('Overlap', detail)
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
