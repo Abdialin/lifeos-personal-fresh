@@ -198,6 +198,20 @@ class BrowserSmoke(unittest.TestCase):
         self.assertIn('does not prove', content)
         self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
 
+    def test_today_is_compact_without_tracking_form_duplicates(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="dashboard"]').click()
+        page.locator('#v4Today').wait_for(state='visible', timeout=5000)
+        self.assertTrue(page.locator('#todayOverview').is_visible())
+        self.assertFalse(page.locator('#quick').is_visible(), 'Quick start forms should live in Track')
+        self.assertFalse(page.locator('#sessions').is_visible(), 'Detailed running timer controls should live in Track')
+        self.assertFalse(page.locator('#tracked').is_visible(), 'Legacy duplicate Today summary should be hidden')
+        self.assertFalse(page.locator('#scheduleForm').is_visible(), 'Schedule editor should live in Plan')
+        self.assertEqual(page.locator('#todayOverview').count(), 1)
+        page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+        self.assertTrue(page.locator('#quick').is_visible())
+        self.assertTrue(page.locator('#sessions').is_visible())
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
