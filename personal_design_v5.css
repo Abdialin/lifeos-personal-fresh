@@ -802,3 +802,32 @@ body[data-lifeos-view="life"] .lo-kpi-actions>button{padding:13px 15px;min-heigh
  .lo-kpi-actions>button>strong{font-size:22px}
  .lo-kpi-actions>button>small{font-size:10px}
 }
+
+/* V10 Interactive personal routine rhythm and cross-section discovery. */
+.lo-life-rhythm-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:4px 0 12px}
+.lo-life-rhythm-head strong{font-size:15px;color:var(--lo-text);font-weight:750}
+.lo-life-rhythm-head span{font-size:11px;color:var(--lo-muted)}
+.lo-life-rhythm{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;min-width:0}
+.lo-life-rhythm button{appearance:none;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;min-height:134px;padding:9px 3px;background:transparent;color:var(--lo-muted);border:1px solid transparent;border-radius:12px;cursor:pointer}
+.lo-life-rhythm button:hover{background:var(--lo-surface-2)}
+.lo-life-rhythm button[aria-pressed="true"]{background:var(--lo-accent-dark);border-color:var(--lo-accent);color:var(--lo-text)}
+.lo-life-rhythm button:focus-visible,.v4-track-history-link:focus-visible{outline:3px solid var(--lo-accent);outline-offset:2px}
+.lo-life-rhythm button>strong{font-size:12px;font-variant-numeric:tabular-nums}
+.lo-life-rhythm button>span:last-child{font-size:11px;font-weight:700}
+.lo-life-rhythm-track{height:83px;width:min(100%,29px);border-radius:8px;display:flex;align-items:flex-end;overflow:hidden;background:var(--lo-surface-3)}
+.lo-life-rhythm-track i{width:100%;min-height:0;background:linear-gradient(0deg,var(--lo-blue),var(--lo-accent));border-radius:5px 5px 2px 2px;display:block}
+.lo-life-rhythm-detail{margin:12px 0 21px;padding:10px 13px;border:1px solid var(--lo-border);border-radius:12px;background:var(--lo-surface-2);min-width:0}
+.lo-life-rhythm-detail strong{font-size:12px;color:var(--lo-text)}
+.lo-life-rhythm-detail p{font-size:11px;line-height:1.4;color:var(--lo-muted);margin:5px 0 0;overflow-wrap:anywhere}
+.v4-section .v4-track-history-link{display:inline-flex;align-items:center;justify-content:center;min-height:42px;margin-top:13px;padding:9px 13px;font-size:12px;font-weight:760;border:1px solid var(--lo-border);border-radius:12px;color:var(--lo-accent);background:var(--lo-accent-dark);cursor:pointer}
+.v4-section .v4-track-history-link:hover{background:var(--lo-surface-3)}
+body[data-lifeos-view="life"] .lo-goal-card>h3{margin-top:18px}
+@media(max-width:750px){
+ .lo-life-rhythm{gap:4px}
+ .lo-life-rhythm button{min-height:123px;padding:7px 2px;gap:5px}
+ .lo-life-rhythm-track{height:72px;width:min(100%,25px)}
+ .lo-life-rhythm button>span:last-child{font-size:10px}
+ .lo-life-rhythm-detail{margin:9px 0 16px}
+ .lo-life-rhythm-head strong{font-size:13px}
+}
+@media(max-width:350px){.lo-life-rhythm{gap:2px}.lo-life-rhythm button{min-height:117px;padding:7px 1px}.lo-life-rhythm-track{width:min(100%,21px)}}
