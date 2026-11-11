@@ -16,4 +16,8 @@ assert.equal(day.summedRecordedMs,3*hour);
 assert.equal(day.uniqueRecordedMs,2*hour);
 assert.equal(day.overlapRecordedMs,hour);
 assert.equal(day.summedPlannedMs,hour);
+assert.match(visual,/span=en-st/,'Timeline must use actual local-day length (23, 24 or 25 hours)');
+assert.match(visual,/Math\.min\(100-left/,'Timeline bars must not overflow their day');
+assert.match(visual,/visibilitychange/,'Visuals should refresh when returning to the tab');
+assert.match(visual,/month\.setDate\(1\);month\.setMonth/,'Month navigation must avoid end-of-month rollover');
 console.log('V4 visual integration PASS');
