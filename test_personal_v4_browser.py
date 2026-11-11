@@ -41,6 +41,8 @@ class BrowserSmoke(unittest.TestCase):
         page = self.page
         nav = page.locator('#lifeosNavigation button[data-view]')
         self.assertEqual(nav.count(), 6, 'The actual app should display exactly six navigation tabs')
+        self.assertEqual(page.locator('#todayOverview').count(), 1)
+        self.assertEqual(page.locator('#lifeosLiveDashboard').count(), 0, 'Duplicate dashboard should not mount')
         page.locator('#lifeosNavigation button[data-view="dashboard"]').click()
         page.locator('#v4Today').wait_for(state='visible', timeout=5000)
         page.locator('#lifeosNavigation button[data-view="analytics"]').click()
