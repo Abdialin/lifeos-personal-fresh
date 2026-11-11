@@ -414,3 +414,49 @@ body[data-lifeos-view="schedule"] #v4Plan>.v4-card:first-child{grid-column:1/-1}
  .v4-section .v6-plan-details .v4-metrics strong{font-size:17px}
  .v4-section .v6-plan-details .v4-metrics span{font-size:10px}
 }
+
+/* V7: screenshot-led Today mobile compactness and strong CTA contrast. */
+#todayOverview{padding:clamp(16px,2.3vw,25px);box-shadow:none}
+#todayOverview .today-welcome{gap:8px}
+#todayOverview .today-welcome h2{font-size:clamp(22px,2.6vw,30px);margin-bottom:5px}
+#todayOverview .today-welcome p{font-size:13px;margin:0}
+#todayOverview .today-stats{margin-top:16px;gap:9px}
+#todayOverview .today-stat{padding:14px;min-height:88px;border-radius:14px}
+#todayOverview .today-stat span{font-size:12px}
+#todayOverview .today-stat strong{font-size:clamp(21px,3vw,29px)}
+#todayOverview .today-stat small{font-size:11px}
+#todayOverview .today-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}
+#todayOverview .today-actions button{display:flex;align-items:center;justify-content:center;text-align:center;min-width:0;min-height:43px;padding:10px 7px;border:1px solid var(--lo-border);border-radius:12px;font-size:12px;white-space:normal;font-weight:760;color:var(--lo-text);background:var(--lo-surface-3);text-shadow:none;opacity:1}
+#todayOverview .today-actions button:first-child{background:var(--lo-accent);color:var(--lo-bg);border-color:transparent}
+#todayOverview .today-actions button:hover{filter:none;opacity:.9}
+#todayOverview .today-priority{padding:13px 14px;margin-top:12px}
+#todayOverview .today-priority strong{font-size:11px}
+#todayOverview .today-priority p{font-size:12px;margin:5px 0}
+#todayOverview .today-clarity{font-size:11px;margin:10px 0 0}
+.lo-timer-signal{margin-top:11px;display:flex;align-items:center;gap:10px;min-width:0;border:1px solid var(--lo-border);background:var(--lo-surface-2);padding:11px 12px;border-radius:13px}
+.lo-timer-signal[hidden]{display:none!important}
+.lo-timer-signal-mark{color:var(--lo-accent);font-size:13px}
+.lo-timer-signal-copy{flex:1;min-width:0;display:grid;gap:2px}
+.lo-timer-signal-copy strong{color:var(--lo-text);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lo-timer-signal-copy small{color:var(--lo-muted);font-size:11px}
+.lo-timer-signal button{background:var(--lo-accent-dark);color:var(--lo-accent);border:1px solid var(--lo-border);border-radius:10px;min-height:39px;padding:7px 10px;font-size:11px;font-weight:700;white-space:nowrap}
+body[data-lifeos-view="dashboard"] #v4Today{margin-top:12px}
+body[data-lifeos-view="dashboard"] #v4Today .v4-card{box-shadow:none}
+@media(max-width:750px){
+ #todayOverview .today-welcome{display:flex;flex-direction:column;align-items:flex-start}
+ #todayOverview .today-live-dot{font-size:10px}
+ #todayOverview .today-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #todayOverview .today-stat{padding:12px 10px;min-height:86px}
+ #todayOverview .today-stat strong{font-size:21px}
+ #todayOverview .today-stat small{font-size:10px}
+ #todayOverview .today-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #todayOverview .today-actions button:first-child{grid-column:auto}
+ #todayOverview .today-actions button{font-size:11px;padding:8px 4px}
+ #todayOverview .today-priority{margin-top:10px}
+ #v4Today .v4-card{padding:13px}
+ #v4Today .v4-card:first-child{min-height:0}
+ #v4Today .v4-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ #v4Today .v4-metrics>div{padding:10px 6px}
+ #v4Today .v4-metrics strong{font-size:18px}
+ #v4Today .v4-metrics span{font-size:10px}
+}
