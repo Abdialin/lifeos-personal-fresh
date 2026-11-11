@@ -372,6 +372,33 @@ class BrowserSmoke(unittest.TestCase):
         self.assertEqual(page.locator('[data-lo-life-section="routines"]').get_attribute('aria-pressed'),'true')
         self.assertTrue(page.locator('#personalActivityPanel').is_visible())
 
+    def test_my_life_routine_rhythm_day_selection(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="life"]').click()
+        page.locator('#loLifeVisual').wait_for(state='visible', timeout=6000)
+        days = page.locator('#loLifeVisual [data-lo-routine-day]')
+        self.assertEqual(days.count(), 7)
+        self.assertEqual(page.locator('#loLifeVisual [data-lo-routine-day][aria-pressed="true"]').count(), 1)
+        selected = days.first
+        date = selected.get_attribute('data-lo-routine-day')
+        selected.click()
+        active = page.locator('#loLifeVisual [data-lo-routine-day][aria-pressed="true"]')
+        self.assertEqual(active.get_attribute('data-lo-routine-day'), date)
+        self.assertTrue(active.evaluate('(el) => document.activeElement === el'))
+        self.assertIn('entries',page.locator('#loLifeVisual .lo-life-rhythm-detail').inner_text())
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
+
+    def test_insights_history_shortcut_opens_track_without_mutating_records(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="analytics"]').click()
+        page.locator('#v4Insights').wait_for(state='visible', timeout=6000)
+        link = page.locator('#v4Insights [data-v4-track-history]')
+        self.assertTrue(link.is_visible())
+        link.click()
+        page.locator('#trackHistoryPanel').wait_for(state='visible', timeout=6000)
+        self.assertEqual(page.locator('#lifeosNavigation button[data-view="tracking"]').get_attribute('aria-current'),'page')
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
