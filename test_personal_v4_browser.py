@@ -150,12 +150,12 @@ class BrowserSmoke(unittest.TestCase):
         page.wait_for_function('(previous) => document.querySelector("#v4Plan [data-v4-day][aria-pressed=true]")?.dataset.v4Day !== previous', arg=first_date)
         page.locator('#v4Plan [data-v4-today]').click()
         self.assertEqual(page.locator('#v4Plan [data-v4-day][aria-pressed="true"]').get_attribute('data-v4-day'), first_date)
-        self.assertTrue(page.locator('#v4Plan [data-v4-today]').is_focused())
+        self.assertTrue(page.locator('#v4Plan [data-v4-today]').evaluate('(el) => document.activeElement === el'))
         next_date = page.locator('#v4Plan [data-v4-day]').nth(1)
         key = next_date.get_attribute('data-v4-day')
         next_date.click()
         self.assertEqual(page.locator('#v4Plan [data-v4-day][aria-pressed="true"]').get_attribute('data-v4-day'), key)
-        self.assertTrue(page.locator('#v4Plan [data-v4-day][aria-pressed="true"]').is_focused())
+        self.assertTrue(page.locator('#v4Plan [data-v4-day][aria-pressed="true"]').evaluate('(el) => document.activeElement === el'))
 
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
