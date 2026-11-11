@@ -5,6 +5,7 @@ const $=id=>document.getElementById(id),fmt=ms=>(ms/3600000).toFixed(1)+'h';
 const dateKey=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let month=new Date(),selected=dateKey(new Date()),insightSelected=dateKey(new Date()),planSelected=dateKey(new Date());
+ let planViewMode='reality';
 month.setDate(1);
 const workspace=()=>typeof window.lifeosReadOnlyWorkspace==='function'?window.lifeosReadOnlyWorkspace():{sessions:[],schedule:[]};
 const engine=()=>window.LifeOSUnifiedAnalytics;
@@ -98,6 +99,25 @@ function renderCalendar(ws,now){
  const entries=[...r.planned.map(x=>({...x,kind:'Planned'})),...r.recorded.map(x=>({...x,kind:'Recorded'}))].sort((a,b)=>a.start-b.start);
  const list=entries.length?entries.slice(0,20).map(x=>'<div class="v4-event"><span>'+new Date(x.start).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'–'+new Date(x.end).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span><strong>'+esc(x.name)+'</strong><em>'+x.kind+'</em></div>').join(''):'<p class="v4-muted">No recorded or planned intervals for this date.</p>';
  target.innerHTML=planningComparison(ws,now)+chartCard('Calendar · recorded ● / planned ◇','<div class="v4-calendar-head"><div class="v4-calendar-navigation"><button type="button" data-v4-month="-1" aria-label="Previous month">‹</button><strong aria-live="polite">'+first.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</strong><button type="button" data-v4-month="1" aria-label="Next month">›</button></div><button type="button" class="v4-calendar-today" data-v4-today>Today</button></div><div class="v4-calendar-grid">'+['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>'<b>'+x+'</b>').join('')+cells.join('')+'</div>')+chartCard('Selected day · '+esc(selected),'<div class="v4-metrics"><div><strong>'+fmt(r.summedRecordedMs)+'</strong><span>Recorded</span></div><div><strong>'+fmt(r.summedPlannedMs)+'</strong><span>Planned</span></div></div>'+list+'<p class="v4-muted">Calendar is read-only. Use Plan to create or change scheduled activities.</p>');
+ const cards=[...target.querySelectorAll(':scope > .v4-card')];
+ if(cards.length===6){
+  const [week,reality,predicted,ideal,calendar,chosen]=cards;
+  const labels=[['reality','My Reality',reality],['predicted','My Predicted Week',predicted],['ideal','My Ideal Schedule',ideal]];
+  const tabs=document.createElement('div');tabs.className='v7-plan-view-tabs';
+  tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Planning comparison view');
+  tabs.innerHTML=labels.map(([key,label])=>'<button type="button" role="tab" id="v7-plan-tab-'+key+'" data-v7-plan-view="'+key+'" aria-controls="v7-plan-panel-'+key+'" aria-selected="'+(planViewMode===key)+'" tabindex="'+(planViewMode===key?'0':'-1')+'">'+label+'</button>').join('');
+  target.prepend(tabs);
+  target.append(calendar,chosen,week,reality,predicted,ideal);
+  labels.forEach(([key,,card])=>{
+   card.id='v7-plan-panel-'+key;card.classList.add('v7-plan-mode-card');
+   card.setAttribute('role','tabpanel');card.setAttribute('aria-labelledby','v7-plan-tab-'+key);
+   card.hidden=planViewMode!==key;
+  });
+  calendar.classList.add('v7-plan-calendar');
+  chosen.classList.add('v7-plan-selected-day');
+  week.classList.add('v7-plan-week-balance');
+ }
+
 }
 function update(){if(!engine()||typeof window.lifeosReadOnlyWorkspace!=='function')return;try{const ws=workspace(),now=Date.now(),view=document.body.dataset.lifeosView;if(view==='dashboard')renderToday(ws,now);if(view==='analytics')renderInsights(ws,now);if(view==='schedule')renderCalendar(ws,now)}catch(err){for(const id of ['v4Today','v4Insights','v4Plan']){const el=$(id);if(el&&document.body.dataset.lifeosView===el.dataset.v4View)el.textContent='Visual summary unavailable. Existing tracking and planning remain accessible.'}console.warn('LifeOS V4 visual read-only error',err)}}
 function init(){const today=$('todayOverview'),nav=$('lifeosNavigation');if(!today||!nav)return;
@@ -124,7 +144,7 @@ function init(){const today=$('todayOverview'),nav=$('lifeosNavigation');if(!tod
  for(const [id,view] of [['v4Today','dashboard'],['v4Insights','analytics'],['v4Plan','schedule']]){const section=document.createElement('section');section.id=id;section.className='v4-section';section.dataset.v4View=view;section.setAttribute('aria-label',view+' visual overview');section.hidden=true;today.insertAdjacentElement('afterend',section)}
  function sync(){for(const id of ['v4Today','v4Insights','v4Plan'])$(id).hidden=document.body.dataset.lifeosView!==$(id).dataset.v4View;update()}
  nav.addEventListener('click',()=>setTimeout(sync,0));window.addEventListener('hashchange',()=>setTimeout(sync,0));
- document.addEventListener('click',e=>{const plan=e.target.closest('[data-v6-plan-day]');if(plan){planSelected=plan.dataset.v6PlanDay;update();$('v4Plan')?.querySelector('[data-v6-plan-day="'+planSelected+'"]')?.focus();}const insight=e.target.closest('[data-v4-insight-day]');if(insight){insightSelected=insight.dataset.v4InsightDay;update();$('v4Insights')?.querySelector('[data-v4-insight-day="'+insightSelected+'"]')?.focus();}const m=e.target.closest('[data-v4-month]');if(m){const step=Number(m.dataset.v4Month);if(step===1||step===-1){month.setDate(1);month.setMonth(month.getMonth()+step);selected=dateKey(new Date(month.getFullYear(),month.getMonth(),1));update()}}const todayButton=e.target.closest('[data-v4-today]');if(todayButton){const d=new Date();month=new Date(d.getFullYear(),d.getMonth(),1);selected=dateKey(d);update();$('v4Plan')?.querySelector('[data-v4-today]')?.focus();}const review=e.target.closest('[data-v4-review-ideal]');if(review){const input=$('scheduleDay'),button=$('idealReview');if(input&&button){const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7);input.value=dateKey(d);const details=button.closest('details');if(details)details.open=true;button.click();$('idealProposalList')?.scrollIntoView({behavior:'smooth',block:'start'});}else console.warn('Ideal review controls unavailable');}const d=e.target.closest('[data-v4-day]');if(d){selected=d.dataset.v4Day;update();$('v4Plan')?.querySelector('[data-v4-day="'+selected+'"]')?.focus()}});
+ document.addEventListener('click',e=>{const mode=e.target.closest('[data-v7-plan-view]');if(mode){planViewMode=mode.dataset.v7PlanView;update();$('v7-plan-tab-'+planViewMode)?.focus();return;}const plan=e.target.closest('[data-v6-plan-day]');if(plan){planSelected=plan.dataset.v6PlanDay;update();$('v4Plan')?.querySelector('[data-v6-plan-day="'+planSelected+'"]')?.focus();}const insight=e.target.closest('[data-v4-insight-day]');if(insight){insightSelected=insight.dataset.v4InsightDay;update();$('v4Insights')?.querySelector('[data-v4-insight-day="'+insightSelected+'"]')?.focus();}const m=e.target.closest('[data-v4-month]');if(m){const step=Number(m.dataset.v4Month);if(step===1||step===-1){month.setDate(1);month.setMonth(month.getMonth()+step);selected=dateKey(new Date(month.getFullYear(),month.getMonth(),1));update()}}const todayButton=e.target.closest('[data-v4-today]');if(todayButton){const d=new Date();month=new Date(d.getFullYear(),d.getMonth(),1);selected=dateKey(d);update();$('v4Plan')?.querySelector('[data-v4-today]')?.focus();}const review=e.target.closest('[data-v4-review-ideal]');if(review){const input=$('scheduleDay'),button=$('idealReview');if(input&&button){const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7);input.value=dateKey(d);const details=button.closest('details');if(details)details.open=true;button.click();$('idealProposalList')?.scrollIntoView({behavior:'smooth',block:'start'});}else console.warn('Ideal review controls unavailable');}const d=e.target.closest('[data-v4-day]');if(d){selected=d.dataset.v4Day;update();$('v4Plan')?.querySelector('[data-v4-day="'+selected+'"]')?.focus()}});
  setTimeout(sync,0);setInterval(()=>{if(!document.hidden)update()},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});window.addEventListener('focus',update);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
