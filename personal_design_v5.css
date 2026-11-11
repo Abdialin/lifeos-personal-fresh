@@ -341,3 +341,20 @@ body[data-lifeos-view="schedule"] #v4Plan>.v4-card:first-child{grid-column:1/-1}
  .lo-goal-row-head span{flex-basis:100%}
  .lo-life-row{grid-template-columns:minmax(70px,1fr) minmax(0,1.5fr) 24px;gap:7px;font-size:12px}
 }
+
+/* V6.2 Interactive calendar polish: thumb-friendly controls and selected-day clarity. */
+.v4-section .v4-calendar-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.v4-section .v4-calendar-navigation{display:flex;gap:10px;align-items:center;min-width:0}
+.v4-section .v4-calendar-navigation strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+.v4-section .v4-calendar-today{width:auto;min-width:66px;height:42px;padding:8px 12px;border-radius:12px;font-size:12px;font-weight:750;background:var(--lo-accent-dark);color:var(--lo-accent);border:1px solid var(--lo-border)}
+.v4-section .v4-calendar-today:hover{background:var(--lo-surface-3)}
+.v4-section .v4-calendar-grid button[aria-pressed="true"]{outline:2px solid var(--lo-accent);outline-offset:1px;background:color-mix(in srgb,var(--lo-accent-dark) 55%,var(--lo-surface-2))}
+.v4-section .v4-calendar-grid button:focus-visible,
+.v4-section .v4-calendar-today:focus-visible{outline:3px solid var(--lo-accent)!important;outline-offset:3px}
+@media(max-width:420px){
+ .v4-section .v4-calendar-head{gap:7px}
+ .v4-section .v4-calendar-navigation{gap:6px}
+ .v4-section .v4-calendar-navigation strong{font-size:14px}
+ .v4-section .v4-calendar-head button{height:40px;min-height:40px}
+ .v4-section .v4-calendar-today{min-width:58px;padding:6px 9px}
+}
