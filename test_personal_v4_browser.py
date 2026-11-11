@@ -433,6 +433,7 @@ class BrowserSmoke(unittest.TestCase):
             self.assertEqual(current['id'],saved['id'])
             self.assertEqual(current['status'],'finished')
             self.assertTrue(page.locator('#loStorageHealth').is_visible())
+            page.wait_for_function("() => document.querySelector('#loStorageHealth .lo-storage-health-state')?.textContent.includes('Saved on device')", timeout=6000)
             self.assertIn('Saved on device',page.locator('#loStorageHealth').inner_text())
         finally:
             context.close()
