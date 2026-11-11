@@ -5,4 +5,8 @@ assert.equal((html.match(/id="personalProgressSummary"/g)||[]).length,1,'progres
 assert.equal((html.match(/id="lifeos-mobile-consolidation"/g)||[]).length,1,'mobile stylesheet should exist once');
 const main=html.indexOf('function renderPersonalLogs()');
 assert.ok(main>0&&html.indexOf('src="lifeos_unified_analytics.js"')<main,'analytics module must load before main app');
+assert.match(html,/const summary=analytics\.summarize\(\{sessions,schedule\}/,'My Time insights must call shared analytics');
+const analyticsScript=html.indexOf('src="lifeos_unified_analytics.js"');
+const stage46=html.indexOf('id="lifeos-stage46-analytics-script"');
+assert.ok(analyticsScript>=0&&stage46>analyticsScript,'analytics engine must load before Stage 46');
 console.log('LifeOS integration smoke test: PASS');
