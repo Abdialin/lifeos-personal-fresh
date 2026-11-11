@@ -14,7 +14,7 @@ function renderToday(ws,now){
  const target=$('v4Today');if(!target)return;
  const d=new Date(now),m=day(ws,d,now);
  const rows=m.recorded.slice().sort((a,b)=>a.start-b.start).slice(0,16);
- const timeline='<div class="v4-timeline" role="img" aria-label="Recorded activity timeline for today">'+rows.map((r,i)=>{const st=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),left=(r.start-st)/86400000*100,width=(r.end-r.start)/86400000*100;return '<div class="v4-lane"><span>'+esc(r.name)+'</span><div class="v4-track"><i style="left:'+left+'%;width:'+Math.max(.4,width)+'%"></i></div></div>'}).join('')+'</div><div class="v4-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>';
+ const timeline='<div class="v4-timeline" role="img" aria-label="Recorded activity timeline for today">'+rows.map((r,i)=>{const st=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),en=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime(),span=en-st,left=Math.max(0,Math.min(100,(r.start-st)/span*100)),width=Math.max(0,Math.min(100-left,(r.end-Math.max(r.start,st))/span*100));return '<div class="v4-lane"><span>'+esc(r.name)+'</span><div class="v4-track"><i style="left:'+left+'%;width:'+Math.max(.4,width)+'%"></i></div></div>'}).join('')+'</div><div class="v4-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>';
  const empty='<p class="v4-muted">No recorded activity yet. Start a timer in Track to populate this view.</p>';
  target.innerHTML=chartCard('Your 24-hour reality',rows.length?timeline:empty)+chartCard('Recorded vs unique time','<div class="v4-metrics"><div><strong>'+fmt(m.summedRecordedMs)+'</strong><span>Recorded</span></div><div><strong>'+fmt(m.uniqueRecordedMs)+'</strong><span>Unique</span></div><div><strong>'+fmt(m.overlapRecordedMs)+'</strong><span>Overlap</span></div></div>');
 }
@@ -67,7 +67,7 @@ function init(){const today=$('todayOverview'),nav=$('lifeosNavigation');if(!tod
  function sync(){for(const id of ['v4Today','v4Insights','v4Plan'])$(id).hidden=document.body.dataset.lifeosView!==$(id).dataset.v4View;update()}
  nav.addEventListener('click',()=>setTimeout(sync,0));window.addEventListener('hashchange',()=>setTimeout(sync,0));
  document.addEventListener('click',e=>{const m=e.target.closest('[data-v4-month]');if(m){const step=Number(m.dataset.v4Month);if(step===1||step===-1){month.setDate(1);month.setMonth(month.getMonth()+step);selected=dateKey(new Date(month.getFullYear(),month.getMonth(),1));update()}}const d=e.target.closest('[data-v4-day]');if(d){selected=d.dataset.v4Day;update()}});
- setTimeout(sync,0);setInterval(()=>{if(!document.hidden)update()},30000);
+ setTimeout(sync,0);setInterval(()=>{if(!document.hidden)update()},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});window.addEventListener('focus',update);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
