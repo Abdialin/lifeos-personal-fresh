@@ -34,4 +34,7 @@ assert.match(visual,/data-v4-review-ideal/,'Ideal cards must provide a review ac
 assert.match(visual,/button\.click\(\)/,'Ideal review must delegate to existing approval workflow');
 assert.match(html,/const fresh=window\.LifeOSIdealPlanning\.review\(\[proposal\],data\.schedule\|\|\[\]\)\[0\]/,'Approval must recalculate conflicts against current schedule');
 assert.match(html,/LifeOSPersonalPlanner\.approve\(/,'Approval must use guarded planner method');
+assert.match(visual,/details\.open=true/,'Visual review must reveal collapsed approval controls');
+assert.match(html,/sessionIntervals\(s,now\(\)\)\.some/,'Approval must check actual recorded session intervals');
+assert.match(html,/This proposal overlaps.*tracked activity session/,'Recorded-session conflicts must block approval');
 console.log('V4 visual integration PASS');
