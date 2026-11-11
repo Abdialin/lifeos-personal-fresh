@@ -460,3 +460,12 @@ body[data-lifeos-view="dashboard"] #v4Today .v4-card{box-shadow:none}
  #v4Today .v4-metrics strong{font-size:18px}
  #v4Today .v4-metrics span{font-size:10px}
 }
+
+/* Screenshot-found markup fix: schedule form belongs exclusively to Plan. */
+#scheduleEditorPanel{min-width:0}
+body:not([data-lifeos-view="schedule"]) #scheduleEditorPanel{display:none!important}
+@media(max-width:750px){
+ #scheduleEditorPanel .statrow{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #scheduleEditorPanel .statrow>*{min-width:0}
+ #scheduleEditorPanel input[type="datetime-local"]{width:100%;min-width:0;max-width:100%;font-size:14px;padding:10px 7px}
+}
