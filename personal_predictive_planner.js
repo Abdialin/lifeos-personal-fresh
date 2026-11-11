@@ -19,6 +19,21 @@ function historyEvidence(sessions,anchor,minimumDays=14,lookbackDays=28){
  }
  return {observedTrackedDays:days.size,historyRecords:records,lookbackDays,confidence:days.size>=minimumDays?'reviewable':'insufficient'};
 }
+function dayTypePatterns(sessions,anchor,{minimumDays=14,lookbackDays=28}={}){
+ const evidence=historyEvidence(sessions,anchor,minimumDays,lookbackDays);
+ const boundary=new Date(anchor);boundary.setHours(0,0,0,0);boundary.setDate(boundary.getDate()-lookbackDays);
+ const buckets=Array.from({length:7},(_,dayOfWeek)=>({dayOfWeek,trackedDays:new Set(),minutes:0,activities:new Map()}));
+ for(const s of sessions||[]){
+  if(!s||s.status!=='finished')continue;
+  const start=Number(s.startAt??s.start??s.startedAt),end=Number(s.endAt??s.end??s.endedAt);
+  if(!finite(start)||!finite(end)||end<=start||end>anchor||end<boundary.getTime())continue;
+  const d=new Date(end),b=buckets[d.getDay()],key=localDay(end),duration=Math.min((end-start)/60000,1440);
+  b.trackedDays.add(key);b.minutes+=duration;
+  const name=String(s.name||s.activity||'Activity').slice(0,80);
+  b.activities.set(name,(b.activities.get(name)||0)+duration);
+ }
+ return {...evidence,dayTypes:buckets.map(b=>({dayOfWeek:b.dayOfWeek,observedDays:b.trackedDays.size,averageRecordedMinutes:b.trackedDays.size?Math.round(b.minutes/b.trackedDays.size):null,topActivities:[...b.activities].sort((a,c)=>c[1]-a[1]).slice(0,3).map(([name,minutes])=>({name,recordedMinutes:Math.round(minutes)})),confidence:evidence.confidence==='reviewable'&&b.trackedDays.size>=3?'pattern-observed':'insufficient'})),limitations:['Descriptive records only; no inferred availability','Overlapping activity durations may double-count','Averages cover tracked days only, not all calendar days','No automated schedule writes']};
+}
 function build({routines=[],schedule=[],sessions=[],from,to,minimumDays=14,lookbackDays=28}={}){
  if(!finite(from)||!finite(to)||to<=from||to-from>14*DAY)throw Error('Select a window of up to 14 days');
  const evidence=historyEvidence(sessions,from,minimumDays,lookbackDays),proposals=[];
@@ -42,5 +57,5 @@ function approve(proposal,existing,id,createdAt){
  if((existing||[]).some(p=>p.idealProposalId===proposal.id||p.id===id||(p.status!=='skipped'&&validInterval(p)&&overlaps(proposal,p))))throw Error('Already approved or overlapping schedule');
  return {id,name:proposal.name,startAt:proposal.startAt,endAt:proposal.endAt,status:'planned',notes:'User-approved LifeOS proposal; no external calendar write',reminder:false,createdAt,idealProposalId:proposal.id};
 }
-return {build,approve,overlaps,historyEvidence,localDay};
+return {build,approve,overlaps,historyEvidence,dayTypePatterns,localDay};
 });
