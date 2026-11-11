@@ -11,7 +11,7 @@ function intervals(session,now){
   const a=ms(s.start??s.startAt),b=s.end==null&&s.endAt==null&&session.status==='running'?now:ms(s.end??s.endAt);
   return good(a)&&good(b)&&b>a?[{start:a,end:b,name,id}]:[];
  });
- const a=ms(session.startAt??session.start??session.startedAt),b=ms(session.endAt??session.end??session.endedAt);
+ const a=ms(session.startAt??session.start??session.startedAt),b=session.status==='running'&&session.endAt==null&&session.end==null&&session.endedAt==null?now:ms(session.endAt??session.end??session.endedAt);
  return good(a)&&good(b)&&b>a?[{start:a,end:b,name,id}]:[];
 }
 function planIntervals(p){
@@ -27,7 +27,7 @@ function unionDuration(xs){
 }
 function summarize(workspace,{start,end,now=Date.now()}={}){
  if(!good(start)||!good(end)||end<=start||!good(now))throw new RangeError('Invalid analytics time window');
- const clip=x=>{const a=Math.max(x.start,start),b=Math.min(x.end,end);return b>a?{...x,start:a,end:b}:null;};
+ const clip=x=>{const a=Math.max(x.start,start),b=Math.min(x.end,end,now);return b>a?{...x,start:a,end:b}:null;};
  const recorded=(Array.isArray(workspace?.sessions)?workspace.sessions:[]).flatMap(s=>intervals(s,now)).map(clip).filter(Boolean);
  const planned=(Array.isArray(workspace?.schedule)?workspace.schedule:[]).flatMap(planIntervals).map(clip).filter(Boolean);
  const summedRecordedMs=recorded.reduce((n,x)=>n+x.end-x.start,0),uniqueRecordedMs=unionDuration(recorded);
