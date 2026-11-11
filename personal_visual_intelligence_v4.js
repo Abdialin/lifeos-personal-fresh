@@ -42,6 +42,13 @@ function planningComparison(ws,now){
   const patterns=planner.dayTypePatterns(ws.sessions||[],now);
   const rows=patterns.dayTypes.filter(x=>x.observedDays>0).map(x=>'<div class="v4-category"><span>'+esc(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][x.dayOfWeek])+'</span><div><i style="width:'+Math.min(100,x.observedDays/4*100)+'%"></i></div><b>'+x.observedDays+'d</b></div>').join('');
   predicted='<p class="v4-muted">'+patterns.observedTrackedDays+' tracked day(s) in the last '+patterns.lookbackDays+'. '+(patterns.confidence==='reviewable'?'Historical evidence is reviewable.':'At least 14 distinct tracked days are needed for reviewable evidence.')+'</p>'+(rows||'<p class="v4-muted">No completed activity history yet.</p>')+'<p class="v4-muted">Observed weekday frequency, not a forecast. Missing logs are unknown time, not free time. No schedule changes are made.</p>';
+  if(typeof planner.historicalSuggestions==='function'){
+   const future=new Date(today.getFullYear(),today.getMonth(),today.getDate()+1);
+   const end=new Date(future);end.setDate(end.getDate()+7);
+   const suggestions=planner.historicalSuggestions({sessions:ws.sessions||[],schedule:ws.schedule||[],from:future.getTime(),to:end.getTime()});
+   const list=suggestions.suggestions.slice(0,6).map(p=>'<div class="v4-event"><span>'+new Date(p.startAt).toLocaleDateString(undefined,{weekday:'short'})+' '+new Date(p.startAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span><strong>'+esc(p.name)+'</strong><em>'+(p.conflicts.length||p.actualConflicts.length?'Conflict':'Review')+'</em></div>').join('');
+   predicted+='<p class="v4-muted">'+suggestions.suggestions.length+' historical-pattern suggestion(s) for the next seven days. They are not automatically applied.</p>'+list;
+  }
  }
  const scheduled=report.planned.slice().sort((a,b)=>a.start-b.start);
  const conflicts=[];
