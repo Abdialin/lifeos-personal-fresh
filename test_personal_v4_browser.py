@@ -108,6 +108,37 @@ class BrowserSmoke(unittest.TestCase):
             self.assertTrue(page.locator(f'{panel} .lo-goal-card').is_visible())
             self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
 
+    def test_populated_goals_and_life_charts(self):
+        """Check actual goal bars and routine counts with isolated read-only fixtures."""
+        page = self.page
+        page.evaluate("""() => {
+          window.__lifeosOriginalRead = window.lifeosReadOnlyWorkspace;
+          const today = new Date();
+          const d = [today.getFullYear(), String(today.getMonth()+1).padStart(2,'0'), String(today.getDate()).padStart(2,'0')].join('-');
+          window.lifeosReadOnlyWorkspace = () => ({
+            sessions:[],schedule:[],idealRoutines:[],workouts:[],
+            todos:[{id:'task1',done:false},{id:'task2',done:true}],
+            goals:[{id:'g1',name:'Read books',category:'personal',match:'Reading',unit:'sessions',target:2}],
+            personalLogs:[{id:'r1',date:d,category:'Reading',minutes:30,precision:'measured'},
+                          {id:'s1',date:d,category:'Sleep',minutes:420,precision:'measured'}]
+          });
+        }""")
+        try:
+            page.locator('#lifeosNavigation button[data-view="goals"]').click()
+            page.locator('#loGoalsVisual .lo-goal-track').wait_for(state='visible', timeout=5000)
+            self.assertIn('1 / 2 sessions', page.locator('#loGoalsVisual').inner_text())
+            self.assertEqual(page.locator('#loGoalsVisual [role="progressbar"]').first.get_attribute('aria-valuenow'), '50')
+            page.locator('#lifeosNavigation button[data-view="life"]').click()
+            page.wait_for_function("document.querySelector('#loLifeVisual')?.innerText.includes('7 h')")
+            self.assertIn('Reading', page.locator('#loLifeVisual').inner_text())
+            self.assertIn('Sleep', page.locator('#loLifeVisual').inner_text())
+            self.assertIn('2', page.locator('#loLifeVisual .lo-kpi-row').inner_text())
+        finally:
+            page.evaluate("""() => {
+              window.lifeosReadOnlyWorkspace = window.__lifeosOriginalRead;
+              delete window.__lifeosOriginalRead;
+            }""")
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
