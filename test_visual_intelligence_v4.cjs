@@ -25,4 +25,7 @@ assert.match(visual,/planningComparison\(ws,now\)\+chartCard/,'Three-view summar
 assert.match(visual,/Missing logs are unknown time, not free time/,'Predictions must not assume unlogged time is available');
 assert.match(visual,/planner\.dayTypePatterns\(ws\.sessions\|\|\[\],now\)/,'Predicted Week should use historical day-type evidence');
 assert.match(visual,/Observed weekday frequency, not a forecast/,'Observed patterns must not be mislabelled as forecasts');
+assert.match(visual,/overlapping plan pair\(s\) this week/,'Weekly plan conflicts must be explained');
+assert.match(visual,/Recorded during planned time/,'Plan-reality alignment must be visible');
+assert.match(visual,/Overlapping planned hours/,'Plan overlaps must be visible');
 console.log('V4 visual integration PASS');
