@@ -550,3 +550,56 @@ body[data-lifeos-view="tracking"] #trackQuickPanel #startCustom{min-height:42px;
  body[data-lifeos-view="tracking"] #trackHistoryPanel .head .sub{font-size:11px}
  body[data-lifeos-view="tracking"] #trackPastPanel.lo-advanced-collapsed .head h2{font-size:13px}
 }
+
+/* V7.3 Plan — screenshot-led calendar-first mobile workflow. */
+#v4Plan{align-items:start}
+#v4Plan .v7-plan-view-tabs{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0}
+#v4Plan .v7-plan-view-tabs button{min-width:0;min-height:46px;border:1px solid var(--lo-border);border-radius:12px;background:var(--lo-surface-2);color:var(--lo-muted);padding:9px 5px;font-size:12px;font-weight:720;line-height:1.25;white-space:normal}
+#v4Plan .v7-plan-view-tabs button[aria-selected="true"]{background:var(--lo-accent-dark);border-color:var(--lo-accent);color:var(--lo-accent)}
+#v4Plan .v7-plan-view-tabs button:focus-visible{outline:3px solid var(--lo-accent);outline-offset:2px}
+#v4Plan .v7-plan-calendar,#v4Plan .v7-plan-selected-day,#v4Plan .v7-plan-week-balance{min-width:0}
+#v4Plan .v7-plan-mode-card{grid-column:1/-1;min-width:0}
+#v4Plan .v7-plan-mode-card[hidden]{display:none!important}
+#v4Plan .v4-calendar-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:nowrap;gap:8px}
+#v4Plan .v4-calendar-navigation{display:flex;gap:6px;align-items:center;min-width:0}
+#v4Plan .v4-calendar-navigation strong{font-size:clamp(13px,2vw,17px);white-space:nowrap}
+#v4Plan .v4-calendar-head button{flex:0 0 auto!important;width:auto!important;min-width:40px;min-height:40px;height:40px;padding:6px 10px!important;font-size:15px;line-height:1}
+#v4Plan .v4-calendar-head .v4-calendar-today{min-width:60px;font-size:12px}
+#v4Plan .v4-calendar-grid{gap:4px}
+#v4Plan .v4-calendar-grid button{width:100%;min-width:0;min-height:42px;border-radius:10px;padding:5px 1px;font-size:12px}
+#v4Plan .v4-calendar-grid button strong{font-size:13px}
+#v4Plan .v4-calendar-grid button span{font-size:10px}
+#scheduleEditorPanel .head{display:flex;align-items:center;justify-content:space-between;gap:9px}
+#scheduleEditorPanel #v7TogglePlanForm{white-space:nowrap;min-height:40px;padding:8px 11px;font-size:12px;flex:0 0 auto}
+#scheduleEditorPanel #scheduleForm[hidden]{display:none!important}
+#scheduleEditorPanel #scheduleForm{margin-top:12px}
+#scheduleEditorPanel .empty{padding:14px}
+#scheduleEditorPanel #scheduleDay{max-width:100%}
+#scheduleEditorPanel .note{font-size:11px;line-height:1.45}
+body[data-lifeos-view="schedule"] #smartSchedulePanel>.sub{font-size:12px;line-height:1.5}
+body[data-lifeos-view="schedule"] .lo-advanced-collapsed{box-shadow:none}
+@media(min-width:950px){
+ #v4Plan{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #v4Plan .v7-plan-calendar{grid-column:1}
+ #v4Plan .v7-plan-selected-day{grid-column:2}
+ #v4Plan .v7-plan-week-balance{grid-column:1/-1}
+}
+@media(max-width:750px){
+ #v4Plan{grid-template-columns:minmax(0,1fr)!important;gap:10px}
+ #v4Plan .v7-plan-view-tabs{gap:5px}
+ #v4Plan .v7-plan-view-tabs button{font-size:11px;padding:7px 2px;min-height:44px}
+ #v4Plan .v4-calendar-head button{min-width:35px;height:37px;min-height:37px;padding:5px 7px!important}
+ #v4Plan .v4-calendar-head .v4-calendar-today{min-width:53px;font-size:11px}
+ #v4Plan .v4-calendar-navigation{gap:4px}
+ #v4Plan .v4-calendar-navigation strong{font-size:13px}
+ #v4Plan .v4-calendar-grid{gap:3px}
+ #v4Plan .v4-calendar-grid button{min-height:40px;padding:3px 1px}
+ #v4Plan .v4-card{padding:13px}
+ #scheduleEditorPanel{padding:14px}
+ #scheduleEditorPanel .head h2{font-size:18px}
+ #scheduleEditorPanel .head .sub{font-size:11px}
+ #scheduleEditorPanel #v7TogglePlanForm{font-size:11px;padding:8px}
+ #scheduleEditorPanel #scheduleForm .statrow{display:grid;grid-template-columns:minmax(0,1fr);gap:5px}
+ #scheduleEditorPanel #scheduleForm .statrow>*{min-width:0;width:100%}
+ #scheduleEditorPanel #scheduleForm input[type="datetime-local"]{min-width:0;width:100%;max-width:100%;font-size:14px;padding:10px}
+}
