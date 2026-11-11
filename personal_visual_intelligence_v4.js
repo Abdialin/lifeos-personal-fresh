@@ -36,7 +36,13 @@ function planningComparison(ws,now){
  const report=engine().summarize(ws,{start:weekStart,end:weekEnd,now});
  const evidenceDays=new Set(report.recorded.map(x=>dateKey(new Date(x.start)))).size;
  const recorded=report.uniqueRecordedMs,planned=report.uniquePlannedMs,matched=report.recordedDuringPlannedMs,planOverlap=report.plannedOverlapMs;
- const predicted='<p class="v4-muted">Prediction is not yet available in this view. '+evidenceDays+' day(s) with recorded activity this week. Missing logs are unknown time, not free time. No schedule changes are made.</p>';
+ const planner=window.LifeOSPersonalPlanner;
+ let predicted='<p class="v4-muted">Historical patterns are unavailable. Missing logs are unknown time, not free time.</p>';
+ if(planner&&typeof planner.dayTypePatterns==='function'){
+  const patterns=planner.dayTypePatterns(ws.sessions||[],now);
+  const rows=patterns.dayTypes.filter(x=>x.observedDays>0).map(x=>'<div class="v4-category"><span>'+esc(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][x.dayOfWeek])+'</span><div><i style="width:'+Math.min(100,x.observedDays/4*100)+'%"></i></div><b>'+x.observedDays+'d</b></div>').join('');
+  predicted='<p class="v4-muted">'+patterns.observedTrackedDays+' tracked day(s) in the last '+patterns.lookbackDays+'. '+(patterns.confidence==='reviewable'?'Historical evidence is reviewable.':'At least 14 distinct tracked days are needed for reviewable evidence.')+'</p>'+(rows||'<p class="v4-muted">No completed activity history yet.</p>')+'<p class="v4-muted">Observed weekday frequency, not a forecast. Missing logs are unknown time, not free time. No schedule changes are made.</p>';
+ }
  const ideal='<p class="v4-muted">Ideal routines are managed separately. Review your desired weekly routine against existing plans before approving any changes.</p>';
  return chartCard('My Reality · this week','<div class="v4-metrics"><div><strong>'+fmt(recorded)+'</strong><span>Unique recorded</span></div><div><strong>'+fmt(report.overlapRecordedMs)+'</strong><span>Overlapping records</span></div></div><p class="v4-muted">Only recorded time through now is counted.</p>')+
  chartCard('My Predicted Week · review only','<div class="v4-metrics"><div><strong>'+fmt(planned)+'</strong><span>Currently planned</span></div></div>'+predicted)+
