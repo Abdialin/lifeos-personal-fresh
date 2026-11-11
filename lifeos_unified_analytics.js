@@ -29,7 +29,7 @@ function summarize(workspace,{start,end,now=Date.now()}={}){
  if(!good(start)||!good(end)||end<=start||!good(now))throw new RangeError('Invalid analytics time window');
  const clip=(x,limit=end)=>{const a=Math.max(x.start,start),b=Math.min(x.end,end,limit);return b>a?{...x,start:a,end:b}:null;};
  const recorded=(Array.isArray(workspace?.sessions)?workspace.sessions:[]).flatMap(s=>intervals(s,now)).map(x=>clip(x,now)).filter(Boolean);
- const planned=(Array.isArray(workspace?.schedule)?workspace.schedule:[]).flatMap(planIntervals).map(clip).filter(Boolean);
+ const planned=(Array.isArray(workspace?.schedule)?workspace.schedule:[]).flatMap(planIntervals).map(x=>clip(x)).filter(Boolean);
  const summedRecordedMs=recorded.reduce((n,x)=>n+x.end-x.start,0),uniqueRecordedMs=unionDuration(recorded);
  const summedPlannedMs=planned.reduce((n,x)=>n+x.end-x.start,0);
  return {start,end,now,recorded,planned,summedRecordedMs,uniqueRecordedMs,overlapRecordedMs:summedRecordedMs-uniqueRecordedMs,summedPlannedMs,uniquePlannedMs:unionDuration(planned)};
