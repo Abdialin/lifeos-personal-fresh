@@ -21,7 +21,7 @@ function goalValue(goal,ws,from,to){
   })());
   if(goal.unit!=='quantity')return matches.length;
   return matches.filter(x=>!goal.quantityUnit||String(x.unit||'').trim().toLowerCase()===String(goal.quantityUnit).trim().toLowerCase())
-   .reduce((sum,x)=>sum+(Number.isFinite(x.quantity)&&x.quantity>0?x.quantity:0),0);
+   .reduce((sum,x)=>sum+(x.quantity!==null&&x.quantity!==''&&Number.isFinite(Number(x.quantity))&&Number(x.quantity)>0?Number(x.quantity):0),0);
  }
  if(goal.category==='fitness'){
   const linked=new Map(sessions.map(s=>[s.id,s]));
@@ -49,7 +49,7 @@ function renderGoals(ws){
   return '<div class="lo-goal-row"><div class="lo-goal-row-head"><strong>'+escapeHtml(g.name)+'</strong><span>'+ (valid?short(value)+' / '+short(targetValue)+' '+escapeHtml(unit):'Target unavailable')+'</span></div><div class="lo-goal-track" role="progressbar" aria-label="'+escapeHtml(g.name)+' weekly goal progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.round(progress)+'"><i style="width:'+progress.toFixed(1)+'%"></i></div></div>';
  }).join('');
  target.innerHTML='<div class="lo-visual-head"><div><span class="lo-eyebrow">Your direction</span><h2>Goals at a glance</h2><p>Current week · Recorded progress only</p></div><span class="lo-soft-chip">Review, not a score</span></div>'+
- '<div class="lo-kpi-row"><div><span>Goals defined</span><strong>'+goals.length+'</strong></div><div><span>Open tasks</span><strong>'+open.length+'</strong></div><div><span>Completed tasks</span><strong>'+done.length+'</strong></div></div>'+
+ '<div class="lo-kpi-row lo-kpi-actions"><button type="button" data-lo-jump="goalForm" aria-label="Jump to weekly goals"><span>Goals defined</span><strong>'+goals.length+'</strong><small>View goals ↗</small></button><button type="button" data-lo-jump="todoForm" aria-label="Jump to your tasks"><span>Open tasks</span><strong>'+open.length+'</strong><small>View tasks ↗</small></button><div><span>Completed tasks</span><strong>'+done.length+'</strong></div></div>'+
  '<div class="lo-goal-card"><h3>Weekly goal progress</h3>'+(cards||'<p class="lo-no-data">No goals yet. Create a goal below to see its progress here.</p>')+
  (goals.length>8?'<p class="lo-small-note">Showing 8 of '+goals.length+' goals. All goals remain available below.</p>':'')+
  '<p class="lo-small-note">Only logged activity counts. Missing records are unknown, not zero effort.</p></div>';
@@ -66,7 +66,7 @@ function renderLife(ws){
  const uniqueDays=new Set(logs.map(x=>x.date)).size;
  const sleepLabel=measuredSleep.length?'Measured sleep average':'Measured sleep average';
  target.innerHTML='<div class="lo-visual-head"><div><span class="lo-eyebrow">Your routines</span><h2>My Life overview</h2><p>Last seven calendar dates · Personal logs, separate from tracked sessions</p></div><span class="lo-soft-chip">Recorded evidence</span></div>'+
- '<div class="lo-kpi-row"><div><span>Personal logs</span><strong>'+logs.length+'</strong></div><div><span>Days with logs</span><strong>'+uniqueDays+' <small>/ 7</small></strong></div><div><span>'+sleepLabel+'</span><strong>'+avg(measuredSleep)+'</strong></div></div>'+
+ '<div class="lo-kpi-row lo-kpi-actions"><button type="button" data-lo-life-jump="routines" aria-label="Open your routine records"><span>Personal logs</span><strong>'+logs.length+'</strong><small>View routines ↗</small></button><div><span>Days with logs</span><strong>'+uniqueDays+' <small>/ 7</small></strong></div><div><span>'+sleepLabel+'</span><strong>'+avg(measuredSleep)+'</strong></div></div>'+
  '<div class="lo-goal-card"><h3>Recorded routines by category</h3>'+(bar||'<p class="lo-no-data">No personal routine logs in the last seven dates. Add an entry below to populate this view.</p>')+
  '<p class="lo-small-note">Bars count log entries, not minutes or consistency. '+(estimatedSleep.length?'Estimated sleep average: '+avg(estimatedSleep)+'. ':'')+'Missing logs are unknown; this is not a recovery score.</p></div>';
 }
@@ -85,6 +85,23 @@ function init(){
   const ws=read();if(!ws)return;
   if(view==='goals')renderGoals(ws);else renderLife(ws);
  }
+ document.addEventListener('click',event=>{
+  const jump=event.target.closest('[data-lo-jump]');
+  if(jump){
+   const form=byId(jump.dataset.loJump),panel=form?.closest('section.panel');
+   if(!panel)return;
+   panel.scrollIntoView({behavior:'smooth',block:'start'});
+   const toggle=panel.querySelector('[data-lo-form-toggle]');
+   if(toggle&&toggle.getAttribute('aria-expanded')==='false')toggle.click();
+   return;
+  }
+  const life=event.target.closest('[data-lo-life-jump]');
+  if(life){
+   const tab=document.querySelector('[data-lo-life-section="'+life.dataset.loLifeJump+'"]');
+   tab?.click();
+   tab?.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+ });
  nav.addEventListener('click',()=>setTimeout(refresh,0));window.addEventListener('hashchange',()=>setTimeout(refresh,0));
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
  window.addEventListener('focus',refresh);
