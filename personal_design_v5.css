@@ -198,3 +198,25 @@ body,body * {text-rendering:optimizeLegibility}
 @media(prefers-reduced-motion:reduce){
  .v5-week-track i,.v4-section .v4-calendar-grid button{transition:none!important;transform:none!important}
 }
+
+/* V5.2 Home: focused hero, fewer repeated summaries, readable visual rhythm. */
+#todayOverview{overflow:hidden;isolation:isolate}
+#todayOverview .today-welcome h2{line-height:1.12;letter-spacing:-.04em}
+#todayOverview .today-stats{gap:clamp(8px,1.25vw,14px)}
+#todayOverview .today-stat{display:grid;align-content:start;gap:5px}
+#todayOverview .today-stat strong{font-variant-numeric:tabular-nums;line-height:1.15}
+#todayOverview .today-stat small{line-height:1.35;color:var(--lo-muted)}
+#todayOverview .today-actions{gap:10px;flex-wrap:wrap}
+#todayOverview .today-actions button{min-height:44px}
+#todayOverview .today-priority{border-left:3px solid var(--lo-accent)}
+#v4Today .v4-card:first-child{min-height:220px}
+#v4Today .v4-metrics{margin:auto 0}
+@media(min-width:850px){#v4Today{grid-template-columns:minmax(0,1.55fr) minmax(260px,1fr)}}
+@media(max-width:750px){
+ #todayOverview .today-stat{min-height:100px;padding:13px 12px}
+ #todayOverview .today-stat small{font-size:10px}
+ #todayOverview .today-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ #todayOverview .today-actions button{min-width:0;white-space:normal;line-height:1.3}
+ #todayOverview .today-actions button:first-child{grid-column:1/-1}
+ #v4Today .v4-card:first-child{min-height:auto}
+}
