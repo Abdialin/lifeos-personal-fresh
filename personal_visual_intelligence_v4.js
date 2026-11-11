@@ -35,7 +35,7 @@ function planningComparison(ws,now){
  const weekStart=monday.getTime(),weekEnd=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+7).getTime();
  const report=engine().summarize(ws,{start:weekStart,end:weekEnd,now});
  const evidenceDays=new Set(report.recorded.map(x=>dateKey(new Date(x.start)))).size;
- const recorded=report.uniqueRecordedMs,planned=report.uniquePlannedMs;
+ const recorded=report.uniqueRecordedMs,planned=report.uniquePlannedMs,matched=report.recordedDuringPlannedMs,planOverlap=report.plannedOverlapMs;
  const predicted='<p class="v4-muted">Prediction is not yet available in this view. '+evidenceDays+' day(s) with recorded activity this week. Missing logs are unknown time, not free time. No schedule changes are made.</p>';
  const ideal='<p class="v4-muted">Ideal routines are managed separately. Review your desired weekly routine against existing plans before approving any changes.</p>';
  return chartCard('My Reality · this week','<div class="v4-metrics"><div><strong>'+fmt(recorded)+'</strong><span>Unique recorded</span></div><div><strong>'+fmt(report.overlapRecordedMs)+'</strong><span>Overlapping records</span></div></div><p class="v4-muted">Only recorded time through now is counted.</p>')+
