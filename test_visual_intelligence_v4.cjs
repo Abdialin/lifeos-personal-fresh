@@ -23,4 +23,6 @@ assert.match(visual,/month\.setDate\(1\);month\.setMonth/,'Month navigation must
 for(const title of ['My Reality', 'My Predicted Week', 'My Ideal Schedule'])assert.ok(visual.includes(title),'Missing planning view: '+title);
 assert.match(visual,/planningComparison\(ws,now\)\+chartCard/,'Three-view summary must be rendered with the calendar');
 assert.match(visual,/Missing logs are unknown time, not free time/,'Predictions must not assume unlogged time is available');
+assert.match(visual,/planner\.dayTypePatterns\(ws\.sessions\|\|\[\],now\)/,'Predicted Week should use historical day-type evidence');
+assert.match(visual,/Observed weekday frequency, not a forecast/,'Observed patterns must not be mislabelled as forecasts');
 console.log('V4 visual integration PASS');
