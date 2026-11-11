@@ -99,6 +99,23 @@ class BrowserSmoke(unittest.TestCase):
         toggle.click()
         self.assertFalse(recovery.locator('#reviewForgotten').is_visible())
 
+    def test_visual_snapshots_for_review(self):
+        """Keep reviewable screenshots of each key screen on mobile and desktop."""
+        output = ROOT / 'artifacts' / 'ui'
+        output.mkdir(parents=True, exist_ok=True)
+        url = f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html'
+        for width, height, device in [(390, 844, 'mobile'), (1280, 850, 'desktop')]:
+            context = self.browser.new_context(viewport={'width': width, 'height': height}, device_scale_factor=1)
+            try:
+                page = context.new_page()
+                page.goto(url, wait_until='load', timeout=30000)
+                for view, panel in [('dashboard', '#v4Today'), ('schedule', '#v4Plan'), ('analytics', '#v4Insights')]:
+                    page.locator(f'#lifeosNavigation button[data-view="{view}"]').click()
+                    page.locator(panel).wait_for(state='visible', timeout=5000)
+                    page.screenshot(path=str(output / f'{device}-{view}.png'), full_page=True, animations='disabled')
+            finally:
+                context.close()
+
     def test_no_runtime_errors_and_mobile_overflow(self):
         self.assertEqual([], self.failed_assets)
         self.assertEqual([], self.errors)
