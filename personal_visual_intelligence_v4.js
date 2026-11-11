@@ -27,7 +27,21 @@ function renderInsights(ws,now){
  const bars='<div class="v4-bars v4-interactive-bars" role="group" aria-label="Choose one of the last seven days to inspect recorded and unique hours">'+days.map(x=>'<button type="button" class="v4-bar-col v4-chart-day" data-v4-insight-day="'+x.key+'" aria-pressed="'+(insightSelected===x.key?'true':'false')+'" aria-label="'+esc(x.label)+': '+fmt(x.summedRecordedMs)+' recorded, '+fmt(x.uniqueRecordedMs)+' unique"><div class="v4-bar-stack"><i class="v4-recorded" style="height:'+(x.summedRecordedMs/max*100)+'%"></i><i class="v4-unique" style="height:'+(x.uniqueRecordedMs/max*100)+'%"></i></div><b>'+fmt(x.summedRecordedMs)+'</b><span>'+esc(x.label)+'</span></button>').join('')+'</div><p class="v4-muted">Select a day to inspect it. Blue = total recorded hours; mint = unique time (overlaps counted once). Missing logs are unknown.</p>';
  const picked=days.find(x=>x.key===insightSelected)||days[days.length-1];
  const pickedRows=picked.recorded.slice().sort((a,b)=>a.start-b.start).slice(0,6);
- const detail='<div class="v4-insight-detail" aria-live="polite"><div class="v4-insight-detail-head"><strong>'+esc(new Date(picked.key+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}))+'</strong><span>Recorded evidence</span></div><div class="v4-metrics"><div><strong>'+fmt(picked.summedRecordedMs)+'</strong><span>Recorded</span></div><div><strong>'+fmt(picked.uniqueRecordedMs)+'</strong><span>Unique</span></div><div><strong>'+fmt(picked.overlapRecordedMs)+'</strong><span>Overlap</span></div></div>'+(pickedRows.length?pickedRows.map(x=>'<div class="v4-insight-entry"><span>'+esc(x.name)+'</span><strong>'+fmt(Math.max(0,x.end-x.start))+'</strong></div>').join(''):'<p class="v4-muted">No recorded intervals for this date.</p>')+'</div>';
+ const sessionById=new Map((ws.sessions||[]).map(x=>[x.id,x]));
+ const pickedEnd=new Date(picked.key+'T12:00:00'),pickedStart=new Date(pickedEnd.getFullYear(),pickedEnd.getMonth(),pickedEnd.getDate()),dayEnd=new Date(pickedEnd.getFullYear(),pickedEnd.getMonth(),pickedEnd.getDate()+1);
+ const coverageMs=Math.min(picked.uniqueRecordedMs,dayEnd.getTime()-pickedStart.getTime());
+ const spanFmt=ms=>ms>0&&ms<60000?'<1m':fmt(ms);
+ const qualityTags=x=>{
+  const source=sessionById.get(x.id)||{};
+  const tags=[];
+  if(source.precision==='measured')tags.push('Measured');
+  else if(source.precision)tags.push(source.precision==='estimated'?'Estimated':'Manually corrected');
+  const end=source.endAt??now;
+  if(Number.isFinite(source.startAt)&&Number.isFinite(end)&&end-source.startAt>=12*3600000)tags.push('Long session · review optional');
+  return tags.length?'<small class="v7-insight-tags">'+tags.map(label=>'<span>'+esc(label)+'</span>').join('')+'</small>':'';
+ };
+ const evidenceSummary='<div class="v7-insight-evidence"><div><strong>'+spanFmt(coverageMs)+'</strong><span>Unique time covered on this date</span></div><p>Recorded hours are activity durations. Daily coverage counts overlapping activities once and cannot exceed the length of this local calendar day. Missing time remains unknown.</p></div>';
+ const detail='<div class="v4-insight-detail" aria-live="polite"><div class="v4-insight-detail-head"><strong>'+esc(new Date(picked.key+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}))+'</strong><span>Recorded evidence</span></div><div class="v4-metrics"><div><strong>'+fmt(picked.summedRecordedMs)+'</strong><span>Recorded</span></div><div><strong>'+fmt(picked.uniqueRecordedMs)+'</strong><span>Unique</span></div><div><strong>'+fmt(picked.overlapRecordedMs)+'</strong><span>Overlap</span></div></div>'+evidenceSummary+(pickedRows.length?pickedRows.map(x=>'<div class="v4-insight-entry"><span>'+esc(x.name)+qualityTags(x)+'</span><strong>'+spanFmt(Math.max(0,x.end-x.start))+'</strong></div>').join(''):'<p class="v4-muted">No recorded intervals for this date.</p>')+'</div>';
  const counts=new Map();
  for(const x of days.flatMap(x=>x.recorded))counts.set(x.name,(counts.get(x.name)||0)+x.end-x.start);
  const ranked=[...counts].filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]),palette=['#69dec8','#79a7f7','#efb86e','#b69afd','#f28ca4'];
