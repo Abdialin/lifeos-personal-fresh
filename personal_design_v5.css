@@ -502,3 +502,51 @@ body[data-lifeos-view="tracking"] #syncStatus{font-size:12px}
  body[data-lifeos-view="tracking"] .quick button{font-size:11px;padding:7px}
  body[data-lifeos-view="tracking"] .quick button span{font-size:18px;flex-basis:22px}
 }
+
+/* V7.2 — screenshot-led Track workflow: active → quick start → recent → secondary. */
+body[data-lifeos-view="tracking"] .layout>div:first-child{display:flex;flex-direction:column;min-width:0}
+body[data-lifeos-view="tracking"] .layout>div:first-child>section.panel{order:50;width:100%;flex-shrink:0}
+body[data-lifeos-view="tracking"] #trackActivePanel{order:1}
+body[data-lifeos-view="tracking"] #trackQuickPanel{order:2}
+body[data-lifeos-view="tracking"] #trackDistractionPanel{order:3}
+body[data-lifeos-view="tracking"] #trackHistoryPanel{order:4}
+body[data-lifeos-view="tracking"] #trackPastPanel{order:5}
+body[data-lifeos-view="tracking"] #trackingRecoveryPanel{order:6}
+body[data-lifeos-view="tracking"] #activityHierarchyPanel{order:7}
+body[data-lifeos-view="tracking"] #sessionToolsPanel{order:8}
+body[data-lifeos-view="tracking"] #connectedDatabasePanel{order:9}
+body[data-lifeos-view="tracking"] #cloudSyncPanel{order:10}
+body[data-lifeos-view="tracking"] #trackDistractionPanel{
+ display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:13px 15px;box-shadow:none
+}
+body[data-lifeos-view="tracking"] #trackDistractionPanel .head{flex:1;min-width:135px}
+body[data-lifeos-view="tracking"] #trackDistractionPanel .head h2{font-size:15px;line-height:1.3}
+body[data-lifeos-view="tracking"] #trackDistractionPanel .head .sub{font-size:11px;margin-top:3px}
+body[data-lifeos-view="tracking"] #trackDistractionPanel>.row{flex:0 1 auto;gap:8px}
+body[data-lifeos-view="tracking"] #trackDistractionPanel #distractionToggle{min-height:42px;padding:9px 11px;font-size:12px}
+body[data-lifeos-view="tracking"] #trackDistractionPanel #distractionHint{font-size:11px}
+body[data-lifeos-view="tracking"] #trackDistractionPanel>.note{flex:1 0 100%;font-size:10px;margin:0;line-height:1.35}
+body[data-lifeos-view="tracking"] #trackPastPanel.lo-advanced-collapsed{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 14px;box-shadow:none
+}
+body[data-lifeos-view="tracking"] #trackPastPanel.lo-advanced-collapsed>.head{display:flex!important;flex:1;min-width:0}
+body[data-lifeos-view="tracking"] #trackPastPanel.lo-advanced-collapsed .head h2{font-size:14px;margin:0}
+body[data-lifeos-view="tracking"] #trackPastPanel.lo-advanced-collapsed .head .sub{display:none}
+body[data-lifeos-view="tracking"] #trackPastPanel.lo-advanced-collapsed>.lo-advanced-toggle{
+ flex:0 0 auto;margin:0;padding:8px 10px;font-size:11px
+}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .head{gap:10px;align-items:center}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .head>div{min-width:0}
+body[data-lifeos-view="tracking"] #trackHistoryPanel #exportCsv{font-size:11px;white-space:nowrap;min-height:38px;padding:8px 11px}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .empty{padding:14px}
+body[data-lifeos-view="tracking"] #trackQuickPanel .divider{margin:11px 0}
+body[data-lifeos-view="tracking"] #trackQuickPanel .note{font-size:10px;line-height:1.45}
+body[data-lifeos-view="tracking"] #trackQuickPanel label[for="customName"]{font-size:11px}
+body[data-lifeos-view="tracking"] #trackQuickPanel #customName{min-width:0!important;font-size:14px}
+body[data-lifeos-view="tracking"] #trackQuickPanel #startCustom{min-height:42px;padding:9px 13px;font-size:12px}
+@media(max-width:750px){
+ body[data-lifeos-view="tracking"] .layout>div:first-child{display:flex!important;flex-direction:column!important}
+ body[data-lifeos-view="tracking"] #trackDistractionPanel .head .sub{display:none}
+ body[data-lifeos-view="tracking"] #trackHistoryPanel .head .sub{font-size:11px}
+ body[data-lifeos-view="tracking"] #trackPastPanel.lo-advanced-collapsed .head h2{font-size:13px}
+}
