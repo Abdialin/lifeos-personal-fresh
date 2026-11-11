@@ -23,12 +23,18 @@ function renderInsights(ws,now){
  const d=new Date(now),days=[];
  for(let i=6;i>=0;i--){const t=new Date(d.getFullYear(),d.getMonth(),d.getDate()-i);days.push({label:t.toLocaleDateString(undefined,{weekday:'short'}),...day(ws,t,now)});}
  const max=Math.max(3600000,...days.map(x=>x.summedRecordedMs));
- const bars='<div class="v4-bars" role="img" aria-label="Recorded and unique tracked hours over seven days">'+days.map(x=>'<div class="v4-bar-col"><div class="v4-bar-stack"><i class="v4-recorded" style="height:'+(x.summedRecordedMs/max*100)+'%"></i><i class="v4-unique" style="height:'+(x.uniqueRecordedMs/max*100)+'%"></i></div><b>'+fmt(x.summedRecordedMs)+'</b><span>'+esc(x.label)+'</span></div>').join('')+'</div><p class="v4-muted">Light bars: recorded time · Dark bars: unique occupied time. Both use the same activity records.</p>';
- const counts=new Map();for(const r of days.flatMap(x=>x.recorded))counts.set(r.name,(counts.get(r.name)||0)+r.end-r.start);
- const top=[...counts].sort((a,b)=>b[1]-a[1]).slice(0,7),largest=Math.max(1,...top.map(x=>x[1]));
- const breakdown=top.length?top.map(([name,ms])=>'<div class="v4-category"><span>'+esc(name)+'</span><div><i style="width:'+(ms/largest*100)+'%"></i></div><b>'+fmt(ms)+'</b></div>').join(''):'<p class="v4-muted">Activity categories will appear once you record time.</p>';
- target.innerHTML=chartCard('Last seven days',bars)+chartCard('Time by activity',breakdown);
+ const bars='<div class="v4-bars" role="img" aria-label="Summed recorded and unique tracked hours over seven days">'+days.map(x=>'<div class="v4-bar-col"><div class="v4-bar-stack"><i class="v4-recorded" style="height:'+(x.summedRecordedMs/max*100)+'%"></i><i class="v4-unique" style="height:'+(x.uniqueRecordedMs/max*100)+'%"></i></div><b>'+fmt(x.summedRecordedMs)+'</b><span>'+esc(x.label)+'</span></div>').join('')+'</div><p class="v4-muted">Blue: summed recorded hours · Mint: unique time (overlaps counted once). Unlogged time is unknown.</p>';
+ const counts=new Map();
+ for(const x of days.flatMap(x=>x.recorded))counts.set(x.name,(counts.get(x.name)||0)+x.end-x.start);
+ const ranked=[...counts].filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]),palette=['#69dec8','#79a7f7','#efb86e','#b69afd','#f28ca4'];
+ const shown=ranked.slice(0,4);if(ranked.length>4)shown.push(['Other',ranked.slice(4).reduce((n,x)=>n+x[1],0)]);
+ const total=shown.reduce((n,x)=>n+x[1],0);let previous=0;
+ const stops=shown.map((x,i)=>{const end=i===shown.length-1?100:previous+x[1]/total*100;const stop=palette[i]+' '+previous.toFixed(2)+'% '+end.toFixed(2)+'%';previous=end;return stop;});
+ const legend=shown.map(([name,ms],i)=>'<div class="v5-legend-item"><i class="v5-legend-dot" style="background:'+palette[i]+'"></i><span>'+esc(name)+'</span><strong>'+fmt(ms)+'</strong></div>').join('');
+ const mix=total?'<div class="v5-mix"><div class="v5-donut" role="img" aria-label="Recorded activity time mix, including overlapping sessions" style="background:conic-gradient('+stops.join(',')+')"><div class="v5-donut-label"><strong>'+fmt(total)+'</strong><span>recorded</span></div></div><div class="v5-legend">'+legend+'</div></div><p class="v4-muted">Recorded-time totals include simultaneous activities; this is not a 24-hour occupancy breakdown.</p>':'<p class="v4-muted">No recorded activity yet. Start a timer in Track to populate your time mix.</p>';
+ target.innerHTML=chartCard('Last seven days',bars)+chartCard('Recorded time mix',mix);
 }
+
 function planningComparison(ws,now){
  const today=new Date(now),monday=new Date(today.getFullYear(),today.getMonth(),today.getDate());
  monday.setDate(monday.getDate()-(monday.getDay()+6)%7);
@@ -65,7 +71,10 @@ function planningComparison(ws,now){
   ideal=proposals.length?'<p class="v4-muted">'+proposals.length+' routine proposal(s) for this week. All require your approval in Plan.</p>'+proposals.slice(0,8).map(p=>'<div class="v4-event"><span>'+new Date(p.startAt).toLocaleDateString(undefined,{weekday:'short'})+' '+new Date(p.startAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span><strong>'+esc(p.name)+'</strong><em>'+(p.conflicts.length||p.actualConflicts.length?'Conflict · review':'Review required')+'</em></div>').join(''):'<p class="v4-muted">No routine proposals for this week. Manage your ideal routines in Plan.</p>';
   ideal+='<p class="v4-muted">Routine-based suggestions only, not learned forecasts. Nothing is automatically scheduled.</p><button type="button" class="v4-review-button" data-v4-review-ideal>Review and approve in Plan</button>';
  }
- return chartCard('My Reality · this week','<div class="v4-metrics"><div><strong>'+fmt(recorded)+'</strong><span>Unique recorded</span></div><div><strong>'+fmt(report.overlapRecordedMs)+'</strong><span>Overlapping records</span></div></div><p class="v4-muted">Only recorded time through now is counted.</p>')+
+ const weekDays=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(d.getDate()+i);return {label:d.toLocaleDateString(undefined,{weekday:'short'}),...day(ws,d,now)};});
+ const maxDay=Math.max(3600000,...weekDays.map(x=>x.uniqueRecordedMs),...weekDays.map(x=>x.uniquePlannedMs));
+ const balance='<div class="v5-week-chart" role="img" aria-label="Unique recorded time compared with unique planned time by weekday">'+weekDays.map(x=>'<div class="v5-week-col" title="'+esc(x.label)+': recorded '+fmt(x.uniqueRecordedMs)+', planned '+fmt(x.uniquePlannedMs)+'"><div class="v5-week-track"><i class="v5-recorded" style="height:'+(x.uniqueRecordedMs/maxDay*100)+'%"></i><i class="v5-planned" style="height:'+(x.uniquePlannedMs/maxDay*100)+'%"></i></div><span>'+esc(x.label)+'</span></div>').join('')+'</div><div class="v5-chart-key"><b>Recorded</b><b>Planned</b></div><p class="v4-muted">Recorded time stops at now. Unlogged hours remain unknown; future planned time is not evidence of completion.</p>';
+ return chartCard('This week's time balance',balance)+chartCard('My Reality · this week','<div class="v4-metrics"><div><strong>'+fmt(recorded)+'</strong><span>Unique recorded</span></div><div><strong>'+fmt(report.overlapRecordedMs)+'</strong><span>Overlapping records</span></div></div><p class="v4-muted">Only recorded time through now is counted.</p>')+
  chartCard('My Predicted Week · review only','<div class="v4-metrics"><div><strong>'+fmt(planned)+'</strong><span>Currently planned</span></div><div><strong>'+fmt(matched)+'</strong><span>Recorded during planned time</span></div><div><strong>'+fmt(planOverlap)+'</strong><span>Overlapping planned hours</span></div></div>'+predicted+conflictView)+
  chartCard('My Ideal Schedule',ideal);
 }
