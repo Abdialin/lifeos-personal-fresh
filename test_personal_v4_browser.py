@@ -212,6 +212,22 @@ class BrowserSmoke(unittest.TestCase):
         self.assertTrue(page.locator('#quick').is_visible())
         self.assertTrue(page.locator('#sessions').is_visible())
 
+    def test_track_secondary_tools_collapsed_but_accessible(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+        for identifier in ['sessionToolsPanel','connectedDatabasePanel','cloudSyncPanel']:
+            panel = page.locator('#'+identifier)
+            self.assertTrue(panel.is_visible())
+            button = panel.locator('.lo-advanced-toggle')
+            self.assertTrue(button.is_visible(), f'{identifier} disclosure missing')
+            self.assertEqual(button.get_attribute('aria-expanded'), 'false')
+            button.click()
+            self.assertEqual(button.get_attribute('aria-expanded'), 'true')
+            button.click()
+            self.assertEqual(button.get_attribute('aria-expanded'), 'false')
+        self.assertEqual(page.locator('#quick button').count(), 10)
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
