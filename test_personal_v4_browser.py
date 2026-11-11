@@ -162,7 +162,7 @@ class BrowserSmoke(unittest.TestCase):
         button = page.locator('#v7TogglePlanForm')
         button.click()
         self.assertTrue(page.locator('#scheduleForm').is_visible())
-        self.assertTrue(page.locator('#scheduleName').is_focused())
+        self.assertTrue(page.locator('#scheduleName').evaluate('(el) => document.activeElement === el'))
         button.click()
         self.assertFalse(page.locator('#scheduleForm').is_visible())
         self.assertTrue(page.locator('#scheduleDay').is_visible())
