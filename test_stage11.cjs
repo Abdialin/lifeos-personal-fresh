@@ -2,7 +2,7 @@ const fs=require('fs'),assert=require('assert'),vm=require('vm');
 const html=fs.readFileSync('index.html','utf8');
 const js=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 new vm.Script(js);
-for(const phrase of ['lifeos-v4-stage11-outbox','function queueCurrentState()','function reconcileRemote(remote)','function sameSnapshot(a,b)','outbox[0]','revision:syncRevision,data:entry.snapshot','if(!atomicCommit(data,next,nextMeta))return false'])assert(js.includes(phrase),phrase);
+for(const phrase of ['lifeos-v4-stage11-outbox','function queueCurrentState()','function reconcileRemote(remote)','function sameSnapshot(a,b)','outbox[0]','revision:syncRevision,data:entry.snapshot','if(!atomicCommit(data,remaining,{revision:r.revision,dirty:remaining.length>0}))throw new Error'])assert(js.includes(phrase),phrase);
 const m=js.match(/function canonical\(v\)\{[^\n]*\}\nfunction sameSnapshot\(a,b\)\{[^\n]*\}/);assert(m);
 const ctx=vm.createContext({});vm.runInContext(m[0]+';globalThis.equal=sameSnapshot',ctx);
 assert(ctx.equal({b:1,a:{z:2,y:3}},{a:{y:3,z:2},b:1}));
