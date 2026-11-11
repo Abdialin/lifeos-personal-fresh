@@ -62,7 +62,10 @@ function enhanceViews(){
   personalCompletionPanel:'Additional planning tools',
   weeklyDashboardPanel:'Detailed weekly report',
   qualityPanel:'Data quality report',
-  intelligencePanel:'Pattern evidence tools'
+  intelligencePanel:'Pattern evidence tools',
+  sessionToolsPanel:'Backup and restore controls',
+  connectedDatabasePanel:'External database information',
+  cloudSyncPanel:'Private cloud synchronization'
  };
  for(const [id,caption] of Object.entries(optional)){
   const panel=document.getElementById(id),title=panel?.querySelector(':scope > h2');
