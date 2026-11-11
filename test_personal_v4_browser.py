@@ -178,6 +178,26 @@ class BrowserSmoke(unittest.TestCase):
         self.assertIn('Overlap', detail)
         self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
 
+    def test_plan_weekday_comparison_interaction(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+        page.locator('#v4Plan').wait_for(state='visible', timeout=6000)
+        days = page.locator('#v4Plan [data-v6-plan-day]')
+        self.assertEqual(days.count(), 7)
+        self.assertEqual(page.locator('#v4Plan [data-v6-plan-day][aria-pressed="true"]').count(), 1)
+        target = days.nth(0)
+        key = target.get_attribute('data-v6-plan-day')
+        target.click()
+        selected = page.locator('#v4Plan [data-v6-plan-day][aria-pressed="true"]')
+        self.assertEqual(selected.get_attribute('data-v6-plan-day'), key)
+        self.assertTrue(selected.evaluate('(el) => document.activeElement === el'))
+        content = page.locator('#v4Plan .v6-plan-details').inner_text()
+        self.assertIn('Unique recorded', content)
+        self.assertIn('Unique planned', content)
+        self.assertIn('Recorded within plans', content)
+        self.assertIn('does not prove', content)
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
