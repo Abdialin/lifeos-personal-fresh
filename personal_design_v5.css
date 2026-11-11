@@ -702,3 +702,80 @@ body[data-lifeos-view="life"] .lo-goal-card .lo-small-note{font-size:11px}
 
 /* Life navigation is outside the legacy panel toggler: show it only in My Life. */
 body[data-lifeos-view="life"] .lo-life-tabs{display:grid}
+
+/* V9 final visual consistency: shared navigation, compact headers, cards and safe areas. */
+:root{--lo-page-gap:clamp(10px,1.4vw,17px);--lo-control-height:44px}
+.lifeos-nav button,.lo-life-tabs button,.v7-plan-view-tabs button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.panel,.v4-section .v4-card,.lo-goal-card,.lo-kpi-row>div{transition:border-color .15s ease,background-color .15s ease}
+.panel .head .sub{line-height:1.42}
+.panel h2{line-height:1.28}
+.panel :is(button,input,select,textarea){min-width:0}
+.panel :is(input,select,textarea):focus-visible{outline:3px solid var(--lo-accent);outline-offset:2px}
+.panel .empty{padding:clamp(12px,2vw,20px);font-size:12px;line-height:1.5}
+.panel .note{font-size:11px;line-height:1.5}
+.lo-view-intro{max-width:63ch}
+body[data-lifeos-view="goals"] .lo-goal-card,
+body[data-lifeos-view="life"] .lo-goal-card{box-shadow:none}
+body[data-lifeos-view="goals"] .lo-visual-head h2,
+body[data-lifeos-view="life"] .lo-visual-head h2{font-size:clamp(20px,2.5vw,27px)}
+body[data-lifeos-view="goals"] .lo-kpi-row strong,
+body[data-lifeos-view="life"] .lo-kpi-row strong{font-variant-numeric:tabular-nums}
+.lo-goal-track i,.lo-life-track i{background:linear-gradient(90deg,var(--lo-blue),var(--lo-accent))}
+body[data-lifeos-view="life"] .panel.lo-life-inactive{display:none!important}
+@media(max-width:750px){
+ html{scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+ .wrap{padding:10px 12px calc(92px + env(safe-area-inset-bottom,0px))!important}
+ .top{min-height:57px;padding:4px 0 10px;margin-bottom:10px;gap:8px}
+ .brand{gap:9px;min-width:0}
+ .logo{width:38px;height:38px;border-radius:12px;font-size:20px;flex-shrink:0}
+ .brand b{font-size:19px;line-height:1.2}
+ .brand .small{display:none}
+ .lifeos-header-actions{gap:5px}
+ .lifeos-header-actions .pill{display:none}
+ .lifeos-theme-toggle{min-width:90px;min-height:39px;padding:8px 9px;font-size:11px;border-radius:11px}
+ .lifeos-view-title{font-size:clamp(25px,6.6vw,34px);line-height:1.12;margin:14px 0 6px}
+ .lo-view-intro{font-size:12px;line-height:1.45;margin:0 0 13px}
+ .panel{padding:13px!important;margin-bottom:10px!important;border-radius:17px!important;box-shadow:none}
+ .panel h2{font-size:17px!important}
+ .panel .head{margin-bottom:11px;gap:8px}
+ .panel .sub{font-size:12px}
+ .panel p,.panel .note{font-size:12px!important;line-height:1.45!important}
+ .layout{gap:9px!important}
+ .v4-section{gap:9px;margin:7px 0 12px}
+ .v4-section .v4-card{padding:13px;box-shadow:none;border-radius:17px}
+ .v4-section .v4-card h3{font-size:16px;margin-bottom:11px}
+ .v4-section .v4-metrics>div{padding:10px 8px;border-radius:12px}
+ .v4-section .v4-metrics strong{font-size:18px}
+ .lifeos-nav{padding:5px max(5px,env(safe-area-inset-right,0px)) calc(5px + env(safe-area-inset-bottom,0px)) max(5px,env(safe-area-inset-left,0px))!important;min-height:65px;gap:2px;background:color-mix(in srgb,var(--lo-bg) 97%,var(--lo-surface) 3%)!important;border-top:1px solid var(--lo-border);box-shadow:0 -8px 26px rgba(0,0,0,.18)}
+ .lifeos-nav button{min-height:55px!important;padding:6px 1px!important;border-radius:11px;gap:2px}
+ .lifeos-tab-icon{font-size:20px}
+ .lifeos-tab-label{font-size:10px;line-height:1.15}
+ .lifeos-nav button[aria-current="page"]{background:var(--lo-accent-dark);border:1px solid var(--lo-border)}
+ .lo-visual-dashboard{gap:9px;margin:7px 0 11px}
+ .lo-visual-head{gap:8px}
+ .lo-visual-head h2{font-size:20px}
+ .lo-visual-head p{font-size:11px}
+ .lo-soft-chip{max-width:105px;line-height:1.3;text-align:center}
+ body[data-lifeos-view="goals"] .lo-kpi-row,
+ body[data-lifeos-view="life"] .lo-kpi-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ body[data-lifeos-view="goals"] .lo-kpi-row>div:last-child,
+ body[data-lifeos-view="life"] .lo-kpi-row>div:last-child{grid-column:auto}
+ body[data-lifeos-view="goals"] .lo-kpi-row>div,
+ body[data-lifeos-view="life"] .lo-kpi-row>div{padding:10px 8px}
+ body[data-lifeos-view="goals"] .lo-kpi-row strong,
+ body[data-lifeos-view="life"] .lo-kpi-row strong{font-size:22px}
+ body[data-lifeos-view="goals"] .lo-kpi-row span,
+ body[data-lifeos-view="life"] .lo-kpi-row span{font-size:10px;line-height:1.25}
+}
+@media(max-width:360px){
+ .brand b{font-size:17px}
+ .lifeos-theme-toggle{min-width:82px;padding:7px 5px;font-size:10px}
+ .lifeos-tab-icon{font-size:18px}
+ .lifeos-tab-label{font-size:9px}
+ .lo-soft-chip{display:none}
+ .lo-goal-card .lo-goal-row-head{flex-wrap:wrap}
+ .lo-life-row{grid-template-columns:minmax(65px,1fr) minmax(0,1.4fr) 22px}
+}
+@media(prefers-reduced-motion:reduce){
+ .panel,.v4-section .v4-card,.lo-goal-card,.lo-kpi-row>div{transition:none!important}
+}
