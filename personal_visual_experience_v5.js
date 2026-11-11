@@ -87,6 +87,19 @@ function enhanceViews(){
   button.addEventListener('click',()=>apply(!expanded));
   apply(expanded);
  }
+ const planToggle=document.getElementById('v7TogglePlanForm');
+ const planForm=document.getElementById('scheduleForm');
+ if(planToggle&&planForm){
+  function togglePlanForm(open,focus=false){
+   planForm.hidden=!open;
+   planToggle.setAttribute('aria-expanded',String(open));
+   planToggle.textContent=open?'− Close editor':'+ Add plan';
+   if(open&&focus)document.getElementById('scheduleName')?.focus();
+  }
+  planToggle.addEventListener('click',()=>togglePlanForm(planForm.hidden,true));
+  planForm.addEventListener('submit',()=>window.setTimeout(()=>togglePlanForm(false),200));
+  togglePlanForm(false);
+ }
 }
 function start(){init();enhanceViews();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
