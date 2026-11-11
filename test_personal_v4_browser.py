@@ -105,7 +105,7 @@ class BrowserSmoke(unittest.TestCase):
         for view, panel in [('goals', '#loGoalsVisual'), ('life', '#loLifeVisual')]:
             page.locator(f'#lifeosNavigation button[data-view="{view}"]').click()
             page.locator(panel).wait_for(state='visible', timeout=6000)
-            self.assertEqual(page.locator(f'{panel} .lo-kpi-row > div').count(), 3)
+            self.assertEqual(page.locator(f'{panel} .lo-kpi-row > div, {panel} .lo-kpi-row > button').count(), 3)
             self.assertTrue(page.locator(f'{panel} .lo-goal-card').is_visible())
             self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
 
