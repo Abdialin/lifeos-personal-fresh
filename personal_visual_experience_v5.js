@@ -139,7 +139,7 @@ function enhanceViews(){
    for(const item of lifeSections){
     const show=item.key===key;
     item.panel.classList.toggle('lo-life-inactive',!show);
-    const button=group.querySelector('[data-lo-life-section="'+key+'"]');
+    const button=group.querySelector('[data-lo-life-section="'+item.key+'"]');
     if(button)button.setAttribute('aria-pressed',String(show));
    }
   };
