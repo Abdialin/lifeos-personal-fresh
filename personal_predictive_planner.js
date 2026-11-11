@@ -34,6 +34,45 @@ function dayTypePatterns(sessions,anchor,{minimumDays=14,lookbackDays=28}={}){
  }
  return {...evidence,dayTypes:buckets.map(b=>({dayOfWeek:b.dayOfWeek,observedDays:b.trackedDays.size,averageRecordedMinutes:b.trackedDays.size?Math.round(b.minutes/b.trackedDays.size):null,topActivities:[...b.activities].sort((a,c)=>c[1]-a[1]).slice(0,3).map(([name,minutes])=>({name,recordedMinutes:Math.round(minutes)})),confidence:evidence.confidence==='reviewable'&&b.trackedDays.size>=3?'pattern-observed':'insufficient'})),limitations:['Descriptive records only; no inferred availability','Overlapping activity durations may double-count','Averages cover tracked days only, not all calendar days','No automated schedule writes']};
 }
+function historicalSuggestions({sessions=[],schedule=[],from,to,minimumDays=14,lookbackDays=28}={}){
+ if(!finite(from)||!finite(to)||to<=from||to-from>14*DAY)throw Error('Select a window of up to 14 days');
+ const evidence=historyEvidence(sessions,from,minimumDays,lookbackDays);
+ if(evidence.confidence!=='reviewable')return {...evidence,suggestions:[],limitations:['Insufficient completed tracking history','No inferred availability','Review required before scheduling']};
+ const cutoff=new Date(from);cutoff.setHours(0,0,0,0);cutoff.setDate(cutoff.getDate()-lookbackDays);
+ const groups=new Map();
+ for(const s of sessions||[]){
+  if(!s||s.status!=='finished')continue;
+  const a=Number(s.startAt??s.start??s.startedAt),b=Number(s.endAt??s.end??s.endedAt);
+  if(!finite(a)||!finite(b)||b<=a||b>from||b<cutoff.getTime()||b-a>6*3600000)continue;
+  const date=new Date(a),name=String(s.name||s.activity||'').trim().slice(0,80);
+  if(!name||date.getDate()!==new Date(b).getDate()||date.getMonth()!==new Date(b).getMonth())continue;
+  const key=date.getDay()+'|'+name.toLocaleLowerCase(),day=localDay(a);
+  const record=groups.get(key)||{name,weekday:date.getDay(),days:new Map()};
+  // Count a given activity at most once per historical day to avoid inflated evidence.
+  const duration=Math.round((b-a)/60000),startMinute=date.getHours()*60+date.getMinutes();
+  if(!record.days.has(day)||duration>record.days.get(day).duration)record.days.set(day,{startMinute,duration});
+  groups.set(key,record);
+ }
+ const templates=[...groups.values()].filter(g=>g.days.size>=3).map(g=>{
+  const xs=[...g.days.values()],median=values=>{const a=values.sort((x,y)=>x-y);return a[Math.floor(a.length/2)]};
+  return {name:g.name,weekday:g.weekday,observations:g.days.size,startMinute:median(xs.map(x=>x.startMinute)),durationMinutes:median(xs.map(x=>x.duration))};
+ }).filter(g=>g.durationMinutes>=5);
+ const suggestions=[];
+ let day=new Date(from);day.setHours(0,0,0,0);
+ for(;day.getTime()<to;day.setDate(day.getDate()+1)){
+  for(const pattern of templates){
+   if(day.getDay()!==pattern.weekday)continue;
+   const at=new Date(day);at.setHours(Math.floor(pattern.startMinute/60),pattern.startMinute%60,0,0);
+   const startAt=at.getTime(),endAt=startAt+pattern.durationMinutes*60000;
+   if(startAt<from||startAt>=to||endAt>to)continue;
+   const candidate={startAt,endAt};
+   const conflicts=(schedule||[]).filter(p=>p&&p.status!=='skipped'&&validInterval(p)&&overlaps(candidate,p)).map(p=>String(p.id));
+   const actualConflicts=(sessions||[]).filter(s=>s&&s.status!=='discarded'&&finite(s.startAt)&&finite(s.endAt)&&s.endAt>s.startAt&&overlaps(candidate,s)).map(s=>String(s.id));
+   suggestions.push({id:'pattern:'+pattern.weekday+':'+pattern.name.toLocaleLowerCase()+'@'+startAt,name:pattern.name,startAt,endAt,observations:pattern.observations,conflicts,actualConflicts,confidence:'pattern-observed',requiresApproval:true,source:'historical-pattern',status:'proposed'});
+  }
+ }
+ return {...evidence,suggestions:suggestions.sort((a,b)=>a.startAt-b.startAt),limitations:['Heuristic repeat-pattern suggestion, not a validated forecast','At least three distinct historical days for the same weekday and activity','Unlogged time is unknown, not available','No schedule or external calendar writes','Conflicts require explicit review']};
+}
 function build({routines=[],schedule=[],sessions=[],from,to,minimumDays=14,lookbackDays=28}={}){
  if(!finite(from)||!finite(to)||to<=from||to-from>14*DAY)throw Error('Select a window of up to 14 days');
  const evidence=historyEvidence(sessions,from,minimumDays,lookbackDays),proposals=[];
@@ -57,5 +96,5 @@ function approve(proposal,existing,id,createdAt){
  if((existing||[]).some(p=>p.idealProposalId===proposal.id||p.id===id||(p.status!=='skipped'&&validInterval(p)&&overlaps(proposal,p))))throw Error('Already approved or overlapping schedule');
  return {id,name:proposal.name,startAt:proposal.startAt,endAt:proposal.endAt,status:'planned',notes:'User-approved LifeOS proposal; no external calendar write',reminder:false,createdAt,idealProposalId:proposal.id};
 }
-return {build,approve,overlaps,historyEvidence,dayTypePatterns,localDay};
+return {build,approve,overlaps,historyEvidence,dayTypePatterns,historicalSuggestions,localDay};
 });
