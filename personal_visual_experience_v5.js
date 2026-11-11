@@ -65,7 +65,8 @@ function enhanceViews(){
   intelligencePanel:'Pattern evidence tools',
   sessionToolsPanel:'Backup and restore controls',
   connectedDatabasePanel:'External database information',
-  cloudSyncPanel:'Private cloud synchronization'
+  cloudSyncPanel:'Private cloud synchronization',
+  trackPastPanel:'Manual activity entry'
  };
  for(const [id,caption] of Object.entries(optional)){
   const panel=document.getElementById(id),title=panel?.querySelector(':scope > h2');
