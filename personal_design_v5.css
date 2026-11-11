@@ -603,3 +603,30 @@ body[data-lifeos-view="schedule"] .lo-advanced-collapsed{box-shadow:none}
  #scheduleEditorPanel #scheduleForm .statrow>*{min-width:0;width:100%}
  #scheduleEditorPanel #scheduleForm input[type="datetime-local"]{min-width:0;width:100%;max-width:100%;font-size:14px;padding:10px}
 }
+
+/* V7.4 — Plan action bar and compact advanced controls. */
+#v4Plan .v7-plan-toolbar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 1px;min-width:0}
+#v4Plan .v7-plan-toolbar>div{display:grid;gap:2px;min-width:0}
+#v4Plan .v7-plan-toolbar strong{font-size:17px;line-height:1.25;letter-spacing:-.035em;color:var(--lo-text)}
+#v4Plan .v7-plan-toolbar span{font-size:11px;line-height:1.4;color:var(--lo-muted)}
+#v4Plan .v7-plan-toolbar button{min-height:43px;flex:0 0 auto;border:1px solid transparent;background:var(--lo-accent);color:var(--lo-bg);font-size:12px;font-weight:770;border-radius:12px;padding:9px 12px}
+#v4Plan .v7-plan-toolbar button:focus-visible{outline:3px solid var(--lo-accent);outline-offset:3px}
+body[data-lifeos-view="schedule"] #smartSchedulePanel.lo-advanced-collapsed,
+body[data-lifeos-view="schedule"] #calendarReviewPanel.lo-advanced-collapsed,
+body[data-lifeos-view="schedule"] #calendarHandoffPanel.lo-advanced-collapsed,
+body[data-lifeos-view="schedule"] #calendarChangePanel.lo-advanced-collapsed,
+body[data-lifeos-view="schedule"] #personalCompletionPanel.lo-advanced-collapsed{
+ display:flex;align-items:center;justify-content:space-between;gap:8px 12px;padding:13px 15px;margin-bottom:9px;box-shadow:none
+}
+body[data-lifeos-view="schedule"] .panel.lo-advanced-collapsed>h2{margin:0;font-size:14px;line-height:1.3}
+body[data-lifeos-view="schedule"] .panel.lo-advanced-collapsed>.lo-advanced-toggle{flex:0 0 auto;margin:0;padding:8px 10px;min-height:39px;font-size:11px}
+body[data-lifeos-view="schedule"] #calendarReviewPanel .lo-advanced-toggle,
+body[data-lifeos-view="schedule"] #smartSchedulePanel .lo-advanced-toggle{white-space:nowrap}
+@media(max-width:750px){
+ #v4Plan .v7-plan-toolbar{gap:7px}
+ #v4Plan .v7-plan-toolbar strong{font-size:15px}
+ #v4Plan .v7-plan-toolbar span{font-size:10px}
+ #v4Plan .v7-plan-toolbar button{min-height:40px;padding:8px 9px;font-size:11px}
+ body[data-lifeos-view="schedule"] .panel.lo-advanced-collapsed>h2{font-size:13px}
+ body[data-lifeos-view="schedule"] .panel.lo-advanced-collapsed>.lo-advanced-toggle{min-width:96px}
+}
