@@ -228,6 +228,30 @@ class BrowserSmoke(unittest.TestCase):
         self.assertEqual(page.locator('#quick button').count(), 10)
         self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
 
+    def test_track_workflow_order_and_manual_entry(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+        order = page.evaluate("""() => {
+          const root = document.querySelector('.layout > div:first-child');
+          const nodes = ['trackActivePanel','trackQuickPanel','trackDistractionPanel',
+                         'trackHistoryPanel','trackPastPanel'].map(id => document.getElementById(id));
+          return nodes.map(el => ({id: el.id, order: parseInt(getComputedStyle(el).order, 10),
+                                   visible: !!el.getClientRects().length}));
+        }""")
+        self.assertTrue(all(item['visible'] for item in order))
+        self.assertEqual([item['order'] for item in order], sorted(item['order'] for item in order))
+        past = page.locator('#trackPastPanel')
+        toggle = past.locator('.lo-advanced-toggle')
+        self.assertTrue(toggle.is_visible())
+        self.assertEqual(toggle.get_attribute('aria-expanded'), 'false')
+        self.assertFalse(past.locator('#pastForm').is_visible())
+        toggle.click()
+        self.assertTrue(past.locator('#pastForm').is_visible())
+        self.assertEqual(toggle.get_attribute('aria-expanded'), 'true')
+        toggle.click()
+        self.assertFalse(past.locator('#pastForm').is_visible())
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
