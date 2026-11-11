@@ -57,6 +57,7 @@ class BrowserSmoke(unittest.TestCase):
     def test_ideal_review_opens_controls(self):
         page = self.page
         page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+        page.locator('#v7-plan-tab-ideal').click()
         page.locator('[data-v4-review-ideal]').click()
         self.assertTrue(page.locator('#idealReview').is_visible())
         self.assertTrue(page.locator('#idealProposalList').is_visible())
@@ -138,6 +139,34 @@ class BrowserSmoke(unittest.TestCase):
               window.lifeosReadOnlyWorkspace = window.__lifeosOriginalRead;
               delete window.__lifeosOriginalRead;
             }""")
+
+    def test_plan_mobile_tabs_and_compact_schedule_editor(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+        page.locator('#v4Plan').wait_for(state='visible', timeout=5000)
+        tabs = page.locator('#v4Plan [data-v7-plan-view]')
+        self.assertEqual(tabs.count(), 3)
+        self.assertTrue(page.locator('#v4Plan .v7-plan-calendar').is_visible())
+        self.assertTrue(page.locator('#v4Plan .v7-plan-week-balance').is_visible())
+        self.assertTrue(page.locator('#v7-plan-panel-reality').is_visible())
+        self.assertFalse(page.locator('#v7-plan-panel-predicted').is_visible())
+        tabs.nth(1).click()
+        self.assertTrue(page.locator('#v7-plan-panel-predicted').is_visible())
+        self.assertFalse(page.locator('#v7-plan-panel-reality').is_visible())
+        tabs.nth(2).click()
+        self.assertTrue(page.locator('#v7-plan-panel-ideal').is_visible())
+        self.assertEqual(page.locator('#v4Plan [role="tab"][aria-selected="true"]').count(), 1)
+        editor = page.locator('#scheduleEditorPanel')
+        self.assertTrue(editor.is_visible())
+        self.assertFalse(page.locator('#scheduleForm').is_visible())
+        button = page.locator('#v7TogglePlanForm')
+        button.click()
+        self.assertTrue(page.locator('#scheduleForm').is_visible())
+        self.assertTrue(page.locator('#scheduleName').is_focused())
+        button.click()
+        self.assertFalse(page.locator('#scheduleForm').is_visible())
+        self.assertTrue(page.locator('#scheduleDay').is_visible())
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
 
     def test_calendar_today_shortcut_and_selected_date(self):
         page = self.page
