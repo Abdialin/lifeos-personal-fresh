@@ -282,6 +282,44 @@ class BrowserSmoke(unittest.TestCase):
         self.assertFalse(past.locator('#pastForm').is_visible())
         self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
 
+    def test_goals_editors_are_compact_but_accessible(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="goals"]').click()
+        page.locator('#loGoalsVisual').wait_for(state='visible', timeout=6000)
+        for form_id in ('todoForm', 'goalForm'):
+            form = page.locator('#' + form_id)
+            toggle = page.locator('[data-lo-form-toggle="' + form_id + '"]')
+            self.assertTrue(toggle.is_visible())
+            self.assertFalse(form.is_visible())
+            self.assertEqual(toggle.get_attribute('aria-expanded'), 'false')
+            toggle.click()
+            self.assertTrue(form.is_visible())
+            self.assertEqual(toggle.get_attribute('aria-expanded'), 'true')
+            toggle.click()
+            self.assertFalse(form.is_visible())
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
+
+    def test_life_sections_and_log_editors_are_accessible(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="life"]').click()
+        page.locator('#loLifeVisual').wait_for(state='visible', timeout=6000)
+        tabs = page.locator('#loLifeSectionTabs button')
+        self.assertEqual(tabs.count(), 3)
+        for key, form_id in [('routines', 'personalLogForm'), ('fitness', 'fitnessForm'), ('nutrition', 'mealForm')]:
+            tab = page.locator('[data-lo-life-section="' + key + '"]')
+            tab.click()
+            self.assertEqual(tab.get_attribute('aria-pressed'), 'true')
+            panel = page.locator('#' + form_id).locator('xpath=ancestor::section[contains(@class,"panel")]')
+            self.assertTrue(panel.is_visible())
+            toggle = panel.locator('[data-lo-form-toggle="' + form_id + '"]')
+            self.assertTrue(toggle.is_visible())
+            self.assertFalse(page.locator('#' + form_id).is_visible())
+            toggle.click()
+            self.assertTrue(page.locator('#' + form_id).is_visible())
+            toggle.click()
+            self.assertFalse(page.locator('#' + form_id).is_visible())
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
