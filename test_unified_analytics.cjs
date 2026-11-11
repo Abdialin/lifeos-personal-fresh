@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict');
+const A=require('./lifeos_unified_analytics.js');
+const h=3600000,now=10*h;
+const s=(start,end)=>({startAt:start,endAt:end});
+let x=A.summarize({sessions:[s(0,2*h),s(h,3*h)]},{start:0,end:4*h,now});
+assert.equal(x.summedRecordedMs,4*h);assert.equal(x.uniqueRecordedMs,3*h);assert.equal(x.overlapRecordedMs,h);
+x=A.summarize({sessions:[{status:'running',segments:[{start:7*h,end:null}]}]},{start:6*h,end:11*h,now});
+assert.equal(x.summedRecordedMs,3*h);
+x=A.summarize({sessions:[{status:'paused',segments:[{start:0,end:h},{start:2*h,end:3*h}]}]},{start:0,end:4*h,now});
+assert.equal(x.summedRecordedMs,2*h);
+x=A.summarize({sessions:[{segments:[]}]},{start:0,end:4*h,now});assert.equal(x.summedRecordedMs,0);
+x=A.summarize({schedule:[{startAt:0,endAt:2*h}]},{start:0,end:4*h,now});assert.equal(x.summedPlannedMs,2*h);assert.equal(x.summedRecordedMs,0);
+const day=A.localDayBounds(2026,11,11);assert.ok(day.end>day.start);
+console.log('Unified Analytics regression: PASS');
