@@ -1,0 +1,27 @@
+name: LifeOS Personal UI checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  personal-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate static asset routes
+        run: node test_static_asset_routes.cjs
+      - name: Validate visual integration
+        run: node test_visual_intelligence_v4.cjs
+      - name: Validate planner and reality comparisons
+        run: |
+          node test_planner_safety.cjs
+          node test_day_type_patterns.cjs
+          node test_historical_suggestions.cjs
+          node test_plan_reality_alignment.cjs
