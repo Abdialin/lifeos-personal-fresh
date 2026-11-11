@@ -66,7 +66,7 @@ function init(){const today=$('todayOverview'),nav=$('lifeosNavigation');if(!tod
  for(const [id,view] of [['v4Today','dashboard'],['v4Insights','analytics'],['v4Plan','schedule']]){const section=document.createElement('section');section.id=id;section.className='v4-section';section.dataset.v4View=view;section.setAttribute('aria-label',view+' visual overview');section.hidden=true;today.insertAdjacentElement('afterend',section)}
  function sync(){for(const id of ['v4Today','v4Insights','v4Plan'])$(id).hidden=document.body.dataset.lifeosView!==$(id).dataset.v4View;update()}
  nav.addEventListener('click',()=>setTimeout(sync,0));window.addEventListener('hashchange',()=>setTimeout(sync,0));
- document.addEventListener('click',e=>{const m=e.target.closest('[data-v4-month]');if(m){month.setMonth(month.getMonth()+Number(m.dataset.v4Month));update()}const d=e.target.closest('[data-v4-day]');if(d){selected=d.dataset.v4Day;update()}});
+ document.addEventListener('click',e=>{const m=e.target.closest('[data-v4-month]');if(m){const step=Number(m.dataset.v4Month);if(step===1||step===-1){month.setDate(1);month.setMonth(month.getMonth()+step);selected=dateKey(new Date(month.getFullYear(),month.getMonth(),1));update()}}const d=e.target.closest('[data-v4-day]');if(d){selected=d.dataset.v4Day;update()}});
  setTimeout(sync,0);setInterval(()=>{if(!document.hidden)update()},30000);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
