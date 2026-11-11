@@ -20,5 +20,5 @@ assert.equal(a.intersectionDuration([{start:0,end:10},{start:5,end:15}],[{start:
 assert.equal(a.intersectionDuration([],[]),0);
 const visual=fs.readFileSync('personal_visual_intelligence_v4.js','utf8');
 assert.match(visual,/Recorded during planned time/);
-assert.match(visual,/Overlapping plans/);
+assert.match(visual,/Overlapping planned hours/);
 console.log('Plan-versus-reality interval comparisons PASS');
