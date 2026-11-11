@@ -4,7 +4,7 @@
  function text(doc,id,fallback='—'){const el=doc.getElementById(id);return el&&el.textContent.trim()||fallback;}
  function mount(doc){
   const nav=doc.getElementById('lifeosNavigation'),layout=doc.querySelector('main.wrap > .layout');
-  if(!nav||!layout||doc.getElementById('lifeosLiveDashboard'))return;
+  if(!nav||!layout||doc.getElementById('lifeosLiveDashboard')||doc.getElementById('todayOverview'))return;
   const section=doc.createElement('section');section.id='lifeosLiveDashboard';section.className='lifeos-dashboard-summary';section.setAttribute('aria-label','Live dashboard summary');
   section.innerHTML='<div class="lifeos-summary-head"><div><h2>Your day at a glance</h2><p>Live information from your activity tracker. Overlapping time is shown separately.</p></div><span id="lifeosSummaryDate"></span></div><div class="lifeos-summary-grid"><div class="lifeos-summary-stat"><span>Active timers</span><strong id="lifeosSummaryActive">0</strong></div><div class="lifeos-summary-stat"><span>Unique tracked time</span><strong id="lifeosSummaryUnique">00:00</strong></div><div class="lifeos-summary-stat"><span>Overlapping time</span><strong id="lifeosSummaryOverlap">00:00</strong></div><div class="lifeos-summary-stat"><span>Completed today</span><strong id="lifeosSummaryCompleted">0</strong></div></div><div class="lifeos-summary-actions"><button type="button" data-lifeos-go="tracking">Start or manage timers</button><button type="button" data-lifeos-go="schedule">Open schedule</button><button type="button" data-lifeos-go="goals">View goals</button></div><p class="lifeos-summary-note" id="lifeosSummaryNote" role="status"></p>';
   layout.parentNode.insertBefore(section,layout);
