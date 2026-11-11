@@ -99,6 +99,15 @@ class BrowserSmoke(unittest.TestCase):
         toggle.click()
         self.assertFalse(recovery.locator('#reviewForgotten').is_visible())
 
+    def test_goals_and_personal_life_visual_dashboards(self):
+        page = self.page
+        for view, panel in [('goals', '#loGoalsVisual'), ('life', '#loLifeVisual')]:
+            page.locator(f'#lifeosNavigation button[data-view="{view}"]').click()
+            page.locator(panel).wait_for(state='visible', timeout=6000)
+            self.assertEqual(page.locator(f'{panel} .lo-kpi-row > div').count(), 3)
+            self.assertTrue(page.locator(f'{panel} .lo-goal-card').is_visible())
+            self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'))
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
@@ -109,7 +118,7 @@ class BrowserSmoke(unittest.TestCase):
             try:
                 page = context.new_page()
                 page.goto(url, wait_until='load', timeout=30000)
-                for view, panel in [('dashboard', '#v4Today'), ('schedule', '#v4Plan'), ('analytics', '#v4Insights')]:
+                for view, panel in [('dashboard', '#v4Today'), ('schedule', '#v4Plan'), ('analytics', '#v4Insights'), ('goals', '#loGoalsVisual'), ('life', '#loLifeVisual')]:
                     page.locator(f'#lifeosNavigation button[data-view="{view}"]').click()
                     page.locator(panel).wait_for(state='visible', timeout=5000)
                     page.screenshot(path=str(output / f'{device}-{view}.png'), full_page=True, animations='disabled')
