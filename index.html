@@ -62,6 +62,18 @@ body{overflow-x:hidden}
 .today-clarity{font-size:12px;color:#91a2bd;margin:13px 0 0}
 body:not([data-lifeos-view="dashboard"]) #todayOverview{display:none!important}
 @media(max-width:750px){.today-overview{padding:16px}.today-welcome h2{font-size:21px}.today-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.today-stat{padding:12px}.today-stat strong{font-size:23px}.today-actions{display:grid;grid-template-columns:1fr 1fr}.today-actions button:last-child{grid-column:1/-1}.today-live-dot{font-size:10px}}
+</style><style id="lifeos-mobile-2026">
+html{scroll-padding-bottom:100px}
+body{min-width:0;overflow-x:clip}
+.wrap,.layout,.layout>*,.panel{min-width:0}
+.panel{overflow-wrap:anywhere}
+input,select,textarea,button{max-width:100%}
+@media(max-width:750px){
+ .wrap{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))!important}
+ input,select,textarea{font-size:16px}
+ .panel{margin-bottom:14px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}
 </style></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="pill" id="status">● Ready</div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
   <div class="today-welcome"><div><div class="today-eyebrow" id="todayFullDate">Today</div><h2>Your day at a glance</h2><p>See your recorded activity, priorities and next steps.</p></div><span class="today-live-dot">● Live view</span></div>
   <div class="today-stats">
