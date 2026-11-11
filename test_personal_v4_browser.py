@@ -146,6 +146,7 @@ class BrowserSmoke(unittest.TestCase):
         page.locator('#v4Plan').wait_for(state='visible', timeout=5000)
         tabs = page.locator('#v4Plan [data-v7-plan-view]')
         self.assertEqual(tabs.count(), 3)
+        page.locator('#v7-plan-tab-reality').click()
         self.assertTrue(page.locator('#v4Plan .v7-plan-calendar').is_visible())
         self.assertTrue(page.locator('#v4Plan .v7-plan-week-balance').is_visible())
         self.assertTrue(page.locator('#v7-plan-panel-reality').is_visible(), page.evaluate("() => [...document.querySelectorAll('#v4Plan > .v4-card')].map(e => ({id:e.id,hidden:e.hidden,display:getComputedStyle(e).display,rect:e.getBoundingClientRect().height}))"))
