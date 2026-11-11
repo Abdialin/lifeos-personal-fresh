@@ -674,7 +674,7 @@ body[data-lifeos-view="life"] .lo-visual-dashboard{gap:11px;margin:8px 0 15px}
 body[data-lifeos-view="life"] .lo-kpi-row>div{padding:13px 15px}
 body[data-lifeos-view="life"] .lo-goal-card{padding:16px}
 body[data-lifeos-view="life"] .panel.lo-life-inactive{display:none!important}
-.lo-life-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:3px 0 12px;min-width:0}
+.lo-life-tabs{display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:3px 0 12px;min-width:0}
 .lo-life-tabs button{appearance:none;background:var(--lo-surface-2);color:var(--lo-muted);font-size:12px;font-weight:740;padding:10px 8px;min-width:0;min-height:44px;border:1px solid var(--lo-border);border-radius:12px}
 .lo-life-tabs button[aria-pressed="true"]{background:var(--lo-accent-dark);border-color:var(--lo-accent);color:var(--lo-accent)}
 body[data-lifeos-view="life"] .lo-editor-bar{margin:3px 0 12px}
@@ -699,3 +699,6 @@ body[data-lifeos-view="life"] .lo-goal-card .lo-small-note{font-size:11px}
  .lo-life-tabs{gap:5px}
  .lo-life-tabs button{font-size:11px;padding:8px 4px}
 }
+
+/* Life navigation is outside the legacy panel toggler: show it only in My Life. */
+body[data-lifeos-view="life"] .lo-life-tabs{display:grid}
