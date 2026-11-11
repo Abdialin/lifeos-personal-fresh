@@ -5,6 +5,7 @@ const byId=id=>document.getElementById(id);
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const short=value=>Number(value.toFixed(1)).toLocaleString(undefined,{maximumFractionDigits:1});
 const todayKey=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+let selectedRoutineDay=todayKey(new Date());
 function read(){try{return typeof window.lifeosReadOnlyWorkspace==='function'?window.lifeosReadOnlyWorkspace():null}catch(_){return null}}
 function ranges(){
  const now=new Date(),monday=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -64,10 +65,25 @@ function renderLife(ws){
  const estimatedSleep=logs.filter(x=>x.category==='Sleep'&&x.precision==='estimated'&&Number.isFinite(x.minutes)&&x.minutes>=0);
  const avg=arr=>arr.length?short(arr.reduce((sum,x)=>sum+x.minutes,0)/arr.length/60)+' h':'—';
  const uniqueDays=new Set(logs.map(x=>x.date)).size;
- const sleepLabel=measuredSleep.length?'Measured sleep average':'Measured sleep average';
+ const sleepLabel='Measured sleep average';
+ const today=new Date(),daily=[];
+ for(let daysAgo=6;daysAgo>=0;daysAgo--){
+  const date=new Date(today.getFullYear(),today.getMonth(),today.getDate()-daysAgo);
+  const key=todayKey(date),entries=logs.filter(x=>x.date===key);
+  daily.push({key,label:date.toLocaleDateString(undefined,{weekday:'short'}),dateLabel:date.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}),entries});
+ }
+ const selected=daily.find(x=>x.key===selectedRoutineDay)||daily[6];
+ const maximum=Math.max(1,...daily.map(x=>x.entries.length));
+ const rhythm='<div class="lo-life-rhythm-head"><strong>Seven-day routine rhythm</strong><span>Tap a day to explore</span></div>'+
+ '<div class="lo-life-rhythm" role="group" aria-label="Recorded personal routine entries over seven days">'+daily.map(x=>
+  '<button type="button" data-lo-routine-day="'+x.key+'" aria-pressed="'+(x.key===selected.key?'true':'false')+'" aria-label="'+escapeHtml(x.dateLabel)+': '+x.entries.length+' recorded routine entries"><strong>'+x.entries.length+'</strong><span class="lo-life-rhythm-track"><i style="height:'+(x.entries.length/maximum*100).toFixed(1)+'%"></i></span><span>'+escapeHtml(x.label)+'</span></button>'
+ ).join('')+'</div>'+
+ '<div class="lo-life-rhythm-detail" role="status" aria-live="polite"><strong>'+escapeHtml(selected.dateLabel)+' · '+selected.entries.length+' entries</strong>'+
+ (selected.entries.length?'<p>'+escapeHtml([...new Set(selected.entries.map(x=>String(x.category||'Other')))].join(' · '))+'</p>':'<p>No personal entries recorded on this date. Missing logs are unknown.</p>')+'</div>';
+
  target.innerHTML='<div class="lo-visual-head"><div><span class="lo-eyebrow">Your routines</span><h2>My Life overview</h2><p>Last seven calendar dates · Personal logs, separate from tracked sessions</p></div><span class="lo-soft-chip">Recorded evidence</span></div>'+
  '<div class="lo-kpi-row lo-kpi-actions"><button type="button" data-lo-life-jump="routines" aria-label="Open your routine records"><span>Personal logs</span><strong>'+logs.length+'</strong><small>View routines ↗</small></button><div><span>Days with logs</span><strong>'+uniqueDays+' <small>/ 7</small></strong></div><div><span>'+sleepLabel+'</span><strong>'+avg(measuredSleep)+'</strong></div></div>'+
- '<div class="lo-goal-card"><h3>Recorded routines by category</h3>'+(bar||'<p class="lo-no-data">No personal routine logs in the last seven dates. Add an entry below to populate this view.</p>')+
+ '<div class="lo-goal-card">'+rhythm+'<h3>Recorded routines by category</h3>'+(bar||'<p class="lo-no-data">No personal routine logs in the last seven dates. Add an entry below to populate this view.</p>')+
  '<p class="lo-small-note">Bars count log entries, not minutes or consistency. '+(estimatedSleep.length?'Estimated sleep average: '+avg(estimatedSleep)+'. ':'')+'Missing logs are unknown; this is not a recovery score.</p></div>';
 }
 function init(){
@@ -86,6 +102,8 @@ function init(){
   if(view==='goals')renderGoals(ws);else renderLife(ws);
  }
  document.addEventListener('click',event=>{
+  const routine=event.target.closest('[data-lo-routine-day]');
+  if(routine){selectedRoutineDay=routine.dataset.loRoutineDay;const workspace=read();if(workspace)renderLife(workspace);byId('loLifeVisual')?.querySelector('[data-lo-routine-day="'+selectedRoutineDay+'"]')?.focus();return;}
   const jump=event.target.closest('[data-lo-jump]');
   if(jump){
    const form=byId(jump.dataset.loJump),panel=form?.closest('section.panel');
