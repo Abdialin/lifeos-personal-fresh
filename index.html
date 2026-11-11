@@ -434,13 +434,19 @@ async function requestState(method='GET',payload=null){let res=await fetch('/api
 function canonical(v){if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])]));return v}
 function sameSnapshot(a,b){return JSON.stringify(canonical(a))===JSON.stringify(canonical(b))}
 async function reconcileRemote(remote){
- let rev=remote.revision,changed=false;
- while(outbox.length&&sameSnapshot(remote.data,outbox[0].snapshot)){
-  if(!writeOutbox(outbox.slice(1)))throw new Error('Cannot acknowledge operation locally');
-  changed=true;
+ // A lost HTTP response may hide a successful server commit. Acknowledge only
+ // after the canonical local snapshot + journal are atomically updated.
+ const revision=remote.revision;
+ let next=outbox;
+ while(next.length&&sameSnapshot(remote.data,next[0].snapshot))next=next.slice(1);
+ if(next.length!==outbox.length){
+  const meta={revision,dirty:next.length>0};
+  if(!atomicCommit(data,next,meta))throw new Error('Could not durably acknowledge server state');
+  outbox=next;syncMeta=meta;
+  // Compatibility keys are mirrors; the atomic record is authoritative on reload.
+  try{localStorage.setItem(OUTBOX_KEY,JSON.stringify(outbox));localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta))}catch(_){}
  }
- if(changed){syncMeta.revision=rev;syncMeta.dirty=outbox.length>0;saveSyncMeta()}
- return rev;
+ return revision;
 }
 async function connect(){
  if(outboxCorrupt)return syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');
@@ -504,17 +510,19 @@ async function push(){
     }
    }else r=await requestState('PUT',{revision:syncRevision,data:entry.snapshot});
    if(epoch!==syncEpoch)return;
-   syncRevision=r.revision;syncMeta.revision=r.revision;
    const remaining=outbox.filter(x=>x.id!==entry.id).map(x=>{
     if(!decision)return x;
     const snapshot=JSON.parse(JSON.stringify(x.snapshot));
     if(Array.isArray(snapshot.calendarAuditPending))snapshot.calendarAuditPending=snapshot.calendarAuditPending.filter(d=>d.id!==decision.id);
     return {...x,snapshot};
    });
-   if(decision&&Array.isArray(data.calendarAuditPending))data.calendarAuditPending=data.calendarAuditPending.filter(d=>d.id!==decision.id);
-   if(!atomicCommit(data,remaining,{revision:r.revision,dirty:remaining.length>0}))throw new Error('Server saved, but atomic acknowledgement failed');
-   if(!writeOutbox(remaining))syncStatus('Saved atomically; legacy journal mirror unavailable');
-   syncMeta.dirty=outbox.length>0;saveSyncMeta();
+   const nextData=decision?JSON.parse(JSON.stringify(data)):data;
+   if(decision&&Array.isArray(nextData.calendarAuditPending))nextData.calendarAuditPending=nextData.calendarAuditPending.filter(d=>d.id!==decision.id);
+   const nextMeta={revision:r.revision,dirty:remaining.length>0};
+   if(!atomicCommit(nextData,remaining,nextMeta))throw new Error('Server saved, but atomic acknowledgement failed');
+   // Only advance local in-memory acknowledgement after durable commit succeeds.
+   data=nextData;outbox=remaining;syncMeta=nextMeta;syncRevision=r.revision;
+   try{localStorage.setItem(KEY,JSON.stringify(data));localStorage.setItem(OUTBOX_KEY,JSON.stringify(outbox));localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta))}catch(_){}
    syncStatus(outbox.length?`Saved revision ${syncRevision} · ${outbox.length} queued`:`Synced to server · revision ${syncRevision}`);if(!outbox.length)scheduleCalendarAuditUpload();
   }
  }catch(e){
