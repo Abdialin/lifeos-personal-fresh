@@ -34,8 +34,9 @@ function dayTypePatterns(sessions,anchor,{minimumDays=14,lookbackDays=28}={}){
  }
  return {...evidence,dayTypes:buckets.map(b=>({dayOfWeek:b.dayOfWeek,observedDays:b.trackedDays.size,averageRecordedMinutes:b.trackedDays.size?Math.round(b.minutes/b.trackedDays.size):null,topActivities:[...b.activities].sort((a,c)=>c[1]-a[1]).slice(0,3).map(([name,minutes])=>({name,recordedMinutes:Math.round(minutes)})),confidence:evidence.confidence==='reviewable'&&b.trackedDays.size>=3?'pattern-observed':'insufficient'})),limitations:['Descriptive records only; no inferred availability','Overlapping activity durations may double-count','Averages cover tracked days only, not all calendar days','No automated schedule writes']};
 }
-function historicalSuggestions({sessions=[],schedule=[],from,to,minimumDays=14,lookbackDays=28}={}){
+function historicalSuggestions({sessions=[],schedule=[],from,to,minimumDays=14,lookbackDays=28,recoveryBufferMinutes=30}={}){
  if(!finite(from)||!finite(to)||to<=from||to-from>14*DAY)throw Error('Select a window of up to 14 days');
+ if(!Number.isInteger(recoveryBufferMinutes)||recoveryBufferMinutes<0||recoveryBufferMinutes>240)throw Error('Invalid recovery buffer');
  const evidence=historyEvidence(sessions,from,minimumDays,lookbackDays);
  if(evidence.confidence!=='reviewable')return {...evidence,suggestions:[],limitations:['Insufficient completed tracking history','No inferred availability','Review required before scheduling']};
  const cutoff=new Date(from);cutoff.setHours(0,0,0,0);cutoff.setDate(cutoff.getDate()-lookbackDays);
@@ -55,7 +56,9 @@ function historicalSuggestions({sessions=[],schedule=[],from,to,minimumDays=14,l
  }
  const templates=[...groups.values()].filter(g=>g.days.size>=3).map(g=>{
   const xs=[...g.days.values()],median=values=>{const a=values.sort((x,y)=>x-y);return a[Math.floor(a.length/2)]};
-  return {name:g.name,weekday:g.weekday,observations:g.days.size,startMinute:median(xs.map(x=>x.startMinute)),durationMinutes:median(xs.map(x=>x.duration))};
+  const starts=xs.map(x=>x.startMinute),center=median(starts.slice()),spread=Math.max(...starts)-Math.min(...starts);
+  return {name:g.name,weekday:g.weekday,observations:g.days.size,startMinute:center,durationMinutes:median(xs.map(x=>x.duration)),startTimeSpreadMinutes:spread,patternConsistency:spread<=30?'consistent':spread<=90?'variable':'highly-variable'};
+
  }).filter(g=>g.durationMinutes>=5);
  const suggestions=[];
  let day=new Date(from);day.setHours(0,0,0,0);
@@ -68,10 +71,12 @@ function historicalSuggestions({sessions=[],schedule=[],from,to,minimumDays=14,l
    const candidate={startAt,endAt};
    const conflicts=(schedule||[]).filter(p=>p&&p.status!=='skipped'&&validInterval(p)&&overlaps(candidate,p)).map(p=>String(p.id));
    const actualConflicts=(sessions||[]).filter(s=>s&&s.status!=='discarded'&&finite(s.startAt)&&finite(s.endAt)&&s.endAt>s.startAt&&overlaps(candidate,s)).map(s=>String(s.id));
-   suggestions.push({id:'pattern:'+pattern.weekday+':'+pattern.name.toLocaleLowerCase()+'@'+startAt,name:pattern.name,startAt,endAt,observations:pattern.observations,conflicts,actualConflicts,confidence:'pattern-observed',requiresApproval:true,source:'historical-pattern',status:'proposed'});
+   const buffer=recoveryBufferMinutes*60000,expanded={startAt:startAt-buffer,endAt:endAt+buffer};
+   const recoveryConflicts=(schedule||[]).filter(p=>p&&p.status!=='skipped'&&validInterval(p)&&!overlaps(candidate,p)&&overlaps(expanded,p)).map(p=>String(p.id));
+   suggestions.push({id:'pattern:'+pattern.weekday+':'+pattern.name.toLocaleLowerCase()+'@'+startAt,name:pattern.name,startAt,endAt,observations:pattern.observations,startTimeSpreadMinutes:pattern.startTimeSpreadMinutes,patternConsistency:pattern.patternConsistency,recoveryBufferMinutes,recoveryConflicts,conflicts,actualConflicts,confidence:'pattern-observed',requiresApproval:true,source:'historical-pattern',status:'proposed'});
   }
  }
- return {...evidence,suggestions:suggestions.sort((a,b)=>a.startAt-b.startAt),limitations:['Heuristic repeat-pattern suggestion, not a validated forecast','At least three distinct historical days for the same weekday and activity','Unlogged time is unknown, not available','No schedule or external calendar writes','Conflicts require explicit review']};
+ return {...evidence,suggestions:suggestions.sort((a,b)=>a.startAt-b.startAt),limitations:['Heuristic repeat-pattern suggestion, not a validated forecast','At least three distinct historical days for the same weekday and activity','Unlogged time is unknown, not available','No schedule or external calendar writes','Conflicts and recovery-buffer warnings require explicit review']};
 }
 function build({routines=[],schedule=[],sessions=[],from,to,minimumDays=14,lookbackDays=28}={}){
  if(!finite(from)||!finite(to)||to<=from||to-from>14*DAY)throw Error('Select a window of up to 14 days');
@@ -92,7 +97,7 @@ function build({routines=[],schedule=[],sessions=[],from,to,minimumDays=14,lookb
  return {...evidence,proposals,limitations:['Rule-based routine projection, not a learned forecast','Only completed records in the preceding evidence window count','No inferred free time','Missing logs are not evidence of availability','Plan and actual-session conflicts require review','No automatic schedule writes']};
 }
 function approve(proposal,existing,id,createdAt){
- if(!proposal||proposal.requiresApproval!==true||proposal.conflicts?.length||proposal.actualConflicts?.length||!id||!validInterval(proposal))throw Error('Proposal requires review or has conflicts');
+ if(!proposal||proposal.requiresApproval!==true||proposal.conflicts?.length||proposal.actualConflicts?.length||proposal.recoveryConflicts?.length||!id||!validInterval(proposal))throw Error('Proposal requires review or has conflicts');
  if((existing||[]).some(p=>p.idealProposalId===proposal.id||p.id===id||(p.status!=='skipped'&&validInterval(p)&&overlaps(proposal,p))))throw Error('Already approved or overlapping schedule');
  return {id,name:proposal.name,startAt:proposal.startAt,endAt:proposal.endAt,status:'planned',notes:'User-approved LifeOS proposal; no external calendar write',reminder:false,createdAt,idealProposalId:proposal.id};
 }
