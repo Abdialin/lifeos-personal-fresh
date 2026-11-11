@@ -89,6 +89,68 @@ function enhanceViews(){
   button.addEventListener('click',()=>apply(!expanded));
   apply(expanded);
  }
+
+ /* V8: Goals and My Life retain their records but expose editor forms only on demand. */
+ const formDefinitions=[
+  ['todoForm','Add task','To-do list'],
+  ['goalForm','Add goal','Weekly goals'],
+  ['fitnessForm','Log workout','Fitness Studio'],
+  ['mealForm','Log meal','Nutrition'],
+  ['personalLogForm','Log routine','Personal routines']
+ ];
+ for(const [id,action,label] of formDefinitions){
+  const form=document.getElementById(id),panel=form?.closest('section.panel');
+  if(!form||!panel||panel.querySelector('[data-lo-form-toggle]'))continue;
+  const title=panel.querySelector('h2');
+  if(!title)continue;
+  const bar=document.createElement('div');bar.className='lo-editor-bar';
+  bar.innerHTML='<span class="lo-editor-label">'+label+'</span>';
+  const toggle=document.createElement('button');toggle.type='button';
+  toggle.className='lo-editor-toggle';toggle.dataset.loFormToggle=id;
+  toggle.setAttribute('aria-controls',id);
+  toggle.setAttribute('aria-expanded','false');
+  function apply(open,focus=false){
+   form.hidden=!open;
+   toggle.setAttribute('aria-expanded',String(open));
+   toggle.textContent=open?'− Close editor':'+ '+action;
+   panel.classList.toggle('lo-editor-open',open);
+   if(open&&focus)form.querySelector('input:not([type="hidden"]),select,textarea')?.focus();
+  }
+  bar.append(toggle);title.insertAdjacentElement('afterend',bar);
+  title.classList.add('lo-editor-heading');
+  toggle.addEventListener('click',()=>apply(form.hidden,true));
+  form.addEventListener('submit',()=>window.setTimeout(()=>apply(false),180));
+  apply(false);
+ }
+ /* My Life: three clear workspaces, one visible editor area at a time. */
+ const lifeSections=[
+  ['personalLogForm','routines','Routines'],
+  ['fitnessForm','fitness','Fitness'],
+  ['mealForm','nutrition','Nutrition']
+ ].map(([formId,key,label])=>({panel:document.getElementById(formId)?.closest('section.panel'),key,label}));
+ if(lifeSections.every(x=>x.panel)&&!document.getElementById('loLifeSectionTabs')){
+  const group=document.createElement('nav');group.id='loLifeSectionTabs';
+  group.className='lo-life-tabs';group.setAttribute('aria-label','My Life sections');
+  const area=lifeSections[0].panel.parentElement;
+  area.insertBefore(group,lifeSections[0].panel);
+  let selected='routines';
+  const activate=key=>{
+   selected=key;
+   for(const item of lifeSections){
+    const show=item.key===key;
+    item.panel.classList.toggle('lo-life-inactive',!show);
+    const button=group.querySelector('[data-lo-life-section="'+key+'"]');
+    if(button)button.setAttribute('aria-pressed',String(show));
+   }
+  };
+  for(const {key,label} of lifeSections){
+   const button=document.createElement('button');button.type='button';
+   button.dataset.loLifeSection=key;button.textContent=label;
+   button.addEventListener('click',()=>activate(key));
+   group.appendChild(button);
+  }
+  activate(selected);
+ }
  const planToggle=document.getElementById('v7TogglePlanForm');
  const planForm=document.getElementById('scheduleForm');
  if(planToggle&&planForm){
