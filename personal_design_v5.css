@@ -169,3 +169,32 @@ body,body * {text-rendering:optimizeLegibility}
 }
 @media(max-width:365px){.v5-mix{grid-template-columns:1fr;justify-items:center}.v5-legend{width:100%}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lifeos-theme-toggle,.v4-section .v4-calendar-grid button{transition:none}}
+
+/* V5.1: chart legibility, compact small-screen layouts and accessible controls. */
+.v4-section .v4-card,.v5-mix,.v5-legend,.v5-week-chart{min-width:0}
+.v4-section .v4-card h3{overflow-wrap:break-word;text-wrap:balance}
+.v4-section .v4-event{min-width:0}
+.v4-section .v4-event span,.v4-section .v4-event strong{min-width:0;overflow-wrap:anywhere}
+.v4-section .v4-calendar-grid button{font-variant-numeric:tabular-nums}
+.v4-section .v4-calendar-head button:focus-visible,
+.v4-section .v4-review-button:focus-visible,
+.lifeos-theme-toggle:focus-visible{outline:3px solid var(--lo-accent);outline-offset:3px}
+.v5-week-col{font-variant-numeric:tabular-nums}
+.v5-week-track i{transition:height .18s ease}
+.v5-legend-item{line-height:1.4}
+.v5-legend-item span{white-space:normal;overflow-wrap:anywhere}
+:root[data-lifeos-theme="light"] .v4-section .v4-calendar-grid .v4-selected{
+ outline-color:#086f62;outline-offset:1px
+}
+@media(max-width:420px){
+ .v4-section .v4-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .v4-section .v4-metrics > div{padding:11px 9px}
+ .v4-section .v4-metrics strong{font-size:20px}
+ .v4-section .v4-calendar-grid button{min-width:0;font-size:12px}
+ .v5-week-chart{gap:4px}
+ .v5-week-track{width:100%;padding:5px 2px 0;gap:2px}
+ .v5-chart-key{gap:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .v5-week-track i,.v4-section .v4-calendar-grid button{transition:none!important;transform:none!important}
+}
