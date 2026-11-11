@@ -59,6 +59,23 @@ class BrowserSmoke(unittest.TestCase):
         self.assertTrue(page.locator('#idealReview').is_visible())
         self.assertTrue(page.locator('#idealProposalList').is_visible())
 
+    def test_theme_switch_preserves_charts_and_navigation(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="analytics"]').click()
+        toggle = page.locator('.lifeos-theme-toggle')
+        self.assertTrue(toggle.is_visible(), 'Theme control missing')
+        before = page.evaluate('document.documentElement.dataset.lifeosTheme')
+        toggle.click()
+        after = page.evaluate('document.documentElement.dataset.lifeosTheme')
+        self.assertNotEqual(before, after, 'Theme switch did not change theme')
+        self.assertTrue(page.locator('#v4Insights').is_visible(), 'Analytics disappeared after theme switch')
+        self.assertTrue(page.locator('#v4Insights .v4-card').count() >= 1, 'Analytics cards missing after theme switch')
+        self.assertEqual(page.locator('#lifeosNavigation button[data-view]').count(), 6)
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 2'),
+                        'Theme switch introduced horizontal overflow')
+        toggle.click()
+        self.assertEqual(page.evaluate('document.documentElement.dataset.lifeosTheme'), before)
+
     def test_no_runtime_errors_and_mobile_overflow(self):
         self.assertEqual([], self.failed_assets)
         self.assertEqual([], self.errors)
