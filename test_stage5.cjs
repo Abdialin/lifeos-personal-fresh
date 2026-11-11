@@ -6,7 +6,7 @@ for(const fragment of [
  'lifeos-v4-sync-meta','lifeos-v4-stage11-outbox','function queueCurrentState()',
  'function scheduleSync(','window.addEventListener(\'online\'',
  'remote.revision!==syncMeta.revision','syncSuppressed=true',
- 'if(!atomicCommit(data,next,nextMeta))return false'
+ 'if(!atomicCommit(data,remaining,{revision:r.revision,dirty:remaining.length>0}))throw new Error'
 ])assert(script.includes(fragment),'Missing sync safety feature: '+fragment);
 assert(script.includes("const KEY='lifeos-live-v1'"));
 assert(script.includes("fetch('/api/state'"));
