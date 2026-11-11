@@ -831,3 +831,30 @@ body[data-lifeos-view="life"] .lo-goal-card>h3{margin-top:18px}
  .lo-life-rhythm-head strong{font-size:13px}
 }
 @media(max-width:350px){.lo-life-rhythm{gap:2px}.lo-life-rhythm button{min-height:117px;padding:7px 1px}.lo-life-rhythm-track{width:min(100%,21px)}}
+
+/* V11 read-only local persistence / cloud queue status. */
+#loStorageHealth{display:none}
+body[data-lifeos-view="tracking"] #loStorageHealth{
+ display:grid;grid-template-columns:1fr auto;gap:3px 12px;align-items:center;
+ order:2;padding:11px 14px;margin:0 0 10px;
+ background:var(--lo-surface-2);border:1px solid var(--lo-border);
+ border-radius:14px;color:var(--lo-text);font-size:12px;min-width:0;
+}
+body[data-lifeos-view="tracking"] #trackQuickPanel{order:3}
+body[data-lifeos-view="tracking"] #trackDistractionPanel{order:4}
+body[data-lifeos-view="tracking"] #trackHistoryPanel{order:5}
+body[data-lifeos-view="tracking"] #trackPastPanel{order:6}
+body[data-lifeos-view="tracking"] #trackingRecoveryPanel{order:7}
+body[data-lifeos-view="tracking"] #activityHierarchyPanel{order:8}
+body[data-lifeos-view="tracking"] #sessionToolsPanel{order:9}
+body[data-lifeos-view="tracking"] #connectedDatabasePanel{order:10}
+body[data-lifeos-view="tracking"] #cloudSyncPanel{order:11}
+#loStorageHealth strong{font-weight:750;white-space:nowrap}
+#loStorageHealth .lo-storage-health-state{color:var(--lo-accent);font-weight:710;text-align:right;overflow-wrap:anywhere}
+#loStorageHealth small{grid-column:1/-1;color:var(--lo-muted);font-size:11px;line-height:1.35}
+#loStorageHealth[data-health="warning"] .lo-storage-health-state{color:var(--lo-danger)}
+@media(max-width:750px){
+ body[data-lifeos-view="tracking"] #loStorageHealth{padding:10px 12px;gap:4px 7px}
+ #loStorageHealth{font-size:11px}
+ #loStorageHealth small{font-size:10px}
+}
