@@ -353,6 +353,25 @@ class BrowserSmoke(unittest.TestCase):
             finally:
                 context.close()
 
+    def test_summary_shortcuts_open_existing_forms_without_changing_data(self):
+        page = self.page
+        page.locator('#lifeosNavigation button[data-view="goals"]').click()
+        page.locator('#loGoalsVisual').wait_for(state='visible', timeout=6000)
+        self.assertEqual(page.locator('#loGoalsVisual [data-lo-jump]').count(), 2)
+        for form_id in ('goalForm','todoForm'):
+            form = page.locator('#'+form_id)
+            self.assertFalse(form.is_visible())
+            page.locator('#loGoalsVisual [data-lo-jump="'+form_id+'"]').click()
+            self.assertTrue(form.is_visible())
+            self.assertEqual(page.locator('[data-lo-form-toggle="'+form_id+'"]').get_attribute('aria-expanded'),'true')
+        page.locator('#lifeosNavigation button[data-view="life"]').click()
+        page.locator('#loLifeVisual').wait_for(state='visible', timeout=6000)
+        page.locator('[data-lo-life-section="fitness"]').click()
+        self.assertEqual(page.locator('[data-lo-life-section="fitness"]').get_attribute('aria-pressed'),'true')
+        page.locator('#loLifeVisual [data-lo-life-jump="routines"]').click()
+        self.assertEqual(page.locator('[data-lo-life-section="routines"]').get_attribute('aria-pressed'),'true')
+        self.assertTrue(page.locator('#personalActivityPanel').is_visible())
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
