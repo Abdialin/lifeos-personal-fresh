@@ -20,4 +20,7 @@ assert.match(visual,/span=en-st/,'Timeline must use actual local-day length (23,
 assert.match(visual,/Math\.min\(100-left/,'Timeline bars must not overflow their day');
 assert.match(visual,/visibilitychange/,'Visuals should refresh when returning to the tab');
 assert.match(visual,/month\.setDate\(1\);month\.setMonth/,'Month navigation must avoid end-of-month rollover');
+for(const title of ['My Reality', 'My Predicted Week', 'My Ideal Schedule'])assert.ok(visual.includes(title),'Missing planning view: '+title);
+assert.match(visual,/planningComparison\(ws,now\)\+chartCard/,'Three-view summary must be rendered with the calendar');
+assert.match(visual,/Missing logs are unknown time, not free time/,'Predictions must not assume unlogged time is available');
 console.log('V4 visual integration PASS');
