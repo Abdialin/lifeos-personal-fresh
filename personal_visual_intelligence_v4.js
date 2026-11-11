@@ -29,6 +29,19 @@ function renderInsights(ws,now){
  const breakdown=top.length?top.map(([name,ms])=>'<div class="v4-category"><span>'+esc(name)+'</span><div><i style="width:'+(ms/largest*100)+'%"></i></div><b>'+fmt(ms)+'</b></div>').join(''):'<p class="v4-muted">Activity categories will appear once you record time.</p>';
  target.innerHTML=chartCard('Last seven days',bars)+chartCard('Time by activity',breakdown);
 }
+function planningComparison(ws,now){
+ const today=new Date(now),monday=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+ monday.setDate(monday.getDate()-(monday.getDay()+6)%7);
+ const weekStart=monday.getTime(),weekEnd=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+7).getTime();
+ const report=engine().summarize(ws,{start:weekStart,end:weekEnd,now});
+ const evidenceDays=new Set(report.recorded.map(x=>dateKey(new Date(x.start)))).size;
+ const recorded=report.uniqueRecordedMs,planned=report.uniquePlannedMs;
+ const predicted='<p class="v4-muted">Prediction is not yet available in this view. '+evidenceDays+' day(s) with recorded activity this week. Missing logs are unknown time, not free time. No schedule changes are made.</p>';
+ const ideal='<p class="v4-muted">Ideal routines are managed separately. Review your desired weekly routine against existing plans before approving any changes.</p>';
+ return chartCard('My Reality · this week','<div class="v4-metrics"><div><strong>'+fmt(recorded)+'</strong><span>Unique recorded</span></div><div><strong>'+fmt(report.overlapRecordedMs)+'</strong><span>Overlapping records</span></div></div><p class="v4-muted">Only recorded time through now is counted.</p>')+
+ chartCard('My Predicted Week · review only','<div class="v4-metrics"><div><strong>'+fmt(planned)+'</strong><span>Currently planned</span></div></div>'+predicted)+
+ chartCard('My Ideal Schedule',ideal);
+}
 function renderCalendar(ws,now){
  const target=$('v4Plan');if(!target)return;
  const y=month.getFullYear(),m=month.getMonth(),first=new Date(y,m,1),offset=(first.getDay()+6)%7,last=new Date(y,m+1,0).getDate(),total=Math.ceil((offset+last)/7)*7;
@@ -40,7 +53,7 @@ function renderCalendar(ws,now){
  const picked=new Date(selected+'T12:00:00'),r=day(ws,picked,now);
  const entries=[...r.planned.map(x=>({...x,kind:'Planned'})),...r.recorded.map(x=>({...x,kind:'Recorded'}))].sort((a,b)=>a.start-b.start);
  const list=entries.length?entries.slice(0,20).map(x=>'<div class="v4-event"><span>'+new Date(x.start).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'–'+new Date(x.end).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span><strong>'+esc(x.name)+'</strong><em>'+x.kind+'</em></div>').join(''):'<p class="v4-muted">No recorded or planned intervals for this date.</p>';
- target.innerHTML=chartCard('Calendar · recorded ● / planned ◇','<div class="v4-calendar-head"><button type="button" data-v4-month="-1" aria-label="Previous month">‹</button><strong>'+first.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</strong><button type="button" data-v4-month="1" aria-label="Next month">›</button></div><div class="v4-calendar-grid">'+['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>'<b>'+x+'</b>').join('')+cells.join('')+'</div>')+chartCard('Selected day · '+esc(selected),'<div class="v4-metrics"><div><strong>'+fmt(r.summedRecordedMs)+'</strong><span>Recorded</span></div><div><strong>'+fmt(r.summedPlannedMs)+'</strong><span>Planned</span></div></div>'+list+'<p class="v4-muted">Calendar is read-only. Use Plan to create or change scheduled activities.</p>');
+ target.innerHTML=planningComparison(ws,now)+chartCard('Calendar · recorded ● / planned ◇','<div class="v4-calendar-head"><button type="button" data-v4-month="-1" aria-label="Previous month">‹</button><strong>'+first.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</strong><button type="button" data-v4-month="1" aria-label="Next month">›</button></div><div class="v4-calendar-grid">'+['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>'<b>'+x+'</b>').join('')+cells.join('')+'</div>')+chartCard('Selected day · '+esc(selected),'<div class="v4-metrics"><div><strong>'+fmt(r.summedRecordedMs)+'</strong><span>Recorded</span></div><div><strong>'+fmt(r.summedPlannedMs)+'</strong><span>Planned</span></div></div>'+list+'<p class="v4-muted">Calendar is read-only. Use Plan to create or change scheduled activities.</p>');
 }
 function update(){if(!engine()||typeof window.lifeosReadOnlyWorkspace!=='function')return;try{const ws=workspace(),now=Date.now(),view=document.body.dataset.lifeosView;if(view==='dashboard')renderToday(ws,now);if(view==='analytics')renderInsights(ws,now);if(view==='schedule')renderCalendar(ws,now)}catch(err){for(const id of ['v4Today','v4Insights','v4Plan']){const el=$(id);if(el&&document.body.dataset.lifeosView===el.dataset.v4View)el.textContent='Visual summary unavailable. Existing tracking and planning remain accessible.'}console.warn('LifeOS V4 visual read-only error',err)}}
 function init(){const today=$('todayOverview'),nav=$('lifeosNavigation');if(!today||!nav)return;
