@@ -43,9 +43,16 @@ function planningComparison(ws,now){
   const rows=patterns.dayTypes.filter(x=>x.observedDays>0).map(x=>'<div class="v4-category"><span>'+esc(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][x.dayOfWeek])+'</span><div><i style="width:'+Math.min(100,x.observedDays/4*100)+'%"></i></div><b>'+x.observedDays+'d</b></div>').join('');
   predicted='<p class="v4-muted">'+patterns.observedTrackedDays+' tracked day(s) in the last '+patterns.lookbackDays+'. '+(patterns.confidence==='reviewable'?'Historical evidence is reviewable.':'At least 14 distinct tracked days are needed for reviewable evidence.')+'</p>'+(rows||'<p class="v4-muted">No completed activity history yet.</p>')+'<p class="v4-muted">Observed weekday frequency, not a forecast. Missing logs are unknown time, not free time. No schedule changes are made.</p>';
  }
+ const scheduled=report.planned.slice().sort((a,b)=>a.start-b.start);
+ const conflicts=[];
+ for(let i=0;i<scheduled.length;i++)for(let j=i+1;j<scheduled.length&&scheduled[j].start<scheduled[i].end;j++){
+  const a=scheduled[i],b=scheduled[j],minutes=Math.round((Math.min(a.end,b.end)-b.start)/60000);
+  if(minutes>0)conflicts.push({a:a.name,b:b.name,minutes});
+ }
+ const conflictView=conflicts.length?'<p class="v4-muted">'+conflicts.length+' overlapping plan pair(s) this week. Review them in Plan:</p>'+conflicts.slice(0,5).map(x=>'<p class="v4-muted">'+esc(x.a)+' / '+esc(x.b)+' · '+x.minutes+' min overlap</p>').join(''):'<p class="v4-muted">No overlapping planned intervals detected this week.</p>';
  const ideal='<p class="v4-muted">Ideal routines are managed separately. Review your desired weekly routine against existing plans before approving any changes.</p>';
  return chartCard('My Reality · this week','<div class="v4-metrics"><div><strong>'+fmt(recorded)+'</strong><span>Unique recorded</span></div><div><strong>'+fmt(report.overlapRecordedMs)+'</strong><span>Overlapping records</span></div></div><p class="v4-muted">Only recorded time through now is counted.</p>')+
- chartCard('My Predicted Week · review only','<div class="v4-metrics"><div><strong>'+fmt(planned)+'</strong><span>Currently planned</span></div></div>'+predicted)+
+ chartCard('My Predicted Week · review only','<div class="v4-metrics"><div><strong>'+fmt(planned)+'</strong><span>Currently planned</span></div><div><strong>'+fmt(matched)+'</strong><span>Recorded during planned time</span></div><div><strong>'+fmt(planOverlap)+'</strong><span>Overlapping planned hours</span></div></div>'+predicted+conflictView)+
  chartCard('My Ideal Schedule',ideal);
 }
 function renderCalendar(ws,now){
