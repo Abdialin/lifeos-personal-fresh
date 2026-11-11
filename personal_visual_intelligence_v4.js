@@ -46,8 +46,8 @@ function planningComparison(ws,now){
    const future=new Date(today.getFullYear(),today.getMonth(),today.getDate()+1);
    const end=new Date(future);end.setDate(end.getDate()+7);
    const suggestions=planner.historicalSuggestions({sessions:ws.sessions||[],schedule:ws.schedule||[],from:future.getTime(),to:end.getTime()});
-   const list=suggestions.suggestions.slice(0,6).map(p=>'<div class="v4-event"><span>'+new Date(p.startAt).toLocaleDateString(undefined,{weekday:'short'})+' '+new Date(p.startAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span><strong>'+esc(p.name)+'</strong><em>'+(p.conflicts.length||p.actualConflicts.length?'Conflict':'Review')+'</em></div>').join('');
-   predicted+='<p class="v4-muted">'+suggestions.suggestions.length+' historical-pattern suggestion(s) for the next seven days. They are not automatically applied.</p>'+list;
+   const list=suggestions.suggestions.slice(0,6).map(p=>'<div class="v4-event"><span>'+new Date(p.startAt).toLocaleDateString(undefined,{weekday:'short'})+' '+new Date(p.startAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span><strong>'+esc(p.name)+'</strong><em>'+(p.conflicts.length||p.actualConflicts.length?'Conflict':p.recoveryConflicts.length?'Recovery buffer':p.patternConsistency==='consistent'?'Consistent · review':'Variable · review')+'</em></div>').join('');
+   predicted+='<p class="v4-muted">'+suggestions.suggestions.length+' historical-pattern suggestion(s) for the next seven days. A 30-minute recovery buffer is checked around existing plans. Pattern consistency describes recorded start times, not forecast accuracy. They are not automatically applied.</p>'+list;
   }
  }
  const scheduled=report.planned.slice().sort((a,b)=>a.start-b.start);
