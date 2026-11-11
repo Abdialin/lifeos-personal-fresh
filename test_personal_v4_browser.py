@@ -438,6 +438,48 @@ class BrowserSmoke(unittest.TestCase):
         finally:
             context.close()
 
+    def test_sync_timeout_reconciliation_is_atomic_after_refresh(self):
+        """Fake server replies only. Verify an acknowledged operation stays removed on reload."""
+        import json
+        context=self.browser.new_context(viewport={'width':390,'height':844})
+        try:
+            page=context.new_page()
+            url=f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html'
+            page.goto(url,wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+            page.locator('#customName').fill('Offline CAS smoke')
+            page.locator('#startCustom').click()
+            page.locator('#sessions [data-act="finish"]').first.click()
+            initial=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'))""")
+            self.assertGreaterEqual(len(initial['journal']),2)
+            first=initial['journal'][0]['snapshot']
+            # The remote server committed the first snapshot before a response was lost.
+            def fake_state(route):
+                if route.request.method=='GET':
+                    route.fulfill(status=200,content_type='application/json',body=json.dumps({'revision':0,'data':first}))
+                else:
+                    route.fulfill(status=503,content_type='application/json',body='{"error":"Simulated interrupted upload"}')
+            page.route('**/api/state',fake_state)
+            page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+            panel=page.locator('#cloudSyncPanel')
+            if panel.locator('.lo-advanced-toggle').get_attribute('aria-expanded')=='false':
+                panel.locator('.lo-advanced-toggle').click()
+            page.locator('#syncToken').fill('test-token-not-real')
+            page.locator('#connectSync').click()
+            page.wait_for_function("""count => {
+                const record=JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'));
+                return record?.journal?.length===count;
+            }""",arg=len(initial['journal'])-1,timeout=6000)
+            before=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'))""")
+            self.assertEqual(before['meta']['revision'],0)
+            page.reload(wait_until='load',timeout=30000)
+            after=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'))""")
+            self.assertEqual(len(after['journal']),len(initial['journal'])-1)
+            self.assertEqual(after['journal'][0]['id'],initial['journal'][1]['id'])
+            self.assertEqual(after['workspace']['sessions'][0]['name'],'Offline CAS smoke')
+        finally:
+            context.close()
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
