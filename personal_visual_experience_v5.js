@@ -66,7 +66,6 @@ function enhanceViews(){
   sessionToolsPanel:'Backup and restore controls',
   connectedDatabasePanel:'External database information',
   cloudSyncPanel:'Private cloud synchronization',
-  smartSchedulePanel:'Advanced schedule analysis and routine configuration',
   calendarReviewPanel:'Optional calendar import',
   trackPastPanel:'Manual activity entry'
  };
