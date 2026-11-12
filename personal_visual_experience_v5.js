@@ -210,6 +210,30 @@ function initStorageHealth(){
  setInterval(()=>{if(!document.hidden)inspect()},15000);
  setTimeout(inspect,70);
 }
-function start(){init();enhanceViews();initStorageHealth();}
+/* V12: verify the live server storage without downloading or altering a workspace. */
+function initServerStorageProbe(){
+ const panel=document.getElementById('cloudSyncPanel'),token=document.getElementById('syncToken');
+ if(!panel||!token||document.getElementById('loVerifyStorage'))return;
+ const button=document.createElement('button');button.type='button';button.className='btn outline';
+ button.id='loVerifyStorage';button.textContent='Check server storage (read-only)';
+ const feedback=document.createElement('p');feedback.id='loServerStorageResult';
+ feedback.className='note';feedback.setAttribute('role','status');feedback.textContent='Checks the configured backend and revision. No activities are retrieved or changed.';
+ const status=document.getElementById('syncStatus');
+ if(status){status.insertAdjacentElement('afterend',feedback);feedback.insertAdjacentElement('beforebegin',button)}
+ else{panel.append(button,feedback)}
+ button.addEventListener('click',async()=>{
+  if(!token.value.trim()){feedback.textContent='Enter your private sync token first. No request sent.';return}
+  button.disabled=true;feedback.textContent='Checking server storage without reading activities…';
+  try{
+   const res=await fetch('/api/storage/status',{headers:{'X-LifeOS-Token':token.value.trim()},cache:'no-store'});
+   const body=await res.json();
+   if(!res.ok)throw new Error(res.status===401?'Token rejected':body.error||'Storage probe failed');
+   if(body.read_only!==true||body.storage_readable!==true)throw new Error('Storage status did not confirm a readable backend');
+   feedback.textContent='Server database: '+(body.backend==='postgresql'?'PostgreSQL':body.backend==='sqlite'?'SQLite':'Unknown')+' · revision '+body.revision+(body.has_state?' · saved workspace present':' · no server workspace yet')+'. Read-only verification; multi-device sync not yet confirmed.';
+  }catch(e){feedback.textContent='Server storage not verified: '+e.message+'. Your local activity records were not changed.'}
+  finally{button.disabled=false}
+ });
+}
+function start(){init();enhanceViews();initStorageHealth();initServerStorageProbe();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
