@@ -671,6 +671,40 @@ class BrowserSmoke(unittest.TestCase):
         finally:
             context.close()
 
+    def test_recovery_export_contains_atomic_checkpoint_but_no_private_token(self):
+        """Export from a clean browser with only synthetic data; never use real records."""
+        import json
+        context=self.browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+        try:
+            page=context.new_page()
+            url=f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html'
+            page.goto(url,wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+            notice=page.locator('#loContinuityReminder')
+            self.assertTrue(notice.is_visible())
+            self.assertIn('8 December 2026',notice.inner_text())
+            page.locator('#customName').fill('Isolated backup verification')
+            page.locator('#startCustom').click()
+            page.locator('#sessions [data-act="finish"]').first.click()
+            page.evaluate("""() => {
+                sessionStorage.setItem('lifeos-private-sync-token-tab-v1','do-not-export-this-secret');
+                document.querySelector('#syncToken').value='do-not-export-this-secret';
+            }""")
+            with page.expect_download(timeout=10000) as download_info:
+                page.locator('#loQuickRecoveryBackup').click()
+            download=download_info.value
+            self.assertTrue(download.suggested_filename.startswith('lifeos-recovery-'))
+            bundle=json.loads(pathlib.Path(download.path()).read_text())
+            self.assertEqual(bundle['format'],'lifeos-recovery-v1')
+            self.assertEqual(bundle['atomicCheckpoint']['format'],1)
+            self.assertEqual(bundle['atomicCheckpoint']['workspace']['sessions'][0]['name'],'Isolated backup verification')
+            self.assertEqual(bundle['atomicCheckpoint']['workspace']['sessions'][0]['status'],'finished')
+            self.assertEqual(bundle['workspace']['sessions'][0]['id'],bundle['atomicCheckpoint']['workspace']['sessions'][0]['id'])
+            self.assertNotIn('do-not-export-this-secret',json.dumps(bundle))
+            self.assertIn('Check your browser downloads',page.locator('#loContinuityFeedback').inner_text())
+        finally:
+            context.close()
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
