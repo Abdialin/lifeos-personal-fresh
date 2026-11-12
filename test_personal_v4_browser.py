@@ -755,6 +755,7 @@ class BrowserSmoke(unittest.TestCase):
             page=context.new_page()
             page.goto(f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html',wait_until='load',timeout=30000)
             page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+            page.locator('#smartSchedulePanel .lo-advanced-toggle').click()
             page.locator('#smartPredicted').click()
             output=page.locator('#smartPredictionEvidence')
             self.assertIn('Insufficient history',output.inner_text())
@@ -775,6 +776,8 @@ class BrowserSmoke(unittest.TestCase):
             }""")
             page.reload(wait_until='load',timeout=30000)
             page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+            if page.locator('#smartSchedulePanel .lo-advanced-toggle').get_attribute('aria-expanded')!='true':
+                page.locator('#smartSchedulePanel .lo-advanced-toggle').click()
             page.locator('#smartPredicted').click()
             output=page.locator('#smartPredictionEvidence')
             self.assertIn('Enough history',output.inner_text())
