@@ -580,7 +580,16 @@ async function pull(){
   const r=await requestState();if(epoch!==syncEpoch)return;
   if(!r.data)return syncStatus('Server has no sessions.');
   validateWorkspace(r.data);
-  if(outbox.length&&!confirm('You have '+outbox.length+' unsent changes. Loading server data will discard the pending queue. Continue?'))return;
+  // Never replace a workspace while its local edits are unsent or unjournaled.
+  // A downloaded backup alone is not a substitute for a reviewed reconciliation.
+  if(outbox.length||syncMeta.dirty){
+   syncStatus('LOAD BLOCKED: '+outbox.length+' unsent change(s) or unsynchronized local state. Your data is preserved. Use Compare with server and export a recovery bundle before resolving differences.');
+   return;
+  }
+  if(syncMeta.revision!==null&&r.revision!==syncMeta.revision){
+   syncStatus('LOAD BLOCKED: server revision differs from the last acknowledged local revision. Compare both versions before replacing any records.');
+   return;
+  }
   if(!safeBackupBeforeReplace())return;
   // Commit the reviewed server workspace, empty queue, and server revision in
   // one durable localStorage operation. Do not discard pending local changes
