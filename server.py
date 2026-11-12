@@ -330,5 +330,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    print(f'LifeOS listening on port {PORT}; storage=' + ('PostgreSQL' if DATABASE_URL else 'SQLite'))
+    # Backend mode only: never log database URLs, credentials, or activity content.
+    # flush=True ensures Render captures this diagnostic before normal request logs.
+    print('LifeOS startup | storage_backend=' + ('postgresql' if DATABASE_URL else 'sqlite') + ' | configured_by=' + ('LIFEOS_DATABASE_URL' if DATABASE_URL else 'LIFEOS_DB'), flush=True)
     ThreadingHTTPServer(('0.0.0.0', PORT), Handler).serve_forever()
