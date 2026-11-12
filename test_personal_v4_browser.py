@@ -646,7 +646,7 @@ class BrowserSmoke(unittest.TestCase):
             page.evaluate("""() => window.dispatchEvent(new Event('focus'))""")
             page.wait_for_function("""() => {
                 const label=document.querySelector('#sessions [data-timer]')?.textContent||'';
-                return /2m (0[5-9]|[1-5][0-9])s/.test(label);
+                return /00:02:(0[5-9]|[1-5][0-9])/.test(label);
             }""",timeout=6000)
             before=page.evaluate("""() => {
                 const r=JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'));
@@ -657,7 +657,7 @@ class BrowserSmoke(unittest.TestCase):
             page.locator('#lifeosNavigation button[data-view="tracking"]').click()
             page.wait_for_function("""() => {
                 const label=document.querySelector('#sessions [data-timer]')?.textContent||'';
-                return /2m (0[5-9]|[1-5][0-9])s/.test(label);
+                return /00:02:(0[5-9]|[1-5][0-9])/.test(label);
             }""",timeout=6000)
             restored=page.evaluate("""() => {
                 const r=JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'));
