@@ -705,6 +705,49 @@ class BrowserSmoke(unittest.TestCase):
         finally:
             context.close()
 
+    def test_import_json_backup_atomically_and_remain_unsynced_after_reload(self):
+        """Import synthetic records only in a fresh browser, never the user's data."""
+        import json
+        context=self.browser.new_context(viewport={'width':390,'height':844})
+        try:
+            page=context.new_page()
+            url=f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html'
+            page.goto(url,wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+            page.locator('#customName').fill('Local record before importing backup')
+            page.locator('#startCustom').click()
+            page.locator('#sessions [data-act="finish"]').first.click()
+            previous=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'))""")
+            self.assertGreater(len(previous['journal']),0)
+            synthetic={'version':1,'sessions':[{
+                'id':'synthetic-import-session','name':'Backup import verification',
+                'status':'finished','createdAt':1700000000000,
+                'startAt':1700000000000,'endAt':1700000060000,
+                'segments':[{'start':1700000000000,'end':1700000060000}],
+                'notes':'','precision':'measured','source':'test','plannedId':None
+            }], 'events':[],'todos':[],'workouts':[],'meals':[],
+                'goals':[],'schedule':[],'personalLogs':[]}
+            page.on('dialog',lambda dialog:dialog.accept())
+            page.locator('#restore').set_input_files({
+                'name':'synthetic-workspace.json','mimeType':'application/json',
+                'buffer':json.dumps(synthetic).encode()
+            })
+            page.wait_for_function("""() => {
+                const raw=localStorage.getItem('lifeos-v4-stage21-atomic');
+                return !!raw&&JSON.parse(raw).workspace.sessions?.[0]?.id==='synthetic-import-session';
+            }""",timeout=6000)
+            restored=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'))""")
+            self.assertEqual(restored['journal'],[])
+            self.assertEqual(restored['meta'],{'revision':None,'dirty':True})
+            self.assertIn('Cloud sync is disconnected',page.locator('#syncStatus').inner_text())
+            page.reload(wait_until='load',timeout=30000)
+            after=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'))""")
+            self.assertEqual(after['workspace']['sessions'][0]['id'],'synthetic-import-session')
+            self.assertEqual(after['journal'],[])
+            self.assertEqual(after['meta'],{'revision':None,'dirty':True})
+        finally:
+            context.close()
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
