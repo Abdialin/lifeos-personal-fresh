@@ -953,3 +953,12 @@ body[data-lifeos-view="tracking"] #cloudSyncPanel{order:12}
  .lo-starter-actions .btn{width:100%}
  .lo-starter-heading strong{font-size:14px}
 }
+
+/* Only primary Plan tabs are visible. Supporting evidence stays synced in JS. */
+#smartSchedulePanel .lo-secondary-schedule-tabs{display:none!important}
+body[data-lifeos-view="schedule"] #smartPredictionVisuals{display:none!important}
+body[data-lifeos-view="schedule"] #smartSchedulePanel #smartPredictionEvidence>.schedule-entry{display:none}
+body[data-lifeos-view="schedule"] #smartSchedulePanel #smartPredictionEvidence>strong{display:block;margin:7px 0}
+body[data-lifeos-view="schedule"] #smartSchedulePanel #smartPredictionEvidence>p{line-height:1.5;margin:8px 0}
+#v4Plan .lo-integrated-preview{grid-column:1/-1;min-width:0}
+#smartSchedulePanel .lo-starter-panel{margin-top:11px}
