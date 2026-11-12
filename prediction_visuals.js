@@ -70,7 +70,7 @@ function render(target,{sessions=[],suggestions=[],confirmed=[],from=Date.now(),
  if(!ranked.length)distribution.append(el('p','lo-predviz-help','No historical activity records available.'));
  for(const [name,ms] of ranked){const line=el('div','lo-predviz-mix-row');line.append(el('span','',name));const track=el('div','lo-predviz-mix-track');const fill=el('div','lo-predviz-mix-fill');fill.style.width=Math.round(ms/largest*100)+'%';track.append(fill);line.append(track,el('b','',duration(ms)));distribution.append(line)}
  split.append(chart,distribution);target.append(split);
- const foot=el('p','lo-predviz-summary',observedDays+' observed days · '+suggestions.length+' unconfirmed suggestions · '+confirmed.length+' existing plans. Demo activity never counts toward real progress.');
+ const foot=el('p','lo-predviz-summary',(mode==='ideal'?suggestions.length+' ideal routine blocks · preferences, not confirmed plans.':observedDays+' observed days · '+suggestions.length+' unconfirmed suggestions · '+confirmed.length+' existing plans. Development records are labeled internally.')');
  target.append(foot);
  return {days:rows.length,suggestions:suggestions.length,confirmed:confirmed.length,historicalDays:totals.length};
 }
