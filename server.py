@@ -333,4 +333,10 @@ if __name__ == '__main__':
     # Backend mode only: never log database URLs, credentials, or activity content.
     # flush=True ensures Render captures this diagnostic before normal request logs.
     print('LifeOS startup | storage_backend=' + ('postgresql' if DATABASE_URL else 'sqlite') + ' | configured_by=' + ('LIFEOS_DATABASE_URL' if DATABASE_URL else 'LIFEOS_DB'), flush=True)
+    # Read only the revision metadata. Do not print its value or any workspace records.
+    try:
+        status = read_storage_status()
+        print('LifeOS startup | storage_probe=' + ('ok' if status['read_only'] and status['storage_readable'] else 'unverified'), flush=True)
+    except Exception:
+        print('LifeOS startup | storage_probe=failed', flush=True)
     ThreadingHTTPServer(('0.0.0.0', PORT), Handler).serve_forever()
