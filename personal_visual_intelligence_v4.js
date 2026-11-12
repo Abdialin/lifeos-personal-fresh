@@ -133,6 +133,27 @@ function renderCalendar(ws,now){
   calendar.classList.add('v7-plan-calendar');
   chosen.classList.add('v7-plan-selected-day');
   week.classList.add('v7-plan-week-balance');
+  // Show real prediction/ideal calendar directly under the main month view,
+  // instead of burying it below long text lists and duplicated controls.
+  if(planViewMode==='predicted'||planViewMode==='ideal'){
+   const visual=document.createElement('div');visual.id='v7IntegratedWeekPreview';visual.className='v4-card lo-integrated-preview';
+   visual.setAttribute('aria-label',planViewMode==='ideal'?'Ideal week timeline':'Predicted week timeline');
+   calendar.insertAdjacentElement('afterend',visual);
+   try{
+    const start=now,end=new Date(start);end.setDate(end.getDate()+7);
+    let suggestions=[],confirmed=[];
+    if(planViewMode==='predicted'){
+     const out=window.LifeOSPersonalPlanner.historicalSuggestions({sessions:ws.sessions||[],schedule:ws.schedule||[],from:start,to:end.getTime(),minimumDays:14,lookbackDays:28,recoveryBufferMinutes:30});
+     suggestions=out.suggestions||[];
+     confirmed=(ws.schedule||[]).filter(p=>p.status!=='skipped'&&p.startAt>=start&&p.startAt<end.getTime());
+    }else{
+     suggestions=window.LifeOSIdealPlanning.project(ws.idealRoutines||[],start,end.getTime());
+    }
+    window.LifeOSPredictionVisuals.render(visual,{
+     sessions:ws.sessions||[],suggestions,confirmed,from:start,observedDays:0,mode:planViewMode
+    });
+   }catch(e){visual.textContent='The weekly preview is unavailable. Existing tracking and plans are unchanged.'}
+  }
  }
 
 }
