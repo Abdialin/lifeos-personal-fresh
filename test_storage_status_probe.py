@@ -72,5 +72,34 @@ class StorageProbeTests(unittest.TestCase):
         self.assertNotIn('sessions', str(result))
 
 
+    def test_postgres_schema_initializer_uses_only_idempotent_create_statements(self):
+        """Simulated connection. No real DB access or existing activity modification."""
+        executed = []
+        class Cursor:
+            def __enter__(self): return self
+            def __exit__(self, *_): return False
+            def execute(self, statement): executed.append(' '.join(statement.split()).upper())
+        class Connection:
+            def __enter__(self): return self
+            def __exit__(self, *_): return False
+            def cursor(self): return Cursor()
+        class FakePg:
+            @staticmethod
+            def connect(url, connect_timeout):
+                assert url == 'postgresql://mock-only/isolated'
+                assert connect_timeout == 10
+                return Connection()
+        with patch.object(server, 'DATABASE_URL', 'postgresql://mock-only/isolated'), patch.object(server, 'psycopg', FakePg, create=True):
+            server.initialize_postgres_schema()
+            server.initialize_postgres_schema()
+        self.assertEqual(len(executed), 6)
+        self.assertTrue(all(query.startswith('CREATE ') for query in executed))
+        self.assertTrue(all('IF NOT EXISTS' in query for query in executed))
+        self.assertEqual(executed[:3], executed[3:])
+        self.assertTrue(any('LIFEOS.STATE' in query for query in executed))
+        self.assertTrue(any('LIFEOS.CALENDAR_AUDIT' in query for query in executed))
+        self.assertFalse(any('DROP ' in query or 'DELETE ' in query or 'UPDATE ' in query for query in executed))
+
+
 if __name__ == '__main__':
     unittest.main()
