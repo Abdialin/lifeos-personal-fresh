@@ -132,7 +132,7 @@ function renderCalendar(ws,now){
   const toolbar=document.createElement('div');toolbar.className='v7-plan-toolbar';
   toolbar.innerHTML='<div><strong>Your schedule</strong><span>Select a date, compare activity, or add a plan.</span></div><button type="button" data-v7-add-plan>+ Add activity</button>';
   target.prepend(toolbar);
-  target.append(calendar,chosen,week,reality,predicted,ideal);
+  target.append(calendar,week,chosen,reality,predicted,ideal);
   labels.forEach(([key,,card])=>{
    card.id='v7-plan-panel-'+key;card.classList.add('v7-plan-mode-card');
    card.setAttribute('role','tabpanel');card.setAttribute('aria-labelledby','v7-plan-tab-'+key);
@@ -198,8 +198,17 @@ function init(){const today=$('todayOverview'),nav=$('lifeosNavigation');if(!tod
   const secondary={reality:'smartReality',predicted:'smartPredicted',ideal:'smartIdeal'}[planViewMode];
   if(secondary)document.getElementById(secondary)?.click();
   $('v7-plan-tab-'+planViewMode)?.focus();return;
- }const plan=e.target.closest('[data-v6-plan-day]');if(plan){planSelected=plan.dataset.v6PlanDay;update();$('v4Plan')?.querySelector('[data-v6-plan-day="'+planSelected+'"]')?.focus();}const insight=e.target.closest('[data-v4-insight-day]');if(insight){insightSelected=insight.dataset.v4InsightDay;update();$('v4Insights')?.querySelector('[data-v4-insight-day="'+insightSelected+'"]')?.focus();}const m=e.target.closest('[data-v4-month]');if(m){const step=Number(m.dataset.v4Month);if(step===1||step===-1){month.setDate(1);month.setMonth(month.getMonth()+step);selected=dateKey(new Date(month.getFullYear(),month.getMonth(),1));update()}}const todayButton=e.target.closest('[data-v4-today]');if(todayButton){const d=new Date();month=new Date(d.getFullYear(),d.getMonth(),1);selected=dateKey(d);const dateField=$('scheduleDay');if(dateField){dateField.value=selected;dateField.dispatchEvent(new Event('change',{bubbles:true}));}update();$('v4Plan')?.querySelector('[data-v4-today]')?.focus();}const review=e.target.closest('[data-v4-review-ideal]');if(review){const input=$('scheduleDay'),button=$('idealReview');if(input&&button){const panel=button.closest('section.panel');if(panel?.classList.contains('lo-advanced-collapsed'))panel.querySelector('.lo-advanced-toggle')?.click();const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7);input.value=dateKey(d);const details=button.closest('details');if(details)details.open=true;button.click();$('idealProposalList')?.scrollIntoView({behavior:'smooth',block:'start'});}else console.warn('Ideal review controls unavailable');}const d=e.target.closest('[data-v4-day]');if(d){
-  selected=d.dataset.v4Day;
+ }const plan=e.target.closest('[data-v6-plan-day]');if(plan){
+  const picked=plan.dataset.v6PlanDay;
+  planSelected=picked;selected=picked;
+  const d=new Date(picked+'T12:00:00');month=new Date(d.getFullYear(),d.getMonth(),1);
+  const field=$('scheduleDay');
+  if(field){field.value=picked;field.dispatchEvent(new Event('change',{bubbles:true}));}
+  update();
+  const card=$('v4Plan')?.querySelector('.v7-plan-selected-day');
+  if(card){card.tabIndex=-1;card.scrollIntoView({behavior:'smooth',block:'start'});card.focus({preventScroll:true});}
+ }const insight=e.target.closest('[data-v4-insight-day]');if(insight){insightSelected=insight.dataset.v4InsightDay;update();$('v4Insights')?.querySelector('[data-v4-insight-day="'+insightSelected+'"]')?.focus();}const m=e.target.closest('[data-v4-month]');if(m){const step=Number(m.dataset.v4Month);if(step===1||step===-1){month.setDate(1);month.setMonth(month.getMonth()+step);selected=dateKey(new Date(month.getFullYear(),month.getMonth(),1));update()}}const todayButton=e.target.closest('[data-v4-today]');if(todayButton){const d=new Date();month=new Date(d.getFullYear(),d.getMonth(),1);selected=dateKey(d);const dateField=$('scheduleDay');if(dateField){dateField.value=selected;dateField.dispatchEvent(new Event('change',{bubbles:true}));}update();$('v4Plan')?.querySelector('[data-v4-today]')?.focus();}const review=e.target.closest('[data-v4-review-ideal]');if(review){const input=$('scheduleDay'),button=$('idealReview');if(input&&button){const panel=button.closest('section.panel');if(panel?.classList.contains('lo-advanced-collapsed'))panel.querySelector('.lo-advanced-toggle')?.click();const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7);input.value=dateKey(d);const details=button.closest('details');if(details)details.open=true;button.click();$('idealProposalList')?.scrollIntoView({behavior:'smooth',block:'start'});}else console.warn('Ideal review controls unavailable');}const d=e.target.closest('[data-v4-day]');if(d){
+  selected=d.dataset.v4Day;planSelected=selected;
   const dateField=$('scheduleDay');
   if(dateField){
    dateField.value=selected;
