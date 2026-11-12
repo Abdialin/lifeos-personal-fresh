@@ -864,3 +864,31 @@ body[data-lifeos-view="tracking"] #cloudSyncPanel{order:11}
 .lo-tab-token-option input{width:17px;height:17px;flex:0 0 17px;accent-color:var(--lo-accent)}
 .lo-tab-token-note{margin:0 0 12px;line-height:1.4}
 @media(max-width:750px){.lo-tab-token-option{font-size:12px;gap:8px}.lo-tab-token-note{font-size:11px!important}}
+
+/* V13: continuity reminder follows storage status without changing track section indices. */
+#loContinuityReminder{display:none}
+body[data-lifeos-view="tracking"] #loContinuityReminder{
+ display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;
+ order:3;padding:13px 15px;margin:0 0 10px;
+ border-radius:14px;border:1px solid var(--lo-border);
+ background:var(--lo-surface-2);min-width:0
+}
+body[data-lifeos-view="tracking"] #trackQuickPanel{order:4}
+body[data-lifeos-view="tracking"] #trackDistractionPanel{order:5}
+body[data-lifeos-view="tracking"] #trackHistoryPanel{order:6}
+body[data-lifeos-view="tracking"] #trackPastPanel{order:7}
+body[data-lifeos-view="tracking"] #trackingRecoveryPanel{order:8}
+body[data-lifeos-view="tracking"] #activityHierarchyPanel{order:9}
+body[data-lifeos-view="tracking"] #sessionToolsPanel{order:10}
+body[data-lifeos-view="tracking"] #connectedDatabasePanel{order:11}
+body[data-lifeos-view="tracking"] #cloudSyncPanel{order:12}
+#loContinuityReminder .lo-continuity-copy{flex:1 1 260px;min-width:0}
+#loContinuityReminder strong{display:block;font-size:13px;font-weight:770;color:var(--lo-text);margin-bottom:5px}
+#loContinuityReminder p{margin:0;font-size:11px;line-height:1.52;color:var(--lo-muted)}
+#loContinuityReminder button{flex:0 1 auto;min-height:42px;padding:9px 12px;font-size:12px;border-radius:11px}
+#loContinuityReminder>small{flex-basis:100%;font-size:10px;line-height:1.4;color:var(--lo-muted)}
+@media(max-width:750px){
+ body[data-lifeos-view="tracking"] #loContinuityReminder{padding:11px 12px;gap:9px}
+ #loContinuityReminder .lo-continuity-copy{flex:1 1 100%}
+ #loContinuityReminder button{width:100%}
+}
