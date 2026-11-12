@@ -480,6 +480,28 @@ class BrowserSmoke(unittest.TestCase):
         finally:
             context.close()
 
+    def test_read_only_server_backend_probe_does_not_modify_local_storage(self):
+        page=self.page
+        page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+        panel=page.locator('#cloudSyncPanel')
+        toggle=panel.locator('.lo-advanced-toggle')
+        if toggle.get_attribute('aria-expanded')=='false':
+            toggle.click()
+        button=page.locator('#loVerifyStorage')
+        self.assertTrue(button.is_visible())
+        before=page.evaluate("() => localStorage.getItem('lifeos-v4-stage21-atomic')")
+        page.locator('#syncToken').fill('isolated-probe-token')
+        def fake_probe(route):
+            route.fulfill(status=200,content_type='application/json',
+                body='{"backend":"postgresql","read_only":true,"storage_readable":true,"revision":9,"has_state":true}')
+        page.route('**/api/storage/status',fake_probe)
+        button.click()
+        page.wait_for_function("() => document.querySelector('#loServerStorageResult')?.textContent.includes('PostgreSQL')")
+        self.assertIn('revision 9',page.locator('#loServerStorageResult').inner_text())
+        after=page.evaluate("() => localStorage.getItem('lifeos-v4-stage21-atomic')")
+        self.assertEqual(before,after)
+        page.unroute('**/api/storage/status')
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
