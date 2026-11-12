@@ -239,11 +239,13 @@ function saveTabTokenPreference(){
   }else sessionStorage.removeItem(TAB_TOKEN_KEY);
  }catch(_){syncStatus('Tab-only token storage unavailable. You can connect normally.')}
 }
-$('rememberSyncTab').addEventListener('change',saveTabTokenPreference);
-$('syncToken').addEventListener('change',()=>{
- // Changing a token invalidates any previously remembered token for this tab.
+$('rememberSyncTab').addEventListener('change',()=>{
+ // Only persist after a successful authenticated Connect; unchecking revokes it now.
+ if(!$('rememberSyncTab').checked)try{sessionStorage.removeItem(TAB_TOKEN_KEY)}catch(_){}
+});
+$('syncToken').addEventListener('input',()=>{
+ // Changing a token invalidates the previous tab credential until authenticated.
  try{sessionStorage.removeItem(TAB_TOKEN_KEY)}catch(_){}
- if($('rememberSyncTab').checked)saveTabTokenPreference();
 });
 
 // Durable, ordered snapshot-operation journal. Server API remains revision-CAS
