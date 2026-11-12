@@ -558,6 +558,7 @@ class BrowserSmoke(unittest.TestCase):
                 first.locator('#customName').fill('Synthetic cross-device activity')
                 first.locator('#startCustom').click()
                 first.locator('#sessions [data-act="finish"]').first.click()
+                first.locator('#rememberSyncTab').check()
                 first.locator('#connectSync').click()
                 first.wait_for_function("""() => document.querySelector('#syncStatus')?.textContent.includes('Synced to server')""",timeout=14000)
                 saved=first.evaluate("""() => {
@@ -565,6 +566,22 @@ class BrowserSmoke(unittest.TestCase):
                     return {revision:record.meta.revision,id:record.workspace.sessions.find(s=>s.name==='Synthetic cross-device activity').id};
                 }""")
                 self.assertGreater(saved['revision'],0)
+                # Tab-only token survives a reload but is never written into localStorage.
+                self.assertEqual(first.evaluate("sessionStorage.getItem('lifeos-private-sync-token-tab-v1')"),token)
+                self.assertNotIn(token, first.evaluate("JSON.stringify(Object.values(localStorage))"))
+                first.reload(wait_until='load',timeout=30000)
+                self.assertEqual(first.locator('#syncToken').input_value(),token)
+                self.assertTrue(first.locator('#rememberSyncTab').is_checked())
+                self.assertEqual(first.evaluate("""() =>
+                    JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic')).workspace.sessions[0].id
+                """),saved['id'])
+                first.locator('#rememberSyncTab').uncheck(force=True)
+                self.assertIsNone(first.evaluate("sessionStorage.getItem('lifeos-private-sync-token-tab-v1')"))
+                first.reload(wait_until='load',timeout=30000)
+                self.assertEqual(first.locator('#syncToken').input_value(),'')
+                self.assertEqual(first.evaluate("""() =>
+                    JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic')).workspace.sessions[0].id
+                """),saved['id'])
                 second=browser()
                 second.locator('#connectSync').click()
                 second.wait_for_function("""() => document.querySelector('#syncStatus')?.textContent.includes('server has saved data')""",timeout=8000)
