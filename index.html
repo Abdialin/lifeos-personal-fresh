@@ -188,7 +188,7 @@ function loDetailDefinition(kind){
  const field=(name,label,type='text',options=[])=>({name,label,type,options});
  const common=[field('notes','What did you do? (optional)','textarea')];
  const kinds={
-  prayer:[field('prayer','Prayer','select',['Fajr','Dhuhr','Asr','Maghrib','Isha','Other']),field('setting','Where?','select',['Prefer not to say','Home','Mosque','Other']),field('congregation','Congregation','select',['Not specified','Yes','No']),...common],
+  prayer:[field('prayer','Prayer','select',['Not specified','Fajr','Dhuhr','Asr','Maghrib','Isha','Other']),field('setting','Where?','select',['Prefer not to say','Home','Mosque','Other']),field('congregation','Congregation','select',['Not specified','Yes','No']),...common],
   fitness:[field('exercise','Workout focus'),field('exercises','Exercises, sets, reps','textarea'),field('intensity','Intensity','select',['Not specified','Easy','Moderate','Hard']),...common],
   work:[field('role','Work / project'),field('breakMinutes','Break minutes','number'),field('workType','Work type','select',['Not specified','Regular','Overtime','On call']),...common],
   food:[field('meal','Meal'),field('foodItems','Food and quantities','textarea'),field('calories','Calories (optional)','number'),...common],
