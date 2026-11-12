@@ -501,6 +501,8 @@ class BrowserSmoke(unittest.TestCase):
         after=page.evaluate("() => localStorage.getItem('lifeos-v4-stage21-atomic')")
         self.assertEqual(before,after)
         page.unroute('**/api/storage/status')
+        if toggle.get_attribute('aria-expanded')=='true':
+            toggle.click()
 
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
