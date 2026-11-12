@@ -748,6 +748,42 @@ class BrowserSmoke(unittest.TestCase):
         finally:
             context.close()
 
+    def test_predicted_week_separates_confirmed_plans_and_historical_patterns(self):
+        """Never treat sparse history as availability; proposals remain read-only."""
+        context=self.browser.new_context(viewport={'width':390,'height':844})
+        try:
+            page=context.new_page()
+            page.goto(f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html',wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+            page.locator('#smartPredicted').click()
+            output=page.locator('#smartPredictionEvidence')
+            self.assertIn('Insufficient history',output.inner_text())
+            self.assertIn('Unlogged time is unknown',output.inner_text())
+            # Synthetic sessions on 21 distinct completed local days, three
+            # occurrences on each weekday; browser-only, not a live account.
+            page.evaluate("""() => {
+                const sessions=[];
+                for(let offset=1;offset<=21;offset++){
+                    const d=new Date();d.setHours(10,0,0,0);d.setDate(d.getDate()-offset);
+                    const a=d.getTime(),b=a+30*60000;
+                    sessions.push({id:'synthetic-pattern-'+offset,name:'Reading',status:'finished',
+                      startAt:a,endAt:b,createdAt:a,segments:[{start:a,end:b}],
+                      precision:'measured'});
+                }
+                const workspace={version:1,sessions,events:[],todos:[],workouts:[],meals:[],goals:[],schedule:[],personalLogs:[]};
+                localStorage.setItem('lifeos-live-v1',JSON.stringify(workspace));
+            }""")
+            page.reload(wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+            page.locator('#smartPredicted').click()
+            output=page.locator('#smartPredictionEvidence')
+            self.assertIn('Enough history',output.inner_text())
+            self.assertIn('Reading',output.inner_text())
+            self.assertIn('Unconfirmed suggestion',output.inner_text())
+            self.assertEqual(page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-live-v1')).schedule.length"""),0)
+        finally:
+            context.close()
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
