@@ -1,0 +1,66 @@
+/* V8 mobile correction: small accessible quick-start tiles and clean analytic cards. */
+#trackQuickPanel .quick{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+#trackQuickPanel .quick button{
+ display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:space-between!important;
+ min-width:0!important;min-height:91px!important;height:auto!important;padding:11px 9px!important;
+ border-radius:12px!important;gap:8px!important;text-align:left!important;
+ background:var(--lo-surface-2,#1d2c44)!important;border:1px solid var(--lo-border,#344764)!important;
+ box-shadow:none!important;color:var(--lo-text,#eef5ff)!important
+}
+#trackQuickPanel .quick button .lo-quick-glyph{display:grid!important;place-items:center!important;width:24px!important;height:24px!important;border:0!important;background:transparent!important;border-radius:0!important;margin:0!important;color:var(--lo-accent,#82e3ce)!important}
+#trackQuickPanel .quick .lo-quick-glyph svg{width:23px;height:23px;display:block;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#trackQuickPanel .quick .lo-quick-copy{font-size:11px!important;font-weight:650!important;line-height:1.23!important;max-width:100%;overflow-wrap:anywhere;word-break:normal}
+#trackQuickPanel .quick .lo-quick-plus{display:none!important}
+#trackQuickPanel .quick button:active{transform:scale(.98)}
+#trackHistoryPanel .lo-history-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(92px,128px)!important;gap:6px 9px!important}
+#trackHistoryPanel .lo-history-toolbar input,#trackHistoryPanel .lo-history-toolbar select{min-width:0!important;width:100%!important;font-size:13px!important;min-height:43px!important}
+#trackHistoryPanel .lo-history-day>summary{display:flex!important;align-items:flex-start!important;gap:10px!important}
+#trackHistoryPanel .lo-history-day>summary>span{min-width:0!important;font-size:13px!important}
+#trackHistoryPanel .lo-history-day>summary>small{flex-shrink:0!important;font-size:11px!important;max-width:45%!important}
+#trackHistoryPanel .lo-history-entry{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:10px!important;align-items:start!important}
+#trackHistoryPanel .lo-history-entry strong{font-size:13px!important;line-height:1.35!important;min-width:0!important;overflow-wrap:anywhere!important}
+#trackHistoryPanel .lo-history-entry span{font-size:13px!important;white-space:nowrap!important}
+#trackHistoryPanel .lo-history-foot{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important}
+#trackHistoryPanel .lo-history-foot small{display:block!important;min-width:0!important;flex:1!important;overflow-wrap:anywhere!important;font-size:11px!important}
+#trackHistoryPanel .lo-history-actions{display:flex!important;flex-wrap:nowrap!important;gap:5px!important;width:auto!important}
+#trackHistoryPanel .lo-history-actions .btn{min-width:0!important;min-height:33px!important;padding:5px 9px!important;white-space:nowrap!important;line-height:1.3!important}
+#trackHistoryPanel .history{overflow:visible!important;max-height:none!important}
+.v4-section .v7-plan-selected-day{scroll-margin-top:26px}
+.v8-day-review{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 14px}
+.v8-day-review>div{background:rgba(119,158,204,.11);border:1px solid rgba(141,171,206,.22);padding:11px 8px;border-radius:11px;min-width:0}
+.v8-day-review b{display:block;font-size:19px;letter-spacing:-.03em;overflow-wrap:anywhere}
+.v8-day-review span{display:block;color:var(--lo-muted,#acbad0);font-size:10px;line-height:1.35;margin-top:5px}
+.v8-visual{margin:13px 0;padding:15px;background:rgba(84,145,193,.07);border:1px solid var(--lo-border,#32435a);border-radius:15px}
+.v8-visual h3{font-size:15px;margin:0 0 10px}
+.v8-visual-sub{font-size:11px;line-height:1.5;color:var(--lo-muted,#afbed4)}
+.v8-week-bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;align-items:end;margin:12px 0}
+.v8-week-bar{display:grid;gap:5px;justify-items:center;min-width:0}
+.v8-week-bar .v8-bar-outer{height:104px;width:min(100%,30px);display:flex;align-items:end;background:rgba(110,141,182,.18);border-radius:7px 7px 2px 2px;overflow:hidden}
+.v8-week-bar .v8-bar-fill{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#73d6c1,#5994dd);min-height:1px}
+.v8-week-bar small{font-size:10px;color:var(--lo-muted,#acbad0)}
+.v8-week-bar b{font-size:10px}
+.v8-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.v8-kpis>div{padding:10px;background:rgba(116,153,202,.11);border-radius:9px;min-width:0}
+.v8-kpis b{display:block;font-size:17px;overflow-wrap:anywhere}
+.v8-kpis span{font-size:10px;color:var(--lo-muted,#b1c0d6)}
+.v8-goal-item{padding:9px 0;border-top:1px solid rgba(140,171,205,.21)}
+.v8-goal-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px}
+.v8-goal-head span{color:var(--lo-muted,#b4c1d8);white-space:nowrap}
+.v8-goal-meter{height:8px;background:rgba(134,161,197,.2);border-radius:10px;overflow:hidden;margin-top:7px}
+.v8-goal-meter>i{display:block;height:100%;border-radius:10px;background:linear-gradient(90deg,#60c6b1,#87b4ef)}
+.v8-raw-report{margin:12px 0 0;border-top:1px solid var(--lo-border,#33445b);padding-top:10px}
+.v8-raw-report>summary{font-size:12px;font-weight:650;cursor:pointer;color:var(--lo-accent,#7cdec9)}
+.v8-raw-report .sub{line-height:1.55;overflow-wrap:anywhere}
+#weeklyDashboardPanel>p.sub,#goalRecoveryPanel>p.sub,#qualityPanel>p.sub,#personalCompletionPanel>p.sub{font-size:12px;line-height:1.5}
+#weeklyDashboardPanel #weeklyDashboardResults,#goalRecoveryPanel #goalRecoveryResults,#qualityPanel #qualityResults{max-width:100%;overflow-wrap:anywhere}
+@media(max-width:500px){
+ #trackQuickPanel .quick{gap:6px!important}
+ #trackQuickPanel .quick button{min-height:78px!important;padding:9px 7px!important;gap:6px!important}
+ #trackQuickPanel .quick .lo-quick-copy{font-size:10.5px!important}
+ #trackHistoryPanel .lo-history-toolbar{grid-template-columns:minmax(0,1fr) 112px!important}
+ #trackHistoryPanel .lo-history-foot{flex-wrap:wrap!important}
+ #trackHistoryPanel .lo-history-actions{width:100%!important;justify-content:flex-end!important}
+ .v8-day-review{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .v8-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:350px){#trackQuickPanel .quick{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
