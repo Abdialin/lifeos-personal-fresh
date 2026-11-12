@@ -86,6 +86,28 @@ def save_state(expected, data):
         return True, actual + 1
 
 
+def initialize_postgres_schema():
+    """Create missing LifeOS tables only. Never rewrite, truncate or seed user records."""
+    if not DATABASE_URL:
+        return
+    # Exact definitions mirror postgres_schema.sql; both operations are idempotent.
+    with psycopg.connect(DATABASE_URL, connect_timeout=10) as db:
+        with db.cursor() as cur:
+            cur.execute('CREATE SCHEMA IF NOT EXISTS lifeos')
+            cur.execute('''CREATE TABLE IF NOT EXISTS lifeos.state (
+                id integer PRIMARY KEY CHECK (id = 1),
+                revision bigint NOT NULL CHECK (revision >= 1),
+                payload jsonb NOT NULL,
+                updated_at timestamptz NOT NULL DEFAULT now()
+            )''')
+            cur.execute('''CREATE TABLE IF NOT EXISTS lifeos.calendar_audit (
+                sequence bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                id text UNIQUE NOT NULL,
+                entry jsonb NOT NULL,
+                created_at timestamptz NOT NULL DEFAULT now()
+            )''')
+
+
 def read_storage_status():
     """Read-only backend probe; never retrieves or changes workspace contents."""
     if DATABASE_URL:
@@ -333,11 +355,18 @@ if __name__ == '__main__':
     # Backend mode only: never log database URLs, credentials, or activity content.
     # flush=True ensures Render captures this diagnostic before normal request logs.
     print('LifeOS startup | storage_backend=' + ('postgresql' if DATABASE_URL else 'sqlite') + ' | configured_by=' + ('LIFEOS_DATABASE_URL' if DATABASE_URL else 'LIFEOS_DB'), flush=True)
-    # Read only the revision metadata. Do not print its value or any workspace records.
+    # Safe startup migration: CREATE IF NOT EXISTS never overwrites workspace payloads.
+    # Fail the probe visibly if permissions or networking block initialization.
+    if DATABASE_URL:
+        try:
+            initialize_postgres_schema()
+            print('LifeOS startup | schema_check=ok', flush=True)
+        except Exception as exc:
+            print('LifeOS startup | schema_check=failed | error_type=' + type(exc).__name__, flush=True)
+    # Read only revision metadata. Never print its value or workspace records.
     try:
         status = read_storage_status()
         print('LifeOS startup | storage_probe=' + ('ok' if status['read_only'] and status['storage_readable'] else 'unverified'), flush=True)
     except Exception as exc:
-        # Exception class only; avoid logging server hostnames, URLs, or payloads.
         print('LifeOS startup | storage_probe=failed | error_type=' + type(exc).__name__, flush=True)
     ThreadingHTTPServer(('0.0.0.0', PORT), Handler).serve_forever()
