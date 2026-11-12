@@ -476,11 +476,24 @@ async function pull(){
   validateWorkspace(r.data);
   if(outbox.length&&!confirm('You have '+outbox.length+' unsent changes. Loading server data will discard the pending queue. Continue?'))return;
   if(!safeBackupBeforeReplace())return;
-  if(!writeOutbox([]))return;
-  stopSync();syncSuppressed=true;
-  try{data=r.data;ensureModules();syncRevision=r.revision;syncReady=true;persist();render()}
-  finally{syncSuppressed=false}
-  syncMeta={revision:r.revision,dirty:false};saveSyncMeta();syncStatus('Loaded from server · revision '+syncRevision);
+  // Commit the reviewed server workspace, empty queue, and server revision in
+  // one durable localStorage operation. Do not discard pending local changes
+  // first: a failed commit must leave the existing atomic record untouched.
+  const nextMeta={revision:r.revision,dirty:false};
+  if(!atomicCommit(r.data,[],nextMeta)){
+   syncStatus('Load cancelled: unable to save reviewed server workspace safely. Existing local state retained.');
+   return;
+  }
+  stopSync();
+  data=r.data;ensureModules();outbox=[];syncMeta=nextMeta;
+  syncRevision=r.revision;syncReady=true;
+  try{
+   localStorage.setItem(KEY,JSON.stringify(data));
+   localStorage.setItem(OUTBOX_KEY,JSON.stringify(outbox));
+   localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta));
+  }catch(_e){ /* Atomic recovery record is authoritative. */ }
+  render();
+  syncStatus('Loaded from server · revision '+syncRevision);
  }catch(e){syncStatus('Load failed: '+e.message)}
 }
 async function push(){
