@@ -806,6 +806,12 @@ class BrowserSmoke(unittest.TestCase):
             self.assertGreaterEqual(len(saved['sessions']),120)
             self.assertGreaterEqual(len(saved['schedule']),30)
             self.assertGreaterEqual(len(saved['todos']),10)
+            self.assertGreater(sum(bool(t['done']) for t in saved['todos']),0)
+            linked=[p for p in saved['schedule'] if p.get('sessionId')]
+            self.assertGreater(len(linked),14)
+            ids={x['id'] for x in saved['sessions']}
+            self.assertTrue(all(p['sessionId'] in ids for p in linked))
+            self.assertTrue(all(any(s['id']==p['sessionId'] and s.get('plannedId')==p['id'] for s in saved['sessions']) for p in linked))
             self.assertGreaterEqual(len(saved['goals']),3)
             self.assertGreaterEqual(len(saved['workouts']),8)
             self.assertGreaterEqual(len(saved['meals']),10)
