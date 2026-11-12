@@ -778,8 +778,8 @@ class BrowserSmoke(unittest.TestCase):
             page.locator('[data-v7-plan-view="predicted"]').click()
             output=page.locator('#smartPredictionEvidence')
             self.assertIn('Enough history',output.inner_text())
-            self.assertIn('Reading',output.inner_text())
-            self.assertIn('Unconfirmed suggestion',output.inner_text())
+            self.assertIn('Reading',page.locator('#v7IntegratedWeekPreview').inner_text())
+            self.assertGreater(page.locator('#v7IntegratedWeekPreview .lo-predviz-event.is-proposed').count(),0)
             self.assertEqual(page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-live-v1')).schedule.length"""),0)
         finally:
             context.close()
@@ -820,6 +820,7 @@ class BrowserSmoke(unittest.TestCase):
             self.assertTrue(all(s.get('source')=='development-starter' for s in saved['sessions'] if s.get('seedBatch')))
             self.assertTrue(all(s.get('precision')=='retrospective-approximate' for s in saved['sessions'] if s.get('seedBatch')))
             self.assertIn('Enough history',page.locator('#smartPredictionEvidence').inner_text())
+            page.locator('[data-v7-plan-view="predicted"]').click()
             self.assertEqual(page.locator('#v7IntegratedWeekPreview .lo-predviz-day').count(),7)
             self.assertEqual(page.locator('#v7IntegratedWeekPreview .lo-predviz-bar-col').count(),14)
             self.assertGreater(page.locator('#v7IntegratedWeekPreview .lo-predviz-event.is-proposed').count(),0)
