@@ -1,0 +1,70 @@
+/* LifeOS Personal V7: compact mobile-first presentation. Readability and hierarchy only.
+   This stylesheet does not write or mutate activities, tasks, or synchronization data. */
+:root{--lo-v7-line:rgba(141,169,206,.24);--lo-v7-teal:#8ae8d8}
+body .panel{box-shadow:0 12px 28px rgba(0,0,0,.08)}
+#trackQuickPanel .quick{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#trackQuickPanel .quick button{
+  position:relative;display:grid;grid-template-columns:44px minmax(0,1fr) 18px;
+  align-items:center;gap:10px;text-align:left;min-height:82px;padding:13px;
+  color:inherit;border-radius:16px;border:1px solid var(--lo-v7-line);
+  background:linear-gradient(125deg,rgba(108,163,216,.12),rgba(50,91,132,.05));
+  transition:border-color .15s,transform .15s,background .15s;
+}
+#trackQuickPanel .quick button:hover,#trackQuickPanel .quick button:focus-visible{border-color:var(--lo-v7-teal);background:rgba(93,185,166,.13)}
+#trackQuickPanel .quick button:active{transform:scale(.985)}
+#trackQuickPanel .quick .lo-quick-glyph{
+  margin:0;display:grid;place-items:center;width:42px;height:42px;border-radius:12px;
+  background:rgba(106,198,180,.11);color:var(--lo-v7-teal);font-size:27px;
+  font-family:system-ui,sans-serif;font-weight:500;line-height:1
+}
+#trackQuickPanel .quick .lo-quick-copy{display:block;min-width:0;font-size:13px;line-height:1.35;font-weight:690;overflow-wrap:anywhere}
+#trackQuickPanel .quick .lo-quick-plus{display:block;text-align:right;margin:0;font-size:20px;opacity:.7;color:var(--lo-v7-teal)}
+.lo-history-toolbar{display:grid;grid-template-columns:1fr 130px;gap:7px 12px;margin:12px 0}
+.lo-history-toolbar label{margin:0}.lo-history-toolbar .field{min-width:0;margin:0}
+#trackHistoryPanel .history{max-height:none!important;overflow:visible!important}
+.lo-history-day{border:1px solid var(--lo-v7-line);border-radius:13px;margin:10px 0;background:rgba(72,115,168,.055);overflow:hidden}
+.lo-history-day>summary{list-style:none;cursor:pointer;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lo-history-day>summary::-webkit-details-marker{display:none}
+.lo-history-day>summary:before{content:'▸';color:var(--lo-v7-teal);margin-right:5px}
+.lo-history-day[open]>summary:before{content:'▾'}
+.lo-history-day>summary>span{flex:1;font-size:14px;font-weight:750}
+.lo-history-day>summary>small{font-size:11px;color:var(--lo-muted,#aabbd2);white-space:normal;text-align:right}
+.lo-history-item{margin:0 12px;border-top:1px solid var(--lo-v7-line);padding:12px 3px}
+.lo-history-entry,.lo-history-foot{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.lo-history-entry strong{font-size:13px;overflow-wrap:anywhere}
+.lo-history-entry span{font-size:12px;font-weight:700;white-space:nowrap}
+.lo-history-foot{margin-top:7px}
+.lo-history-foot small{font-size:11px;color:var(--lo-muted,#acbad0);line-height:1.4}
+.lo-history-foot button{flex-shrink:0;min-height:34px;padding:6px 9px!important;font-size:11px}
+.lo-history-notice{margin:0 12px 8px;font-size:11px;color:#edc785}
+#loHistoryCount{font-size:11px;line-height:1.4;margin:7px 0}
+.lo-daily-progress{border:1px solid var(--lo-v7-line);border-radius:14px;padding:15px;margin:12px 0;background:linear-gradient(120deg,rgba(44,121,122,.12),rgba(64,89,148,.08))}
+.lo-daily-progress .lo-daily-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+.lo-daily-progress .lo-daily-heading strong{font-size:14px}
+.lo-daily-progress .lo-progress-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.lo-daily-progress .lo-progress-key>div{background:rgba(131,166,208,.09);padding:10px;border-radius:9px}
+.lo-daily-progress .lo-progress-key strong,.lo-daily-progress .lo-progress-key small{display:block}
+.lo-daily-progress .lo-progress-key strong{font-size:20px}
+.lo-daily-progress .lo-progress-key small{font-size:10px;line-height:1.4;color:var(--lo-muted,#b4c1d7)}
+.lo-daily-progress .lo-bar-track{height:9px;overflow:hidden;background:rgba(127,154,185,.25);border-radius:999px;margin:10px 0}
+.lo-daily-progress .lo-bar-fill{background:linear-gradient(90deg,#5fb9a6,#8dbcf6);height:100%;border-radius:999px}
+.lo-daily-progress .lo-daily-note{font-size:11px;color:var(--lo-muted,#afbed1);line-height:1.5;margin:9px 0 0}
+#lifeosSelectedDaySummary{scroll-margin-top:85px}
+#todayActivityHistoryPanel{margin-top:0}
+#todayActivityHistoryPanel .lo-today-activities{max-height:360px;overflow-y:auto;overscroll-behavior:contain}
+#todayActivityHistoryPanel .lo-today-activity{padding:11px}
+.lo-v7-compact .panel>p.note{line-height:1.55}
+@media(max-width:750px){
+ body .wrap{padding-left:14px;padding-right:14px}
+ body .panel{border-radius:17px;padding:16px}
+ body .panel .head{gap:8px}
+ body .panel h2{font-size:17px}
+ #trackQuickPanel .quick button{min-height:74px;padding:10px;grid-template-columns:36px minmax(0,1fr) 14px;gap:9px}
+ #trackQuickPanel .quick .lo-quick-glyph{width:36px;height:36px;font-size:23px}
+ #trackQuickPanel .quick .lo-quick-copy{font-size:12px}
+ .lo-history-toolbar{grid-template-columns:minmax(0,1fr) 110px}
+ .lo-history-day>summary{padding:12px}
+ #todayActivityHistoryPanel .lo-today-activities{max-height:310px}
+}
+@media(max-width:370px){#trackQuickPanel .quick{grid-template-columns:1fr}.lo-daily-progress .lo-progress-key{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){#trackQuickPanel .quick button{transition:none}}
