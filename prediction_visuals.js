@@ -34,8 +34,8 @@ function render(target,{sessions=[],suggestions=[],confirmed=[],from=Date.now(),
  if(!target)throw Error('Missing prediction visualization target');
  target.replaceChildren();
  const heading=el('div','lo-predviz-heading');
- heading.append(el('h3','',demo?'Demo predicted week':'Predicted week'));
- heading.append(el('span','lo-predviz-badge',demo?'SIMULATED · NOT SAVED':'READ-ONLY PREVIEW'));
+ heading.append(el('h3','','Predicted week'));
+ heading.append(el('span','lo-predviz-badge','UNCONFIRMED SUGGESTIONS'));
  target.append(heading);
  target.append(el('p','lo-predviz-help','Suggested routines are not booked activities. Missing logs never imply availability. This preview never changes your schedule.'));
  const calendar=el('div','lo-predviz-week');calendar.setAttribute('aria-label','Seven-day prediction calendar');
@@ -60,7 +60,7 @@ function render(target,{sessions=[],suggestions=[],confirmed=[],from=Date.now(),
  const totals=historicalTotals(sessions,from,14);
  const max=Math.max(1,...totals.map(r=>r.ms));
  const chart=el('section','lo-predviz-chart');chart.append(el('h4','','History · last 14 days'));
- chart.append(el('p','lo-predviz-help',demo?'Illustrative activity hours (fictional sample)':'Recorded activity hours (tracked, not verified complete)'));
+ chart.append(el('p','lo-predviz-help','Activity hours in this workspace (may include imported development samples)'));
  const bars=el('div','lo-predviz-bars');bars.setAttribute('role','img');bars.setAttribute('aria-label','Daily hours recorded over the previous 14 days');
  for(const item of totals){const col=el('div','lo-predviz-bar-col');const track=el('div','lo-predviz-track');const bar=el('div','lo-predviz-bar');bar.style.height=Math.max(1,Math.round(item.ms/max*100))+'%';bar.title=dayLabel(item.date)+': '+duration(item.ms);track.append(bar);col.append(track,el('span','',new Date(item.date).getDate()));bars.append(col)}
  chart.append(bars);
