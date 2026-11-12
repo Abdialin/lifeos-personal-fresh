@@ -68,3 +68,15 @@ body .panel{box-shadow:0 12px 28px rgba(0,0,0,.08)}
 }
 @media(max-width:370px){#trackQuickPanel .quick{grid-template-columns:1fr}.lo-daily-progress .lo-progress-key{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){#trackQuickPanel .quick button{transition:none}}
+
+/* Optional finish details: fields remain accessible in narrow mobile view. */
+.lo-activity-detail-card{max-height:min(90dvh,760px);overflow-y:auto;overscroll-behavior:contain}
+.lo-activity-detail-card label{display:block;margin-top:9px;font-size:12px;font-weight:650}
+.lo-activity-detail-card .field{margin:5px 0 8px}
+.lo-activity-detail-card .row{position:sticky;bottom:-22px;background:inherit;padding:12px 0 4px}
+.lo-history-actions{display:flex;gap:5px;flex-shrink:0}
+@media(max-width:430px){
+ .lo-history-foot{align-items:flex-start;flex-wrap:wrap}
+ .lo-history-actions{width:100%;justify-content:flex-end}
+ .lo-activity-detail-card{padding:17px}
+}
