@@ -86,6 +86,27 @@ def save_state(expected, data):
         return True, actual + 1
 
 
+def read_storage_status():
+    """Read-only backend probe; never retrieves or changes workspace contents."""
+    if DATABASE_URL:
+        with psycopg.connect(DATABASE_URL, connect_timeout=10) as db:
+            with db.cursor() as cur:
+                cur.execute('SELECT revision FROM lifeos.state WHERE id=1')
+                row = cur.fetchone()
+        backend = 'postgresql'
+    else:
+        with lock, sqlite3.connect(DB) as db:
+            row = db.execute('SELECT revision FROM state WHERE id=1').fetchone()
+        backend = 'sqlite'
+    return {
+        'backend': backend,
+        'read_only': True,
+        'storage_readable': True,
+        'revision': int(row[0]) if row else 0,
+        'has_state': row is not None,
+    }
+
+
 class Handler(BaseHTTPRequestHandler):
     def reply(self, status, body):
         blob = json.dumps(body, separators=(',', ':')).encode()
@@ -132,6 +153,13 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(200, {'status': 'ok'})
             return
         if not self.private_access():
+            return
+        if path == '/api/storage/status':
+            if not self.auth(): return
+            try:
+                self.reply(200, read_storage_status())
+            except Exception:
+                self.reply(503, {'error': 'Storage status unavailable; no data changed'})
             return
         if path == '/api/calendar/audit':
             if not self.auth(): return
