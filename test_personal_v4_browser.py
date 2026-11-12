@@ -504,6 +504,88 @@ class BrowserSmoke(unittest.TestCase):
         if toggle.get_attribute('aria-expanded')=='true':
             toggle.click()
 
+    def test_two_browser_sync_through_isolated_real_sqlite_server(self):
+        """Actual auth + HTTP + CAS, never the user's real Render database."""
+        import os
+        import socket
+        import subprocess
+        import sys
+        import tempfile
+        import time
+
+        with tempfile.TemporaryDirectory() as temporary:
+            with socket.socket() as sock:
+                sock.bind(('127.0.0.1', 0))
+                port = sock.getsockname()[1]
+            token = 'isolated-automated-test-token'
+            env = {**os.environ, 'PORT': str(port),
+                   'LIFEOS_DB': str(pathlib.Path(temporary) / 'isolated.sqlite3'),
+                   'LIFEOS_USERNAME': 'lifeos-test-user',
+                   'LIFEOS_PASSWORD': 'lifeos-test-password',
+                   'LIFEOS_TOKEN': token}
+            env.pop('LIFEOS_DATABASE_URL', None)
+            proc = subprocess.Popen([sys.executable, str(ROOT / 'server.py')],
+                                    env=env, cwd=str(ROOT),
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            contexts = []
+            try:
+                url=f'http://127.0.0.1:{port}/index.html'
+                for _ in range(60):
+                    if proc.poll() is not None:
+                        raise RuntimeError('Isolated test server exited')
+                    try:
+                        import urllib.request
+                        with urllib.request.urlopen(f'http://127.0.0.1:{port}/healthz',timeout=1) as response:
+                            if response.status == 200: break
+                    except Exception:
+                        time.sleep(.1)
+                else: raise RuntimeError('Isolated test server did not start')
+                def browser():
+                    context=self.browser.new_context(viewport={'width':390,'height':844},
+                            http_credentials={'username':'lifeos-test-user',
+                                              'password':'lifeos-test-password'},
+                            accept_downloads=True)
+                    contexts.append(context)
+                    page=context.new_page()
+                    page.goto(url,wait_until='load',timeout=30000)
+                    page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+                    cloud=page.locator('#cloudSyncPanel')
+                    if cloud.locator('.lo-advanced-toggle').get_attribute('aria-expanded')=='false':
+                        cloud.locator('.lo-advanced-toggle').click()
+                    page.locator('#syncToken').fill(token)
+                    return page
+                first=browser()
+                first.locator('#customName').fill('Synthetic cross-device activity')
+                first.locator('#startCustom').click()
+                first.locator('#sessions [data-act="finish"]').first.click()
+                first.locator('#connectSync').click()
+                first.wait_for_function("""() => document.querySelector('#syncStatus')?.textContent.includes('Synced to server')""",timeout=14000)
+                saved=first.evaluate("""() => {
+                    const record=JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'));
+                    return {revision:record.meta.revision,id:record.workspace.sessions.find(s=>s.name==='Synthetic cross-device activity').id};
+                }""")
+                self.assertGreater(saved['revision'],0)
+                second=browser()
+                second.locator('#connectSync').click()
+                second.wait_for_function("""() => document.querySelector('#syncStatus')?.textContent.includes('server has saved data')""",timeout=8000)
+                second.on('dialog',lambda dialog:dialog.accept())
+                second.locator('#pullSync').click()
+                second.wait_for_function("""() => document.querySelector('#syncStatus')?.textContent.includes('Loaded from server')""",timeout=8000)
+                remote=second.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'))""")
+                self.assertEqual(remote['meta']['revision'],saved['revision'])
+                self.assertEqual(len(remote['journal']),0)
+                self.assertEqual(remote['workspace']['sessions'][0]['id'],saved['id'])
+                second.reload(wait_until='load',timeout=30000)
+                persisted=second.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'))""")
+                self.assertEqual(persisted['meta']['revision'],saved['revision'])
+                self.assertEqual(persisted['workspace']['sessions'][0]['id'],saved['id'])
+                self.assertEqual(len(persisted['journal']),0)
+            finally:
+                for context in contexts:
+                    with contextlib.suppress(Exception): context.close()
+                proc.terminate()
+                with contextlib.suppress(Exception): proc.wait(timeout=4)
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
