@@ -88,6 +88,22 @@ function renderQuality(ws){
  safeSection('qualityPanel','v8DayEvidence',text);
  moveLegacyToDisclosure('qualityPanel','qualityResults',['qualityAnalyze']);
 }
+function renderRoutines(ws){
+ const logs=ws.personalLogs||[],today=new Date(),rows=[];
+ for(let i=6;i>=0;i--){const date=new Date(today.getFullYear(),today.getMonth(),today.getDate()-i),key=dayKey(date);rows.push({label:date.toLocaleDateString(undefined,{weekday:'short'}),count:logs.filter(x=>x.date===key).length})}
+ const total=rows.reduce((n,x)=>n+x.count,0),max=Math.max(1,...rows.map(x=>x.count));
+ const categories=new Map();for(const log of logs.filter(x=>x.date>=dayKey(new Date(today.getFullYear(),today.getMonth(),today.getDate()-6)))){const category=String(log.category||'Other');categories.set(category,(categories.get(category)||0)+1)}
+ const top=[...categories].sort((a,b)=>b[1]-a[1]).slice(0,4);
+ const content='<h3>Routine tracking · last 7 days</h3><div class="v8-kpis">'+progressMetric('Logged routines',total)+progressMetric('Days logged',rows.filter(x=>x.count).length+' / 7')+progressMetric('Categories',categories.size)+'</div>'+
+ '<div class="v8-week-bars" role="img" aria-label="Personal routine logs recorded per day">'+rows.map(x=>'<div class="v8-week-bar"><b>'+x.count+'</b><div class="v8-bar-outer"><div class="v8-bar-fill" style="height:'+(x.count/max*100).toFixed(1)+'%"></div></div><small>'+esc(x.label)+'</small></div>').join('')+'</div>'+
+ (top.length?'<p class="v8-visual-sub">Most logged: '+esc(top.map(([name,n])=>name+' ('+n+')').join(' · '))+'</p>':'<p class="v8-visual-sub">No routine logs in this period. Imported timer sessions are separate and are not automatically counted as personal logs.</p>');
+ safeSection('personalActivityPanel','v8RoutineOverview',content);
+ const panel=$('personalActivityPanel');if(!panel||panel.querySelector('#v8RoutineRaw'))return;
+ const detail=document.createElement('details');detail.className='v8-raw-report';detail.id='v8RoutineRaw';
+ const summary=document.createElement('summary');summary.textContent='Routine history and detailed calculations';detail.append(summary);
+ for(const id of ['personalLogSummary','personalProgressSummary','personalLogList']){const el=$(id);if(el)detail.append(el)}
+ panel.append(detail);
+}
 function optimizePlanning(){
  const panel=$('personalCompletionPanel');if(!panel||panel.querySelector('.v8-plan-compact'))return;
  const title=document.createElement('p');title.className='v8-visual-sub v8-plan-compact';title.textContent='Predictions and approvals remain read-only until you review them. Open the tools below when you need them.';
@@ -103,7 +119,7 @@ let busy=false;
 function refresh(){
  if(busy)return;
  const ws=snapshot();if(!ws)return;busy=true;
- try{renderWeekly(ws);renderGoals(ws);renderQuality(ws);optimizePlanning()}catch(e){console.warn('LifeOS V8 read-only report unavailable',e)}finally{busy=false}
+ try{renderWeekly(ws);renderGoals(ws);renderQuality(ws);renderRoutines(ws);optimizePlanning()}catch(e){console.warn('LifeOS V8 read-only report unavailable',e)}finally{busy=false}
 }
 function init(){
  const field=$('qualityDate');if(field)field.addEventListener('change',refresh);
