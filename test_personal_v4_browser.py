@@ -580,6 +580,32 @@ class BrowserSmoke(unittest.TestCase):
                 self.assertEqual(persisted['meta']['revision'],saved['revision'])
                 self.assertEqual(persisted['workspace']['sessions'][0]['id'],saved['id'])
                 self.assertEqual(len(persisted['journal']),0)
+                # Deliberately attempt an outdated write through the real HTTP API.
+                # PostgreSQL and SQLite share this revision-CAS contract.
+                import base64
+                import json
+                import urllib.error
+                import urllib.request
+                headers = {
+                    'Authorization': 'Basic ' + base64.b64encode(b'lifeos-test-user:lifeos-test-password').decode(),
+                    'X-LifeOS-Token': token,
+                    'Content-Type': 'application/json'
+                }
+                changed=json.loads(json.dumps(persisted['workspace']))
+                changed['sessions'][0]['name']='Must never overwrite server history'
+                stale=urllib.request.Request(f'http://127.0.0.1:{port}/api/state',
+                    data=json.dumps({'revision':saved['revision']-1,'data':changed}).encode(),
+                    headers=headers,method='PUT')
+                with self.assertRaises(urllib.error.HTTPError) as error:
+                    urllib.request.urlopen(stale,timeout=5)
+                self.assertEqual(error.exception.code,409)
+                read=urllib.request.Request(f'http://127.0.0.1:{port}/api/state',
+                    headers=headers,method='GET')
+                with urllib.request.urlopen(read,timeout=5) as response:
+                    verified=json.load(response)
+                self.assertEqual(verified['revision'],saved['revision'])
+                self.assertEqual(verified['data']['sessions'][0]['id'],saved['id'])
+                self.assertEqual(verified['data']['sessions'][0]['name'],'Synthetic cross-device activity')
             finally:
                 for context in contexts:
                     with contextlib.suppress(Exception): context.close()
