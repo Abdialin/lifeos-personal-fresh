@@ -337,6 +337,7 @@ if __name__ == '__main__':
     try:
         status = read_storage_status()
         print('LifeOS startup | storage_probe=' + ('ok' if status['read_only'] and status['storage_readable'] else 'unverified'), flush=True)
-    except Exception:
-        print('LifeOS startup | storage_probe=failed', flush=True)
+    except Exception as exc:
+        # Exception class only; avoid logging server hostnames, URLs, or payloads.
+        print('LifeOS startup | storage_probe=failed | error_type=' + type(exc).__name__, flush=True)
     ThreadingHTTPServer(('0.0.0.0', PORT), Handler).serve_forever()
