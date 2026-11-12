@@ -842,6 +842,68 @@ class BrowserSmoke(unittest.TestCase):
         finally:
             context.close()
 
+    def test_existing_seed_repair_adds_today_and_ideal_without_touching_real(self):
+        """Opt-in repair fixes older imported history; actual sessions stay intact."""
+        context=self.browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+        try:
+            page=context.new_page()
+            page.on('dialog',lambda d:d.accept())
+            page.goto(f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html',wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+            page.locator('#customName').fill('Real record must stay exactly')
+            page.locator('#startCustom').click()
+            page.locator('#sessions [data-act="finish"]').first.click()
+            original=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic')).workspace.sessions.find(s=>s.name==='Real record must stay exactly')""")
+            # Create legacy starter data as it existed before today's repair,
+            # without using any live user account or production API.
+            page.evaluate("""() => {
+                const atomic=JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'));
+                const seed=window.LifeOSDevelopmentStarter.generate(new Date());
+                const merged=window.LifeOSDevelopmentStarter.merge(atomic.workspace,seed);
+                atomic.workspace=merged;
+                atomic.journal=[];
+                atomic.meta={revision:null,dirty:true};
+                localStorage.setItem('lifeos-v4-stage21-atomic',JSON.stringify(atomic));
+                localStorage.setItem('lifeos-live-v1',JSON.stringify(merged));
+            }""")
+            page.reload(wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+            before=page.evaluate("""() => window.LifeOSStarterRepair.analyze(window.lifeosReadOnlyWorkspace())""")
+            self.assertGreater(before['overlapMinutes'],0)
+            self.assertTrue(page.locator('#lifeosStarterRepair').is_visible())
+            with page.expect_download(timeout=12000):
+                page.locator('#lifeosStarterRepair').click()
+            self.assertIn('Updated safely',page.locator('#lifeosStarterStatus').inner_text())
+            result=page.evaluate("""() => {
+                const ws=JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic')).workspace;
+                const day=new Date();day.setHours(0,0,0,0);
+                const tomorrow=new Date(day);tomorrow.setDate(tomorrow.getDate()+1);
+                return {
+                    original:ws.sessions.find(s=>s.name==='Real record must stay exactly'),
+                    today:ws.sessions.filter(s=>s.seedBatch==='lifeos-development-seed-v1'&&s.startAt>=day.getTime()&&s.startAt<tomorrow.getTime()).length,
+                    ideals:ws.idealRoutines?.length||0,
+                    overlap:window.LifeOSStarterRepair.analyze(ws).overlapMinutes,
+                    queue:JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic')).journal.length
+                }
+            }""")
+            self.assertEqual(result['original'],original)
+            self.assertGreaterEqual(result['today'],3)
+            self.assertGreaterEqual(result['ideals'],14)
+            self.assertLess(result['overlap'],before['overlapMinutes'])
+            self.assertGreater(result['queue'],0)
+            page.reload(wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+            self.assertTrue(page.locator('#lifeosStarterRepair').is_visible())
+            # Main Plan calendar should independently show visual predicted/ideal weeks.
+            page.locator('[data-v7-plan-view="predicted"]').click()
+            self.assertEqual(page.locator('#v7IntegratedWeekPreview .lo-predviz-day').count(),7)
+            self.assertGreater(page.locator('#v7IntegratedWeekPreview .lo-predviz-event.is-proposed').count(),0)
+            page.locator('[data-v7-plan-view="ideal"]').click()
+            self.assertEqual(page.locator('#v7IntegratedWeekPreview .lo-predviz-day').count(),7)
+            self.assertGreater(page.locator('#v7IntegratedWeekPreview .lo-predviz-event.is-proposed').count(),0)
+        finally:
+            context.close()
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
