@@ -30,14 +30,14 @@ function historicalTotals(sessions,anchor,days=14){
  }
  return rows;
 }
-function render(target,{sessions=[],suggestions=[],confirmed=[],from=Date.now(),demo=false,observedDays=0}={}){
+function render(target,{sessions=[],suggestions=[],confirmed=[],from=Date.now(),demo=false,observedDays=0,mode='predicted'}={}){
  if(!target)throw Error('Missing prediction visualization target');
  target.replaceChildren();
  const heading=el('div','lo-predviz-heading');
- heading.append(el('h3','','Predicted week'));
+ heading.append(el('h3','',mode==='ideal'?'My Ideal Week':'My Predicted Week'));
  heading.append(el('span','lo-predviz-badge','UNCONFIRMED SUGGESTIONS'));
  target.append(heading);
- target.append(el('p','lo-predviz-help','Suggested routines are not booked activities. Missing logs never imply availability. This preview never changes your schedule.'));
+ target.append(el('p','lo-predviz-help',mode==='ideal'?'Your preferred routines are aspirations, not confirmed appointments. No schedule changes are made.':'Pattern-based routine suggestions are not booked activities. Missing logs never imply availability. No schedule changes are made.'));
  const calendar=el('div','lo-predviz-week');calendar.setAttribute('aria-label','Seven-day prediction calendar');
  const suggestionEntries=suggestions.map(p=>({...p,kind:'suggestion'}));
  const confirmedEntries=confirmed.map(p=>({...p,kind:'confirmed'}));
@@ -50,7 +50,7 @@ function render(target,{sessions=[],suggestions=[],confirmed=[],from=Date.now(),
    const card=el('div','lo-predviz-event '+(entry.kind==='confirmed'?'is-confirmed':'is-proposed'));
    card.append(el('span','lo-predviz-time',time(entry.startAt)+'–'+time(entry.endAt)));
    card.append(el('strong','',entry.name||'Activity'));
-   card.append(el('small','',entry.kind==='confirmed'?'Confirmed plan':(entry.conflicts?.length?'Review conflicts · ':'')+'Suggested · '+(entry.observations||0)+' repeats'));
+   card.append(el('small','',entry.kind==='confirmed'?'Confirmed plan':(entry.conflicts?.length?'Review conflicts · ':'')+(mode==='ideal'?'Ideal preference':'Suggested · '+(entry.observations||0)+' repeats')));
    column.append(card);
   }
   calendar.append(column);
