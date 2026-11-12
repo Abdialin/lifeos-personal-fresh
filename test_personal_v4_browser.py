@@ -784,46 +784,55 @@ class BrowserSmoke(unittest.TestCase):
         finally:
             context.close()
 
-    def test_fictional_history_demo_generates_patterns_without_persisting(self):
-        """In-memory fake history must never contaminate real sessions or journals."""
-        context=self.browser.new_context(viewport={'width':390,'height':844})
+    def test_development_starter_persists_populates_charts_and_is_removable(self):
+        """Isolated synthetic workspace; preserve existing real-like session on removal."""
+        context=self.browser.new_context(viewport={'width':390,'height':844},accept_downloads=True)
         try:
             page=context.new_page()
+            page.on('dialog',lambda dialog:dialog.accept())
             page.goto(f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html',wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+            page.locator('#customName').fill('Existing activity preserve me')
+            page.locator('#startCustom').click()
+            page.locator('#sessions [data-act="finish"]').first.click()
             page.locator('#lifeosNavigation button[data-view="schedule"]').click()
-            original=page.evaluate("""() => ({
-                workspace:localStorage.getItem('lifeos-live-v1'),
-                atomic:localStorage.getItem('lifeos-v4-stage21-atomic'),
-                journal:localStorage.getItem('lifeos-v4-stage11-outbox')
-            })""")
-            page.locator('#smartDemoToggle').click()
-            self.assertEqual(page.locator('#smartDemoToggle').get_attribute('aria-pressed'),'true')
-            evidence=page.locator('#smartPredictionEvidence').inner_text()
-            self.assertIn('SIMULATED EXAMPLE',evidence)
-            self.assertIn('Enough history',evidence)
-            self.assertIn('Morning reading',evidence)
-            self.assertIn('Unconfirmed suggestion',evidence)
-            self.assertEqual(page.locator('#smartPredictionVisuals .lo-predviz-day').count(),7)
-            self.assertEqual(page.locator('#smartPredictionVisuals .lo-predviz-bar-col').count(),14)
-            self.assertGreater(page.locator('#smartPredictionVisuals .lo-predviz-event.is-proposed').count(),0)
+            self.assertTrue(page.locator('#lifeosStarterApply').is_visible())
+            self.assertEqual(page.locator('#smartDemoToggle').count(),0)
+            with page.expect_download(timeout=12000) as d:
+                page.locator('#lifeosStarterApply').click()
+            self.assertTrue(d.value.suggested_filename.startswith('LifeOS_backup_'))
+            self.assertIn('Starter imported',page.locator('#lifeosStarterStatus').inner_text())
+            saved=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic')).workspace""")
+            self.assertGreaterEqual(len(saved['sessions']),120)
+            self.assertGreaterEqual(len(saved['schedule']),30)
+            self.assertGreaterEqual(len(saved['todos']),10)
+            self.assertGreaterEqual(len(saved['goals']),3)
+            self.assertGreaterEqual(len(saved['workouts']),8)
+            self.assertGreaterEqual(len(saved['meals']),10)
+            self.assertGreaterEqual(len(saved['personalLogs']),28)
+            self.assertTrue(any(s['name']=='Existing activity preserve me' for s in saved['sessions']))
+            self.assertTrue(all(s.get('source')=='development-starter' for s in saved['sessions'] if s.get('seedBatch')))
+            self.assertTrue(all(s.get('precision')=='retrospective-approximate' for s in saved['sessions'] if s.get('seedBatch')))
+            self.assertIn('Enough history',page.locator('#smartPredictionEvidence').inner_text())
             self.assertEqual(page.locator('#smartPredictionVisuals .lo-predviz-day').count(),7)
             self.assertEqual(page.locator('#smartPredictionVisuals .lo-predviz-bar-col').count(),14)
             self.assertGreater(page.locator('#smartPredictionVisuals .lo-predviz-event.is-proposed').count(),0)
             self.assertTrue(page.locator('#smartPredictionVisuals').is_visible())
-            self.assertEqual(page.evaluate("""() => ({
-                workspace:localStorage.getItem('lifeos-live-v1'),
-                atomic:localStorage.getItem('lifeos-v4-stage21-atomic'),
-                journal:localStorage.getItem('lifeos-v4-stage11-outbox')
-            })"""),original)
-            page.locator('#smartDemoToggle').click()
-            self.assertEqual(page.locator('#smartDemoToggle').get_attribute('aria-pressed'),'false')
-            self.assertNotIn('SIMULATED EXAMPLE',page.locator('#smartPredictionEvidence').inner_text())
             page.reload(wait_until='load',timeout=30000)
-            self.assertEqual(page.evaluate("""() => ({
-                workspace:localStorage.getItem('lifeos-live-v1'),
-                atomic:localStorage.getItem('lifeos-v4-stage21-atomic'),
-                journal:localStorage.getItem('lifeos-v4-stage11-outbox')
-            })"""),original)
+            page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+            self.assertTrue(page.locator('#lifeosStarterRemove').is_visible())
+            self.assertTrue(page.locator('#lifeosStarterApply').is_hidden())
+            persisted=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic')).workspace""")
+            self.assertEqual(len(persisted['sessions']),len(saved['sessions']))
+            with page.expect_download(timeout=12000) as d2:
+                page.locator('#lifeosStarterRemove').click()
+            self.assertTrue(d2.value.suggested_filename.startswith('LifeOS_backup_'))
+            after=page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic')).workspace""")
+            self.assertEqual(len(after['sessions']),1)
+            self.assertEqual(after['sessions'][0]['name'],'Existing activity preserve me')
+            self.assertEqual(len(after['schedule']),0)
+            self.assertEqual(len(after['todos']),0)
+            self.assertEqual(len(after['goals']),0)
         finally:
             context.close()
 
