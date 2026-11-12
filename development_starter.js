@@ -20,6 +20,17 @@ function generate(anchor=new Date()){
   const id=nextId('activity');
   sessions.push({id,name,status:'finished',createdAt:start,startAt:start,endAt:end,segments:[{start,end}],notes:'Synthetic development starter · not verified actual attendance',precision:'retrospective-approximate',source:'development-starter',seedBatch:BATCH,category:tag});
   events.push({id:nextId('event'),sessionId:id,type:'START',time:start,seedBatch:BATCH},{id:nextId('event'),sessionId:id,type:'FINISH',time:end,seedBatch:BATCH});
+  // Link a subset of completed tracked activities to historical plans.
+  // This exercises the normal Plan → actual comparison without inventing
+  // independent attendance evidence.
+  if(['Study','Fitness','Work','Quran'].includes(tag)){
+   const scheduledStart=start-10*MIN,scheduledEnd=end+10*MIN,planId=nextId('plan');
+   schedule.push({id:planId,name,startAt:scheduledStart,endAt:scheduledEnd,
+    notes:'Historical planned-vs-tracked sample; generated, not independently verified.',
+    status:'started',reminder:false,createdAt:scheduledStart-24*HOUR,
+    sessionId:id,seedBatch:BATCH});
+   sessions[sessions.length-1].plannedId=planId;
+  }
   return id;
  }
  function planned(day,name,h,m,duration,notes='Illustrative plan — review against actual commitments'){
@@ -107,6 +118,15 @@ function generate(anchor=new Date()){
  ];
  for(const [name,category,priority,days] of tasks){
   todos.push({id:nextId('todo'),name,category,priority,due:localDate(dateOffset(anchor,days)),done:false,createdAt:anchor.getTime(),completedAt:null,seedBatch:BATCH});
+ }
+ // Completed tasks demonstrate history and completion statistics as well as open work.
+ for(let week=-3;week<0;week++){
+  const day=dateOffset(anchor,week*7+1),completedAt=at(day,16,20);
+  for(const [name,category] of [['Review weekly priorities','Planning'],['Study course material','Study'],['Review Quran pages','Quran']]){
+   const createdAt=at(dateOffset(anchor,week*7),8,0);
+   todos.push({id:nextId('todo'),name,category,priority:'normal',due:localDate(day),
+    done:true,createdAt,completedAt,seedBatch:BATCH});
+  }
  }
  goals.push(
   {id:nextId('goal'),name:'Study 8 hours weekly',category:'sessions',match:'studying',unit:'hours',target:8,seedBatch:BATCH},
