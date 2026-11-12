@@ -892,3 +892,13 @@ body[data-lifeos-view="tracking"] #cloudSyncPanel{order:12}
  #loContinuityReminder .lo-continuity-copy{flex:1 1 100%}
  #loContinuityReminder button{width:100%}
 }
+
+/* Demo mode — preview only. Synthetic data never enter workspace storage. */
+#smartSchedulePanel .lo-demo-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:12px 0}
+#smartSchedulePanel .lo-demo-actions .btn{min-height:40px;font-size:12px}
+#smartDemoNotice{font-size:11px;line-height:1.5}
+#smartDemoToggle[aria-pressed="true"]{border-color:#f7b86e;background:rgba(247,184,110,.13);color:inherit}
+#smartPredictionEvidence>strong{display:block;margin:12px 0 7px}
+#smartPredictionEvidence .schedule-entry{margin:8px 0;padding:10px 12px}
+#smartPredictionEvidence .schedule-entry small{display:block;opacity:.78;margin-top:4px}
+@media(max-width:750px){#smartSchedulePanel .lo-demo-actions .btn{width:100%}}
