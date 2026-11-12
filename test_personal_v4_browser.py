@@ -629,6 +629,48 @@ class BrowserSmoke(unittest.TestCase):
                 proc.terminate()
                 with contextlib.suppress(Exception): proc.wait(timeout=4)
 
+    def test_background_timer_wall_clock_resume_and_reload(self):
+        """Simulate two minutes of suspended timers in a fresh, isolated profile."""
+        context = self.browser.new_context(viewport={'width':390,'height':844})
+        try:
+            page=context.new_page()
+            url=f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html'
+            page.goto(url,wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+            # Start at a synthetic time 125 seconds in the past, then restore the
+            # actual clock. No real sleep or changes to persistent user records.
+            page.evaluate("""() => {window.__lifeosRealNow=Date.now;Date.now=()=>window.__lifeosRealNow()-125000;}""")
+            page.locator('#customName').fill('Isolated background timing verification')
+            page.locator('#startCustom').click()
+            page.evaluate("""() => {Date.now=window.__lifeosRealNow;}""")
+            page.evaluate("""() => window.dispatchEvent(new Event('focus'))""")
+            page.wait_for_function("""() => {
+                const label=document.querySelector('#sessions [data-timer]')?.textContent||'';
+                return /2m (0[5-9]|[1-5][0-9])s/.test(label);
+            }""",timeout=6000)
+            before=page.evaluate("""() => {
+                const r=JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'));
+                return r.workspace.sessions.find(x=>x.name==='Isolated background timing verification');
+            }""")
+            self.assertEqual(before['status'],'running')
+            page.reload(wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+            page.wait_for_function("""() => {
+                const label=document.querySelector('#sessions [data-timer]')?.textContent||'';
+                return /2m (0[5-9]|[1-5][0-9])s/.test(label);
+            }""",timeout=6000)
+            restored=page.evaluate("""() => {
+                const r=JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'));
+                return r.workspace.sessions.find(x=>x.name==='Isolated background timing verification');
+            }""")
+            self.assertEqual(restored['id'],before['id'])
+            self.assertEqual(restored['segments'][0]['start'],before['segments'][0]['start'])
+            self.assertEqual(restored['status'],'running')
+            page.locator('#sessions [data-act="finish"]').first.click()
+            page.locator('#history').get_by_text('Isolated background timing verification').wait_for(timeout=6000)
+        finally:
+            context.close()
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
