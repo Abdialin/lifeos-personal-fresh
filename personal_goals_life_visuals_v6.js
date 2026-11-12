@@ -24,6 +24,7 @@ function goalValue(goal,ws,from,to){
   return matches.filter(x=>!goal.quantityUnit||String(x.unit||'').trim().toLowerCase()===String(goal.quantityUnit).trim().toLowerCase())
    .reduce((sum,x)=>sum+(x.quantity!==null&&x.quantity!==''&&Number.isFinite(Number(x.quantity))&&Number(x.quantity)>0?Number(x.quantity):0),0);
  }
+ if(goal.category==='meals')return (ws.meals||[]).filter(x=>{const time=new Date(String(x.date||'')+'T12:00:00').getTime();return Number.isFinite(time)&&time>=from&&time<to;}).length;
  if(goal.category==='fitness'){
   const linked=new Map(sessions.map(s=>[s.id,s]));
   return workouts.filter(x=>{
