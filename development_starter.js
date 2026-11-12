@@ -135,7 +135,7 @@ function generate(anchor=new Date()){
  );
  return {batch:BATCH,sessions,events,todos,schedule,workouts,meals,goals,personalLogs};
 }
-const keys=['sessions','events','todos','schedule','workouts','meals','goals','personalLogs'];
+const keys=['sessions','events','todos','schedule','workouts','meals','goals','personalLogs','idealRoutines'];
 function summary(seed){return Object.fromEntries(keys.map(k=>[k,(seed[k]||[]).length]))}
 function hasBatch(workspace){return keys.some(k=>(workspace[k]||[]).some(x=>x.seedBatch===BATCH))}
 function merge(workspace,seed){
