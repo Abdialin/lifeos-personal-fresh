@@ -775,8 +775,7 @@ class BrowserSmoke(unittest.TestCase):
             }""")
             page.reload(wait_until='load',timeout=30000)
             page.locator('#lifeosNavigation button[data-view="schedule"]').click()
-            if page.locator('#smartSchedulePanel .lo-advanced-toggle').get_attribute('aria-expanded')!='true':
-                page.locator('#smartPredicted').click()
+            page.locator('#smartPredicted').click()
             output=page.locator('#smartPredictionEvidence')
             self.assertIn('Enough history',output.inner_text())
             self.assertIn('Reading',output.inner_text())
