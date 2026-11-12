@@ -234,6 +234,36 @@ function initServerStorageProbe(){
   finally{button.disabled=false}
  });
 }
-function start(){init();enhanceViews();initStorageHealth();initServerStorageProbe();}
+/* V13: temporary database expiry warning and one-tap local recovery export.
+   Only UI state is changed. This never alters the user's activity or cloud state. */
+function initContinuityReminder(){
+ const storage=document.getElementById('loStorageHealth');
+ if(!storage||document.getElementById('loContinuityReminder'))return;
+ const notice=document.createElement('aside');
+ notice.id='loContinuityReminder';notice.className='lo-continuity-reminder';
+ notice.setAttribute('aria-label','Long-term data storage reminder');
+ const message=document.createElement('div');message.className='lo-continuity-copy';
+ const heading=document.createElement('strong');heading.textContent='Protect your activity history';
+ const description=document.createElement('p');
+ description.textContent='The current free staging PostgreSQL database is scheduled to expire 8 December 2026 (last verified 12 November). Keep an offline backup and review a permanent database plan before that date.';
+ message.append(heading,description);
+ const backup=document.createElement('button');backup.type='button';
+ backup.id='loQuickRecoveryBackup';backup.className='btn outline';
+ backup.textContent='↓ Export recovery backup';
+ const feedback=document.createElement('small');
+ feedback.id='loContinuityFeedback';feedback.setAttribute('role','status');
+ feedback.textContent='Backup contains private activity data; store it securely.';
+ backup.addEventListener('click',()=>{
+  const exportButton=document.getElementById('exportRecovery');
+  if(!exportButton){feedback.textContent='Recovery tools unavailable. Use Track → Cloud sync → Recovery tools.';return;}
+  try{
+   exportButton.click();
+   feedback.textContent='Recovery export requested. Check your browser downloads before relying on it.';
+  }catch(_){feedback.textContent='Download could not be started. Your existing data is unchanged.';}
+ });
+ notice.append(message,backup,feedback);
+ storage.insertAdjacentElement('afterend',notice);
+}
+function start(){init();enhanceViews();initStorageHealth();initServerStorageProbe();initContinuityReminder();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
