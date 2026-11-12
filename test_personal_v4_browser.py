@@ -787,6 +787,43 @@ class BrowserSmoke(unittest.TestCase):
         finally:
             context.close()
 
+    def test_fictional_history_demo_generates_patterns_without_persisting(self):
+        """In-memory fake history must never contaminate real sessions or journals."""
+        context=self.browser.new_context(viewport={'width':390,'height':844})
+        try:
+            page=context.new_page()
+            page.goto(f'http://127.0.0.1:{self.httpd.server_address[1]}/index.html',wait_until='load',timeout=30000)
+            page.locator('#lifeosNavigation button[data-view="schedule"]').click()
+            page.locator('#smartSchedulePanel .lo-advanced-toggle').click()
+            original=page.evaluate("""() => ({
+                workspace:localStorage.getItem('lifeos-live-v1'),
+                atomic:localStorage.getItem('lifeos-v4-stage21-atomic'),
+                journal:localStorage.getItem('lifeos-v4-stage11-outbox')
+            })""")
+            page.locator('#smartDemoToggle').click()
+            self.assertEqual(page.locator('#smartDemoToggle').get_attribute('aria-pressed'),'true')
+            evidence=page.locator('#smartPredictionEvidence').inner_text()
+            self.assertIn('SIMULATED EXAMPLE',evidence)
+            self.assertIn('Enough history',evidence)
+            self.assertIn('Morning reading',evidence)
+            self.assertIn('Unconfirmed suggestion',evidence)
+            self.assertEqual(page.evaluate("""() => ({
+                workspace:localStorage.getItem('lifeos-live-v1'),
+                atomic:localStorage.getItem('lifeos-v4-stage21-atomic'),
+                journal:localStorage.getItem('lifeos-v4-stage11-outbox')
+            })"""),original)
+            page.locator('#smartDemoToggle').click()
+            self.assertEqual(page.locator('#smartDemoToggle').get_attribute('aria-pressed'),'false')
+            self.assertNotIn('SIMULATED EXAMPLE',page.locator('#smartPredictionEvidence').inner_text())
+            page.reload(wait_until='load',timeout=30000)
+            self.assertEqual(page.evaluate("""() => ({
+                workspace:localStorage.getItem('lifeos-live-v1'),
+                atomic:localStorage.getItem('lifeos-v4-stage21-atomic'),
+                journal:localStorage.getItem('lifeos-v4-stage11-outbox')
+            })"""),original)
+        finally:
+            context.close()
+
     def test_visual_snapshots_for_review(self):
         """Keep reviewable screenshots of each key screen on mobile and desktop."""
         output = ROOT / 'artifacts' / 'ui'
