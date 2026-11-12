@@ -858,3 +858,9 @@ body[data-lifeos-view="tracking"] #cloudSyncPanel{order:11}
  #loStorageHealth{font-size:11px}
  #loStorageHealth small{font-size:10px}
 }
+
+/* V12: optional tab-scoped private sync credential controls. */
+.lo-tab-token-option{display:flex;align-items:center;gap:9px;margin:9px 0 2px;cursor:pointer;font-weight:650}
+.lo-tab-token-option input{width:17px;height:17px;flex:0 0 17px;accent-color:var(--lo-accent)}
+.lo-tab-token-note{margin:0 0 12px;line-height:1.4}
+@media(max-width:750px){.lo-tab-token-option{font-size:12px;gap:8px}.lo-tab-token-note{font-size:11px!important}}
