@@ -938,3 +938,18 @@ body[data-lifeos-view="tracking"] #cloudSyncPanel{order:12}
  .lo-predviz-chart{padding:11px}
  .lo-predviz-heading h3{font-size:16px}
 }
+
+/* Development starter: confirmed mock records, not a temporary demo overlay. */
+#lifeosStarterPanel{margin:13px 0;padding:15px;border:1px solid rgba(103,199,202,.4);border-radius:15px;background:linear-gradient(130deg,rgba(57,159,159,.11),rgba(100,125,217,.08))}
+.lo-starter-heading{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.lo-starter-heading strong{font-size:15px;letter-spacing:-.015em}
+.lo-starter-label{font-size:10px;font-weight:800;border-radius:999px;padding:5px 8px;color:inherit;background:rgba(105,192,188,.15);border:1px solid rgba(90,190,189,.28);letter-spacing:.05em}
+#lifeosStarterPanel .sub{font-size:12px;line-height:1.55;margin:6px 0}
+.lo-starter-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.lo-starter-actions .btn{min-height:43px}
+#lifeosStarterPanel button[hidden]{display:none!important}
+@media(max-width:750px){
+ #lifeosStarterPanel{padding:13px 12px;margin:12px 0}
+ .lo-starter-actions .btn{width:100%}
+ .lo-starter-heading strong{font-size:14px}
+}
