@@ -41,5 +41,36 @@ class StorageProbeTests(unittest.TestCase):
                     self.assertEqual(db.execute('SELECT count(*) FROM state').fetchone()[0], 0)
 
 
+    def test_simulated_postgres_probe_reads_only_revision_not_activity_data(self):
+        """Mock the database connection: prove PostgreSQL probe uses SELECT only."""
+        class Cursor:
+            def __init__(self): self.statements = []
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def execute(self, query):
+                self.statements.append(query.strip())
+                if query.strip() != 'SELECT revision FROM lifeos.state WHERE id=1':
+                    raise AssertionError('Storage health probe executed an unexpected query')
+            def fetchone(self): return (12,)
+        class Connection:
+            def __init__(self, cursor): self.cursor_instance = cursor
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def cursor(self): return self.cursor_instance
+        cursor = Cursor()
+        class FakePg:
+            @staticmethod
+            def connect(url, connect_timeout):
+                self.assertEqual(url, 'postgresql://mock-only/isolated')
+                self.assertEqual(connect_timeout, 10)
+                return Connection(cursor)
+        with patch.object(server, 'DATABASE_URL', 'postgresql://mock-only/isolated'), patch.object(server, 'psycopg', FakePg, create=True):
+            result = server.read_storage_status()
+        self.assertEqual(result, {'backend':'postgresql','read_only':True,
+                                  'storage_readable':True,'revision':12,'has_state':True})
+        self.assertEqual(cursor.statements, ['SELECT revision FROM lifeos.state WHERE id=1'])
+        self.assertNotIn('sessions', str(result))
+
+
 if __name__ == '__main__':
     unittest.main()
