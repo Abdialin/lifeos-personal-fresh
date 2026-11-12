@@ -34,6 +34,8 @@ jobs:
         run: |
           python -m pip install playwright
           python -m playwright install --with-deps chromium
+      - name: Verify isolated backend storage probe
+        run: python -m unittest -v test_storage_status_probe
       - name: Test actual LifeOS Personal UI in Chromium
         run: python -m unittest -v test_personal_v4_browser
       - name: Upload mobile and desktop UI screenshots
