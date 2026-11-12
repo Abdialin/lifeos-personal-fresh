@@ -281,7 +281,27 @@ function journalDiagnostic(){
  return {status:outboxCorrupt?'blocked':problem?'unreadable':syncMeta.dirty?'pending':'clean',pending,oldest:dates.length?new Date(Math.min(...dates)).toISOString():null,newest:dates.length?new Date(Math.max(...dates)).toISOString():null,revision:syncMeta.revision,dirty:syncMeta.dirty,corrupt:outboxCorrupt,problem};
 }
 function inspectJournal(){const result=journalDiagnostic();let integrity=null;try{integrity=LifeOSOfflineIntegrity.inspect(data,outbox,syncMeta)}catch(e){integrity={requiresReview:true,issues:['integrity-check-unavailable'],detail:String(e.message||e)}}$('journalDetails').textContent=JSON.stringify({journal:result,integrity},null,2)+'\nRead-only review: no records were changed. Review warnings before reconnecting.';return {journal:result,integrity}}
-function recoveryBundle(){return {format:'lifeos-recovery-v1',exportedAt:new Date().toISOString(),workspace:data,offlineJournalRaw:localStorage.getItem(OUTBOX_KEY),syncMetadataRaw:localStorage.getItem(SYNC_META_KEY),diagnostic:journalDiagnostic()}}
+function recoveryBundle(){
+ // Include the canonical atomic checkpoint. Compatibility journal and metadata
+ // keys can lag after storage failures, so they cannot be the only recovery copy.
+ // Credentials are intentionally excluded: never export syncToken or TAB_TOKEN_KEY.
+ const raw=localStorage.getItem(ATOMIC_KEY);
+ let canonical=null,problem=null;
+ if(raw!==null){
+  try{
+   const record=JSON.parse(raw);
+   if(record?.format!==1||!record.workspace||!Array.isArray(record.journal)||!record.meta)throw Error('Invalid atomic checkpoint');
+   canonical=record;
+  }catch(_){problem='Canonical recovery record could not be read; keep original browser data.'}
+ }
+ return {format:'lifeos-recovery-v1',exportedAt:new Date().toISOString(),
+  workspace:JSON.parse(JSON.stringify(data)),
+  atomicCheckpoint:canonical,atomicCheckpointIssue:problem,
+  offlineJournalRaw:localStorage.getItem(OUTBOX_KEY),
+  syncMetadataRaw:localStorage.getItem(SYNC_META_KEY),
+  diagnostic:journalDiagnostic(),
+  warning:'Contains private activity data. Store securely. The bundle does not contain your server token.'};
+}
 function exportRecovery(){
  const bundle=recoveryBundle();
  const blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
