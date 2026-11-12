@@ -60,8 +60,6 @@ function enhanceViews(){
   calendarHandoffPanel:'Calendar transfer controls',
   calendarChangePanel:'Calendar approval details',
   personalCompletionPanel:'Additional planning tools',
-  weeklyDashboardPanel:'Detailed weekly report',
-  qualityPanel:'Data quality report',
   intelligencePanel:'Pattern evidence tools',
   sessionToolsPanel:'Backup and restore controls',
   connectedDatabasePanel:'External database information',
