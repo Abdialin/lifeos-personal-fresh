@@ -32,7 +32,7 @@ function bars(rows){
 }
 function safeSection(panelId,visualId,content){
  const panel=$(panelId);if(!panel)return;
- let node=$(visualId);if(!node){node=document.createElement('section');node.id=visualId;node.className='v8-visual';const before=panel.querySelector('button');panel.insertBefore(node,before||panel.lastElementChild);}
+ let node=$(visualId);if(!node){node=document.createElement('section');node.id=visualId;node.className='v8-visual';const before=[...panel.children].find(x=>x.tagName==='BUTTON'||x.tagName==='FORM'||x.classList?.contains('row'));panel.insertBefore(node,before||panel.lastElementChild);}
  node.innerHTML=content;
 }
 function moveLegacyToDisclosure(panelId,resultId,buttonIds){
