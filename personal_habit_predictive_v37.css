@@ -1,0 +1,22 @@
+/* V37 predictive habit slots, in Insights, always approval only. */
+#lo37PredictiveHabits{min-width:0;margin:15px 0 19px;color:#dceafa}
+#lo37PredictiveHabits>details{padding:13px;background:#13283c;border:1px solid #3d6371;border-radius:14px}
+#lo37PredictiveHabits summary{font-size:15px;font-weight:750;line-height:1.55;cursor:pointer;padding:7px 3px}
+#lo37PredictiveHabits .lo37-note{font-size:12px;line-height:1.6;color:#a8c2d2;margin:13px 3px}
+#lo37PredictiveHabits .lo37-controls{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:13px;margin:13px 0}
+#lo37PredictiveHabits .lo37-controls label{display:grid;gap:6px;min-width:175px;flex:1;font-size:12px;color:#bad1df}
+#lo37PredictiveHabits .lo37-controls select{min-width:0;width:100%;font-size:14px;padding:10px;background:#102039;color:#eaf7fc;border:1px solid #4e697b;border-radius:9px}
+#lo37PredictiveHabits .lo37-controls>div{display:flex;gap:6px}
+#lo37PredictiveHabits .lo37-controls button{min-height:42px;padding:9px 12px;background:#19354b;border:1px solid #547a84;border-radius:9px;color:#e3f2fa}
+#lo37PredictiveHabits .lo37-controls button[aria-pressed="true"]{background:#22524c;color:#e6fffa;border-color:#91d8c2}
+#lo37PredictiveHabits .lo37-evidence{background:#152f40;border:1px solid #3e7181;border-radius:11px;padding:11px;margin:13px 0}
+#lo37PredictiveHabits .lo37-evidence strong{font-size:14px}
+#lo37PredictiveHabits .lo37-evidence p{font-size:12px;line-height:1.5;color:#d0e2ec;margin:7px 0}
+#lo37PredictiveHabits .lo37-evidence small{font-size:11px;line-height:1.55;color:#b2c9d5}
+#lo37PredictiveHabits .lo37-list{display:grid;gap:7px;margin:12px 0}
+#lo37PredictiveHabits .lo37-option{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;border:1px solid #36536a;background:#172d43;border-radius:10px;min-width:0}
+#lo37PredictiveHabits .lo37-option>div{min-width:0}
+#lo37PredictiveHabits .lo37-option strong{display:block;font-size:12px;overflow-wrap:anywhere}
+#lo37PredictiveHabits .lo37-option small{display:block;color:#a9c1d3;font-size:11px;line-height:1.5;margin-top:5px}
+#lo37PredictiveHabits .lo37-option button{min-height:42px;flex:0 0 auto}
+@media(max-width:460px){#lo37PredictiveHabits>details{padding:10px}#lo37PredictiveHabits .lo37-option{align-items:flex-start;flex-direction:column}#lo37PredictiveHabits .lo37-option button{align-self:flex-start}}
