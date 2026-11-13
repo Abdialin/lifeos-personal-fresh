@@ -83,10 +83,12 @@ function patternForDay(def,workspace,day,now=Date.now()){
  const observed=chosen.length>=3?median(chosen.map(sessionStartMinute)):null;
  const output=outcomeEvidence(def,workspace,now);
  // Do not automatically override a user's explicit target.
- const duration=rec.duration;
+ const explicitTarget=def.targetMode==='minutes'&&Number(def.targetAmount)>=5&&Number(def.targetAmount)<=480;
+ const duration=explicitTarget?rec.duration:!output.insufficient&&output.actualMedian>=5&&output.actualMedian<=480?Math.round(output.actualMedian):rec.duration;
+ const durationSource=explicitTarget?'Your habit target':!output.insufficient&&output.actualMedian>=5?'Median finished approved-plan duration':'Median tracked duration or 30-minute default';
  const startMinute=observed??1140;
  const confidence=chosen.length>=10?'Moderate':chosen.length>=5?'Limited':'Low';
- return {startMinute,duration,confidence,used:chosen.length,kind:kindName,
+ return {startMinute,duration,durationSource,confidence,used:chosen.length,kind:kindName,
   source:observed===null?'Manual 19:00 fallback':'Median observed start for '+kindName,
   outcome:output};
 }
@@ -104,7 +106,7 @@ function predict(def,workspace,days=7,now=Date.now()){
   const end=start.getTime()+pattern.duration*60000;
   const conflict=conflicts(start.getTime(),end,workspace),nearby=nearbyPlans(start.getTime(),end,workspace);
   return {habitId:def.id,title:def.title,startAt:start.getTime(),endAt:end,duration:pattern.duration,conflict,nearby,
-   confidence:pattern.confidence,pattern:pattern.kind,patternSource:pattern.source,patternSamples:pattern.used,outcome:pattern.outcome};
+   confidence:pattern.confidence,pattern:pattern.kind,patternSource:pattern.source,durationSource:pattern.durationSource,patternSamples:pattern.used,outcome:pattern.outcome};
  });
  return {rec,options};
 }
@@ -126,7 +128,7 @@ function render(){
  '<article class="lo37-option"><div><strong>'+esc(fmt(x.startAt))+'</strong><small>'+x.duration+' min · '+esc(x.confidence)+' confidence ('+x.patternSamples+' '+esc(x.pattern)+' sessions)'+
  (x.conflict.length?' · '+x.conflict.length+' saved-plan conflict(s)':' · No saved-plan overlap')+
  (x.nearby.length?' · '+x.nearby.length+' plan(s) within 15 minutes':'')+
- '</small><small>'+esc(x.patternSource)+' · External commitments and recovery not verified</small></div>'+
+ '</small><small>'+esc(x.patternSource)+' · '+esc(x.durationSource)+' · External commitments and recovery not verified</small></div>'+
  '<button type="button" class="btn '+(x.conflict.length?'outline':'primary')+'" data-lo37-index="'+i+'" '+(x.conflict.length?'disabled':'')+'>Review proposal</button></article>'
  ).join('')+'</div>':'<p class="lo37-note">No scheduled opportunities in this horizon. Change the date range or habit.</p>')+
  '<p class="lo37-note">Only approved proposals become LifeOS plans. Conflict checks do not cover Google Calendar or unlogged activities. You can edit the proposed time in the approval form.</p>':
