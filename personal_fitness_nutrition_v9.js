@@ -22,6 +22,7 @@ function fitness(w){
  history('fitnessList','Workout history · expand to view or delete');
 }
 function nutrition(w){
+ if(window.lifeosNutritionV25UI){window.lifeosNutritionV25UI.render(w);history('mealList','Meal history · expand to view or delete');return}
  const entries=w.meals||[],today=entries.filter(x=>x.date===key(new Date())),known=(k)=>today.filter(x=>num(x[k])!==null),sum=(a,k)=>a.reduce((n,x)=>n+num(x[k]),0);
  const calories=known('calories'),protein=known('proteinGrams'),carbs=known('carbsGrams'),fat=known('fatGrams');
  const stats=stat('Meals logged today',today.length)+stat('Calories',calories.length?fmt(sum(calories,'calories'),' kcal'):'Unknown')+stat('Protein',protein.length?fmt(sum(protein,'proteinGrams'),' g'):'Unknown');
