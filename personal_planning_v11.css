@@ -38,3 +38,5 @@
 .lo11-history-day .lo11-muted{padding:0 10px}
 #lifeosSelectedDaySummary{scroll-margin-top:70px}
 @media(max-width:440px){.lo11-calendar-shell{padding:10px}.lo11-calendar-controls{width:100%;justify-content:space-between}.lo11-cal-grid{gap:4px}.lo11-cal-day{min-height:46px;padding:4px 0}.lo11-history-day>summary{padding:10px}.lo11-history-month>summary,.lo11-history-week>summary{padding:10px}}
+
+.lo11-todo-times{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.lo11-todo-times .field{width:100%;min-width:0}.lo11-task-reminder{margin:8px 0 12px;align-items:center}.lo11-task-reminder input{flex:none}@media(max-width:360px){.lo11-todo-times{grid-template-columns:1fr}}
