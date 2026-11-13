@@ -36,56 +36,136 @@ function timer(){
  bar.querySelector('.lo32-timer-count').textContent=elapsed;
  document.title=elapsed+' · '+label+' '+title+' — LifeOS';
 }
-function habitProgress(def,checks,days=28){
+function scheduledDates(def,days=28){
  const start=new Date();start.setHours(12,0,0,0);start.setDate(start.getDate()-days+1);
- const dueDates=[];const created=def.startDate||local(def.createdAt||Date.now()),every=Number(def.everyDays)||1;
+ const created=def.startDate||local(def.createdAt||Date.now()),every=Number(def.everyDays)||1;
+ const list=[];
  for(let offset=0;offset<days;offset++){
-  const day=new Date(start);day.setDate(start.getDate()+offset);
-  const key=local(day.getTime());if(key<created)continue;
+  const date=new Date(start);date.setDate(start.getDate()+offset);const key=local(date.getTime());
+  if(key<created)continue;
   const diff=Math.round((dateTime(key)-dateTime(created))/86400000);
-  if(diff>=0&&diff%every===0)dueDates.push(key);
+  if(diff>=0&&diff%every===0)list.push(key);
  }
+ return list;
+}
+function habitProgress(def,checks,days=28){
+ const dueDates=scheduledDates(def,days),now=local(Date.now());
  const done=new Set(checks.filter(c=>c.habitId===def.id&&c.done).map(c=>c.date));
  const completed=dueDates.filter(d=>done.has(d)).length;
- let streak=0;for(let i=dueDates.length-1;i>=0;i--){
-  // An outstanding future/today item does not reset a previous streak.
-  if(dueDates[i]===local(Date.now())&&!done.has(dueDates[i]))continue;
-  if(!done.has(dueDates[i]))break;streak++;
+ const past=dueDates.filter(d=>d<now),pastCompleted=past.filter(d=>done.has(d)).length;
+ let streak=0;
+ for(let i=dueDates.length-1;i>=0;i--){
+  if(dueDates[i]===now&&!done.has(now))continue;
+  if(!done.has(dueDates[i]))break;
+  streak++;
  }
- return {due:dueDates.length,completed,streak};
+ return {due:dueDates.length,completed,streak,pastDue:past.length,pastCompleted,
+  rate:past.length?Math.round(pastCompleted/past.length*100):null};
+}
+function evidenceSources(def,day){
+ const term=normal(def.matchText).toLowerCase();
+ if(!term)return[];
+ const w=read(),found=[];
+ const hasTerm=value=>String(value||'').toLowerCase().includes(term);
+ // Only finished timer sessions, with their own ID; do not create or extend session time.
+ for(const s of w.sessions||[]){
+  if(s.status!=='finished'||!Number.isFinite(s.endAt)||local(s.endAt)!==day)continue;
+  if(!hasTerm(s.name))continue;
+  const minutes=Math.round(timespan(s,s.endAt)/60000);
+  found.push({sourceType:'session',sourceId:s.id,title:s.name||'Finished activity',minutes,quantity:null,unit:'',origin:'Tracked timer',simulated:Boolean(s.seedBatch||s.source==='development-starter')});
+ }
+ for(const l of w.personalLogs||[]){
+  if(l.date!==day||!hasTerm(l.category+' '+(l.notes||'')))continue;
+  found.push({sourceType:'personalLog',sourceId:l.id,title:l.category||'Routine log',minutes:l.minutes===null?null:Number(l.minutes),quantity:l.quantity==null?null:Number(l.quantity),unit:l.unit||'',origin:'Routine record',simulated:Boolean(l.seedBatch)});
+ }
+ for(const x of w.workouts||[]){
+  if(x.date!==day||!hasTerm(x.type+' '+(x.details||'')))continue;
+  found.push({sourceType:'workout',sourceId:x.id,title:x.type||'Workout',minutes:x.minutes==null?null:Number(x.minutes),quantity:null,unit:'',origin:'Fitness record',simulated:Boolean(x.seedBatch||x.source==='assumed-demo')});
+ }
+ return found.slice(0,12);
+}
+function targetStatus(def,candidate){
+ const amount=Number(def.targetAmount);
+ if(!Number.isFinite(amount)||amount<=0)return 'Optional evidence; review before confirming';
+ if(def.targetMode==='minutes')
+  return candidate.minutes===null||!Number.isFinite(candidate.minutes)?'Duration missing; review manually':
+   candidate.minutes>=amount?'Duration meets your '+amount+' minute target':'Recorded '+candidate.minutes+'/'+amount+' minutes; below your target';
+ if(def.targetMode==='quantity'){
+  return candidate.quantity===null||!Number.isFinite(candidate.quantity)||String(candidate.unit||'').toLowerCase()!==String(def.targetUnit||'').toLowerCase()
+   ?'Matching quantity not recorded; review manually':candidate.quantity>=amount?
+   'Quantity meets your '+amount+' '+def.targetUnit+' target':'Recorded '+candidate.quantity+'/'+amount+' '+def.targetUnit+'; below target';
+ }
+ return 'Review this activity';
+}
+function evidenceMarkup(def,check,day){
+ const found=evidenceSources(def,day);
+ if(!def.matchText)return '<p class="lo32-muted">To discover existing activities for this habit, set a matching word or phrase in the habit editor.</p>';
+ if(check?.evidenceSourceId)
+  return '<p class="lo32-muted">Confirmed using a linked '+esc(check.evidenceType||'activity')+' record. No timer time was added.</p>';
+ return '<div class="lo33-evidence-list">'+(found.length?found.map(x=>
+  '<div class="lo33-evidence"><div><strong>'+esc(x.title)+'</strong><small>'+esc(x.origin)+(x.simulated?' · Assumed example':'')+' · '+esc(targetStatus(def,x))+'</small></div>'+
+  '<button type="button" data-lo33-confirm="'+esc(def.id)+'" data-lo33-source-type="'+esc(x.sourceType)+'" data-lo33-source="'+esc(x.sourceId)+'">Confirm link</button></div>'
+ ).join(''):'<p class="lo32-muted">No matching records for this date. You can still confirm a completed habit manually.</p>')+'</div>';
 }
 function habitUI(){
- const host=$('lo32HabitHub');if(!host)return;const b=bridge()?.read()||{},defs=b.habitDefinitions||[],checks=b.habitChecks||[];
+ const host=$('lo32HabitHub');if(!host)return;
+ const b=bridge()?.read()||{},defs=b.habitDefinitions||[],checks=b.habitChecks||[];
  const options=defs.slice().sort((a,b)=>Number(a.createdAt)-Number(b.createdAt));
  const cards=options.map(def=>{
-  const history=habitProgress(def,checks,28),existing=checks.find(c=>c.habitId===def.id&&c.date===habitSelectedDate);
-  const delta=Math.round((dateTime(habitSelectedDate)-dateTime(def.startDate||local(def.createdAt)))/86400000),due=delta>=0&&delta%(Number(def.everyDays)||1)===0;
-  const mark=existing?.done?'✓ Completed':due?'Mark completed':'Not scheduled';
-  return '<article class="lo32-habit"><div><strong>'+esc(def.title)+'</strong><small>'+esc(def.category)+' · Every '+esc(def.everyDays)+' day(s)</small><p>'+history.completed+'/'+history.due+' scheduled completions in 28 days · '+history.streak+' consecutive completed opportunities</p></div>'+
-  '<div class="lo32-habit-actions"><button type="button" data-lo32-check="'+esc(def.id)+'" '+(!due?'disabled':'')+'>'+mark+'</button><button type="button" data-lo32-remove="'+esc(def.id)+'">Delete</button></div></article>';
+  const progress=habitProgress(def,checks,28),existing=checks.find(c=>c.habitId===def.id&&c.date===habitSelectedDate);
+  const delta=Math.round((dateTime(habitSelectedDate)-dateTime(def.startDate||local(def.createdAt)))/86400000);
+  const due=delta>=0&&delta%(Number(def.everyDays)||1)===0&&habitSelectedDate<=local(Date.now());
+  const action=existing?.done?'✓ Completed · Undo':due?'Mark completed':'Not scheduled';
+  const goal=Number(def.targetAmount)>0?' · Target '+esc(def.targetAmount)+' '+esc(def.targetMode==='minutes'?'minutes':def.targetUnit||'units'):'';
+  return '<article class="lo32-habit"><div class="lo33-habit-copy"><strong>'+esc(def.title)+'</strong>'+
+   '<small>'+esc(def.category)+' · Every '+esc(def.everyDays)+' day(s)'+goal+'</small>'+
+   '<p>'+progress.completed+'/'+progress.due+' scheduled opportunities in 28 days · '+progress.streak+' consecutive completions'+
+    (progress.rate===null?' · Insufficient past evidence':' · '+progress.rate+'% of past opportunities completed')+'</p>'+
+   '<div class="lo33-meter"><i style="width:'+((progress.due?progress.completed/progress.due:0)*100).toFixed(1)+'%"></i></div>'+
+   '<details class="lo33-evidence-panel"><summary>Review matching tracked activities'+(def.matchText?' · '+esc(def.matchText):'')+'</summary>'+
+   evidenceMarkup(def,existing,habitSelectedDate)+'</details></div>'+
+   '<div class="lo32-habit-actions"><button type="button" data-lo32-check="'+esc(def.id)+'" '+(!due&&!existing?'disabled':'')+'>'+action+'</button>'+
+   '<button type="button" data-lo32-remove="'+esc(def.id)+'">Delete</button></div></article>';
  }).join('');
- host.innerHTML='<div class="lo32-heading"><h3>Habits & personal development</h3><p>Tracking time tells you how long. Habits tell you whether you followed through. Schedule daily or every few days and review consistency.</p></div>'+
+ host.innerHTML='<div class="lo32-heading"><h3>Habits & personal development</h3>'+
+ '<p>A tracked session is evidence of time spent, but a habit is a commitment. You review matching activities before linking them to habit completion. No automatic checkmarks or duplicate timer entries.</p></div>'+
  '<form id="lo32HabitForm" class="lo32-habit-form"><label>Habit name<input name="title" required maxlength="80" placeholder="Read a book, Quran revision, memorize a page"></label>'+
  '<label>Type<select name="category"><option>Reading</option><option>Quran & memorization</option><option>Prayer</option><option>Learning</option><option>Wellbeing</option><option>Quit or avoid a habit</option><option>Other</option></select></label>'+
  '<label>Repeat every (days)<input name="everyDays" type="number" min="1" max="30" value="1" required></label>'+
+ '<label>Match tracked activity containing (optional)<input name="matchText" maxlength="80" placeholder="e.g. reading, Quran, gym"></label>'+
+ '<label>Progress target (optional)<select name="targetMode"><option value="completion">Completion only</option><option value="minutes">Minutes per scheduled day</option><option value="quantity">Quantity per scheduled day</option></select></label>'+
+ '<label>Target amount (optional)<input name="targetAmount" type="number" min="0" max="10000" step="0.1" placeholder="e.g. 30"></label>'+
+ '<label>Quantity unit (if needed)<input name="targetUnit" maxlength="30" placeholder="pages, repetitions"></label>'+
  '<button class="btn primary" type="submit">+ Add habit</button></form>'+
  '<label class="lo32-habit-date">Review habit day<input type="date" id="lo32HabitDate" value="'+esc(habitSelectedDate)+'"></label>'+
- (options.length?'<div class="lo32-habit-list">'+cards+'</div>':'<p class="lo32-muted">No habits created yet. Try “Read 10 pages” or “Quran revision” as a private habit.</p>')+
- '<p class="lo32-muted">A habit check is a separate record from a tracked timer. This prevents counting the same activity time twice. Habit details remain private unless explicitly shared.</p>';
+ (options.length?'<div class="lo32-habit-list">'+cards+'</div>':'<p class="lo32-muted">No habits created yet. Examples: read 10 pages daily, Quran revision every 3 days, or a personal wellbeing habit.</p>')+
+ '<p class="lo32-muted">Habit checks can be manual or explicitly linked to a completed activity. Linked activity evidence never changes recorded session time. For habits about avoiding behavior, a completion check reflects your own report, not automatic detection.</p>';
 }
 function saveHabit(form){
  const title=normal(form.elements.namedItem('title').value),category=normal(form.elements.namedItem('category').value);
  const everyDays=Number(form.elements.namedItem('everyDays').value);
- if(!title||title.length>80||!Number.isInteger(everyDays)||everyDays<1||everyDays>30)return alert('Enter a name and repeat interval between 1 and 30 days.');
- const item={id:id(),title,category,everyDays,startDate:local(Date.now()),createdAt:Date.now()};
+ const matchText=normal(form.elements.namedItem('matchText').value).slice(0,80);
+ const targetMode=normal(form.elements.namedItem('targetMode').value);
+ const rawAmount=form.elements.namedItem('targetAmount').value;
+ const targetAmount=rawAmount===''?null:Number(rawAmount);
+ const targetUnit=normal(form.elements.namedItem('targetUnit').value).slice(0,30);
+ if(!title||title.length>80||!Number.isInteger(everyDays)||everyDays<1||everyDays>30||
+  !['completion','minutes','quantity'].includes(targetMode)||targetAmount!==null&&(!Number.isFinite(targetAmount)||targetAmount<=0||targetAmount>10000)||
+  targetMode!=='completion'&&targetAmount===null||targetMode==='quantity'&&!targetUnit)
+  return alert('Check the habit name, interval and optional progress target.');
+ const item={id:id(),title,category,everyDays,matchText,
+  targetMode,targetAmount,targetUnit,startDate:local(Date.now()),createdAt:Date.now()};
  if(!bridge()?.mutate('habitDefinitions','upsert',item))return alert('Habit could not be saved.');
  habitUI();
 }
-function toggleHabit(idValue){
+function toggleHabit(idValue,evidence){
  const b=bridge()?.read()||{},def=b.habitDefinitions?.find(x=>x.id===idValue);if(!def)return;
  const current=b.habitChecks.find(c=>c.habitId===idValue&&c.date===habitSelectedDate);
- if(current){if(!bridge()?.mutate('habitChecks','remove',current))return alert('Could not undo habit check.')}
- else{const next={id:id(),habitId:idValue,date:habitSelectedDate,done:true,createdAt:Date.now()};
+ if(current){
+  if(!bridge()?.mutate('habitChecks','remove',current))return alert('Could not undo habit check.');
+ }else{
+  const next={id:id(),habitId:idValue,date:habitSelectedDate,done:true,createdAt:Date.now(),checkSource:evidence?'linked-evidence':'manual',
+   evidenceType:evidence?.sourceType||null,evidenceSourceId:evidence?.sourceId||null};
   if(!bridge()?.mutate('habitChecks','upsert',next))return alert('Check could not be saved.');
  }
  habitUI();
@@ -158,6 +238,16 @@ function setup(){
   panel.addEventListener('click',e=>{
    const button=e.target.closest('button');if(!button)return;
    if(button.dataset.lo32Check)toggleHabit(button.dataset.lo32Check);
+   if(button.dataset.lo33Confirm){
+    const b=bridge()?.read()||{},def=b.habitDefinitions?.find(x=>x.id===button.dataset.lo33Confirm);
+    if(!def)return;
+    const evidence=evidenceSources(def,habitSelectedDate).find(x=>x.sourceId===button.dataset.lo33Source&&x.sourceType===button.dataset.lo33SourceType);
+    if(!evidence)return alert('Source record not found for this habit and day.');
+    if(evidence.simulated&&!confirm('This evidence is an assumed example, not a real tracked result. Link it to the habit anyway?'))return;
+    const targetMessage=targetStatus(def,evidence);
+    if(!confirm('Confirm this habit completed using '+evidence.origin+': '+evidence.title+'? '+targetMessage+'. This will not create new tracked time.'))return;
+    toggleHabit(def.id,evidence);
+   }
    if(button.dataset.lo32Remove){
     const def=bridge()?.read().habitDefinitions.find(x=>x.id===button.dataset.lo32Remove);if(!def||!confirm('Delete this habit definition? Existing completion records remain private and stored.'))return;
     if(bridge()?.mutate('habitDefinitions','remove',def))habitUI();
