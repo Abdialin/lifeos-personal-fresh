@@ -1,0 +1,13 @@
+/* V44: focus mobile planning on navigation, not duplicated dashboards. */
+#lo44PlanShortcuts{display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;-webkit-overflow-scrolling:touch;padding:4px 1px 11px;margin:7px 0 4px;max-width:100%;scroll-snap-type:x proximity}
+#lo44PlanShortcuts .lo44-jump{flex:0 0 auto;min-height:44px;padding:9px 14px;white-space:nowrap;border-radius:11px;scroll-snap-align:start}
+#lo44InsightsCompact{margin:15px 0 18px;border:1px solid #446577;background:#12283b;border-radius:13px;padding:13px;min-width:0}
+#lo44InsightsCompact>summary{cursor:pointer;font-size:14px;font-weight:750;line-height:1.5;padding:6px 1px;color:#e8f5fb}
+#lo44InsightsCompact .lo44-help{font-size:12px;line-height:1.65;color:#b5cbd9;margin:11px 2px 15px}
+#lo44InsightsCompact #lo33HabitInsights,#lo44InsightsCompact #lo34Recommendations,#lo44InsightsCompact #lo35PlanReview,#lo44InsightsCompact #lo36HabitFeedback,#lo44InsightsCompact #lo37PredictiveHabits{min-width:0;max-width:100%;overflow-wrap:anywhere}
+#lo44InsightsCompact #lo33HabitInsights{margin-top:10px}
+#lo44InsightsCompact .lo34-drawer,#lo44InsightsCompact #lo36HabitFeedback>details,#lo44InsightsCompact #lo37PredictiveHabits>details{max-width:100%}
+#lo44InsightsCompact button{touch-action:manipulation}
+#lo40Compare,#lo41RealityGap,#lo42ImprovementActions{scroll-margin-top:20px}
+#lo11ScheduleCalendar,#todoForm{scroll-margin-top:20px}
+@media(max-width:530px){#lo44InsightsCompact{padding:9px;margin:12px 0}#lo44PlanShortcuts{margin-top:5px}#lo44PlanShortcuts .lo44-jump{font-size:12px;padding:9px 12px}}
