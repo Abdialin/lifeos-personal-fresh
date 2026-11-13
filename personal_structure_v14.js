@@ -3,7 +3,7 @@
  */
 (()=>{'use strict';const $=id=>document.getElementById(id);
 const btn=(label,on)=>{const b=document.createElement('button');b.type='button';b.className='btn outline lo14-button';b.textContent=label;b.addEventListener('click',on);return b};
-const goto=view=>{const target=document.querySelector('#lifeosNavigation button[data-view="'+view+'"]');if(target)target.click();else if(view==='settings'){location.hash='settings';}};
+const goto=view=>{const target=document.querySelector('#lifeosNavigation button[data-view="'+view+'"]');if(target)target.click();else if(view==='settings'){location.hash='settings';window.scrollTo({top:0,behavior:'auto'});}};
 const label=el=>(el?.querySelector('h2,h3')?.textContent||'').trim();
 function settings(){
  if($('lo14SettingsHub'))return;
