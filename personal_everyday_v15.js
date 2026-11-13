@@ -24,7 +24,7 @@ function openPlan(d){
  const nav=document.querySelector('#lifeosNavigation button[data-view="schedule"]');nav?.click();
  const picker=$('scheduleDay');if(picker){picker.value=dateKey(d);picker.dispatchEvent(new Event('change',{bubbles:true}))}
  const day=dateKey(d),inCalendar=document.querySelector('#v4Plan [data-v4-day="'+day+'"]');
- if(inCalendar)inCalendar.click();else document.querySelector('[data-v15-date-jump]')?.dispatchEvent(new Event('change',{bubbles:true}));
+ if(inCalendar)inCalendar.click();else {const jump=document.querySelector('[data-v15-date-jump]');if(jump){jump.value=day;jump.dispatchEvent(new Event('change',{bubbles:true}))}}
  setTimeout(()=>$('lifeosSelectedDaySummary')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
 }
 function init(){
