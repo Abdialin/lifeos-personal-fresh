@@ -68,7 +68,7 @@ function render(){
   return '<article class="lo34-habit"><div class="lo34-top"><strong>'+label+'</strong><span>'+status+'</span></div>'+
    '<div class="lo34-stats"><span>Past 28 days: '+r.done+'/'+r.due+'</span><span>Recent: '+r.completedRecent+'/'+r.recentDue+'</span><span>Activity-backed checks: '+r.realLinked+'</span></div>'+
    r.suggestions.map(s=>'<div class="lo34-suggestion '+esc(s.kind)+'"><strong>'+esc(s.title)+'</strong><p>'+esc(s.text)+'</p></div>').join('')+
-   '<button type="button" class="btn outline" data-lo34-review="'+esc(r.def.id)+'">Review this habit →</button></article>'
+   '<div class="lo35-actions"><button type="button" class="btn outline" data-lo34-review="'+esc(r.def.id)+'">Review habit →</button><button type="button" class="btn primary" data-lo35-plan="'+esc(r.def.id)+'">Propose time in Plan</button></div></article>'
  }).join(''):'<p class="lo34-note">No habit definitions yet. Create one under My Life → Habits; recommendations will become more useful once you have enough recorded opportunities.</p>')+
  '<p class="lo34-note">Habit checks can be self-reported. Missing records are not proof of inactivity. These suggestions are descriptive and must be reviewed by you before taking action.</p></details>';
 }
