@@ -68,3 +68,7 @@ body[data-lifeos-view="schedule"] #v4Plan .v7-plan-selected-day{display:none!imp
 .lo14-calendar-dots{display:flex!important;justify-content:center;gap:4px;align-items:center;min-height:10px;margin-top:3px}
 .lo14-calendar-dots .lo14-dot{display:inline-block;width:7px;height:7px;min-width:7px;min-height:7px;border-radius:50%;opacity:.95}
 .lo14-recorded{background:#58bc9f}.lo14-planned{background:#79a7f7}.lo14-task{background:#efa956}
+
+/* Standalone shortcuts must obey tab ownership just like original panel elements. */
+body:not([data-lifeos-view="tracking"]) #lo14TrackTools{display:none!important}
+body:not([data-lifeos-view="analytics"]) #lo14InsightsBridge{display:none!important}
