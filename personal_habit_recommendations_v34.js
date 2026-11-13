@@ -45,7 +45,10 @@ function evaluate(def,checks,records){
   if(delta>=20)suggestions.push({kind:'positive',title:'Consistency is improving',text:'Completion increased from '+rateOlder+'% to '+rateRecent+'% across the two 14-day periods. Consider keeping the current habit schedule and reviewing again after another two weeks.'});
   if(delta<=-20)suggestions.push({kind:'review',title:'Review your schedule',text:'Completion changed from '+rateOlder+'% to '+rateRecent+'% across the two 14-day periods. Consider whether the chosen repeat interval fits your routine. No automatic schedule change will be made.'});
  }
- if(sufficient&&rateRecent!==null&&rateRecent<50)suggestions.push({kind:'review',title:'Consider a smaller commitment',text:'Your recent completion rate is '+rateRecent+'% ('+completedRecent+'/'+recent.length+' scheduled opportunities). You could review the frequency or goal size; this is an option, not a judgment.'});
+ if(sufficient&&rateRecent!==null&&rateRecent<50){
+  if(done===0)suggestions.push({kind:'evidence',title:'Check whether progress was logged',text:'No completed opportunities are recorded in the past 28 days. Before adjusting this habit, confirm whether activity happened without being logged.'});
+  else suggestions.push({kind:'review',title:'Review the commitment size',text:'Your recent recorded completion rate is '+rateRecent+'% ('+completedRecent+'/'+recent.length+' scheduled opportunities). You can review the frequency or goal size if the records reflect your actual routine.'});
+ }
  if(sufficient&&rateRecent!==null&&rateRecent>=80)suggestions.push({kind:'positive',title:'Current routine looks sustainable',text:'Your recent completion rate is '+rateRecent+'% ('+completedRecent+'/'+recent.length+' opportunities). Keeping the existing commitment may be more useful than increasing it.'});
  if(!def.matchText)suggestions.push({kind:'action',title:'Connect an activity for better evidence',text:'Add an optional matching phrase in the habit editor to find related finished timers, workouts or routine logs. You still decide whether each match counts.'});
  if((assumed||unresolved)&&linked.length)suggestions.push({kind:'evidence',title:'Check linked evidence quality',text:assumed+' linked check(s) use assumed examples and '+unresolved+' reference missing source records. Treat these as uncertain until reviewed.'});
