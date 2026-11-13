@@ -38,3 +38,8 @@
 .v5-legend-item[data-lo-category="distraction"]{--lo13-color:var(--lo13-distraction)}
 .v4-section .v5-bars > * i,.v4-section .v5-history-bars > * i,.v4-section .v4-history-bars > * i{background:var(--lo13-series)!important}
 @media(max-width:500px){.lo13-crosslink{display:grid;grid-template-columns:1fr}.lo13-crosslink span{min-width:0}}
+
+/* Moved containers must respect the original navigation view boundaries. */
+body:not([data-lifeos-view="schedule"]) .lo12-development,
+body:not([data-lifeos-view="schedule"]) #lo12CalendarTools{display:none!important}
+body:not([data-lifeos-view="tracking"]) #lo13TechnicalTools{display:none!important}
