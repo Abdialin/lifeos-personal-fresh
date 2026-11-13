@@ -46,7 +46,7 @@ function waterCards(water){
 }
 function show(){
  const root=$('lifeosNutritionDashboard'),model=api()?.get();if(!root||!model)return;
- if(root.contains(document.activeElement)&&document.activeElement.matches('input,select'))return;
+ if(root.contains(document.activeElement)&&document.activeElement.matches('input,select')&&document.activeElement.closest('form'))return;
  const meals=model.meals||[],waterEntries=model.waterIntake||[],goals=cleanSetting(model.nutritionSettings);
  const day=state.day||today(),selected=meals.filter(m=>m.date===day),water=waterEntries.filter(w=>w.date===day);
  const daily=daysOfWeek(),max=Math.max(1,...daily.map(d=>meals.filter(x=>x.date===d.day).length));
