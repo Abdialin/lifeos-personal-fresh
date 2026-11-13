@@ -101,6 +101,15 @@ function checkReminder(){
  const first=from[0]*60+from[1],last=until[0]*60+until[1],step=Number(prefs.intervalHours)*60;
  if(!Number.isFinite(step)||step<=0||minute<first||minute>last)return;
  const slot=first+Math.floor((minute-first)/step)*step;if(minute-slot>15)return;
+ // Skip a prompt when already on or ahead of the user's own planned drinking schedule.
+ // This is a scheduling convenience, not a physiological hydration calculation.
+ const waterRows=api()?.get().waterIntake||[];
+ const loggedToday=waterRows.filter(w=>w.date===today()).reduce((total,w)=>total+(n(w.ml)??0),0);
+ const plannedBySlot=(Math.floor((slot-first)/step)+1)*Number(prefs.servingMl);
+ if(Number.isFinite(plannedBySlot)&&plannedBySlot>0&&loggedToday>=plannedBySlot){
+  notice.innerHTML='<p class="lo25-muted">Water log is on or ahead of your chosen reminder schedule ('+esc(loggedToday)+' ml today). The next reminder is skipped.</p>';
+  return;
+ }
  const id=today()+'-'+slot,storageKey='lo25-reminded-'+id;
  try{if(sessionStorage.getItem(storageKey))return;sessionStorage.setItem(storageKey,'1')}catch{}
  notice.innerHTML='<p class="lo25-water-reminder">Water reminder: '+esc(prefs.servingMl)+' ml planned for this interval. <button type="button" class="btn outline tiny" data-lo25-water="'+esc(prefs.servingMl)+'">Log '+esc(prefs.servingMl)+' ml</button></p>';
