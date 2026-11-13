@@ -36,6 +36,7 @@ function init(){
  header.append(action);card.append(header);
  const list=element('div','lo15-upcoming-list');card.append(list);today.after(card);
  function render(){
+  if(window.lifeosCombinedRemindersActive)return;
   if(document.body.dataset.lifeosView!=='dashboard')return;
   const w=workspace();list.replaceChildren();if(!w){list.append(element('p','lo15-muted','Your upcoming plans are temporarily unavailable.'));return}
   const upcoming=records(w);
