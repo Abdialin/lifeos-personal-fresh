@@ -77,7 +77,7 @@ function init(){
    const day=selectDate();
    if(!confirm('Log this reusable meal on '+day+'? Confirm the nutritional values fit the portion you ate.'))return;
    if(!api().logTemplate(b.dataset.lo28Log,day)){alert('Unable to save meal.');return}
-   window.lifeosNutritionV25UI?.render();window.lifeosHealthHistoryV10?.render(s.workouts||[],api().get().meals||[]);
+   window.lifeosNutritionV25UI?.render();window.lifeosHealthHistoryV10?.render(window.lifeosReadOnlyWorkspace?.().workouts||[],api().get().meals||[]);
    render();$('lo28SavedDetails').open=true;
   }
  });
