@@ -1,0 +1,25 @@
+/* V35: clear, non-automatic habit-to-Smart-Schedule approval. */
+#lo35PlanReview[hidden]{display:none!important}
+#lo35PlanReview{border:1px solid #65b9aa;border-radius:15px;padding:16px;margin:16px 0;background:#122b3d;color:#e9f6ff}
+#lo35PlanReview .lo35-head{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+#lo35PlanReview h3{font-size:16px;margin:2px 0 10px}
+#lo35PlanReview .lo35-description{font-size:12px;line-height:1.5;color:#b3d2df}
+#lo35PlanReview form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+#lo35PlanReview form label{display:grid;gap:7px;font-size:12px;color:#c3d9e9}
+#lo35PlanReview form label:first-child{grid-column:1/-1}
+#lo35PlanReview form input{width:100%;min-width:0;background:#101e32;border:1px solid #496b7a;border-radius:9px;padding:11px;color:#f2faff;font:inherit;font-size:16px}
+#lo35PlanReview #lo35DraftReview{grid-column:1/-1}
+#lo35PlanReview #lo35ApprovePlan{grid-column:1/-1;min-height:45px}
+#lo35PlanReview .lo35-preview{border:1px solid #446477;background:#152c40;border-radius:10px;padding:11px}
+#lo35PlanReview .lo35-preview strong{font-size:13px}
+#lo35PlanReview .lo35-preview p{font-size:13px;margin:7px 0}
+#lo35PlanReview .lo35-preview small{font-size:11px;color:#b4cbd9;line-height:1.5}
+#lo35PlanReview .lo35-conflicts{border:1px solid #c68b55;border-left-width:4px;background:#3b3029;border-radius:9px;margin:9px 0;padding:11px}
+#lo35PlanReview .lo35-conflicts strong{font-size:13px}
+#lo35PlanReview .lo35-conflicts p{font-size:12px;line-height:1.5}
+#lo35PlanReview .lo35-safe{font-size:12px;color:#9de8be}
+#lo35PlanReview .lo35-warning{font-size:12px;color:#e7bc91;line-height:1.5}
+#lo35PlanReview #lo35SaveStatus{font-size:12px;line-height:1.55;color:#b8e5d2}
+#lo34Recommendations .lo35-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+#lo34Recommendations .lo35-actions>button{min-height:42px}
+@media(max-width:460px){#lo35PlanReview{padding:10px}#lo35PlanReview form{grid-template-columns:minmax(0,1fr)}#lo35PlanReview form label:first-child,#lo35PlanReview #lo35DraftReview,#lo35PlanReview #lo35ApprovePlan{grid-column:auto}}
