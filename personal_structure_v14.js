@@ -60,12 +60,25 @@ function goals(){
  box.append(btn('See activity trends',()=>goto('analytics')));
  goals.prepend(box);}
  const review=$('goalRecoveryPanel');if(review)review.classList.add('lo14-compact-review');
+ if(review&&!$('lo14GoalReviewDetails')){
+  const group=document.createElement('details');group.id='lo14GoalReviewDetails';group.className='lo14-evidence-details';
+  group.innerHTML='<summary>Recovery and detailed goal calculations</summary>';
+  review.before(group);group.append(review);
+ }
+
 }
 function insights(){
  const history=$('trackHistoryPanel');
  if(history)history.classList.add('lo14-history');
  const weekly=$('weeklyDashboardPanel');if(weekly)weekly.classList.add('lo14-analytics-detail');
  const quality=$('qualityPanel');if(quality)quality.classList.add('lo14-analytics-detail');
+ if(!$('lo14EvidenceDetails')){
+   const group=document.createElement('details');group.id='lo14EvidenceDetails';group.className='lo14-evidence-details';
+   const summary=document.createElement('summary');summary.textContent='Data reliability & prediction evidence';
+   group.append(summary);
+   const base=$('analyticsPanel');if(base){base.after(group);for(const id of ['weeklyDashboardPanel','qualityPanel','intelligencePanel']){const panel=$(id);if(panel)group.append(panel)}}
+ }
+
  if(!$('lo14InsightsBridge')){
  const card=document.createElement('div');card.id='lo14InsightsBridge';card.className='lo14-section-bridge';
  card.innerHTML='<strong>Insights & trends</strong><span>Explore how time is spent, then compare trends against your goals.</span>';
