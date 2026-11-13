@@ -71,7 +71,7 @@ function render(){
 }
 function init(){
  const base=$('lo33HabitInsights');if(!base||$('lo34Recommendations'))return;
- const panel=document.createElement('section');panel.id='lo34Recommendations';panel.className='lo34-panel';base.append(panel);
+ const panel=document.createElement('section');panel.id='lo34Recommendations';panel.className='lo34-panel';base.after(panel);
  panel.addEventListener('click',e=>{
   const el=e.target.closest('[data-lo34-review]');if(!el)return;
   document.querySelector('#lifeosNavigation button[data-view="life"]')?.click();
