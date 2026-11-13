@@ -5,8 +5,8 @@
 const $=id=>document.getElementById(id),MIN=60000,DAY=86400000;
 const ws=()=>{try{return window.lifeosReadOnlyWorkspace?.()||null}catch{return null}};
 const local=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
-const validTime=t=>typeof t==='string'&&/^([01]\\d|2[0-3]):[0-5]\\d$/.test(t);
-const taskDate=t=>{const d=String(t.due||'');if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(d))return null;const tm=validTime(t.startTime)?t.startTime:validTime(t.dueTime)?t.dueTime:'23:59';const x=new Date(d+'T'+tm+':00');return Number.isFinite(x.getTime())?x.getTime():null};
+const validTime=t=>typeof t==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(t);
+const taskDate=t=>{const d=String(t.due||'');if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return null;const tm=validTime(t.startTime)?t.startTime:validTime(t.dueTime)?t.dueTime:'23:59';const x=new Date(d+'T'+tm+':00');return Number.isFinite(x.getTime())?x.getTime():null};
 const el=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n};
 const shownNotices=new Set();
 function entries(w,time){
