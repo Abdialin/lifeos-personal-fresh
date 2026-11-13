@@ -1,0 +1,18 @@
+/* LifeOS V20: targeted Plan-only adjustments */
+#loUpcomingPlans .lo-plan-timetable-row{display:grid;grid-template-columns:74px minmax(0,1fr) auto;column-gap:12px;align-items:center;padding:13px 7px;border-left:3px solid #3189ac}
+#loUpcomingPlans .lo-plan-timetable-time{display:flex;flex-direction:column;gap:3px;align-self:center;border-right:1px solid #344765;padding-right:10px;white-space:nowrap;font-variant-numeric:tabular-nums}
+#loUpcomingPlans .lo-plan-timetable-time strong{font-size:15px;color:#bde6ef}
+#loUpcomingPlans .lo-plan-timetable-time small{font-size:12px;color:#899cb9}
+#loUpcomingPlans .lo-plan-timetable-content{min-width:0;display:grid;gap:4px}
+#loUpcomingPlans .lo-plan-timetable-content strong{font-size:14px;overflow-wrap:anywhere}
+#loUpcomingPlans .lo-plan-timetable-content small{font-size:12px;color:#97a7c2}
+#loUpcomingPlans .lo-plan-arrow{font-size:12px;white-space:nowrap}
+#scheduleEditorPanel .lo20-suggestions{margin:9px 0 18px}
+#scheduleEditorPanel .lo20-suggestion-title{font-size:12px;color:#a7bbd3;margin-bottom:8px;font-weight:650}
+#scheduleEditorPanel .lo20-suggestion-buttons{display:flex;flex-wrap:wrap;gap:7px;max-height:136px;overflow-y:auto}
+#scheduleEditorPanel .lo20-suggestion{border:1px solid #375473;border-radius:999px;padding:7px 11px;font-size:12px;color:#c4e5e4;background:#15283c;cursor:pointer}
+#scheduleEditorPanel .lo20-suggestion:focus-visible{outline:2px solid #73d6c7;outline-offset:2px}
+#scheduleEditorPanel .lo20-review{border:1px solid #344c68;border-radius:14px;padding:12px;margin:13px 0 20px;background:#101e33}
+#scheduleEditorPanel .lo20-review>summary{cursor:pointer;font-size:14px;font-weight:720;padding:6px 0}
+#scheduleEditorPanel .lo20-review #idealProposalList .schedule-entry{min-width:0;overflow-wrap:anywhere}
+@media(max-width:380px){#loUpcomingPlans .lo-plan-timetable-row{grid-template-columns:60px minmax(0,1fr) auto;gap:8px;padding-left:5px}#loUpcomingPlans .lo-plan-timetable-time strong{font-size:13px}#loUpcomingPlans .lo-plan-timetable-time small{font-size:11px}#loUpcomingPlans .lo-plan-arrow{font-size:11px}}
