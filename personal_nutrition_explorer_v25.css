@@ -62,3 +62,9 @@
 #lifeosNutritionDashboard .lo25-donut span{width:37px;height:37px;font-size:9px}
 #lifeosNutritionDashboard .lo25-grid-fields{grid-template-columns:minmax(0,1fr)}
 }
+#lifeosNutritionDashboard .lo25-water-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:12px 0}
+#lifeosNutritionDashboard .lo25-water-days button{border:1px solid #32455e;border-radius:9px;background:#11243b;color:#d9e7f5;padding:8px 1px;display:grid;gap:5px;justify-items:center;min-width:0;cursor:pointer}
+#lifeosNutritionDashboard .lo25-water-days button.selected{border-color:#74cabb;background:#214444}
+#lifeosNutritionDashboard .lo25-water-days strong{font-size:clamp(9px,2.4vw,12px);white-space:nowrap}
+#lifeosNutritionDashboard .lo25-water-days small{font-size:10px;color:#adc0d5}
+#lifeosNutritionDashboard .lo25-water-days button:focus-visible{outline:2px solid #7de2c9;outline-offset:2px}
