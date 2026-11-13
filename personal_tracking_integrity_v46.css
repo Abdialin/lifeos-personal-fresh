@@ -1,0 +1,13 @@
+/* LifeOS V46 — optional, mobile-friendly local recovery check. */
+#lo46Integrity{margin:6px 0 14px;padding:11px;border:1px solid #47687c;border-radius:11px;background:#162c40;min-width:0}
+#lo46Integrity summary{cursor:pointer;font-size:13px;font-weight:700;line-height:1.6}
+#lo46Integrity p{font-size:12px;line-height:1.6;color:#bcd1df;margin:9px 0}
+#lo46Integrity button{min-height:44px}
+#lo46IntegrityResult{margin-top:12px;overflow-wrap:anywhere}
+#lo46IntegrityResult strong{font-size:13px;display:block}
+#lo46IntegrityResult .lo46-good{color:#91e0c1}
+#lo46IntegrityResult .lo46-bad{color:#ffc38d}
+#lo46IntegrityResult .lo46-stats{display:flex;gap:7px;flex-wrap:wrap;margin:11px 0}
+#lo46IntegrityResult .lo46-stats span{font-size:11px;border:1px solid #496579;border-radius:7px;background:#19394c;padding:8px}
+#lo46IntegrityResult small{color:#b5cbd9;font-size:11px;line-height:1.6;display:block;margin-top:12px}
+@media(max-width:520px){#lo46Integrity{padding:9px}}
