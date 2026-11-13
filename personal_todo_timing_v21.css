@@ -1,0 +1,7 @@
+/* Scoped to LifeOS To-do task time selection. */
+#todoDateWrap[hidden],#todoDeadlineWrap[hidden],#todoWindowWrap[hidden]{display:none!important}
+#todoForm #todoTimingType{margin:8px 0 12px}
+#todoForm #todoTimingHint{margin:7px 0 14px;line-height:1.5}
+#todoForm #todoDateWrap{min-width:0}
+#todoForm #todoWindowWrap:not([hidden]){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(max-width:390px){#todoForm #todoWindowWrap:not([hidden]){grid-template-columns:minmax(0,1fr)}}
