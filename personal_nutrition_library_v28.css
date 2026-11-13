@@ -41,3 +41,29 @@
 #lo28NutritionExtras .lo29-day-track em{align-self:center;width:100%;text-align:center;font-style:normal;color:#92a6bb;font-size:12px}
 #lo28NutritionExtras .lo29-day small{font-size:9px;white-space:nowrap;transform:rotate(-25deg);transform-origin:center}
 @media(max-width:440px){#lo28NutritionExtras .lo29-day{flex-basis:24px}#lo28NutritionExtras .lo29-trend-visual{padding:7px}}
+
+/* V30: one collapsible evidence area inside existing Nutrition trends. */
+#lo28NutritionExtras .lo30-pattern-details{border-top:1px solid #354b63;padding:12px 0 3px;margin-top:12px}
+#lo28NutritionExtras .lo30-pattern-details>summary{font-size:14px;padding:10px 3px;cursor:pointer}
+#lo28NutritionExtras .lo30-pattern-details h4{font-size:13px;margin:17px 0 10px;color:#e1eefa}
+#lo28NutritionExtras .lo30-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:9px 0}
+#lo28NutritionExtras .lo30-kpis>div{border:1px solid #30445c;background:#14263b;padding:10px 6px;border-radius:9px;min-width:0}
+#lo28NutritionExtras .lo30-kpis strong{font-size:19px;display:block}
+#lo28NutritionExtras .lo30-kpis small{font-size:10px;color:#9fb9cc;line-height:1.4}
+#lo28NutritionExtras .lo30-category-list,#lo28NutritionExtras .lo30-quality{display:grid;gap:8px}
+#lo28NutritionExtras .lo30-category-row,#lo28NutritionExtras .lo30-quality-row{display:grid;grid-template-columns:minmax(70px,1fr) minmax(50px,2fr) 48px;gap:8px;align-items:center;font-size:12px;color:#ceddf0}
+#lo28NutritionExtras .lo30-category-row>span,#lo28NutritionExtras .lo30-quality-row>span{overflow-wrap:anywhere}
+#lo28NutritionExtras .lo30-category-row strong,#lo28NutritionExtras .lo30-quality-row strong{text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
+#lo28NutritionExtras .lo30-category-track,#lo28NutritionExtras .lo30-quality-track{display:block;height:9px;border-radius:9px;background:#233b52;overflow:hidden}
+#lo28NutritionExtras .lo30-category-track i,#lo28NutritionExtras .lo30-quality-track i{display:block;height:100%;background:#6dc6ae;border-radius:9px}
+#lo28NutritionExtras .lo30-quality-track i{background:#7094d6}
+#lo28NutritionExtras .lo30-macro{display:flex;align-items:center;gap:18px;min-width:0;padding:9px 3px}
+#lo28NutritionExtras .lo30-macro-ring{width:104px;height:104px;flex:0 0 104px;border-radius:50%;display:grid;place-items:center}
+#lo28NutritionExtras .lo30-macro-ring span{width:66px;height:66px;border-radius:50%;background:#121e31;display:grid;place-items:center;font-size:11px;font-weight:700}
+#lo28NutritionExtras .lo30-macro-legend{display:grid;gap:8px;font-size:12px;color:#dce6f3}
+#lo28NutritionExtras .lo30-macro-legend span{display:flex;align-items:center;gap:8px}
+#lo28NutritionExtras .lo30-macro-legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+#lo28NutritionExtras .lo30-evidence{border:1px solid #34495c;border-radius:10px;padding:12px;margin:14px 0 6px}
+#lo28NutritionExtras .lo30-evidence strong{display:block;margin-bottom:7px;font-size:13px}
+#lo28NutritionExtras .lo30-evidence p{font-size:12px;color:#a5b7c9;line-height:1.5;margin:5px 0}
+@media(max-width:380px){#lo28NutritionExtras .lo30-kpis{gap:4px}#lo28NutritionExtras .lo30-category-row,#lo28NutritionExtras .lo30-quality-row{grid-template-columns:minmax(62px,1fr) minmax(38px,1.3fr) 42px;gap:5px}#lo28NutritionExtras .lo30-macro{gap:10px}#lo28NutritionExtras .lo30-macro-ring{width:86px;height:86px;flex-basis:86px}#lo28NutritionExtras .lo30-macro-ring span{width:54px;height:54px}}
