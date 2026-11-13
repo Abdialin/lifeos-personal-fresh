@@ -63,8 +63,12 @@ function review(){
  if(!p||!def)return;
  const approval=window.lifeosHabitPlanApprovalV35;
  if(typeof approval?.show!=='function')return alert('Approval interface is unavailable. Nothing was saved.');
- approval.show(def.id,{name:def.title,startAt:p.startAt,duration:p.duration});
- el('lo35PlanReview')?.scrollIntoView({behavior:'smooth',block:'start'});
+ // V35 approval form is in Insights; navigate first so the form is visible.
+ document.querySelector('#lifeosNavigation button[data-view="analytics"]')?.click();
+ setTimeout(()=>{
+  approval.show(def.id,{name:def.title,startAt:p.startAt,duration:p.duration});
+  el('lo35PlanReview')?.scrollIntoView({behavior:'smooth',block:'start'});
+ },100);
 }
 function init(){
  const parent=el('scheduleEditorPanel');if(!parent||initialized)return;initialized=true;
