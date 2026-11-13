@@ -131,7 +131,7 @@ function renderCalendar(ws,now){
   tabs.innerHTML=labels.map(([key,label])=>'<button type="button" role="tab" id="v7-plan-tab-'+key+'" data-v7-plan-view="'+key+'" aria-controls="v7-plan-panel-'+key+'" aria-selected="'+(planViewMode===key)+'" tabindex="'+(planViewMode===key?'0':'-1')+'">'+label+'</button>').join('');
   target.prepend(tabs);
   const toolbar=document.createElement('div');toolbar.className='v7-plan-toolbar';
-  toolbar.innerHTML='<div><strong>Your schedule</strong><span>Select a date, compare activity, or add a plan.</span></div><button type="button" data-v7-add-plan>+ Add activity</button>';
+  toolbar.innerHTML='<div><strong>Your schedule</strong><span>Select any date to review your planned and recorded activity.</span></div><label class="lo15-date-jump">Jump to date <input type="date" data-v15-date-jump value="'+selected+'" aria-label="Jump directly to a calendar date"></label><button type="button" data-v7-add-plan>+ Add activity</button>';
   target.prepend(toolbar);
   target.append(calendar,week,chosen,reality,predicted,ideal);
   labels.forEach(([key,,card])=>{
@@ -191,6 +191,7 @@ function init(){const today=$('todayOverview'),nav=$('lifeosNavigation');if(!tod
  for(const [id,view] of [['v4Today','dashboard'],['v4Insights','analytics'],['v4Plan','schedule']]){const section=document.createElement('section');section.id=id;section.className='v4-section';section.dataset.v4View=view;section.setAttribute('aria-label',view+' visual overview');section.hidden=true;today.insertAdjacentElement('afterend',section)}
  function sync(){for(const id of ['v4Today','v4Insights','v4Plan'])$(id).hidden=document.body.dataset.lifeosView!==$(id).dataset.v4View;update()}
  nav.addEventListener('click',()=>setTimeout(sync,0));window.addEventListener('hashchange',()=>setTimeout(sync,0));
+ document.addEventListener('change',e=>{const input=e.target.closest('[data-v15-date-jump]');if(!input||!/^\\d{4}-\\d{2}-\\d{2}$/.test(input.value))return;const chosen=new Date(input.value+'T12:00:00');if(!Number.isFinite(chosen.getTime())||dateKey(chosen)!==input.value)return;selected=input.value;planSelected=selected;month=new Date(chosen.getFullYear(),chosen.getMonth(),1);const picker=$('scheduleDay');if(picker){picker.value=selected;picker.dispatchEvent(new Event('change',{bubbles:true}));}update();const day=$('lifeosSelectedDaySummary')||$('scheduleEditorPanel');if(day){day.scrollIntoView({behavior:'smooth',block:'start'});day.setAttribute('tabindex','-1');day.focus({preventScroll:true})}});
  document.addEventListener('click',e=>{const history=e.target.closest('[data-v4-track-history]');if(history){$('lifeosNavigation')?.querySelector('button[data-view="tracking"]')?.click();window.setTimeout(()=>$('trackHistoryPanel')?.scrollIntoView({behavior:'smooth',block:'start'}),60);return;}const add=e.target.closest('[data-v7-add-plan]');if(add){const button=$('v7TogglePlanForm');if(button&&button.getAttribute('aria-expanded')==='false')button.click();$('scheduleEditorPanel')?.scrollIntoView({behavior:'smooth',block:'start'});return;}const mode=e.target.closest('[data-v7-plan-view]');if(mode){
   planViewMode=mode.dataset.v7PlanView;
   update();
