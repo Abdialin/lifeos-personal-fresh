@@ -289,7 +289,7 @@ $('qualityDate').value=localDate(now());$('qualityAnalyze').addEventListener('cl
 
 // Stage 6: scheduling remains independent from actual session duration.
 function scheduleDateTime(t){return new Date(t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
-function addSchedule(e){e.preventDefault();ensureModules();const name=$('scheduleName').value.trim(),startAt=new Date($('scheduleStart').value).getTime(),endAt=new Date($('scheduleEnd').value).getTime();if(!name||name.length>80||!Number.isFinite(startAt)||!Number.isFinite(endAt)||endAt<=startAt){alert('Enter a name and valid start/end times.');return}data.schedule.push({id:uid(),name,startAt,endAt,notes:$('scheduleNotes').value.trim(),reminder:$('scheduleReminder').checked,status:'planned',sessionId:null,createdAt:now()});persist();$('scheduleForm').reset();$('scheduleReminder').checked=true;$('scheduleDay').value=localDate(startAt);render()}
+function addSchedule(e){e.preventDefault();ensureModules();const name=$('scheduleName').value.trim(),startAt=new Date($('scheduleStart').value).getTime(),endAt=new Date($('scheduleEnd').value).getTime();if(!name||name.length>80||!Number.isFinite(startAt)||!Number.isFinite(endAt)||endAt<=startAt){alert('Enter a name and valid start/end times.');return}data.schedule.push({id:uid(),name,startAt,endAt,notes:$('scheduleNotes').value.trim(),reminder:$('scheduleReminder').checked,status:'planned',sessionId:null,createdAt:now()});if(!persist()){data.schedule.pop();$('scheduleAlert').textContent='Plan not saved. Export a recovery backup and check storage status.';return;}$('scheduleForm').reset();$('scheduleReminder').checked=true;$('scheduleDay').value=localDate(startAt);render();$('scheduleAlert').textContent='Plan saved on this device'+(syncReady?' · synchronization pending.':' · check Settings & data for server synchronization.')}
 function scheduleAction(action,id){ensureModules();const p=data.schedule.find(x=>x.id===id);if(!p)return;if(action==='start'){if(p.status!=='planned'||p.sessionId)return;start(p.name,p.id);return}if(action==='skip'){if(p.sessionId||p.status!=='planned')return;p.status='skipped';p.updatedAt=now();persist();render();return}if(action==='delete'){if(!confirm('Delete this planned activity? Linked tracked sessions will be kept.'))return;data.schedule=data.schedule.filter(x=>x.id!==id);persist();render()}}
 function scheduleMetrics(p){const s=p.sessionId?data.sessions.find(x=>x.id===p.sessionId):null;const planned=p.endAt-p.startAt;const actual=s?elapsed(s,s.endAt??now()):null;return {s,planned,actual}}
 function lifeosRenderDaySummary(){
@@ -1243,9 +1243,9 @@ function update(){
   if(current){
    const name=current.querySelector('.session-title')?.textContent?.trim()||'Active activity';
    const duration=current.querySelector('.clock')?.textContent?.trim()||'';
-   const isRunning=/Running/.test(current.querySelector('.tag')?.textContent||'');
+   const isRunning=/Running/.test(current.querySelector('.lo17-meta, .tag')?.textContent||'');
    signal.hidden=false;
-   signal.innerHTML='<span class="lo-timer-signal-mark" aria-hidden="true">●</span><span class="lo-timer-signal-copy"><strong>'+escape(name)+'</strong><small>'+(isRunning?'Timer running':'Timer paused')+' · '+escape(duration)+'</small></span><button type="button" data-today-jump="tracking">Review timer →</button>';
+   signal.replaceChildren();const mark=document.createElement('span');mark.className='lo-timer-signal-mark';mark.setAttribute('aria-hidden','true');mark.textContent='●';const copy=document.createElement('span');copy.className='lo-timer-signal-copy';const title=document.createElement('strong');title.textContent=name;const details=document.createElement('small');details.textContent=(isRunning?'Timer running':'Timer paused')+' · '+duration;copy.append(title,details);const jump=document.createElement('button');jump.type='button';jump.dataset.todayJump='tracking';jump.textContent='Review timer →';signal.append(mark,copy,jump);
   }else{signal.hidden=true;signal.replaceChildren()}
  }
 
