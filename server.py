@@ -226,8 +226,21 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header('Cache-Control', 'no-store')
                 self.send_header('Content-Length', '0')
                 self.end_headers()
+            except ValueError:
+                # Invalid/expired OAuth state; never show private OAuth code or token.
+                self.send_response(303)
+                self.send_header('Location', '/calendar.html?error=oauth-state')
+                self.send_header('Cache-Control', 'no-store')
+                self.send_header('Content-Length', '0')
+                self.end_headers()
             except Exception:
-                self.reply(400, {'error': 'Calendar authorization failed or expired'})
+                # This may be a provider, callback or encrypted-token storage error.
+                # Preserve details in protected server diagnostics, not in the browser URL.
+                self.send_response(303)
+                self.send_header('Location', '/calendar.html?error=oauth-token')
+                self.send_header('Cache-Control', 'no-store')
+                self.send_header('Content-Length', '0')
+                self.end_headers()
             return
         if path == '/api/calendar/events':
             q = parse_qs(urlparse(self.path).query)
