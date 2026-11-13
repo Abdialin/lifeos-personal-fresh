@@ -60,7 +60,6 @@ function enhanceViews(){
   calendarHandoffPanel:'Calendar transfer controls',
   calendarChangePanel:'Calendar approval details',
   personalCompletionPanel:'Additional planning tools',
-  intelligencePanel:'Pattern evidence tools',
   sessionToolsPanel:'Backup and restore controls',
   connectedDatabasePanel:'External database information',
   cloudSyncPanel:'Private cloud synchronization',
