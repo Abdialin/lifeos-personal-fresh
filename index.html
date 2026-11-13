@@ -313,6 +313,21 @@ window.lifeosNutritionV25={
  saveSettings:settings=>{ensureModules();if(!settings||typeof settings!=='object')return false;const prev=data.nutritionSettings;data.nutritionSettings={...settings};if(!persist()){data.nutritionSettings=prev;return false}return true}
 };
 window.lifeosSocialHabitBridge={
+ proposeHabitPlan:(item)=>{
+  ensureModules();
+  if(!item||typeof item.name!=='string'||!item.name.trim()||item.name.length>80||!Number.isSafeInteger(item.startAt)||!Number.isSafeInteger(item.endAt)||item.endAt<=item.startAt||item.endAt-item.startAt>24*3600000)return {ok:false,error:'Invalid date, time or duration'};
+  const habit=data.habitDefinitions.find(x=>x.id===item.habitId);
+  if(!habit)return {ok:false,error:'Habit no longer exists'};
+  if(item.startAt<now()-60000)return {ok:false,error:'Choose a future start time'};
+  const conflicts=data.schedule.filter(x=>x.status!=='skipped'&&x.status!=='cancelled'&&Number(x.startAt)<item.endAt&&Number(x.endAt)>item.startAt);
+  if(conflicts.length)return {ok:false,error:'Schedule conflicts changed; review before approving',conflicts:conflicts.map(x=>({id:x.id,name:x.name,startAt:x.startAt,endAt:x.endAt}))};
+  const previous=data.schedule;
+  const plan={id:uid(),name:item.name.trim(),startAt:item.startAt,endAt:item.endAt,notes:'Habit planning suggestion — '+habit.title+'. User-approved; not a completion record.',reminder:false,status:'planned',sessionId:null,createdAt:now(),habitId:habit.id,source:'approved-habit-proposal'};
+  data.schedule=previous.concat(plan);
+  if(!persist()){data.schedule=previous;return {ok:false,error:'Plan was not saved; nothing changed'};}
+  try{render()}catch(err){console.warn('Saved habit plan, view refresh incomplete',err)}
+  return {ok:true,id:plan.id};
+ },
  activeTimers:()=>data.sessions.filter(s=>s.status!=='finished').map(s=>({id:s.id,name:s.name,status:s.status,segments:(s.segments||[]).map(seg=>({start:seg.start,end:seg.end}))})),
  read:()=>({habitDefinitions:data.habitDefinitions||[],habitChecks:data.habitChecks||[],friendShares:data.friendShares||[]}),
  mutate:(kind,operation,row)=>{
