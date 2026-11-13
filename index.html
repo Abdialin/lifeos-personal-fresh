@@ -388,8 +388,19 @@ function renderUpcomingPlans(){
  if(!items.length){const empty=document.createElement('p');empty.className='lo-upcoming-empty';empty.textContent='No upcoming plans. Add an activity above to see it here.';host.append(empty);return;}
  for(const p of items){
   const row=document.createElement('button');row.type='button';row.className='lo-upcoming-item';row.dataset.openPlanDate=localDate(p.startAt);row.dataset.openPlanId=p.id;if(p.id===window.lifeosLastSavedPlanId)row.classList.add('lo-plan-new');
-  const copy=document.createElement('span');const name=document.createElement('strong');name.textContent=p.name;const details=document.createElement('small');details.textContent=scheduleDateTime(p.startAt)+' – '+new Date(p.endAt).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})+' · '+(p.status==='skipped'?'Skipped':p.endAt<now()?'Past plan':p.status==='started'?'In progress':'Planned');copy.append(name,details);
-  const arrow=document.createElement('span');arrow.className='lo-plan-arrow';arrow.textContent='View ›';row.append(copy,arrow);host.append(row);
+  const rail=document.createElement('span');rail.className='lo-plan-timetable-time';
+  const startTime=new Date(p.startAt).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+  const endTime=new Date(p.endAt).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+  const clock=document.createElement('strong');clock.textContent=startTime;
+  const to=document.createElement('small');to.textContent=endTime;
+  rail.append(clock,to);
+  const copy=document.createElement('span');copy.className='lo-plan-timetable-content';
+  const name=document.createElement('strong');name.textContent=p.name;
+  const details=document.createElement('small');details.textContent=new Date(p.startAt).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})+' · '+(p.status==='skipped'?'Skipped':p.endAt<now()?'Past plan':p.status==='started'?'In progress':'Planned');
+  copy.append(name,details);
+  const arrow=document.createElement('span');arrow.className='lo-plan-arrow';arrow.textContent='View ›';
+  row.classList.add('lo-plan-timetable-row');
+  row.append(rail,copy,arrow);host.append(row);
  }
  if(valid.length>items.length){const more=document.createElement('p');more.className='lo-upcoming-empty';more.textContent='Showing upcoming and recent plans. Use the calendar below to review other dates.';host.append(more);}
 }
