@@ -47,14 +47,12 @@ function plan(){
  if(jump){jump.classList.add('lo14-secondary-calendar');const wrap=jump.closest('.lo11-schedule-calendar,.lo11-calendar-box');if(wrap)wrap.classList.add('lo14-secondary-calendar');}
  // Keep import, transfer and approvals accessible but collapse them by default.
  const tool=$('lo12CalendarTools');if(tool)tool.querySelectorAll('details').forEach(d=>d.open=false);
- if(!$('lo14PlanBridge')){
- const bar=document.createElement('div');bar.id='lo14PlanBridge';bar.className='lo14-plan-bridge';
- bar.innerHTML='<strong>Your schedule</strong><span>Choose a day on the calendar to review the plan, activity and outstanding tasks together.</span>';
- bar.append(btn('Manage weekly tasks',()=>{goto('schedule');setTimeout(()=>todo?.scrollIntoView({behavior:'smooth',block:'start'}),80)}));
- editor.prepend(bar);
- }
+ const actions=editor.querySelector('.lo12-plan-actions');
+ if(actions&&!$('lo14ManageTasks')){const task=btn('Weekly tasks',()=>{goto('schedule');setTimeout(()=>todo?.scrollIntoView({behavior:'smooth',block:'start'}),80)});task.id='lo14ManageTasks';actions.append(task)}
+
 }
 function goals(){
+ $('lo13GoalLink')?.remove();
  const goals=$('goalForm')?.closest('section.panel');if(!goals)return;
  if(!$('lo14GoalsBridge')){
  const box=document.createElement('div');box.id='lo14GoalsBridge';box.className='lo14-section-bridge';
