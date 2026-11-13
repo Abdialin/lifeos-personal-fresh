@@ -50,3 +50,15 @@ body[data-lifeos-view="analytics"] .v4-category[data-lo14-category="distraction"
  .lo14-shortcuts .lo14-button{min-width:0}
  .lo14-time-mix .v4-category{grid-template-columns:minmax(0,1fr) 70px 48px;font-size:11px}
 }
+
+/* Restore one real legend dot per category, with mobile-safe labels. */
+.v5-legend-item::before{display:none!important;content:none!important}
+.v5-legend{min-width:0!important;max-width:100%}
+.v5-mix{min-width:0;max-width:100%}
+.v5-legend-item{display:grid!important;grid-template-columns:11px minmax(0,1fr) max-content!important;align-items:center!important;gap:9px!important;text-align:left!important;margin:0!important}
+.v5-legend-item .v5-legend-dot{display:block!important;grid-column:1;width:10px;height:10px}
+.v5-legend-item span{grid-column:2;white-space:normal!important;overflow-wrap:anywhere;min-width:0}
+.v5-legend-item strong{grid-column:3;white-space:nowrap;font-size:12px}
+@media(max-width:540px){.v5-mix{display:grid!important;grid-template-columns:minmax(0,1fr)!important;justify-items:center;gap:16px!important}.v5-legend{width:100%}.v5-donut{margin:auto}}
+body:not([data-lifeos-view="life"]) #loLifeSectionTabs{display:none!important}
+body[data-lifeos-view="life"] #loLifeSectionTabs{display:grid!important}
