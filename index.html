@@ -598,6 +598,12 @@ function renderTodos(){ensureModules();const m=window.LifeOSPersonalManagement;i
  $('todoTimingType')?.dispatchEvent(new Event('change',{bubbles:true}));renderTodos()
 }function todoAction(e){let b=e.target.closest('[data-todo-act]');if(!b)return;let t=(data.todos||[]).find(x=>x.id===b.dataset.todoId);if(!t)return;
  if(b.dataset.todoAct==='edit'){
+  const editor=$('todoForm');
+  if(editor?.hidden){
+   const toggle=document.querySelector('[data-lo-form-toggle="todoForm"]');
+   if(toggle)toggle.click();
+   if(editor.hidden)editor.hidden=false;
+  }
   $('todoEditingId').value=t.id;
   $('todoName').value=t.name||'';$('todoDue').value=t.due||'';$('todoTime').value=t.dueTime||'';
   $('todoStartTime').value=t.startTime||'';$('todoEndTime').value=t.endTime||'';
