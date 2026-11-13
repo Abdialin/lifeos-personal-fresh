@@ -1,2 +1,4 @@
 psycopg[binary]>=3.2,<4
 cryptography>=43,<47
+
+pypdf>=5,<7
