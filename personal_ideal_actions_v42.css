@@ -1,0 +1,19 @@
+/* LifeOS V42 — compact consent-first ideal routine adjustment review. */
+#lo42ImprovementActions{margin:13px 0 3px;min-width:0}
+#lo42ImprovementActions>details{padding:10px;background:#142d40;border:1px solid #4a7182;border-radius:10px}
+#lo42ImprovementActions summary{cursor:pointer;font-size:13px;line-height:1.5;font-weight:750}
+#lo42ImprovementActions .lo42-note{color:#b7ceda;font-size:11px;line-height:1.6;margin:12px 1px}
+#lo42ImprovementActions .lo42-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid #39596c;border-radius:9px;padding:11px;margin:9px 0;background:#1a354a}
+#lo42ImprovementActions .lo42-row>div{min-width:0;flex:1}
+#lo42ImprovementActions .lo42-row strong{font-size:13px;display:block;overflow-wrap:anywhere}
+#lo42ImprovementActions .lo42-row small{font-size:11px;display:block;color:#bacbd7;margin-top:5px}
+#lo42ImprovementActions .lo42-row p{font-size:11px;line-height:1.6;color:#acc6d3;margin:8px 0 0}
+#lo42ImprovementActions button{min-height:42px}
+#lo42ImprovementActions .lo42-editor{background:#17394b;border:1px solid #73afa7;border-radius:11px;padding:12px;margin:13px 0;display:grid;gap:11px}
+#lo42ImprovementActions .lo42-editor h4{font-size:14px;margin:0}
+#lo42ImprovementActions .lo42-before{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#d2e3e7;border-bottom:1px solid #43687a;padding-bottom:11px}
+#lo42ImprovementActions .lo42-editor label{display:grid;gap:6px;color:#c8dfe7;font-size:12px}
+#lo42ImprovementActions .lo42-editor input{width:100%;min-width:0;color:#f0f9fc;background:#10273a;border:1px solid #5a8392;border-radius:9px;padding:11px;font:inherit;font-size:16px}
+#lo42ImprovementActions .lo42-impact{border:1px solid #486b78;border-radius:9px;padding:10px;font-size:12px;line-height:1.5;color:#cbe8da;background:#174146}
+#lo42ImprovementActions .lo42-notice{font-size:12px;line-height:1.5;color:#a9f0ce}
+@media(max-width:490px){#lo42ImprovementActions>details,#lo42ImprovementActions .lo42-editor{padding:9px}#lo42ImprovementActions .lo42-row{align-items:stretch}#lo42ImprovementActions .lo42-row button{width:100%}}
