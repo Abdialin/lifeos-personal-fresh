@@ -3,7 +3,7 @@
  */
 (()=>{'use strict';const $=id=>document.getElementById(id);
 const btn=(label,on)=>{const b=document.createElement('button');b.type='button';b.className='btn outline lo14-button';b.textContent=label;b.addEventListener('click',on);return b};
-const goto=view=>document.querySelector('#lifeosNavigation button[data-view="'+view+'"]')?.click();
+const goto=view=>{const target=document.querySelector('#lifeosNavigation button[data-view="'+view+'"]');if(target)target.click();else if(view==='settings'){location.hash='settings';}};
 const label=el=>(el?.querySelector('h2,h3')?.textContent||'').trim();
 function settings(){
  if($('lo14SettingsHub'))return;
@@ -18,8 +18,7 @@ function settings(){
  }
  const troubleshooting=document.createElement('details');troubleshooting.className='lo14-tech-details';
  troubleshooting.innerHTML='<summary>Advanced planning diagnostics</summary>';
- const dev=$('lo12DevDetails');if(dev)troubleshooting.append(dev);
- const audit=$('intelligencePanel');if(audit)troubleshooting.append(audit);
+ const note=document.createElement('p');note.textContent='Schedule suggestions remain in Plan; evidence quality and prediction analysis remain in Insights.';troubleshooting.append(note);
  hub.append(troubleshooting);
  // A link, rather than another primary bottom tab, keeps the six-tab mobile navigation uncluttered.
  const trigger=btn('Settings & data',()=>goto('settings'));trigger.id='lo14SettingsButton';trigger.setAttribute('aria-label','Open Settings and data');trigger.classList.add('lo14-settings-button');
