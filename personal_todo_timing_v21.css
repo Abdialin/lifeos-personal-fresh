@@ -11,3 +11,10 @@
 #todoList .lo-task-item{min-width:0}
 #todoList .lo-task-item>div:nth-child(2){min-width:0;overflow-wrap:anywhere}
 @media(max-width:400px){#todoList .lo21-task-actions{flex-direction:column}#todoList .lo21-task-actions .btn{width:100%;padding:6px 9px}}
+
+/* Override legacy 32px one-action grid; make both actions usable. */
+#todoList .lo-task-item{grid-template-columns:22px minmax(0,1fr) auto!important;gap:9px;align-items:center}
+#todoList .lo21-task-actions{display:flex!important;flex-direction:row!important;gap:6px;align-items:center;min-width:max-content}
+#todoList .lo21-task-actions .btn{width:auto!important;min-width:48px!important;white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important;font-size:12px!important;padding:9px 7px!important;line-height:1.2!important}
+#todoList .lo-task-item>div:nth-child(2){min-width:0}
+@media(max-width:390px){#todoList .lo-task-item{gap:5px;padding:9px 4px}#todoList .lo21-task-actions{gap:3px}#todoList .lo21-task-actions .btn{min-width:43px!important;padding:8px 4px!important}}
