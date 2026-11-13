@@ -9,17 +9,29 @@ const bridge=()=>window.lifeosSocialHabitBridge;
 const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 let selectedId='',notice='',expanded=false,draft=null;
 function proposals(group){
- const record=group.rows||[],known=record.filter(x=>x.kind==='recorded below target'||x.kind==='recorded target met');
+ const rows=(group.rows||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
+ const known=rows.filter(x=>x.kind==='recorded below target'||x.kind==='recorded target met');
  const below=known.filter(x=>x.kind==='recorded below target');
- const missing=record.filter(x=>x.kind==='no matching record');
- const uncertain=record.filter(x=>x.kind==='duration uncertain');
- const total=record.length;
- const suggestion=known.length<2?
-  'Limited evidence: this seven-day comparison normally contains one scheduled occurrence per weekly routine. Verify your historical activity records before adjusting your ideal target.':
-  below.length>=2?'Recorded duration was below your target on multiple scheduled dates. You may review a smaller duration.':
-  'There is no repeated recorded shortfall sufficient to recommend changing this routine.';
- return {total,known:known.length,below:below.length,missing:missing.length,uncertain:uncertain.length,
-  suggestion,confidence:known.length>=3?'Limited':'Insufficient',canRecommend:known.length>=3&&below.length>=2};
+ const missing=rows.filter(x=>x.kind==='no matching record');
+ const uncertain=rows.filter(x=>x.kind==='duration uncertain');
+ const recent=rows.slice(Math.floor(rows.length/2)),earlier=rows.slice(0,Math.floor(rows.length/2));
+ const counted=x=>x.filter(y=>y.kind==='recorded below target'||y.kind==='recorded target met');
+ const recentKnown=counted(recent),earlierKnown=counted(earlier);
+ const recentRate=recentKnown.length?Math.round(recentKnown.filter(x=>x.kind==='recorded target met').length/recentKnown.length*100):null;
+ const earlierRate=earlierKnown.length?Math.round(earlierKnown.filter(x=>x.kind==='recorded target met').length/earlierKnown.length*100):null;
+ const enough=known.length>=3&&rows.length>=3;
+ const repeat=below.length>=2&&known.length>=3;
+ let suggestion='Insufficient matching timer evidence. Verify records before adjusting an ideal preference.';
+ if(enough&&repeat)suggestion='Repeated shorter-than-target recordings were found. Review underlying sessions before considering a shorter preference.';
+ else if(enough&&below.length===0)suggestion='Recorded comparisons met the current duration target. Keeping this preference may be reasonable.';
+ else if(enough)suggestion='Mixed recorded outcomes. Observe more scheduled days before changing a preference.';
+ const trend=recentKnown.length>=2&&earlierKnown.length>=2?
+  (recentRate-earlierRate>=20?'Recorded target attainment increased':recentRate-earlierRate<=-20?'Recorded target attainment decreased':'Recorded target attainment was broadly stable')+
+  ' ('+earlierRate+'% earlier → '+recentRate+'% recent).':
+  'Not enough comparable records in both halves to determine a trend.';
+ return {total:rows.length,known:known.length,below:below.length,missing:missing.length,
+  uncertain:uncertain.length,suggestion,trend,confidence:known.length>=6?'Moderate':enough?'Limited':'Insufficient',
+  canRecommend:repeat,earlierRate,recentRate};
 }
 function openEditor(id){
  const routine=(get().idealRoutines||[]).find(x=>x.id===id);
@@ -42,7 +54,7 @@ function render(){
   const p=proposals(g),r=g.preference;
   return '<article class="lo42-row"><div><strong>'+esc(r.name)+'</strong><small>'+
   esc(days[Number(r.dayOfWeek)]||'Weekly')+' · '+esc(r.start)+' · '+esc(r.durationMinutes)+' min target</small><p>'+
-  p.known+' recorded comparable date(s) · '+p.missing+' missing matching timer(s). '+esc(p.suggestion)+'</p></div>'+
+  p.known+' recorded comparable date(s) · '+p.missing+' missing matching timer(s) · '+p.confidence+' evidence. '+esc(p.suggestion)+' '+esc(p.trend)+'</p></div>'+
   '<button class="btn outline" type="button" data-lo42-edit="'+esc(r.id)+'" '+(!r.id?'disabled':'')+'>Review adjustment</button></article>';
  }).join('');
  let editor='';
@@ -61,7 +73,7 @@ function render(){
    '<button class="btn outline" type="button" id="lo42Cancel">Cancel</button></form>';
  }else if(draft&&!selected){draft=null;notice='The routine was removed before approval. Nothing changed.'}
  host.innerHTML='<details id="lo42ImprovementDetails" '+(expanded?'open':'')+'><summary>Reviewable improvement actions</summary>'+
- '<p class="lo42-note">These are decision aids, not automatic corrections. One week alone is insufficient to establish a repeated pattern. Missing timers are unknown, not missed commitments.</p>'+
+ '<p class="lo42-note">These are decision aids over the selected '+(gap()?.selectedPeriod?.()||7)+' complete days. Trends compare the earlier and recent scheduled occurrences only when both periods have enough recorded evidence. Missing timers remain unknown.</p>'+
  (rows||'<p class="lo42-note">Create an ideal routine to review potential changes.</p>')+
  editor+(notice?'<p class="lo42-notice" role="status">'+esc(notice)+'</p>':'')+
  '<p class="lo42-note">Any approved change updates only your saved ideal routine. Existing tracked sessions, habit completions, and planned activities are not modified.</p></details>';
