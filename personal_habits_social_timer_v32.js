@@ -17,7 +17,7 @@ function timespan(s,now){
  },0)
 }
 function timer(){
- const w=read(),sessions=(w.sessions||[]).filter(s=>s.status!=='finished');
+ const sessions=bridge()?.activeTimers?.()||(read().sessions||[]).filter(s=>s.status!=='finished');
  let bar=$('lo32ActiveTimer');
  if(!bar){bar=document.createElement('aside');bar.id='lo32ActiveTimer';bar.setAttribute('role','status');bar.setAttribute('aria-label','Background activity timer');document.body.append(bar)}
  const current=sessions.find(s=>s.status==='running')||sessions[0];
@@ -207,7 +207,13 @@ function setup(){
  });
  document.addEventListener('visibilitychange',()=>{timer();if(!document.hidden){habitUI();friendsUI()}});
  window.setInterval(timer,1000);
- window.setInterval(()=>{if(!document.hidden){habitUI();friendsUI()}},60000);
+ window.setInterval(()=>{
+  if(document.hidden)return;
+  // Preserve unfinished form text and the currently focused input.
+  const habitPanel=$('lo32HabitHub'),friendPanel=$('lo32FriendHub');
+  if(document.body.dataset.loLifeSection==='habits'&&habitPanel&&!habitPanel.contains(document.activeElement))habitUI();
+  if(document.body.dataset.loLifeSection==='friends'&&friendPanel&&!friendPanel.contains(document.activeElement))friendsUI();
+ },60000);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
 })();
