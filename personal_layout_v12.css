@@ -1,0 +1,42 @@
+/* LifeOS Personal V12: focused planning layout and compact distraction capture. */
+#scheduleEditorPanel{scroll-margin-top:72px}
+.lo12-plan-intro{display:flex;flex-direction:column;gap:13px;margin:15px 0;padding:15px;border:1px solid rgba(111,181,174,.3);border-radius:15px;background:linear-gradient(118deg,rgba(31,128,116,.12),rgba(68,111,175,.06))}
+.lo12-plan-intro>div:first-child strong,.lo12-plan-intro>div:first-child span{display:block}
+.lo12-plan-intro strong{font-size:16px;font-weight:750}
+.lo12-plan-intro span{font-size:12px;line-height:1.55;color:var(--lo-muted,#b2c4d7);margin-top:5px}
+.lo12-plan-actions{display:flex;flex-wrap:wrap;gap:8px}
+.lo12-plan-actions .btn{min-height:42px;font-size:12px;padding:9px 12px;flex:1;min-width:130px;white-space:normal}
+.lo12-import{color:#94e9d6!important;border-color:rgba(121,218,200,.6)!important}
+.lo12-calendar-tools{margin-top:12px!important;scroll-margin-top:75px}
+.lo12-tool-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lo12-tool-head h2{font-size:17px;margin-bottom:7px}
+.lo12-tool-head p{font-size:12px;margin:0;line-height:1.45}
+.lo12-tool-head .btn{font-size:12px;min-height:40px}
+.lo12-tool-details{margin-top:14px;padding:11px;border:1px solid var(--lo-border,#394c69);border-radius:12px;background:rgba(94,140,177,.065)}
+.lo12-tool-details>summary,.lo12-development>summary,.lo12-debug-data>summary,.lo12-starter-details>summary{cursor:pointer;font-size:13px;font-weight:700;line-height:1.5}
+.lo12-tool-details>summary{color:var(--lo-accent,#8addcb)}
+.lo12-nested-tool{margin:14px 0 0!important;padding:13px!important;max-width:100%;border-radius:12px!important}
+.lo12-nested-tool h2{font-size:14px!important}
+.lo12-nested-tool .btn{white-space:normal!important;overflow-wrap:anywhere}
+.lo12-development{margin:14px 0;padding:14px;border:1px solid var(--lo-border,#354963);border-radius:13px}
+.lo12-development[open]{background:rgba(90,145,175,.045)}
+.lo12-development #smartSchedulePanel{border:0!important;padding:12px 0!important;margin:0!important;background:transparent!important;box-shadow:none!important}
+.lo12-development #smartSchedulePanel>h2{font-size:16px}
+.lo12-debug-data,.lo12-starter-details{margin-top:12px;border:1px solid var(--lo-border,#394962);border-radius:10px;padding:12px}
+.lo12-debug-data #smartScheduleOutput{margin-top:10px;max-height:280px;overflow:auto;overscroll-behavior:contain}
+.lo12-starter-details #lifeosStarterPanel{margin:12px 0 0;max-width:100%}
+.lo12-starter-details .lo-starter-actions{display:grid;grid-template-columns:1fr;gap:8px}
+.lo12-starter-details .lo-starter-actions .btn{white-space:normal;overflow-wrap:anywhere;min-height:48px}
+#trackDistractionPanel.lo12-distraction{margin-top:11px!important;border-color:rgba(169,118,152,.28)}
+.lo12-distraction .head h2{font-size:16px}
+.lo12-distraction .row{align-items:center;gap:10px;flex-wrap:wrap}
+.lo12-distraction .btn.danger{padding:10px 13px;min-height:42px;font-size:13px}
+.lo12-distraction .note{font-size:11px;line-height:1.45}
+@media(max-width:600px){
+ .lo12-plan-intro{padding:13px}
+ .lo12-plan-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .lo12-plan-actions .btn{min-width:0;font-size:11px;padding:8px}
+ .lo12-nested-tool{padding:10px!important}
+ .lo12-tool-head .btn{width:auto}
+}
+@media(max-width:350px){.lo12-plan-actions{grid-template-columns:1fr}}
