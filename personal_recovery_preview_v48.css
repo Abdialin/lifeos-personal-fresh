@@ -1,0 +1,18 @@
+/* LifeOS V48 — optional read-only cross-device recovery preview. */
+#lo48RecoveryPreviewPanel{background:#162d40;border:1px solid #486b80;border-radius:12px;padding:12px;margin:13px 0;min-width:0}
+#lo48RecoveryPreviewPanel summary{cursor:pointer;font-size:14px;font-weight:750;color:#e4f4fb;line-height:1.6}
+#lo48RecoveryPreviewPanel p{font-size:12px;line-height:1.6;color:#b7d0de;margin:11px 0}
+#lo48RecoveryPreviewPanel button{min-height:44px}
+#lo48RecoveryResult{margin:14px 0 0;overflow-wrap:anywhere}
+#lo48RecoveryResult .lo48-outcome{padding:11px;border:1px solid #587c88;border-radius:9px;background:#1a3b4d}
+#lo48RecoveryResult .lo48-outcome.lo48-candidate,#lo48RecoveryResult .lo48-outcome.lo48-review{border-color:#74b9aa;background:#1a493e}
+#lo48RecoveryResult .lo48-outcome.lo48-blocked,#lo48RecoveryResult .lo48-outcome.lo48-conflict{border-color:#d3a076;background:#45382e}
+#lo48RecoveryResult .lo48-outcome strong{font-size:13px;line-height:1.4}
+#lo48RecoveryResult .lo48-count{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0}
+#lo48RecoveryResult .lo48-count span{font-size:11px;padding:9px;border-radius:8px;background:#1b3a4e;border:1px solid #48697c}
+#lo48RecoveryResult .lo48-types{display:grid;gap:6px;margin:10px 0}
+#lo48RecoveryResult .lo48-types>div{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #36516a;padding:7px 3px;font-size:11px}
+#lo48RecoveryResult .lo48-types small{font-size:11px;color:#bbd2df}
+#lo48RecoveryResult .lo48-foot{font-size:11px;color:#adcad7}
+#lo48RecoveryResult .lo48-warning{color:#ffce91}
+@media(max-width:500px){#lo48RecoveryPreviewPanel{padding:9px}#lo48RecoveryResult .lo48-types>div{align-items:flex-start;flex-direction:column;gap:3px}}
