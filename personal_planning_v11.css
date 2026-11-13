@@ -1,0 +1,40 @@
+/* LifeOS Personal V11 — selectable monthly schedule and structured history */
+.lo11-calendar-shell{border:1px solid var(--lo-border,#3a4c68);background:rgba(95,142,191,.07);border-radius:16px;padding:14px;margin:14px 0 20px}
+.lo11-calendar-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:13px;margin-bottom:13px}
+.lo11-calendar-top>div:first-child strong,.lo11-calendar-top>div:first-child small{display:block}
+.lo11-calendar-top strong{font-size:14px}.lo11-calendar-top small{font-size:11px;color:var(--lo-muted,#afc0d5);margin-top:3px}
+.lo11-calendar-controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.lo11-calendar-controls>strong{font-size:12px;white-space:nowrap;padding:0 5px}
+.lo11-calendar-controls button{cursor:pointer;border:1px solid var(--lo-border,#40526d);background:var(--lo-surface-2,#24364c);color:inherit;min-width:37px;min-height:39px;border-radius:10px;font-size:18px}
+.lo11-calendar-controls button:last-child{font-size:11px;padding:0 10px}
+.lo11-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.lo11-cal-labels{text-align:center;color:var(--lo-muted,#b0bed1);font-size:10px;margin-bottom:6px}
+.lo11-cal-day{min-width:0;min-height:51px;padding:6px 1px;border-radius:9px;border:1px solid var(--lo-border,#354761);background:rgba(111,149,190,.14);color:inherit;cursor:pointer;display:flex;align-items:center;flex-direction:column;justify-content:space-between}
+.lo11-cal-day b{font-size:13px}.lo11-cal-day.is-selected{border:2px solid #79e1c9;background:rgba(56,145,127,.3)}.lo11-cal-day.is-today b{text-decoration:underline}
+.lo11-cal-day:focus-visible{outline:3px solid #83ddc9;outline-offset:2px}
+.lo11-dots{display:flex;align-items:center;justify-content:center;gap:3px;min-height:8px}
+.lo11-dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex:none}
+.lo11-recorded{background:#59bfa6}.lo11-planned{background:#709cf2}.lo11-task{background:#f0bc6f}
+.lo11-cal-legend{display:flex;flex-wrap:wrap;gap:13px;margin-top:12px;font-size:10px;color:var(--lo-muted,#b5c6d9)}
+.lo11-cal-legend span{display:flex;align-items:center;gap:5px}
+.lo11-timed-tasks{border:1px solid var(--lo-border,#344760);background:rgba(76,134,166,.07);border-radius:12px;padding:11px 13px;margin:12px 0}
+.lo11-timed-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 9px}
+.lo11-timed-head strong{font-size:14px}.lo11-timed-head span{font-size:11px;color:var(--lo-muted,#acc1d8)}
+.lo11-timed-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid rgba(127,163,201,.18)}
+.lo11-timed-row>div{min-width:0}.lo11-timed-row b{font-size:12px;display:block;overflow-wrap:anywhere}.lo11-timed-row small{font-size:11px;color:var(--lo-muted,#aec0d4)}
+.lo11-task-status{border:1px solid #d4ac68;color:#efc884;border-radius:12px;padding:4px 8px;font-size:11px;white-space:nowrap}.lo11-task-status.is-done{border-color:#7ed7bd;color:#7ed7bd}
+.lo11-muted{font-size:11px;color:var(--lo-muted,#b5c1d2);line-height:1.5;margin:8px 0}
+.lo11-reminder{border:1px solid #d7b476;border-radius:12px;background:rgba(198,146,56,.12);padding:13px;margin:12px 0}
+.lo11-reminder p{margin:6px 0;font-size:12px}.lo11-reminder strong{font-size:13px}
+.lo11-history-month,.lo11-history-week,.lo11-history-day{margin:9px 0;border:1px solid var(--lo-border,#324761);border-radius:12px;overflow:hidden}
+.lo11-history-month{background:rgba(80,124,172,.1)}.lo11-history-week{margin:8px;background:rgba(75,121,165,.07)}.lo11-history-day{margin:7px;background:rgba(63,104,152,.04)}
+.lo11-history-month>summary,.lo11-history-week>summary,.lo11-history-day>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:11px;padding:12px}
+.lo11-history-month>summary::-webkit-details-marker,.lo11-history-week>summary::-webkit-details-marker,.lo11-history-day>summary::-webkit-details-marker{display:none}
+.lo11-history-month>summary:before,.lo11-history-week>summary:before,.lo11-history-day>summary:before{content:'▸';color:var(--lo-accent,#76e3c8)}
+.lo11-history-month[open]>summary:before,.lo11-history-week[open]>summary:before,.lo11-history-day[open]>summary:before{content:'▾'}
+.lo11-history-month>summary strong,.lo11-history-week>summary strong,.lo11-history-day>summary strong{flex:1;min-width:0;font-size:13px;line-height:1.3}
+.lo11-history-month>summary small,.lo11-history-week>summary small,.lo11-history-day>summary small{font-size:10px;color:var(--lo-muted,#b3c0d2);text-align:right;max-width:45%}
+.lo11-history-day .lo-history-item{margin:0 9px}
+.lo11-history-day .lo11-muted{padding:0 10px}
+#lifeosSelectedDaySummary{scroll-margin-top:70px}
+@media(max-width:440px){.lo11-calendar-shell{padding:10px}.lo11-calendar-controls{width:100%;justify-content:space-between}.lo11-cal-grid{gap:4px}.lo11-cal-day{min-height:46px;padding:4px 0}.lo11-history-day>summary{padding:10px}.lo11-history-month>summary,.lo11-history-week>summary{padding:10px}}
