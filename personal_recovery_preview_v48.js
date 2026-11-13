@@ -4,7 +4,11 @@
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cloud=()=>window.lifeosCloudStatusV47?.()||{};
-const local=()=>window.lifeosReadOnlyWorkspace?.()||null;
+const local=()=>{
+ const w=window.lifeosReadOnlyWorkspace?.();if(!w)return null;
+ const habits=window.lifeosSocialHabitBridge?.read?.()||{};
+ return {...w,habitDefinitions:habits.habitDefinitions||[],habitChecks:habits.habitChecks||[]};
+};
 let checking=false;
 const TYPES=['sessions','schedule','todos','goals','workouts','meals','personalLogs','habitDefinitions','habitChecks','idealRoutines'];
 function counts(w){
@@ -28,9 +32,14 @@ function assess(localWorkspace,remoteWorkspace,status,revision){
  else {
   const diff=window.lifeosCloudVerificationV47?.recordDifferences?.(localWorkspace,remoteWorkspace);
   const basicMatch=diff?.same===true;
-  preview.level=basicMatch?'review':'conflict';
-  preview.heading=basicMatch?'Device already contains matching timers and plans':'Existing local records require comparison';
-  preview.explanation=basicMatch?'Core timers and plans already match. Other records or revision status may still differ. Do not replace local state without reviewing its backup.':
+  const sameOther=TYPES.filter(k=>k!=='sessions'&&k!=='schedule').every(k=>{
+   const a=Array.isArray(localWorkspace?.[k])?localWorkspace[k]:[];
+   const b=Array.isArray(remoteWorkspace?.[k])?remoteWorkspace[k]:[];
+   return JSON.stringify(a)===JSON.stringify(b);
+  });
+  preview.level=basicMatch&&sameOther?'review':'conflict';
+  preview.heading=basicMatch&&sameOther?'Device records broadly match PostgreSQL':'Existing local records require comparison';
+  preview.explanation=basicMatch&&sameOther?'The inspected record categories match. Other workspace fields and revision status may still differ. Do not replace local state without reviewing its backup.':
   'The browser already contains records that may differ from PostgreSQL. Use Compare with server and review both versions rather than automatically replacing either.';
  }
  return preview;
