@@ -9,7 +9,7 @@ const fmt=t=>new Date(t).toLocaleString(undefined,{weekday:'short',month:'short'
 const mins=t=>Math.round(t/60000);
 const read=()=>window.lifeosReadOnlyWorkspace?.()||{};
 const habits=()=>window.lifeosSocialHabitBridge?.read()||{};
-let currentHabit='',range=7,initialized=false;
+let currentHabit='',range=7,initialized=false,expanded=false;
 function sessionMinutes(s){
  if(!Array.isArray(s?.segments))return null;
  return s.segments.reduce((sum,x)=>{
@@ -67,11 +67,12 @@ function predict(def,workspace,days=7,now=Date.now()){
 }
 function render(){
  const root=$('lo37PredictiveHabits');if(!root)return;
+ const wasOpen=$('lo37PredictionDetails')?.open??expanded;
  const b=habits(),workspace=read(),defs=b.habitDefinitions||[];
  if(!currentHabit||!defs.some(x=>x.id===currentHabit))currentHabit=defs[0]?.id||'';
  const def=defs.find(x=>x.id===currentHabit);
  const result=def?predict(def,workspace,range):null;
- root.innerHTML='<details id="lo37PredictionDetails"><summary>Predictive habit scheduling · review proposals</summary>'+
+ root.innerHTML='<details id="lo37PredictionDetails" '+(wasOpen?'open':'')+'><summary>Predictive habit scheduling · review proposals</summary>'+
  '<p class="lo37-note">LifeOS uses finished activity evidence to suggest possible slots. A prediction does not establish that the surrounding time is free. Check your external commitments before approving anything.</p>'+
  (def?'<div class="lo37-controls"><label>Habit<select id="lo37HabitSelect">'+defs.map(d=>'<option value="'+esc(d.id)+'" '+(d.id===def.id?'selected':'')+'>'+esc(d.title)+'</option>').join('')+'</select></label>'+
  '<div role="group" aria-label="Prediction horizon"><button data-lo37-range="7" aria-pressed="'+(range===7)+'">7 days</button><button data-lo37-range="14" aria-pressed="'+(range===14)+'">14 days</button></div></div>'+
@@ -100,6 +101,7 @@ function init(){
   if(b.dataset.lo37Index!==undefined)openCandidate(Number(b.dataset.lo37Index));
  });
  host.addEventListener('change',e=>{if(e.target.id==='lo37HabitSelect'){currentHabit=e.target.value;render()}});
+ host.addEventListener('toggle',e=>{if(e.target.id==='lo37PredictionDetails')expanded=e.target.open},true);
  render();
  document.addEventListener('click',e=>{if(e.target.closest('#lifeosNavigation,#lo32HabitHub,#scheduleList'))setTimeout(render,110)});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
