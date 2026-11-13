@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),bridge=()=>window.lifeosSocialHabitBridg
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const local=t=>{const d=new Date(t);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const dateTime=s=>new Date(s+'T12:00:00').getTime();
-const id=()=>crypto?.randomUUID?.()||'habit-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+const id=()=>typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():'habit-'+Date.now()+'-'+Math.random().toString(36).slice(2);
 const read=()=>{try{return window.lifeosReadOnlyWorkspace?.()||{}}catch{return {}}};
 const normal=v=>String(v||'').trim();
 let habitSelectedDate=local(Date.now()),period=7,habitsInstalled=false;
@@ -93,7 +93,7 @@ function toggleHabit(idValue){
 function ownShare(){
  const w=read(),b=bridge()?.read()||{};
  const since=local(Date.now()-6*86400000),today=local(Date.now());
- const workoutDays=new Set((w.workouts||[]).filter(x=>x.date>=since&&x.date<=today).map(x=>x.date)).size;
+ const workoutDays=new Set((w.workouts||[]).filter(x=>x.date>=since&&x.date<=today&&!x.seedBatch&&x.source!=='assumed-demo').map(x=>x.date)).size;
  const checkDays=new Set((b.habitChecks||[]).filter(x=>x.done&&x.date>=since&&x.date<=today).map(x=>x.date)).size;
  return {type:'lifeos-progress-card-v1',periodStart:since,periodEnd:today,workoutDays,habitDays:checkDays};
 }
@@ -132,7 +132,27 @@ function setup(){
  const routines=$('personalActivityPanel');
  if(routines&&!habitsInstalled){
   habitsInstalled=true;
-  const panel=document.createElement('section');panel.id='lo32HabitHub';panel.className='lo32-hub';routines.append(panel);habitUI();
+  const panel=document.createElement('section');panel.id='lo32HabitHub';panel.className='lo32-hub';panel.dataset.view='life';routines.after(panel);
+  const tabGroup=$('loLifeSectionTabs');
+  if(tabGroup&&!tabGroup.querySelector('[data-lo-life-section="habits"]')){
+   const btn=document.createElement('button');btn.type='button';btn.dataset.loLifeSection='habits';btn.textContent='Habits';
+   btn.setAttribute('aria-pressed','false');tabGroup.append(btn);
+   btn.addEventListener('click',()=>{
+    document.body.dataset.loLifeSection='habits';
+    for(const target of ['personalActivityPanel','fitnessForm','mealForm']){
+     const el=target==='personalActivityPanel'?$(target):$(target)?.closest('section.panel');
+     el?.classList.add('lo-life-inactive');
+    }
+    for(const other of tabGroup.querySelectorAll('button'))other.setAttribute('aria-pressed',String(other===btn));
+    $('loLifeVisual')?.setAttribute('hidden','');
+    habitUI();panel.scrollIntoView({block:'start',behavior:'smooth'});
+   });
+   tabGroup.addEventListener('click',e=>{
+    const selected=e.target.closest('[data-lo-life-section]');if(!selected||selected===btn)return;
+    if(document.body.dataset.loLifeSection!=='habits')return;
+   });
+  }
+  habitUI();
   panel.addEventListener('submit',e=>{if(e.target.id==='lo32HabitForm'){e.preventDefault();saveHabit(e.target)}});
   panel.addEventListener('change',e=>{if(e.target.id==='lo32HabitDate'){habitSelectedDate=e.target.value;habitUI()}});
   panel.addEventListener('click',e=>{
@@ -159,6 +179,12 @@ function setup(){
  }
  timer();
  document.addEventListener('click',e=>{
+  const sectionTab=e.target.closest('#loLifeSectionTabs [data-lo-life-section]');
+  if(sectionTab&&sectionTab.dataset.loLifeSection!=='habits'){
+   $('lo32HabitHub')?.classList.remove('lo32-habits-active');
+  }else if(sectionTab&&sectionTab.dataset.loLifeSection==='habits'){
+   $('lo32HabitHub')?.classList.add('lo32-habits-active');
+  }
   if(e.target.closest('.lo32-open-tracker'))document.querySelector('#lifeosNavigation [data-view="tracking"]')?.click();
   if(e.target.closest('#lifeosNavigation'))setTimeout(()=>{timer();habitUI();friendsUI()},100);
  });
