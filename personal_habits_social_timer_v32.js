@@ -97,7 +97,13 @@ function targetStatus(def,candidate){
  }
  return 'Review this activity';
 }
+function habitDue(def,day){
+ const begin=def.startDate||local(def.createdAt||Date.now());
+ const diff=Math.round((dateTime(day)-dateTime(begin))/86400000);
+ return day<=local(Date.now())&&diff>=0&&diff%(Number(def.everyDays)||1)===0;
+}
 function evidenceMarkup(def,check,day){
+ if(!habitDue(def,day))return '<p class="lo32-muted">Not a scheduled habit day. Choose another date.</p>';
  const found=evidenceSources(def,day);
  if(!def.matchText)return '<p class="lo32-muted">To discover existing activities for this habit, set a matching word or phrase in the habit editor.</p>';
  if(check?.evidenceSourceId)
@@ -244,11 +250,15 @@ function setup(){
     const b=bridge()?.read()||{},def=b.habitDefinitions?.find(x=>x.id===button.dataset.lo33Confirm);
     if(!def)return;
     const evidence=evidenceSources(def,habitSelectedDate).find(x=>x.sourceId===button.dataset.lo33Source&&x.sourceType===button.dataset.lo33SourceType);
-    if(!evidence)return alert('Source record not found for this habit and day.');
+    if(!evidence||!habitDue(def,habitSelectedDate))return alert('No matching source or habit is not scheduled for this day.');
     if(evidence.simulated&&!confirm('This evidence is an assumed example, not a real tracked result. Link it to the habit anyway?'))return;
     const targetMessage=targetStatus(def,evidence);
     if(!confirm('Confirm this habit completed using '+evidence.origin+': '+evidence.title+'? '+targetMessage+'. This will not create new tracked time.'))return;
-    toggleHabit(def.id,evidence);
+    const existing=b.habitChecks.find(c=>c.habitId===def.id&&c.date===habitSelectedDate);
+    const newCheck={id:existing?.id||id(),habitId:def.id,date:habitSelectedDate,done:true,createdAt:existing?.createdAt||Date.now(),
+      checkSource:'linked-evidence',evidenceType:evidence.sourceType,evidenceSourceId:evidence.sourceId,evidenceSimulated:evidence.simulated};
+    if(!bridge()?.mutate('habitChecks','upsert',newCheck))return alert('Evidence link was not saved.');
+    habitUI();friendsUI();
    }
    if(button.dataset.lo32Remove){
     const def=bridge()?.read().habitDefinitions.find(x=>x.id===button.dataset.lo32Remove);if(!def||!confirm('Delete this habit definition? Existing completion records remain private and stored.'))return;
