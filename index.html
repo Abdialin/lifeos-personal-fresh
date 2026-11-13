@@ -297,11 +297,11 @@ function lifeosRenderDaySummary(){
  if(!picker||!box||!nav)return;
  const selected=picker.value||localDate(now()),bounds=analyticsDayBounds(selected);if(!bounds)return;
  const [a,b]=bounds,limit=Math.min(b,now()),intervals=analyticsIntervals(a,b),metrics=analyticsMetrics(intervals);
- const ids=new Set(intervals.map(x=>x.id)),distractions=intervals.filter(x=>/distraction/i.test(x.name)).reduce((sum,x)=>sum+x.b-x.a,0);
+ const ids=new Set(intervals.map(x=>x.id)),distractions=analyticsMetrics(intervals.filter(x=>/distraction/i.test(x.name))).unique;
  const plans=(data.schedule||[]).filter(p=>p.startAt<b&&p.endAt>a),donePlans=plans.filter(p=>p.sessionId&&(data.sessions||[]).some(s=>s.id===p.sessionId));
  const skipped=plans.filter(p=>p.status==='skipped'),unfulfilled=plans.filter(p=>p.endAt<=now()&&!p.sessionId&&p.status!=='skipped');
  const plannedIds=new Set(plans.map(p=>p.sessionId).filter(Boolean)),unplanned=intervals.filter(x=>!plannedIds.has(x.id));
- const unplannedHours=unplanned.reduce((sum,x)=>sum+x.b-x.a,0);
+ const unplannedHours=analyticsMetrics(unplanned).unique;
  const startOfWeek=new Date(selected+'T12:00:00');startOfWeek.setDate(startOfWeek.getDate()-((startOfWeek.getDay()+6)%7));
  nav.innerHTML=Array.from({length:7},(_,i)=>{const d=new Date(startOfWeek);d.setDate(d.getDate()+i);const day=localDate(d);return '<button type="button" class="lo-day-nav-btn '+(day===selected?'is-selected':'')+'" data-day-pick="'+escape(day)+'" aria-pressed="'+(day===selected)+'">'+escape(d.toLocaleDateString(undefined,{weekday:'short',day:'numeric'}))+'</button>'}).join('');
  const total=metrics.total;
