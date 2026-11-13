@@ -47,7 +47,7 @@ async function showNotice(x){
  try{
   const options={body:x.name+' · '+hh,tag:'lifeos-'+x.key,icon:undefined};
   if('serviceWorker'in navigator){
-   const reg=await navigator.serviceWorker.ready;
+   const reg=await Promise.race([navigator.serviceWorker.ready,new Promise((_,reject)=>setTimeout(()=>reject(new Error('No active notification worker')),2500))]);
    await reg.showNotification('LifeOS · Starting soon',options);
   }else{
    new Notification('LifeOS · Starting soon',options);
@@ -61,6 +61,7 @@ async function showNotice(x){
 function init(){
  const card=$('lo15Upcoming');if(!card)return;
  window.lifeosCombinedRemindersActive=true;
+ if('Notification'in window&&Notification.permission==='granted'&&'serviceWorker'in navigator){navigator.serviceWorker.register('./lifeos_notifications_sw.js').catch(()=>{})}
  card.setAttribute('aria-label','Upcoming activities and reminders');
  const heading=card.querySelector('h2');if(heading)heading.textContent='Coming up & reminders';
  const head=card.querySelector('.lo15-upcoming-head');
