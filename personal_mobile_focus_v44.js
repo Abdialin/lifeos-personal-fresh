@@ -25,7 +25,7 @@ function plan(){
   const open=(b.dataset.lo44Open||'').split(',').filter(Boolean);
   for(const id of open){const d=$(id);if(d?.tagName==='DETAILS')d.open=true}
   const dest=b.dataset.lo44Target==='todoForm'?target.closest('.panel')||target:target;
-  dest.scrollIntoView({behavior:'smooth',block:'start'});
+  requestAnimationFrame(()=>dest.scrollIntoView({behavior:'smooth',block:'start'}));
  });
 }
 function insights(){
@@ -52,6 +52,8 @@ function insights(){
   if(form&&!form.hidden)group.open=true;
  });
  observer.observe(group,{subtree:true,attributes:true,attributeFilter:['hidden']});
+ // Open the parent for already-visible pending proposal forms after a page reload.
+ if($('lo35PlanReview')&&!$('lo35PlanReview').hidden)group.open=true;
 }
 function init(){
  if(initialized)return;initialized=true;
