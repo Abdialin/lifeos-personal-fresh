@@ -43,8 +43,8 @@ function timedTasks(){
  const list=$('scheduleList'),picker=$('scheduleDay');if(!list||!picker)return;const ws=get();if(!ws)return;
  let node=$('lo11TimedTasks');if(!node){node=document.createElement('section');node.id='lo11TimedTasks';node.className='lo11-timed-tasks';list.before(node)}
  const date=picker.value||ymd(new Date());
- const tasks=(ws.todos||[]).filter(t=>t.due===date).sort((a,b)=>(a.dueTime||'99:99').localeCompare(b.dueTime||'99:99'));
- const rows=tasks.map(t=>'<div class="lo11-timed-row"><div><b>'+esc(t.name)+'</b><small>'+esc(t.dueTime||'Any time')+' · '+esc(t.priority||'normal')+' priority'+(t.done?' · Complete':'')+'</small></div><span class="lo11-task-status '+(t.done?'is-done':'')+'">'+(t.done?'Done':'To do')+'</span></div>').join('');
+ const tasks=(ws.todos||[]).filter(t=>t.due===date).sort((a,b)=>(a.startTime||a.dueTime||'99:99').localeCompare(b.startTime||b.dueTime||'99:99'));
+ const rows=tasks.map(t=>'<div class="lo11-timed-row"><div><b>'+esc(t.name)+'</b><small>'+esc(t.startTime?(t.startTime+(t.endTime?'–'+t.endTime:'')):(t.dueTime?t.dueTime+' due':'Any time'))+' · '+esc(t.priority||'normal')+' priority'+(t.done?' · Complete':'')+'</small></div><span class="lo11-task-status '+(t.done?'is-done':'')+'">'+(t.done?'Done':'To do')+'</span></div>').join('');
  node.innerHTML='<div class="lo11-timed-head"><strong>Tasks for this date</strong><span>'+tasks.length+' total · '+tasks.filter(t=>t.done).length+' done</span></div>'+(rows||'<p class="lo11-muted">No tasks due on this date.</p>')+'<p class="lo11-muted">Tasks are shown with schedule plans, but are not automatically counted as tracked activity.</p>';
 }
 function history(finished){
@@ -89,15 +89,15 @@ function reminders(){
  const ws=get(),list=$('lo11TaskReminder');if(!ws)return;
  const now=new Date(),today=ymd(now),time=Date.now();
  const due=(ws.todos||[]).filter(t=>{
-  if(t.done||!t.due||!t.dueTime||t.reminder===false)return false;
-  const at=new Date(t.due+'T'+t.dueTime+':00').getTime(),delta=at-time;
+  if(t.done||!t.due||!(t.startTime||t.dueTime)||t.reminder===false)return false;
+  const at=new Date(t.due+'T'+(t.startTime||t.dueTime)+':00').getTime(),delta=at-time;
   return delta<=10*60000&&delta>=-10*60000;
  });
  if(!list&&!due.length)return;
  let panel=list;
  if(!panel){const anchor=$('lo11ScheduleCalendar')||$('scheduleAlert');if(!anchor)return;panel=document.createElement('aside');panel.id='lo11TaskReminder';panel.className='lo11-reminder';anchor.before(panel)}
- const show=due.filter(t=>!seen.has(t.id+'-'+t.due+'-'+t.dueTime));
- if(show.length){panel.hidden=false;panel.innerHTML='<strong>Upcoming timed tasks</strong>'+show.map(t=>'<p>'+esc(t.dueTime)+' · '+esc(t.name)+'</p>').join('')+'<button type="button" id="lo11DismissReminder" class="btn outline tiny">Dismiss</button>';panel.querySelector('button')?.addEventListener('click',()=>{show.forEach(t=>seen.add(t.id+'-'+t.due+'-'+t.dueTime));panel.hidden=true});}
+ const show=due.filter(t=>!seen.has(t.id+'-'+t.due+'-'+(t.startTime||t.dueTime)));
+ if(show.length){panel.hidden=false;panel.innerHTML='<strong>Upcoming timed tasks</strong>'+show.map(t=>'<p>'+esc(t.startTime||t.dueTime)+' · '+esc(t.name)+'</p>').join('')+'<button type="button" id="lo11DismissReminder" class="btn outline tiny">Dismiss</button>';panel.querySelector('button')?.addEventListener('click',()=>{show.forEach(t=>seen.add(t.id+'-'+t.due+'-'+(t.startTime||t.dueTime)));panel.hidden=true});}
  else if(!due.length)panel.hidden=true;
 }
 function init(){
