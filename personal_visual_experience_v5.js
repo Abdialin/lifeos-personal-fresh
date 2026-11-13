@@ -144,7 +144,7 @@ function enhanceViews(){
    if(fromUser){
     const target=lifeSections.find(item=>item.key===key)?.panel;
     // After hiding nonselected material, align the selected section directly below its tabs.
-    requestAnimationFrame(()=>{if(target&&document.body.dataset.lifeosView==='life')group.scrollIntoView({block:'start',behavior:'smooth'})});
+    requestAnimationFrame(()=>{if(target&&document.body.dataset.lifeosView==='life')target.scrollIntoView({block:'start',behavior:'smooth'})});
    }
   };
   for(const {key,label} of lifeSections){
