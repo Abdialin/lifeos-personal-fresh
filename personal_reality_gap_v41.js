@@ -72,6 +72,7 @@ function render(){
  '<p class="lo41-note">A missing timer is unknown, not a missed commitment. The comparison is based on the previous seven complete calendar days, not the coming week. Overlapping timers may inflate total duration. No schedules or habits were changed.</p>'+
  '<button class="btn outline" id="lo41EditIdeal" type="button">Review ideal routine settings ↗</button></details>';
  expanded=previously;
+ if(window.lifeosIdealActionsV42?.render)window.lifeosIdealActionsV42.render();
 }
 function init(){
  if(!$('lo40Compare'))return;
