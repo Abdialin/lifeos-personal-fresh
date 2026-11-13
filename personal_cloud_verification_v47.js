@@ -7,6 +7,12 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const live=()=>window.lifeosReadOnlyWorkspace?.()||null;
 const localStatus=()=>window.lifeosCloudStatusV47?.()||{};
 let running=false,checkedAt='';
+function canonical(v){
+ if(Array.isArray(v))return v.map(canonical);
+ if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])]));
+ return v;
+}
+const sameRecord=(a,b)=>JSON.stringify(canonical(a))===JSON.stringify(canonical(b));
 function recordDifferences(local,remote){
  const l=local||{},r=remote||{};
  const leftSessions=Array.isArray(l.sessions)?l.sessions:[],rightSessions=Array.isArray(r.sessions)?r.sessions:[];
@@ -16,14 +22,13 @@ function recordDifferences(local,remote){
  let missingRemoteSessions=0,remoteOnlySessions=0,changedSessions=0;
  for(const x of leftSessions){const y=rs.get(x.id);
   if(!y){missingRemoteSessions++;continue}
-  if(['status','name','startAt','endAt','plannedId'].some(k=>x[k]!==y[k])||
-    JSON.stringify(x.segments||[])!==JSON.stringify(y.segments||[]))changedSessions++;
+  if(!sameRecord(x,y))changedSessions++;
  }
  for(const x of rightSessions)if(!ls.has(x.id))remoteOnlySessions++;
  let missingRemotePlans=0,remoteOnlyPlans=0,changedPlans=0;
  for(const x of leftPlans){const y=rp.get(x.id);
   if(!y){missingRemotePlans++;continue}
-  if(['status','name','startAt','endAt','sessionId'].some(k=>x[k]!==y[k]))changedPlans++;
+  if(!sameRecord(x,y))changedPlans++;
  }
  for(const x of rightPlans)if(!lp.has(x.id))remoteOnlyPlans++;
  const all=[missingRemoteSessions,remoteOnlySessions,changedSessions,missingRemotePlans,remoteOnlyPlans,changedPlans];
@@ -91,7 +96,9 @@ async function check(){
   const endLocal=live(),endStatus=localStatus();
   const localChanged=JSON.stringify(startLocal.sessions)!==JSON.stringify(endLocal?.sessions)||
     JSON.stringify(startLocal.schedule)!==JSON.stringify(endLocal?.schedule)||
-    startStatus.queuedOperations!==endStatus.queuedOperations;
+    startStatus.queuedOperations!==endStatus.queuedOperations||
+    startStatus.acknowledgedRevision!==endStatus.acknowledgedRevision||
+    startStatus.uploading!==endStatus.uploading||startStatus.dirty!==endStatus.dirty;
   if(localChanged)throw Error('Your device changed while checking. Repeat verification after the current activity or upload is finished.');
   const difference=recordDifferences(endLocal,remote.data);
   const verdict=interpret(endStatus,remote.revision,difference,remote.data!==null);
