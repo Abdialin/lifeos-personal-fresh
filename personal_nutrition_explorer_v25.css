@@ -1,0 +1,64 @@
+/* LifeOS V25 — scoped interactive nutrition */
+#lifeosNutritionDashboard .lo25-today-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0 20px}
+#lifeosNutritionDashboard .lo25-stat{border:1px solid #283951;border-radius:14px;padding:14px;background:#111d32;min-width:0}
+#lifeosNutritionDashboard .lo25-stat small{display:block;color:#9fb2cc;font-size:12px;margin-bottom:9px}
+#lifeosNutritionDashboard .lo25-stat strong{font-size:clamp(17px,3vw,23px);overflow-wrap:anywhere}
+#lifeosNutritionDashboard h4{font-size:16px;margin:20px 0 13px}
+#lifeosNutritionDashboard .lo25-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:8px 0 19px}
+#lifeosNutritionDashboard .lo25-day{display:flex;flex-direction:column;align-items:center;gap:5px;border:1px solid transparent;border-radius:10px;background:transparent;color:#c8d8ee;cursor:pointer;padding:8px 2px;min-width:0;min-height:160px}
+#lifeosNutritionDashboard .lo25-day.selected{background:#1e3e42;border-color:#67cdb8}
+#lifeosNutritionDashboard .lo25-day:focus-visible{outline:2px solid #7de2c9}
+#lifeosNutritionDashboard .lo25-day b{font-size:13px}
+#lifeosNutritionDashboard .lo25-day small{font-size:11px;color:#abbcd0}
+#lifeosNutritionDashboard .lo25-bar{width:100%;height:105px;background:#101c31;border-radius:7px;display:flex;align-items:flex-end;overflow:hidden}
+#lifeosNutritionDashboard .lo25-bar i{width:100%;background:linear-gradient(0deg,#25655e,#78cab8);border-radius:7px 7px 0 0;min-height:0}
+#lifeosNutritionDashboard .lo25-day-panel{border:1px solid #31445f;border-radius:16px;padding:12px;background:#0e1a2e}
+#lifeosNutritionDashboard .lo25-day-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:15px}
+#lifeosNutritionDashboard .lo25-day-header h4{margin:0 0 4px}
+#lifeosNutritionDashboard .lo25-day-header small{color:#9eafc5}
+#lifeosNutritionDashboard .lo25-date-label{font-size:12px;display:grid;gap:3px}
+#lifeosNutritionDashboard input{background:#101f34;color:#f0f6ff;border:1px solid #455672;border-radius:9px;padding:10px;max-width:100%;min-width:0;font-size:16px}
+#lifeosNutritionDashboard .lo25-meal{display:flex;gap:13px;align-items:center;padding:13px 2px;border-bottom:1px solid #293851;min-width:0}
+#lifeosNutritionDashboard .lo25-meal-body{min-width:0;flex:1}
+#lifeosNutritionDashboard .lo25-meal-body strong{font-size:15px;overflow-wrap:anywhere}
+#lifeosNutritionDashboard .lo25-meal-body small{font-size:12px;color:#a4b4ca}
+#lifeosNutritionDashboard .lo25-meal-body p{font-size:11px;color:#9cafc4;margin:7px 0}
+#lifeosNutritionDashboard .lo25-donut{width:75px;height:75px;border-radius:50%;flex:0 0 75px;display:grid;place-items:center;position:relative}
+#lifeosNutritionDashboard .lo25-donut span{position:relative;background:#0d1b2e;width:49px;height:49px;border-radius:50%;display:grid;place-items:center;font-size:10px;color:#c6e9e3}
+#lifeosNutritionDashboard .lo25-donut.unknown{border:7px solid #38455a;color:#a6b7cc;font-size:20px}
+#lifeosNutritionDashboard .lo25-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+#lifeosNutritionDashboard .lo25-tags span{padding:4px 6px;border-radius:7px;background:#1a2940;font-size:11px;color:#bfccdf}
+#lifeosNutritionDashboard .lo25-tags b{color:#e3edf9}
+#lifeosNutritionDashboard .lo25-demo{display:inline-block;background:#223e42;color:#9fd7c6;border-radius:7px;padding:3px 5px;font-size:10px;margin-left:5px}
+#lifeosNutritionDashboard .lo25-panel{border-top:1px solid #34445c;padding:12px 0;margin-top:13px}
+#lifeosNutritionDashboard details.lo25-panel>summary,#lifeosNutritionDashboard .lo25-reminders>summary{cursor:pointer;font-weight:700;padding:10px 0}
+#lifeosNutritionDashboard .lo25-goals{display:grid;gap:9px;margin:15px 0}
+#lifeosNutritionDashboard .lo25-goal{padding:9px;border:1px solid #25374e;border-radius:10px}
+#lifeosNutritionDashboard .lo25-goal>div:first-child{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#lifeosNutritionDashboard .lo25-goal small{display:block;color:#9eb0c4;font-size:11px;margin-top:4px}
+#lifeosNutritionDashboard .lo25-goal>span{font-weight:600}
+#lifeosNutritionDashboard .lo25-meter{height:8px;background:#25364a;border-radius:8px;overflow:hidden;margin-top:7px}
+#lifeosNutritionDashboard .lo25-meter i{display:block;height:100%;background:#7de2c9}
+#lifeosNutritionDashboard .lo25-grid-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:15px}
+#lifeosNutritionDashboard .lo25-grid-fields label{display:grid;gap:6px;font-size:12px;min-width:0}
+#lifeosNutritionDashboard .lo25-grid-fields button{align-self:end}
+#lifeosNutritionDashboard .lo25-muted{color:#98a8c0;font-size:12px;line-height:1.55}
+#lifeosNutritionDashboard .lo25-water-summary{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+#lifeosNutritionDashboard .lo25-water-summary b{font-size:22px}
+#lifeosNutritionDashboard .lo25-water-summary small{color:#a3b7cd}
+#lifeosNutritionDashboard .lo25-quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
+#lifeosNutritionDashboard .lo25-water-form{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:10px 0}
+#lifeosNutritionDashboard .lo25-water-form label{display:grid;gap:5px;font-size:12px}
+#lifeosNutritionDashboard .lo25-water-entry{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:10px 0;border-top:1px solid #29374a;font-size:13px}
+#lifeosNutritionDashboard .lo25-reminders{margin:15px 0}
+#lifeosNutritionDashboard .lo25-checkbox{display:flex!important;flex-direction:row;align-items:center;gap:9px;grid-column:1/-1}
+#lifeosNutritionDashboard .lo25-checkbox input{width:18px;height:18px}
+#lifeosNutritionDashboard .lo25-water-reminder{border:1px solid #4d806e;background:#1c3b39;padding:13px;border-radius:10px}
+@media(max-width:420px){
+#lifeosNutritionDashboard .lo25-day{min-height:130px;padding:6px 1px}
+#lifeosNutritionDashboard .lo25-bar{height:83px}
+#lifeosNutritionDashboard .lo25-week{gap:3px}
+#lifeosNutritionDashboard .lo25-donut{width:59px;height:59px;flex-basis:59px}
+#lifeosNutritionDashboard .lo25-donut span{width:37px;height:37px;font-size:9px}
+#lifeosNutritionDashboard .lo25-grid-fields{grid-template-columns:minmax(0,1fr)}
+}
