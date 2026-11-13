@@ -62,3 +62,9 @@ body[data-lifeos-view="analytics"] .v4-category[data-lo14-category="distraction"
 @media(max-width:540px){.v5-mix{display:grid!important;grid-template-columns:minmax(0,1fr)!important;justify-items:center;gap:16px!important}.v5-legend{width:100%}.v5-donut{margin:auto}}
 body:not([data-lifeos-view="life"]) #loLifeSectionTabs{display:none!important}
 body[data-lifeos-view="life"] #loLifeSectionTabs{display:grid!important}
+
+/* One fully interactive month calendar; the single day review lives in Schedule for date. */
+body[data-lifeos-view="schedule"] #v4Plan .v7-plan-selected-day{display:none!important}
+.lo14-calendar-dots{display:flex!important;justify-content:center;gap:4px;align-items:center;min-height:10px;margin-top:3px}
+.lo14-calendar-dots .lo14-dot{display:inline-block;width:7px;height:7px;min-width:7px;min-height:7px;border-radius:50%;opacity:.95}
+.lo14-recorded{background:#58bc9f}.lo14-planned{background:#79a7f7}.lo14-task{background:#efa956}
