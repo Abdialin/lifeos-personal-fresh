@@ -172,7 +172,7 @@ function saveBodyMetrics(e){
 function saveBodyGoal(e){
  e.preventDefault();const startDate=$('loGoalStartDate').value,targetDate=$('loGoalEndDate').value;
  const startWeightKg=Number($('loGoalStartWeight').value),targetWeightKg=Number($('loGoalTargetWeight').value);
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(startDate)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(targetDate)||targetDate<=startDate){alert('Choose a target date after the start date.');return}
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(startDate)||!/^\d{4}-\d{2}-\d{2}$/.test(targetDate)||targetDate<=startDate){alert('Choose a target date after the start date.');return}
  if(!Number.isFinite(startWeightKg)||!Number.isFinite(targetWeightKg)||startWeightKg<20||targetWeightKg<20||startWeightKg>500||targetWeightKg>500||startWeightKg===targetWeightKg){alert('Enter two different weights within the supported range.');return}
  const previous=data.bodyGoal;
  data.bodyGoal={startDate,targetDate,startWeightKg,targetWeightKg,createdAt:previous?.createdAt||now(),updatedAt:now()};
