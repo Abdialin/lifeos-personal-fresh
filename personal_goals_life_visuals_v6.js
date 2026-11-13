@@ -97,7 +97,10 @@ function init(){
  }
  function refresh(){
   const view=document.body.dataset.lifeosView;
-  for(const id of ['loGoalsVisual','loLifeVisual'])byId(id).hidden=byId(id).dataset.view!==view;
+  for(const id of ['loGoalsVisual','loLifeVisual']){
+   const card=byId(id);if(!card)continue;
+   card.hidden=card.dataset.view!==view||(id==='loLifeVisual'&&(document.body.dataset.loLifeSection||'routines')!=='routines');
+  }
   if(view!=='goals'&&view!=='life')return;
   const ws=read();if(!ws)return;
   if(view==='goals')renderGoals(ws);else renderLife(ws);
