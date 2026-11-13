@@ -418,7 +418,71 @@ function validateWorkspace(d){
  return d;
 }
 
-function load(){try{let d=JSON.parse(localStorage.getItem(KEY)||'null');if(d){data=validateWorkspace(d);ensureModules()}}catch(e){console.warn('Invalid saved data',e)}}function elapsed(s,t=now()){let total=0;for(let seg of s.segments||[]){let end=seg.end??t;if(end>seg.start)total+=end-seg.start}return total}function start(name,plannedId=null){let t=now(),s={id:uid(),name,status:'running',createdAt:t,startAt:t,endAt:null,segments:[{start:t,end:null}],notes:'',precision:'measured',source:'local-web-app',plannedId};data.sessions.push(s);if(plannedId){const plan=data.schedule.find(p=>p.id===plannedId);if(plan&&plan.status==='planned'&&!plan.sessionId){plan.sessionId=s.id;plan.status='started'}}event(s,'START',t);persist();render()}function pause(id){let s=data.sessions.find(x=>x.id===id);if(!s||s.status!=='running')return;let t=now();let seg=s.segments[s.segments.length-1];if(seg&&!seg.end)seg.end=t;s.status='paused';event(s,'PAUSE',t);persist();render()}function resume(id){let s=data.sessions.find(x=>x.id===id);if(!s||s.status!=='paused')return;let t=now();s.segments.push({start:t,end:null});s.status='running';event(s,'RESUME',t);persist();render()}function finish(id){let s=data.sessions.find(x=>x.id===id);if(!s||s.status==='finished')return;let t=now();if(s.status==='running'){let seg=s.segments[s.segments.length-1];if(seg&&!seg.end)seg.end=t}s.status='finished';s.endAt=t;event(s,'FINISH',t);if(!persist())return;render();if(!/distraction/i.test(s.name))openActivityDetails(id)}let loDetailsSessionId=null;
+function load(){try{let d=JSON.parse(localStorage.getItem(KEY)||'null');if(d){data=validateWorkspace(d);ensureModules()}}catch(e){console.warn('Invalid saved data',e)}}function elapsed(s,t=now()){let total=0;for(let seg of s.segments||[]){let end=seg.end??t;if(end>seg.start)total+=end-seg.start}return total}/* V46: timer and plan mutations commit together or are restored in memory. */
+function trackingCommit(change){
+ const previous={
+  sessions:JSON.parse(JSON.stringify(data.sessions||[])),
+  schedule:JSON.parse(JSON.stringify(data.schedule||[])),
+  events:JSON.parse(JSON.stringify(data.events||[]))
+ };
+ try{
+  change();
+  if(!persist())throw new Error('Save did not reach the recovery checkpoint.');
+  return true;
+ }catch(err){
+  data.sessions=previous.sessions;data.schedule=previous.schedule;data.events=previous.events;
+  console.warn('LifeOS timer change not committed; restored previous state.',err);
+  const info=$('status');if(info)info.textContent='⚠ Timer change not saved; previous state restored. Export a recovery backup if storage remains unavailable.';
+  return false;
+ }
+}
+function start(name,plannedId=null){
+ ensureModules();
+ if(plannedId){
+  const p=data.schedule.find(x=>x.id===plannedId);
+  if(!p||p.status!=='planned'||p.sessionId)return false;
+ }
+ const t=now(),s={id:uid(),name,status:'running',createdAt:t,startAt:t,endAt:null,segments:[{start:t,end:null}],notes:'',precision:'measured',source:'local-web-app',plannedId};
+ const ok=trackingCommit(()=>{
+  data.sessions.push(s);
+  if(plannedId){const p=data.schedule.find(x=>x.id===plannedId);p.sessionId=s.id;p.status='started'}
+  event(s,'START',t);
+ });
+ if(ok)render();
+ return ok;
+}
+function pause(id){
+ const original=data.sessions.find(x=>x.id===id);if(!original||original.status!=='running')return false;
+ const ok=trackingCommit(()=>{
+  const s=data.sessions.find(x=>x.id===id),t=now(),seg=s.segments[s.segments.length-1];
+  if(seg&&seg.end==null)seg.end=t;
+  s.status='paused';event(s,'PAUSE',t);
+ });
+ if(ok)render();
+ return ok;
+}
+function resume(id){
+ const original=data.sessions.find(x=>x.id===id);if(!original||original.status!=='paused')return false;
+ const ok=trackingCommit(()=>{
+  const s=data.sessions.find(x=>x.id===id),t=now();
+  s.segments.push({start:t,end:null});s.status='running';event(s,'RESUME',t);
+ });
+ if(ok)render();
+ return ok;
+}
+function finish(id){
+ const original=data.sessions.find(x=>x.id===id);if(!original||original.status==='finished')return false;
+ const ok=trackingCommit(()=>{
+  const s=data.sessions.find(x=>x.id===id),t=now();
+  if(s.status==='running'){const seg=s.segments[s.segments.length-1];if(seg&&seg.end==null)seg.end=t}
+  s.status='finished';s.endAt=t;event(s,'FINISH',t);
+ });
+ if(!ok)return false;
+ render();
+ if(!/distraction/i.test(original.name))openActivityDetails(id);
+ return true;
+}
+let loDetailsSessionId=null;
 function loActivityKind(name){
  const n=String(name||'').toLowerCase();
  if(/prayer|fajr|dhuhr|asr|maghrib|isha/.test(n))return 'prayer';
