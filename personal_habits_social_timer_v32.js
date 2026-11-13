@@ -132,6 +132,7 @@ function habitUI(){
  '<form id="lo32HabitForm" class="lo32-habit-form"><label>Habit name<input name="title" required maxlength="80" placeholder="Read a book, Quran revision, memorize a page"></label>'+
  '<label>Type<select name="category"><option>Reading</option><option>Quran & memorization</option><option>Prayer</option><option>Learning</option><option>Wellbeing</option><option>Quit or avoid a habit</option><option>Other</option></select></label>'+
  '<label>Repeat every (days)<input name="everyDays" type="number" min="1" max="30" value="1" required></label>'+
+ '<label>Habit start date<input name="startDate" type="date" required value="'+esc(local(Date.now()))+'"></label>'+
  '<label>Match tracked activity containing (optional)<input name="matchText" maxlength="80" placeholder="e.g. reading, Quran, gym"></label>'+
  '<label>Progress target (optional)<select name="targetMode"><option value="completion">Completion only</option><option value="minutes">Minutes per scheduled day</option><option value="quantity">Quantity per scheduled day</option></select></label>'+
  '<label>Target amount (optional)<input name="targetAmount" type="number" min="0" max="10000" step="0.1" placeholder="e.g. 30"></label>'+
@@ -145,16 +146,17 @@ function saveHabit(form){
  const title=normal(form.elements.namedItem('title').value),category=normal(form.elements.namedItem('category').value);
  const everyDays=Number(form.elements.namedItem('everyDays').value);
  const matchText=normal(form.elements.namedItem('matchText').value).slice(0,80);
+ const startDate=form.elements.namedItem('startDate').value;
  const targetMode=normal(form.elements.namedItem('targetMode').value);
  const rawAmount=form.elements.namedItem('targetAmount').value;
  const targetAmount=rawAmount===''?null:Number(rawAmount);
  const targetUnit=normal(form.elements.namedItem('targetUnit').value).slice(0,30);
- if(!title||title.length>80||!Number.isInteger(everyDays)||everyDays<1||everyDays>30||
+ if(!title||title.length>80||!Number.isInteger(everyDays)||everyDays<1||everyDays>30||!/^\d{4}-\d{2}-\d{2}$/.test(startDate)||startDate>local(Date.now())||
   !['completion','minutes','quantity'].includes(targetMode)||targetAmount!==null&&(!Number.isFinite(targetAmount)||targetAmount<=0||targetAmount>10000)||
   targetMode!=='completion'&&targetAmount===null||targetMode==='quantity'&&!targetUnit)
   return alert('Check the habit name, interval and optional progress target.');
  const item={id:id(),title,category,everyDays,matchText,
-  targetMode,targetAmount,targetUnit,startDate:local(Date.now()),createdAt:Date.now()};
+  targetMode,targetAmount,targetUnit,startDate,createdAt:Date.now()};
  if(!bridge()?.mutate('habitDefinitions','upsert',item))return alert('Habit could not be saved.');
  habitUI();
 }
