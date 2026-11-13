@@ -79,6 +79,8 @@ function render(){
  '<div class="lo40-footer"><button type="button" class="btn outline" id="lo40GoPlan">Review calendar ↓</button>'+
  (selected==='ideal'?'<button type="button" class="btn outline" id="lo40OpenIdeal">Edit ideal routines ↓</button>':'')+'</div></details>';
  expanded=wasOpen;
+ // V41 comparison is a child of this panel, so reinsert after parent redraws.
+ if(window.lifeosRealityGapV41?.render)window.lifeosRealityGapV41.render();
 }
 function init(){
  const panel=$('scheduleEditorPanel');if(!panel||initialized)return;initialized=true;
