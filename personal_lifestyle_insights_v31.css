@@ -1,0 +1,37 @@
+/* LifeOS V31 read-only Fitness + Nutrition cross-analysis scoped to Insights */
+#lo31Lifestyle.lo31-lifestyle{margin-top:22px;padding:17px;border:1px solid #334760;border-radius:16px;background:#101d31;min-width:0}
+#lo31Lifestyle .lo31-heading{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+#lo31Lifestyle h3{font-size:17px;margin:0 0 6px}
+#lo31Lifestyle .lo31-heading p,#lo31Lifestyle .lo31-note{color:#a3b6cb;line-height:1.55;font-size:12px;margin:5px 0 12px}
+#lo31Lifestyle .lo31-range{display:flex;gap:5px}
+#lo31Lifestyle .lo31-range button{border:1px solid #3a536d;background:#152b42;color:#d4e7f4;border-radius:9px;padding:10px 12px;min-height:42px}
+#lo31Lifestyle .lo31-range button[aria-pressed=true]{border-color:#7bd2bc;background:#214940;color:#dffcf3}
+#lo31Lifestyle .lo31-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:13px 0}
+#lo31Lifestyle .lo31-metric{display:grid;gap:4px;border:1px solid #293d54;padding:12px;border-radius:10px;background:#16253a;min-width:0}
+#lo31Lifestyle .lo31-metric small{color:#a7bcd0;font-size:12px}
+#lo31Lifestyle .lo31-metric strong{font-size:17px;overflow-wrap:anywhere}
+#lo31Lifestyle .lo31-metric span{font-size:11px;color:#a7b8ca;line-height:1.45;overflow-wrap:anywhere}
+#lo31Lifestyle .lo31-legend{display:flex;flex-wrap:wrap;gap:12px;margin:13px 0 7px;font-size:11px;color:#b6cce0}
+#lo31Lifestyle .lo31-legend span{display:flex;align-items:center;gap:5px}
+#lo31Lifestyle .lo31-legend i,#lo31Lifestyle .lo31-legend b{display:inline-block;height:9px;width:9px;border-radius:2px;background:#74bada}
+#lo31Lifestyle .lo31-legend b{background:#7ccb9d}
+#lo31Lifestyle .lo31-chart{display:flex;gap:4px;overflow-x:auto;min-width:0;padding:8px 2px 10px;scrollbar-width:thin;overscroll-behavior-x:contain}
+#lo31Lifestyle .lo31-day{flex:1 0 23px;min-width:23px;max-width:45px;min-height:118px;border:1px solid transparent;border-radius:8px;background:transparent;color:#b6cbdc;display:flex;flex-direction:column;gap:5px;align-items:center;justify-content:flex-end;padding:4px 1px;cursor:pointer}
+#lo31Lifestyle .lo31-day.selected{background:#1d3b41;border-color:#74cbb4}
+#lo31Lifestyle .lo31-day:focus-visible{outline:2px solid #91e7cd;outline-offset:2px}
+#lo31Lifestyle .lo31-columns{height:85px;width:100%;display:flex;align-items:flex-end;gap:2px;background:#172940;border-radius:5px;overflow:hidden}
+#lo31Lifestyle .lo31-columns i,#lo31Lifestyle .lo31-columns b{flex:1;min-width:0;display:block;background:#74bada;border-radius:3px 3px 0 0}
+#lo31Lifestyle .lo31-columns b{background:#7ccb9d}
+#lo31Lifestyle .lo31-day small{font-size:9px;white-space:nowrap;transform:rotate(-20deg)}
+#lo31Lifestyle .lo31-detail{border-top:1px solid #324861;margin-top:12px;padding-top:13px}
+#lo31Lifestyle .lo31-detail h4{font-size:15px;margin:3px 0 12px}
+#lo31Lifestyle .lo31-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#lo31Lifestyle .lo31-lists{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:17px 0 9px}
+#lo31Lifestyle .lo31-lists>div{min-width:0}
+#lo31Lifestyle .lo31-lists strong{font-size:13px}
+#lo31Lifestyle .lo31-lists ul{padding-left:17px;margin-top:7px;font-size:12px;color:#becfe1;line-height:1.55}
+#lo31Lifestyle .lo31-lists li{overflow-wrap:anywhere;margin:0 0 6px}
+#lo31Lifestyle .lo31-lists p{font-size:12px;color:#9eafc6}
+#mealForm .lo31-save-template{display:flex;gap:9px;align-items:center;margin:12px 0;padding:11px;border-radius:10px;border:1px solid #35516a;font-size:13px;background:#14283d}
+#mealForm .lo31-save-template input{width:19px;height:19px;flex-shrink:0}
+@media(max-width:390px){#lo31Lifestyle.lo31-lifestyle{padding:11px}#lo31Lifestyle .lo31-lists{grid-template-columns:1fr}#lo31Lifestyle .lo31-metric{padding:9px}#lo31Lifestyle .lo31-metric strong{font-size:15px}}
