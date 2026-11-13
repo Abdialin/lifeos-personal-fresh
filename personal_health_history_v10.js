@@ -80,9 +80,21 @@ function goalBox(goal,all){
  '<div class="lo10-goal-stats"><div><b>'+(pct===null?'Unknown':Math.round(pct)+'%')+'</b><small>Progress</small></div><div><b>'+esc(remaining===null?'No update':format(remaining,' kg'))+'</b><small>Distance to target</small></div><div><b>'+esc(daysLeft===null?'—':daysLeft>=0?daysLeft+' days':Math.abs(daysLeft)+' days past')+'</b><small>Until deadline</small></div></div>'+
  '<p class="lo10-muted">Goal period: '+esc(human(goal.startDate))+' – '+esc(human(goal.targetDate))+' ('+daysTotal+' days). '+(latest?'Latest progress reading: '+esc(human(latest.date)):'Add a new weight measurement to calculate progress.')+' This chart describes recorded measurements, not a recommended rate of change.</p></div>';
 }
+function renderGoalConnection(goal,rows){
+ const goals=$('goalList');if(!goals)return;
+ let card=$('loBodyGoalInGoals');
+ if(!card){card=document.createElement('section');card.id='loBodyGoalInGoals';card.className='lo10-goal-connection';goals.before(card)}
+ if(!goal){card.hidden=true;card.replaceChildren();return}
+ card.hidden=false;
+ const current=rows.filter(x=>number(x.weightKg)!==null&&x.date>=goal.startDate).slice().sort((a,b)=>a.date.localeCompare(b.date)).at(-1);
+ const pct=current?Math.max(0,Math.min(100,100*(number(current.weightKg)-goal.startWeightKg)/(goal.targetWeightKg-goal.startWeightKg))):null;
+ card.innerHTML='<div class="lo10-history-header"><strong>Body-weight goal</strong><span>Linked to Fitness progress</span></div><p class="lo10-muted">From '+esc(format(number(goal.startWeightKg),' kg'))+' to '+esc(format(number(goal.targetWeightKg),' kg'))+' by '+esc(human(goal.targetDate))+'. Current progress: '+(pct===null?'awaiting a measurement':Math.round(pct)+'%')+'.</p>'+
+ '<div class="lo10-goal-track"><i style="width:'+(pct===null?0:pct).toFixed(1)+'%"></i></div><p class="lo10-muted">This is a personal measurement goal; workout sessions are counted separately, not as weight loss.</p>';
+}
 function renderBody(rows,goal){
  const root=$('loBodyProgress');if(!root)return;
  const ordered=rows.filter(x=>localDate(x.date)).slice().sort((a,b)=>a.date.localeCompare(b.date)||(a.createdAt||0)-(b.createdAt||0));
+ renderGoalConnection(goal,ordered);
  const months=[...new Set(ordered.map(x=>x.date.slice(0,7)))].sort().reverse();
  if(!selectedMonth||!months.includes(selectedMonth))selectedMonth=months[0]||new Date().toLocaleDateString('sv-SE').slice(0,7);
  const monthly=ordered.filter(x=>x.date.startsWith(selectedMonth));
