@@ -164,10 +164,27 @@ function setup(){
    }
   });
  }
- const insights=$('analyticsPanel');
- if(insights&&!$('lo32FriendHub')){
+ const friendsParent=$('lo32HabitHub')||$('personalActivityPanel');
+ if(friendsParent&&!$('lo32FriendHub')){
   const box=document.createElement('section');box.id='lo32FriendHub';box.className='lo32-hub';
-  insights.append(box);friendsUI();
+  box.dataset.view='life';friendsParent.after(box);
+  const tabGroup=$('loLifeSectionTabs');
+  if(tabGroup&&!tabGroup.querySelector('[data-lo-life-section="friends"]')){
+   const friendTab=document.createElement('button');friendTab.type='button';
+   friendTab.dataset.loLifeSection='friends';friendTab.textContent='Friends';
+   friendTab.setAttribute('aria-pressed','false');tabGroup.append(friendTab);
+   friendTab.addEventListener('click',()=>{
+    document.body.dataset.loLifeSection='friends';
+    for(const target of ['personalActivityPanel','fitnessForm','mealForm']){
+     const el=target==='personalActivityPanel'?$(target):$(target)?.closest('section.panel');
+     el?.classList.add('lo-life-inactive');
+    }
+    for(const other of tabGroup.querySelectorAll('button'))other.setAttribute('aria-pressed',String(other===friendTab));
+    $('loLifeVisual')?.setAttribute('hidden','');
+    friendsUI();box.scrollIntoView({block:'start',behavior:'smooth'});
+   });
+  }
+  friendsUI();
   box.addEventListener('click',e=>{
    if(e.target.id==='lo32ExportShare')exportShare();
    const button=e.target.closest('[data-lo32-friend-remove]');if(button){
