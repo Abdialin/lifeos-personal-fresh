@@ -77,7 +77,7 @@ function insights(){
 }
 function life(){
  const tabs=$('loLifeSectionTabs');const routine=$('personalActivityPanel');
- if(tabs&&routine&&tabs.nextElementSibling!==routine)routine.before(tabs);
+ if(tabs){const heading=$('lifeosViewTitle');if(heading)heading.after(tabs);}
  // The tabs should be visible before content, rather than following analytics and cloud sync.
  if(tabs){tabs.classList.add('lo14-life-tabs');}
  const h=$('personalActivityPanel')?.querySelector('h2');if(h)h.textContent='Personal routines & recovery';
