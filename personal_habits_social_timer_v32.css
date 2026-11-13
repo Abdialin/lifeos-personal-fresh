@@ -44,3 +44,11 @@
 #lo32FriendHub form label:nth-child(2){grid-column:auto}
 #lo32HabitHub,#lo32FriendHub{padding:10px}
 }
+
+/* Dedicated My Life sub-workspaces; never show habits or friends in unrelated views. */
+#lo32HabitHub,#lo32FriendHub{display:none!important}
+body[data-lifeos-view="life"][data-lo-life-section="habits"] #lo32HabitHub{display:block!important}
+body[data-lifeos-view="life"][data-lo-life-section="friends"] #lo32FriendHub{display:block!important}
+body[data-lifeos-view="life"] #loLifeSectionTabs.lo-life-tabs{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+body[data-lifeos-view="life"] #loLifeSectionTabs.lo-life-tabs button{font-size:clamp(10px,2.5vw,12px);padding:10px 3px;min-width:0;overflow-wrap:anywhere}
+@media(max-width:360px){body[data-lifeos-view="life"] #loLifeSectionTabs.lo-life-tabs{gap:3px}body[data-lifeos-view="life"] #loLifeSectionTabs.lo-life-tabs button{font-size:10px;padding:9px 1px}}
