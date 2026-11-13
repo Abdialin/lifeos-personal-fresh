@@ -847,17 +847,25 @@ function lifeosTodoGroups(){
  }
  const sortTasks=rows=>rows.sort((a,b)=>(a.startTime||a.dueTime||'99:99').localeCompare(b.startTime||b.dueTime||'99:99')||({high:0,normal:1,low:2}[a.priority||'normal']??1)-({high:0,normal:1,low:2}[b.priority||'normal']??1));
  const taskRow=t=>'<div class="lo-task-item lo-task-'+escape(t.priority||'normal')+'"><input type="checkbox" data-todo-act="toggle" data-todo-id="'+escape(t.id)+'" '+(t.done?'checked':'')+' aria-label="Complete '+escape(t.name)+'"><div><strong>'+escape(t.name)+'</strong><div class="sub">'+(t.startTime?'Scheduled '+escape(t.startTime)+(t.endTime?'–'+escape(t.endTime):'')+' · ':t.dueTime?'Deadline '+escape(t.dueTime)+' · ':t.due?'Due this day · ':'Anytime · ')+escape(t.priority||'normal')+' priority'+(t.category?' · '+escape(t.category):'')+'</div></div><div class="lo21-task-actions"><button class="btn outline tiny" data-todo-act="edit" data-todo-id="'+escape(t.id)+'" aria-label="Edit task timing">Edit</button><button class="btn outline tiny" data-todo-act="delete" data-todo-id="'+escape(t.id)+'" aria-label="Delete task">×</button></div></div>';
- const sections=[...byWeek].sort((a,b)=>a[0].localeCompare(b[0])).map(([,w])=>{
+ const sections=[...byWeek].sort((a,b)=>a[0].localeCompare(b[0])).map(([groupKey,w])=>{
   const days=[...w.days].sort((a,b)=>a[0].localeCompare(b[0])).map(([day,rows])=>'<div class="lo-task-day"><h4>'+escape(new Date(day+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}))+'</h4>'+sortTasks(rows).map(taskRow).join('')+'</div>').join('');
-  return '<details class="lo-task-week" open><summary>Week '+w.week+' · '+w.year+' <span>'+[...w.days.values()].reduce((n,a)=>n+a.length,0)+' open</span></summary>'+days+'</details>';
+  return '<details class="lo-task-week" data-group-key="'+escape(groupKey)+'" open><summary>Week '+w.week+' · '+w.year+' <span>'+[...w.days.values()].reduce((n,a)=>n+a.length,0)+' open</span></summary>'+days+'</details>';
  });
  const all=todos.length,done=completed.length,pct=all?Math.round(done/all*100):0;
  const progress='<div class="lo-todo-progress"><div><strong>'+done+' / '+all+' tasks complete</strong><span>'+pct+'%</span></div><div class="lo-todo-track"><div style="width:'+pct+'%"></div></div></div>';
- if(floating.length)sections.push('<details class="lo-task-week" open><summary>Unscheduled <span>'+floating.length+' open</span></summary>'+sortTasks(floating).map(taskRow).join('')+'</details>');
- if(completed.length)sections.push('<details class="lo-task-week"><summary>Completed tasks <span>'+completed.length+' done</span></summary>'+completed.slice().sort((a,b)=>(b.completedAt||0)-(a.completedAt||0)).map(taskRow).join('')+'</details>');
+ if(floating.length)sections.push('<details class="lo-task-week" data-group-key="unscheduled" open><summary>Unscheduled <span>'+floating.length+' open</span></summary>'+sortTasks(floating).map(taskRow).join('')+'</details>');
+ if(completed.length)sections.push('<details class="lo-task-week" data-group-key="completed"><summary>Completed tasks <span>'+completed.length+' done</span></summary>'+completed.slice().sort((a,b)=>(b.completedAt||0)-(a.completedAt||0)).map(taskRow).join('')+'</details>');
  return progress+(sections.join('')||'<div class="empty">Add your first task to build a weekly schedule.</div>');
 }
-function renderTodos(){ensureModules();const m=window.LifeOSPersonalManagement;if(m){const v=m.todoSummary(data.todos,localDate(now()));$('todoSummary').textContent=`${v.open} open · ${v.completed} completed · ${v.overdue} overdue · ${v.highPriority} high priority`;} $('todoList').innerHTML=lifeosTodoGroups();}function renderDistraction(){let active=data.sessions.filter(s=>s.name==='Distraction'&&s.status!=='finished');$('distractionToggle').textContent=active.length?'■ Finish distraction':'▶ Start distraction';$('distractionHint').textContent=active.length?active.length+' open distraction timer(s)':'No distraction timer running'}function addTodo(e){e.preventDefault();let name=$('todoName').value.trim();if(!name)return;
+function renderTodos(){
+ ensureModules();
+ const previousOpen=new Map([...$('todoList').querySelectorAll('details.lo-task-week')].map(x=>[x.dataset.groupKey||x.querySelector('summary')?.textContent,x.open]));
+ const m=window.LifeOSPersonalManagement;if(m){const v=m.todoSummary(data.todos,localDate(now()));$('todoSummary').textContent=`${v.open} open · ${v.completed} completed · ${v.overdue} overdue · ${v.highPriority} high priority`;} $('todoList').innerHTML=lifeosTodoGroups();
+ for(const node of $('todoList').querySelectorAll('details.lo-task-week')){
+  const key=node.dataset.groupKey||node.querySelector('summary')?.textContent;
+  if(previousOpen.has(key))node.open=previousOpen.get(key);
+ }
+}function renderDistraction(){let active=data.sessions.filter(s=>s.name==='Distraction'&&s.status!=='finished');$('distractionToggle').textContent=active.length?'■ Finish distraction':'▶ Start distraction';$('distractionHint').textContent=active.length?active.length+' open distraction timer(s)':'No distraction timer running'}function addTodo(e){e.preventDefault();let name=$('todoName').value.trim();if(!name)return;
  const editingId=$('todoEditingId')?.value||null;
  const timingType=$('todoTimingType')?.value||'anytime';
  const date=timingType==='anytime'?null:($('todoDue').value||null);
@@ -900,9 +908,17 @@ function renderTodos(){ensureModules();const m=window.LifeOSPersonalManagement;i
   $('todoSubmitButton').textContent='Save task changes';$('todoCancelEdit').hidden=false;
   $('todoForm').scrollIntoView({behavior:'smooth',block:'center'});$('todoName').focus({preventScroll:true});return
  }
- if(b.dataset.todoAct==='delete'){if(!confirm('Delete this task?'))return;data.todos=data.todos.filter(x=>x.id!==t.id)}
+ if(b.dataset.todoAct==='delete'){if(!confirm('Delete this task?'))return}
+ const before=JSON.parse(JSON.stringify(data.todos||[]));
+ if(b.dataset.todoAct==='delete')data.todos=data.todos.filter(x=>x.id!==t.id);
  else{t.done=b.checked;t.completedAt=t.done?now():null}
- persist();renderTodos()}function cancelTodoEdit(){const form=$('todoForm');if(!form)return;form.reset();$('todoEditingId').value='';$('todoSubmitButton').textContent='+ Add task';$('todoCancelEdit').hidden=true;$('todoTimingType').dispatchEvent(new Event('change',{bubbles:true}))}
+ if(!persist()){
+  data.todos=before;
+  if(b.dataset.todoAct!=='delete')b.checked=Boolean(before.find(x=>x.id===t.id)?.done);
+  alert('Task change NOT saved. Previous task state restored. Check Settings & data → Export recovery.');
+  renderTodos();return;
+ }
+ renderTodos()}function cancelTodoEdit(){const form=$('todoForm');if(!form)return;form.reset();$('todoEditingId').value='';$('todoSubmitButton').textContent='+ Add task';$('todoCancelEdit').hidden=true;$('todoTimingType').dispatchEvent(new Event('change',{bubbles:true}))}
 function distractionToggle(){let open=data.sessions.filter(s=>s.name==='Distraction'&&s.status!=='finished');if(open.length){for(const s of open)finish(s.id)}else start('Distraction');renderDistraction()}function intervalMetrics(t=now()){const d=new Date(t),dayStart=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();const m=window.LifeOSUnifiedAnalytics.summarize({sessions:data.sessions},{start:dayStart,end:t,now:t});return{total:m.summedRecordedMs,unique:m.uniqueRecordedMs,overlap:m.overlapRecordedMs}}function todayDuration(s,t=now()){const d=new Date(t),dayStart=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();let total=0;for(const seg of s.segments||[]){const start=Math.max(Number(seg.start),dayStart),end=Math.min(seg.end==null?t:Number(seg.end),t);if(Number.isFinite(start)&&Number.isFinite(end)&&end>start)total+=end-start}return total}function tick(){let t=now(),metrics=intervalMetrics(t);$('tracked').textContent=short(metrics.total);$('uniqueTime').textContent=short(metrics.unique);$('overlapTime').textContent=short(metrics.overlap);for(let el of document.querySelectorAll('[data-timer]')){let s=data.sessions.find(x=>x.id===el.dataset.timer);if(s)el.textContent=fmt(elapsed(s,t))}}function download(filename,body,type){let blob=new Blob([body],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}function csv(){let rows=[['Session ID','Activity','Status','Start ISO','End ISO','Active minutes','Precision','Notes']];for(let s of data.sessions)rows.push([s.id,s.name,s.status,new Date(s.startAt).toISOString(),s.endAt?new Date(s.endAt).toISOString():'',(elapsed(s,s.endAt??now())/60000).toFixed(2),s.precision,s.notes||'']);download('LifeOS_sessions_'+localDate(now())+'.csv',rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8')}function backup(){download('LifeOS_backup_'+localDate(now())+'.json',JSON.stringify(data,null,2),'application/json')}async function restore(file){
  if(!file)return;
  try{
