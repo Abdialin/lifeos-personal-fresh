@@ -60,10 +60,80 @@ function distraction(){
  const subtitle=panel.querySelector('.head .sub');if(subtitle)subtitle.textContent='One tap to log interruptions alongside your other activities.';
  const note=panel.querySelector('p.note');if(note)note.textContent='Distraction is counted only when you record it; unlogged time is never assumed to be distraction.';
 }
+function improveTrack(){
+ const active=$('trackActivePanel'),quick=$('trackQuickPanel');if(!active||!quick)return;
+ // Put the primary workflow first: active timers -> start -> distraction -> tasks.
+ active.after(quick);
+ const tech=$('lo13TechnicalTools')||document.createElement('details');
+ if(!tech.id){tech.id='lo13TechnicalTools';tech.className='lo13-technical';tech.innerHTML='<summary>Storage, backups & timer recovery</summary>';quick.parentElement.append(tech)}
+ for(const id of ['loStorageHealth','loContinuityReminder','trackingRecoveryPanel','activityHierarchyPanel','trackingCloudPanel','trackingDataPanel']){
+  const el=$(id);if(el&&el.parentElement!==tech)tech.append(el);
+ }
+ // Keep any dynamically injected recovery and sync sections accessible.
+ for(const el of [...active.parentElement.children]){
+  if(el===tech||el===active||el===quick||el===$('trackDistractionPanel'))continue;
+  const title=(el.querySelector('h2,h3,strong')?.textContent||'').toLowerCase();
+  if(/^(cloud sync|timer recovery|tracking recovery|connected lifeos database|storage status)/.test(title))tech.append(el);
+ }
+}
+function colorActivity(name){
+ const n=String(name||'').toLowerCase();
+ if(/sleep|rest/.test(n))return 'sleep';
+ if(/study|course|university|read|learning/.test(n))return 'study';
+ if(/gym|fitness|exercise|running|walking|workout|boxing/.test(n))return 'fitness';
+ if(/prayer|fajr|dhuhr|asr|maghrib|isha|quran|hadith|arabic/.test(n))return 'spiritual';
+ if(/work|security|business|development|shift/.test(n))return 'work';
+ if(/breakfast|lunch|dinner|meal|eating/.test(n))return 'food';
+ if(/distraction|social media/.test(n))return 'distraction';
+ return 'other';
+}
+function colorCharts(){
+ for(const panelId of ['v4Plan','v4Insights','v4Today']){
+  const root=$(panelId);if(!root)continue;
+  // Known activity-category rows are given a consistent palette.
+  for(const item of root.querySelectorAll('.v4-category,.v5-legend-item,.v4-event')){
+   const label=item.querySelector('span,strong')?.textContent||item.textContent;
+   item.dataset.loCategory=colorActivity(label);
+  }
+  const topBars=[...root.querySelectorAll('.v4-category')];
+  for(const item of topBars){const bar=item.querySelector('i');if(bar)bar.style.background='var(--lo13-'+colorActivity(item.textContent)+')'}
+  const chartBars=root.querySelectorAll('.v5-bars > *, .v5-history-bars > *, .v4-history-bars > *');
+  chartBars.forEach((bar,i)=>{bar.style.setProperty('--lo13-series',`var(--lo13-series-${i%7})`)});
+ }
+}
+function emphasizeTodoTimes(){
+ const root=$('todoList');if(!root)return;
+ for(const row of root.querySelectorAll('.lo-task-item')){
+  const detail=row.querySelector('.sub');if(!detail||detail.querySelector('.lo13-time'))continue;
+  const text=detail.textContent||'';
+  const match=text.match(/^([0-2]\d:[0-5]\d(?:[–-][0-2]\d:[0-5]\d)?(?: due)?)/);
+  if(!match)continue;
+  const badge=document.createElement('span');badge.className='lo13-time';badge.textContent=match[1];
+  detail.textContent=text.slice(match[1].length).replace(/^\s*·\s*/,'');
+  detail.prepend(badge);
+ }
+}
+function integrateGoalsInsights(){
+ const goals=document.querySelector('[data-lifeos-view="goals"]')||$('goalRecoveryPanel');
+ if(!goals||$('lo13GoalLink'))return;
+ const location=$('goalRecoveryPanel');if(!location)return;
+ const p=document.createElement('div');p.id='lo13GoalLink';p.className='lo13-crosslink';
+ p.innerHTML='<strong>Goals + Insights</strong><span>Progress and activity analytics complement each other. Use the shortcuts to move between them.</span>';
+ const go=document.createElement('button');go.className='btn outline';go.type='button';go.textContent='Open Insights';go.addEventListener('click',()=>document.querySelector('#lifeosNavigation [data-view="analytics"]')?.click());
+ p.append(go);location.prepend(p);
+}
+let lo13Rendering=false;
+function refreshV13(){
+ if(lo13Rendering)return;lo13Rendering=true;
+ try{improveTrack();colorCharts();emphasizeTodoTimes();integrateGoalsInsights()}
+ finally{lo13Rendering=false}
+}
 function init(){
  // Defer one frame so the existing page setup attaches its listeners first.
  requestAnimationFrame(()=>{
-  distraction();organizeCalendarTools();organizeDevelopment();planIntro();
+  distraction();organizeCalendarTools();organizeDevelopment();planIntro();refreshV13();
+  document.addEventListener('click',()=>setTimeout(refreshV13,60));
+  setInterval(refreshV13,5000);
  });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
