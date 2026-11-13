@@ -205,7 +205,7 @@ function init(){const today=$('todayOverview'),nav=$('lifeosNavigation');if(!tod
   const field=$('scheduleDay');
   if(field){field.value=picked;field.dispatchEvent(new Event('change',{bubbles:true}));}
   update();
-  const card=$('v4Plan')?.querySelector('.v7-plan-selected-day');
+  const card=$('lifeosSelectedDaySummary')||$('v4Plan')?.querySelector('.v7-plan-selected-day');
   if(card){card.tabIndex=-1;card.scrollIntoView({behavior:'smooth',block:'start'});card.focus({preventScroll:true});}
  }const insight=e.target.closest('[data-v4-insight-day]');if(insight){insightSelected=insight.dataset.v4InsightDay;update();$('v4Insights')?.querySelector('[data-v4-insight-day="'+insightSelected+'"]')?.focus();}const m=e.target.closest('[data-v4-month]');if(m){const step=Number(m.dataset.v4Month);if(step===1||step===-1){month.setDate(1);month.setMonth(month.getMonth()+step);selected=dateKey(new Date(month.getFullYear(),month.getMonth(),1));update()}}const todayButton=e.target.closest('[data-v4-today]');if(todayButton){const d=new Date();month=new Date(d.getFullYear(),d.getMonth(),1);selected=dateKey(d);const dateField=$('scheduleDay');if(dateField){dateField.value=selected;dateField.dispatchEvent(new Event('change',{bubbles:true}));}update();$('v4Plan')?.querySelector('[data-v4-today]')?.focus();}const review=e.target.closest('[data-v4-review-ideal]');if(review){const input=$('scheduleDay'),button=$('idealReview');if(input&&button){const panel=button.closest('section.panel');if(panel?.classList.contains('lo-advanced-collapsed'))panel.querySelector('.lo-advanced-toggle')?.click();const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7);input.value=dateKey(d);const details=button.closest('details');if(details)details.open=true;button.click();$('idealProposalList')?.scrollIntoView({behavior:'smooth',block:'start'});}else console.warn('Ideal review controls unavailable');}const d=e.target.closest('[data-v4-day]');if(d){
   selected=d.dataset.v4Day;planSelected=selected;
@@ -215,13 +215,8 @@ function init(){const today=$('todayOverview'),nav=$('lifeosNavigation');if(!tod
    dateField.dispatchEvent(new Event('change',{bubbles:true}));
   }
   update();
-  const dayCard=$('v4Plan')?.querySelector('.v7-plan-selected-day');
-  if(dayCard){
-   dayCard.setAttribute('tabindex','-1');
-   dayCard.setAttribute('aria-label','Day details for '+selected);
-   dayCard.scrollIntoView({behavior:'smooth',block:'start'});
-   dayCard.focus({preventScroll:true});
-  }
+  const dayCard=$('lifeosSelectedDaySummary')||$('v4Plan')?.querySelector('.v7-plan-selected-day');
+  if(dayCard){dayCard.tabIndex=-1;dayCard.setAttribute('aria-label','Day details for '+selected);dayCard.scrollIntoView({behavior:'smooth',block:'start'});dayCard.focus({preventScroll:true});}
  }
 });
  setTimeout(sync,0);setInterval(()=>{if(!document.hidden)update()},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});window.addEventListener('focus',update);
