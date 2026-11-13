@@ -45,10 +45,11 @@ function renderInsights(ws,now){
  const counts=new Map();
  for(const x of days.flatMap(x=>x.recorded))counts.set(x.name,(counts.get(x.name)||0)+x.end-x.start);
  const ranked=[...counts].filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]),palette=['#69dec8','#79a7f7','#efb86e','#b69afd','#f28ca4'];
+ const colorForActivity=name=>{const n=String(name).toLowerCase();if(/sleep|rest/.test(n))return '#769ce8';if(/study|course|read|university|learn/.test(n))return '#e2aa63';if(/gym|fitness|running|walking|workout|boxing/.test(n))return '#a280e6';if(/prayer|fajr|dhuhr|asr|maghrib|isha|quran|arabic|hadith/.test(n))return '#64c9bb';if(/work|business|security|shift/.test(n))return '#55a5dd';if(/meal|breakfast|lunch|dinner|eating/.test(n))return '#d89c69';if(/distraction/.test(n))return '#d97b90';return '#a7aebc'};
  const shown=ranked.slice(0,4);if(ranked.length>4)shown.push(['Other',ranked.slice(4).reduce((n,x)=>n+x[1],0)]);
  const total=shown.reduce((n,x)=>n+x[1],0);let previous=0;
- const stops=shown.map((x,i)=>{const end=i===shown.length-1?100:previous+x[1]/total*100;const stop=palette[i]+' '+previous.toFixed(2)+'% '+end.toFixed(2)+'%';previous=end;return stop;});
- const legend=shown.map(([name,ms],i)=>'<div class="v5-legend-item"><i class="v5-legend-dot" style="background:'+palette[i]+'"></i><span>'+esc(name)+'</span><strong>'+fmt(ms)+'</strong></div>').join('');
+ const stops=shown.map((x,i)=>{const end=i===shown.length-1?100:previous+x[1]/total*100;const stop=colorForActivity(x[0])+' '+previous.toFixed(2)+'% '+end.toFixed(2)+'%';previous=end;return stop;});
+ const legend=shown.map(([name,ms],i)=>'<div class="v5-legend-item"><i class="v5-legend-dot" style="background:'+colorForActivity(name)+'"></i><span>'+esc(name)+'</span><strong>'+fmt(ms)+'</strong></div>').join('');
  const mix=total?'<div class="v5-mix"><div class="v5-donut" role="img" aria-label="Recorded activity time mix, including overlapping sessions" style="background:conic-gradient('+stops.join(',')+')"><div class="v5-donut-label"><strong>'+fmt(total)+'</strong><span>recorded</span></div></div><div class="v5-legend">'+legend+'</div></div><p class="v4-muted">Recorded-time totals include simultaneous activities; this is not a 24-hour occupancy breakdown.</p>':'<p class="v4-muted">No recorded activity yet. Start a timer in Track to populate your time mix.</p>';
  target.innerHTML=chartCard('Last seven days',bars+detail)+chartCard('Recorded time mix',mix);
 }
