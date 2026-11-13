@@ -10,6 +10,18 @@ const api=()=>window.lifeosNutritionV25;
 const state={day:null,initialized:false};
 const settingsDefault={calories:null,protein:null,carbs:null,fat:null,meals:null,waterMl:null,reminder:false,servingMl:300,intervalHours:3,from:'08:00',until:'21:00'};
 const cleanSetting=s=>({...settingsDefault,...(s||{})});
+const illustrativeGoals={meals:3,calories:2100,protein:110,carbs:260,fat:70,waterMl:2100};
+function ensureComparisonExamples(){
+ const a=api();if(!a)return;const old=a.get().nutritionSettings||{};
+ if(old.exampleComparisonInitialized===true)return;
+ const next={...old};let filled=0;
+ for(const [key,value] of Object.entries(illustrativeGoals)){
+  if(next[key]===undefined||next[key]===null||next[key]===''){next[key]=value;filled++}
+ }
+ next.exampleComparisonInitialized=true;
+ if(filled)next.exampleComparisonPreset='illustrative-six-week-preview';
+ a.saveSettings(next);
+}
 const sum=(rows,key)=>rows.reduce((v,x)=>v+(n(x[key])??0),0);
 const known=(rows,key)=>rows.filter(x=>n(x[key])!==null);
 const val=(rows,key,unit)=>{const k=known(rows,key);return k.length?Math.round(sum(k,key)*10)/10+' '+unit:'Unknown'};
@@ -58,7 +70,7 @@ function show(){
  '<h4>Tap a day to explore meals</h4><div class="lo25-week" role="group" aria-label="Select a nutrition day">'+bars+'</div>'+
  '<section class="lo25-day-panel" aria-label="Selected day meals"><div class="lo25-day-header"><div><h4>'+esc(pretty(day))+'</h4><small>'+selected.length+' meals · '+water.length+' water entries</small></div><label class="lo25-date-label">Choose date<input type="date" id="lo25Date" value="'+day+'"></label></div>'+
  (selected.length?selected.slice().sort((a,b)=>(a.mealTime||'').localeCompare(b.mealTime||'')).map(mealCard).join(''):'<p class="lo25-muted">No meals on this day. Select a chart bar or choose another date.</p>')+
- '<details class="lo25-panel" id="lo25GoalDetails" '+(goalWasOpen?'open':'')+'><summary>Goals vs. recorded nutrition</summary>'+dayProgress(selected,water,goals)+'<p class="lo25-muted">The goals are yours to set. Incomplete meal values remain unknown rather than being treated as zero. Macro rings use approximate energy proportions, not clinical estimates.</p><form id="lo25GoalsForm" class="lo25-grid-fields">'+[
+ '<details class="lo25-panel" id="lo25GoalDetails" '+(goalWasOpen?'open':'')+'><summary>Goals vs. recorded nutrition</summary>'+(goals.exampleComparisonPreset?'<p class="lo25-muted"><strong>Example comparison targets</strong> · Filled only where no goal existed. Illustrative, not personalized recommendations. Edit or clear the values below.</p>':'')+dayProgress(selected,water,goals)+'<p class="lo25-muted">The goals are yours to set. Incomplete meal values remain unknown rather than being treated as zero. Macro rings use approximate energy proportions, not clinical estimates.</p><form id="lo25GoalsForm" class="lo25-grid-fields">'+[
  ['calories','Calories (kcal/day)'],['protein','Protein (g/day)'],['carbs','Carbs (g/day)'],['fat','Fat (g/day)'],['meals','Meals (per day)'],['waterMl','Water (ml/day)']
  ].map(([key,label])=>'<label>'+esc(label)+'<input name="'+key+'" type="number" min="0" max="10000" step="1" placeholder="Not set" value="'+esc(goals[key]??'')+'"></label>').join('')+'<button class="btn primary" type="submit">Save my goals</button></form></details>'+
  '<section class="lo25-panel"><h4>Water intake · '+esc(pretty(day))+'</h4><div class="lo25-water-summary"><b>'+esc(water.length?Math.round(sum(water,'ml'))+' ml':'Not logged')+'</b><small>'+esc(n(goals.waterMl)?'Your goal: '+goals.waterMl+' ml':'No water goal set')+'</small></div>'+
@@ -96,6 +108,7 @@ function checkReminder(){
 }
 function bind(){
  const root=$('lifeosNutritionDashboard');if(!root||state.initialized)return;state.initialized=true;
+ ensureComparisonExamples();
  root.addEventListener('click',e=>{
   const b=e.target.closest('[data-lo25-day]');if(b){state.day=b.dataset.lo25Day;show();return}
   const w=e.target.closest('[data-lo25-water]');if(w){logWater(Number(w.dataset.lo25Water));return}
