@@ -1,0 +1,40 @@
+/* LifeOS Personal V13 — user-first tracking and category-aware analytics */
+:root{
+ --lo13-sleep:#769ce8;--lo13-study:#e2aa63;--lo13-fitness:#a280e6;
+ --lo13-spiritual:#64c9bb;--lo13-work:#55a5dd;--lo13-food:#d89c69;
+ --lo13-distraction:#d97b90;--lo13-other:#a7aebc;
+ --lo13-series-0:#75a4f0;--lo13-series-1:#67c5ae;--lo13-series-2:#dfa569;
+ --lo13-series-3:#ab91ed;--lo13-series-4:#d67d9b;--lo13-series-5:#62b9dc;--lo13-series-6:#e1c37c
+}
+.lo13-technical{padding:13px;margin:13px 0;border:1px solid var(--lo-border,#374862);border-radius:13px}
+.lo13-technical>summary{font-size:13px;font-weight:700;cursor:pointer;color:var(--lo-muted,#bbc9de)}
+.lo13-technical>*:not(summary){margin:13px 0!important}
+.lo13-technical .lo-continuity-reminder,.lo13-technical .lo-storage-health{padding:12px!important;max-width:100%}
+.lo13-technical .btn{white-space:normal;max-width:100%}
+#trackActivePanel{scroll-margin-top:80px}
+#trackQuickPanel{margin-top:12px!important}
+#trackDistractionPanel{margin-top:12px!important}
+.lo13-time{display:inline-flex;align-items:center;padding:3px 7px;border:1px solid rgba(96,190,173,.4);color:var(--lo-accent,#80e1c9);background:rgba(72,145,128,.13);border-radius:8px;font-weight:750;font-variant-numeric:tabular-nums;margin-right:6px;margin-bottom:4px;font-size:11px}
+.lo13-crosslink{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:13px;border:1px solid rgba(113,173,193,.25);border-radius:12px;margin:0 0 14px;background:rgba(83,145,171,.08)}
+.lo13-crosslink strong{font-size:14px}.lo13-crosslink span{font-size:11px;color:var(--lo-muted,#c0ccdc);line-height:1.4;flex:1;min-width:170px}
+.lo13-crosslink .btn{font-size:12px;padding:8px 11px;min-height:38px}
+.v4-section .v4-category[data-lo-category="sleep"] i,.v4-section .v4-event[data-lo-category="sleep"]{--lo13-color:var(--lo13-sleep)}
+.v4-section .v4-category[data-lo-category="study"] i,.v4-section .v4-event[data-lo-category="study"]{--lo13-color:var(--lo13-study)}
+.v4-section .v4-category[data-lo-category="fitness"] i,.v4-section .v4-event[data-lo-category="fitness"]{--lo13-color:var(--lo13-fitness)}
+.v4-section .v4-category[data-lo-category="spiritual"] i,.v4-section .v4-event[data-lo-category="spiritual"]{--lo13-color:var(--lo13-spiritual)}
+.v4-section .v4-category[data-lo-category="work"] i,.v4-section .v4-event[data-lo-category="work"]{--lo13-color:var(--lo13-work)}
+.v4-section .v4-category[data-lo-category="food"] i,.v4-section .v4-event[data-lo-category="food"]{--lo13-color:var(--lo13-food)}
+.v4-section .v4-category[data-lo-category="distraction"] i,.v4-section .v4-event[data-lo-category="distraction"]{--lo13-color:var(--lo13-distraction)}
+.v4-section .v4-category[data-lo-category="other"] i,.v4-section .v4-event[data-lo-category="other"]{--lo13-color:var(--lo13-other)}
+.v4-section .v4-category[data-lo-category] i{background:var(--lo13-color)!important}
+.v4-section .v4-event[data-lo-category]{border-left:3px solid var(--lo13-color);padding-left:8px}
+.v5-legend-item[data-lo-category]::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--lo13-color,var(--lo13-other))}
+.v5-legend-item[data-lo-category="sleep"]{--lo13-color:var(--lo13-sleep)}
+.v5-legend-item[data-lo-category="study"]{--lo13-color:var(--lo13-study)}
+.v5-legend-item[data-lo-category="fitness"]{--lo13-color:var(--lo13-fitness)}
+.v5-legend-item[data-lo-category="spiritual"]{--lo13-color:var(--lo13-spiritual)}
+.v5-legend-item[data-lo-category="work"]{--lo13-color:var(--lo13-work)}
+.v5-legend-item[data-lo-category="food"]{--lo13-color:var(--lo13-food)}
+.v5-legend-item[data-lo-category="distraction"]{--lo13-color:var(--lo13-distraction)}
+.v4-section .v5-bars > * i,.v4-section .v5-history-bars > * i,.v4-section .v4-history-bars > * i{background:var(--lo13-series)!important}
+@media(max-width:500px){.lo13-crosslink{display:grid;grid-template-columns:1fr}.lo13-crosslink span{min-width:0}}
