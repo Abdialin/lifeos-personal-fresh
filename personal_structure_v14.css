@@ -1,0 +1,52 @@
+/* LifeOS V14 — cohesive user-first sections. Presentation only. */
+#lo14SettingsHub{display:none;scroll-margin-top:80px}
+body[data-lifeos-view="settings"] #lo14SettingsHub{display:block}
+#lo14SettingsHub .panel{margin:13px 0;scroll-margin-top:80px}
+.lo14-hub-heading{margin:12px 0 19px}.lo14-hub-heading h2{font-size:24px;margin:0 0 8px}.lo14-hub-heading p{font-size:13px;color:var(--lo-muted,#9eabc6);line-height:1.55}
+.lo14-tech-details{margin:14px 0;padding:14px;border:1px solid var(--lo-border,#32445f);border-radius:13px}.lo14-tech-details summary{font-weight:700;cursor:pointer}
+.lo14-settings-button{font-size:12px!important;padding:9px 12px!important;white-space:normal;max-width:130px}
+.lo14-section-bridge,.lo14-plan-bridge{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:10px 0 18px;padding:13px 15px;border:1px solid rgba(80,167,151,.29);border-radius:13px;background:linear-gradient(120deg,rgba(24,105,97,.12),rgba(55,96,154,.06))}
+.lo14-section-bridge strong,.lo14-plan-bridge strong{font-size:15px}
+.lo14-section-bridge span,.lo14-plan-bridge span{display:block;font-size:12px;color:var(--lo-muted,#b4c0d3);flex:1 1 190px;line-height:1.5}
+.lo14-button{font-size:12px!important;min-height:40px!important;padding:9px 12px!important;white-space:normal}
+.lo14-shortcuts{display:flex;gap:8px;margin:12px 0 16px;flex-wrap:wrap}
+.lo14-shortcuts .lo14-button{flex:1;min-width:105px}
+.lo14-tasks-panel{margin:18px 0!important;scroll-margin-top:65px}
+.lo14-tasks-panel .lo-task-item .sub{line-height:1.7}
+.lo14-analytics-detail{scroll-margin-top:80px}
+.lo14-life-tabs{position:relative;margin:10px 0 14px!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;max-width:100%}
+.lo14-life-tabs button{min-width:0!important;overflow-wrap:anywhere}
+.lo14-history{scroll-margin-top:80px}
+body:not([data-lifeos-view="tracking"]) #trackDistractionPanel{display:none!important}
+body:not([data-lifeos-view="tracking"]) #trackQuickPanel{display:none!important}
+body:not([data-lifeos-view="schedule"]) .lo14-tasks-panel{display:none!important}
+body:not([data-lifeos-view="settings"]) #sessionToolsPanel,
+body:not([data-lifeos-view="settings"]) #connectedDatabasePanel,
+body:not([data-lifeos-view="settings"]) #cloudSyncPanel,
+body:not([data-lifeos-view="settings"]) #trackingRecoveryPanel,
+body:not([data-lifeos-view="settings"]) #activityHierarchyPanel,
+body:not([data-lifeos-view="settings"]) #personalCompletionPanel{display:none!important}
+body[data-lifeos-view="settings"] #lo14SettingsHub .panel:not(.lifeos-hidden-panel){display:block}
+#lo14SettingsHub .lifeos-hidden-panel{display:none!important}
+.lo14-secondary-calendar{display:none!important}
+/* Hide the redundant local monthly picker only; preserve the schedule date input and weekly shortcuts. */
+#lo11ScheduleCalendar{display:none!important}
+body[data-lifeos-view="settings"] #lo14SettingsHub .lo14-tech-details{display:block}
+body[data-lifeos-view="analytics"] .v4-category[data-lo14-category="sleep"] i{background:var(--lo13-sleep)!important}
+body[data-lifeos-view="analytics"] .v4-category[data-lo14-category="study"] i{background:var(--lo13-study)!important}
+body[data-lifeos-view="analytics"] .v4-category[data-lo14-category="fitness"] i{background:var(--lo13-fitness)!important}
+body[data-lifeos-view="analytics"] .v4-category[data-lo14-category="spiritual"] i{background:var(--lo13-spiritual)!important}
+body[data-lifeos-view="analytics"] .v4-category[data-lo14-category="work"] i{background:var(--lo13-work)!important}
+body[data-lifeos-view="analytics"] .v4-category[data-lo14-category="food"] i{background:var(--lo13-food)!important}
+body[data-lifeos-view="analytics"] .v4-category[data-lo14-category="distraction"] i{background:var(--lo13-distraction)!important}
+.lo14-time-mix .v4-category{display:grid;grid-template-columns:minmax(0,1fr) 110px 65px;gap:9px;align-items:center;min-width:0}
+.lo14-time-mix .v4-category>*{min-width:0}
+#todayOverview .today-stats{gap:10px}
+#todayOverview .today-stat{min-width:0}
+@media(max-width:650px){
+ .lo14-settings-button{font-size:11px!important;padding:7px 9px!important}
+ .lo14-section-bridge,.lo14-plan-bridge{padding:12px}
+ .lo14-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .lo14-shortcuts .lo14-button{min-width:0}
+ .lo14-time-mix .v4-category{grid-template-columns:minmax(0,1fr) 70px 48px;font-size:11px}
+}
