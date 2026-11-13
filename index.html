@@ -316,7 +316,7 @@ function addSchedule(e){
  let verified=false;
  try{
   const saved=JSON.parse(localStorage.getItem(ATOMIC_KEY)||'null');
-  verified=!!(saved&&saved.format===1&&saved.workspace&&Array.isArray(saved.workspace.schedule)&&saved.workspace.schedule.some(p=>p.id===plan.id));
+  verified=!!(saved&&(saved.format===1||saved.format===2)&&saved.workspace&&Array.isArray(saved.workspace.schedule)&&saved.workspace.schedule.some(p=>p.id===plan.id));
  }catch(err){console.warn('Plan save verification unavailable',err)}
  if(!verified){
   notice.textContent='Plan save cannot be verified in the recovery checkpoint. Do not refresh until you export a recovery backup. The entry remains in memory.';
