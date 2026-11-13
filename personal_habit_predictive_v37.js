@@ -55,13 +55,56 @@ function dueDates(def,startDate,countDays){
 function conflicts(start,end,workspace){
  return (workspace.schedule||[]).filter(p=>p.status!=='skipped'&&p.status!=='cancelled'&&Number(p.startAt)<end&&Number(p.endAt)>start);
 }
+function median(values){
+ if(!values.length)return null;
+ const sorted=values.slice().sort((a,b)=>a-b);
+ return sorted[Math.floor(sorted.length/2)];
+}
+function sessionStartMinute(s){const d=new Date(s.start);return d.getHours()*60+d.getMinutes()}
+function typeOfDay(date){const day=new Date(date).getDay();return day===0||day===6?'weekend':'weekday'}
+function outcomeEvidence(def,workspace,now=Date.now()){
+ const recent=(workspace.schedule||[]).filter(p=>p.source==='approved-habit-proposal'&&p.habitId===def.id&&Number.isFinite(Number(p.startAt))&&p.startAt>=now-30*86400000&&p.startAt<now);
+ const sessions=new Map((workspace.sessions||[]).map(s=>[s.id,s]));
+ const counted=recent.map(p=>({plan:p,session:sessions.get(p.sessionId)}));
+ const finished=counted.filter(x=>x.session?.status==='finished'&&!x.session.seedBatch&&x.session.source!=='assumed-demo'&&x.session.source!=='development-starter');
+ const valid=finished.map(x=>{
+  const minutes=sessionMinutes(x.session);
+  return {planned:(x.plan.endAt-x.plan.startAt)/60000,actual:minutes};
+ }).filter(x=>Number.isFinite(x.planned)&&x.planned>0&&Number.isFinite(x.actual)&&x.actual>0);
+ const actual=valid.map(x=>x.actual),planned=valid.map(x=>x.planned);
+ return {finished:valid.length,actualMedian:median(actual),plannedMedian:median(planned),
+  insufficient:valid.length<3};
+}
+function patternForDay(def,workspace,day,now=Date.now()){
+ const rec=timeRecommendation(def,workspace,now),kind=typeOfDay(day),same=rec.past.filter(x=>typeOfDay(x.start)===kind);
+ const exact=rec.past.filter(x=>new Date(x.start).getDay()===new Date(day).getDay());
+ const chosen=exact.length>=3?exact:same.length>=3?same:rec.past;
+ const kindName=exact.length>=3?'same weekday':same.length>=3?kind+' history':'overall history';
+ const observed=chosen.length>=3?median(chosen.map(sessionStartMinute)):null;
+ const output=outcomeEvidence(def,workspace,now);
+ // Do not automatically override a user's explicit target.
+ const duration=rec.duration;
+ const startMinute=observed??1140;
+ const confidence=chosen.length>=10?'Moderate':chosen.length>=5?'Limited':'Low';
+ return {startMinute,duration,confidence,used:chosen.length,kind:kindName,
+  source:observed===null?'Manual 19:00 fallback':'Median observed start for '+kindName,
+  outcome:output};
+}
+function nearbyPlans(start,end,workspace,bufferMin=15){
+ const margin=bufferMin*60000;
+ return (workspace.schedule||[]).filter(p=>p.status!=='skipped'&&p.status!=='cancelled'&&
+  Number(p.startAt)<end+margin&&Number(p.endAt)>start-margin&&
+  !(Number(p.startAt)<end&&Number(p.endAt)>start));
+}
 function predict(def,workspace,days=7,now=Date.now()){
  const rec=timeRecommendation(def,workspace,now),tomorrow=new Date(now);tomorrow.setHours(12,0,0,0);tomorrow.setDate(tomorrow.getDate()+1);
  const options=dueDates(def,tomorrow,days).map(day=>{
-  const start=new Date(day);start.setHours(Math.floor(rec.startMinute/60),rec.startMinute%60,0,0);
-  const end=start.getTime()+rec.duration*60000;
-  const conflict=conflicts(start.getTime(),end,workspace);
-  return {habitId:def.id,title:def.title,startAt:start.getTime(),endAt:end,duration:rec.duration,conflict,confidence:rec.confidence};
+  const pattern=patternForDay(def,workspace,day,now);
+  const start=new Date(day);start.setHours(Math.floor(pattern.startMinute/60),pattern.startMinute%60,0,0);
+  const end=start.getTime()+pattern.duration*60000;
+  const conflict=conflicts(start.getTime(),end,workspace),nearby=nearbyPlans(start.getTime(),end,workspace);
+  return {habitId:def.id,title:def.title,startAt:start.getTime(),endAt:end,duration:pattern.duration,conflict,nearby,
+   confidence:pattern.confidence,pattern:pattern.kind,patternSource:pattern.source,patternSamples:pattern.used,outcome:pattern.outcome};
  });
  return {rec,options};
 }
@@ -77,9 +120,13 @@ function render(){
  (def?'<div class="lo37-controls"><label>Habit<select id="lo37HabitSelect">'+defs.map(d=>'<option value="'+esc(d.id)+'" '+(d.id===def.id?'selected':'')+'>'+esc(d.title)+'</option>').join('')+'</select></label>'+
  '<div role="group" aria-label="Prediction horizon"><button data-lo37-range="7" aria-pressed="'+(range===7)+'">7 days</button><button data-lo37-range="14" aria-pressed="'+(range===14)+'">14 days</button></div></div>'+
  '<div class="lo37-evidence"><strong>'+esc(result.rec.confidence)+' confidence</strong><p>'+result.rec.count+' real finished matching sessions over the last 30 days. '+esc(result.rec.source)+'.</p>'+
- '<small>Proposed duration: '+result.rec.duration+' min. Confidence reflects sample size only, not the probability that a time slot is free or that you will complete it.</small></div>'+
+ '<small>Base duration: '+result.rec.duration+' min. Suggestions consider same-weekday or weekday/weekend history only when at least three matching sessions exist. Confidence reflects sample size, not the probability that a time slot is free or completed.</small></div>'+
+ '<p class="lo38-quality">Plan outcome evidence: '+esc(String(outcomeEvidence(def,workspace).finished))+' finished linked plan(s) in the last 30 days. '+(outcomeEvidence(def,workspace).insufficient?'Insufficient for duration-outcome conclusions.':'Compare outcomes in Smart Schedule feedback before changing your targets.')+' Recovery is not inferred from missing activity logs; review your sleep and recovery records separately.</p>'+
  (result.options.length?'<div class="lo37-list">'+result.options.map((x,i)=>
- '<article class="lo37-option"><div><strong>'+esc(fmt(x.startAt))+'</strong><small>'+x.duration+' min · '+esc(x.confidence)+' evidence confidence'+(x.conflict.length?' · '+x.conflict.length+' existing LifeOS plan conflict(s)':' · No overlap with saved LifeOS plans')+'</small></div>'+
+ '<article class="lo37-option"><div><strong>'+esc(fmt(x.startAt))+'</strong><small>'+x.duration+' min · '+esc(x.confidence)+' confidence ('+x.patternSamples+' '+esc(x.pattern)+' sessions)'+
+ (x.conflict.length?' · '+x.conflict.length+' saved-plan conflict(s)':' · No saved-plan overlap')+
+ (x.nearby.length?' · '+x.nearby.length+' plan(s) within 15 minutes':'')+
+ '</small><small>'+esc(x.patternSource)+' · External commitments and recovery not verified</small></div>'+
  '<button type="button" class="btn '+(x.conflict.length?'outline':'primary')+'" data-lo37-index="'+i+'" '+(x.conflict.length?'disabled':'')+'>Review proposal</button></article>'
  ).join('')+'</div>':'<p class="lo37-note">No scheduled opportunities in this horizon. Change the date range or habit.</p>')+
  '<p class="lo37-note">Only approved proposals become LifeOS plans. Conflict checks do not cover Google Calendar or unlogged activities. You can edit the proposed time in the approval form.</p>':
@@ -107,5 +154,5 @@ function init(){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-window.lifeosPredictiveHabitsV37={samples,timeRecommendation,dueDates,predict,render};
+window.lifeosPredictiveHabitsV37={samples,timeRecommendation,dueDates,predict,render,patternForDay,outcomeEvidence,nearbyPlans};
 })();
