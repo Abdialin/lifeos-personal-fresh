@@ -968,6 +968,14 @@ $('syncToken').addEventListener('input',()=>{
 const OUTBOX_KEY='lifeos-v4-stage11-outbox',SYNC_META_KEY='lifeos-v4-sync-meta';
 let syncMeta={revision:null,dirty:false},syncTimer=null,syncSuppressed=false;
 let outbox=[],outboxCorrupt=false;
+/* V47 exposes status only. Authentication credentials remain private to the sync form. */
+window.lifeosCloudStatusV47=()=>({
+ connected:syncReady,uploading:syncBusy,
+ serverRevision:syncRevision,acknowledgedRevision:syncMeta.revision,
+ queuedOperations:outbox.length,dirty:syncMeta.dirty===true,
+ blocked:Boolean(atomicBlocked||outboxCorrupt)
+});
+
 try{const stored=JSON.parse(localStorage.getItem(SYNC_META_KEY)||'null');if(stored&&typeof stored==='object')syncMeta={revision:Number.isInteger(stored.revision)?stored.revision:null,dirty:stored.dirty===true}}catch(_e){syncMeta.dirty=true}
 try{
  const raw=localStorage.getItem(OUTBOX_KEY);
