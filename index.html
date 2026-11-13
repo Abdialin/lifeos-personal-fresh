@@ -313,6 +313,7 @@ window.lifeosNutritionV25={
  saveSettings:settings=>{ensureModules();if(!settings||typeof settings!=='object')return false;const prev=data.nutritionSettings;data.nutritionSettings={...settings};if(!persist()){data.nutritionSettings=prev;return false}return true}
 };
 window.lifeosSocialHabitBridge={
+ activeTimers:()=>data.sessions.filter(s=>s.status!=='finished').map(s=>({id:s.id,name:s.name,status:s.status,segments:(s.segments||[]).map(seg=>({start:seg.start,end:seg.end}))})),
  read:()=>({habitDefinitions:data.habitDefinitions||[],habitChecks:data.habitChecks||[],friendShares:data.friendShares||[]}),
  mutate:(kind,operation,row)=>{
   ensureModules();if(!['habitDefinitions','habitChecks','friendShares'].includes(kind))return false;
