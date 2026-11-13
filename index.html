@@ -111,7 +111,7 @@ input,select,textarea,button{max-width:100%}
 .lo-upcoming-item strong{display:block;font-size:14px}.lo-upcoming-item small{display:block;color:#9ba9c6;margin-top:4px}.lo-upcoming-item .lo-plan-arrow{color:#7de2c9}
 .lo-upcoming-empty{font-size:13px;color:#9ba9c6;margin:6px 0}
 .lo-plan-new{border-color:#50c8a7;background:#102c2a}
-</style><style id="lo-schedule-combined-v18">.lo-schedule-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.lo-schedule-column{min-width:0}.lo-schedule-column h3{font-size:14px;margin:6px 6px 10px;color:#b7d0e7}.lo-schedule-tabs{display:none;gap:8px;margin:10px 0}.lo-schedule-tabs button{flex:1;min-width:0;border:1px solid #344767;border-radius:10px;background:#1b2a40;color:#dce9f7;padding:10px 5px;font-size:12px;font-weight:700}.lo-schedule-tabs button[aria-pressed="true"]{background:#074d43;border-color:#268b7a;color:#f4ffff}.lo-todo-overview-item{cursor:default}@media(max-width:680px){.lo-schedule-columns{display:block}.lo-schedule-tabs{display:flex}.lo-schedule-columns[data-active-tab="plans"] [data-schedule-column="tasks"],.lo-schedule-columns[data-active-tab="tasks"] [data-schedule-column="plans"]{display:none}}</style></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="pill" id="status">● Ready</div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
+</style></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="pill" id="status">● Ready</div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
   <div class="today-welcome"><div><div class="today-eyebrow" id="todayFullDate">Today</div><h2>Your day at a glance</h2><p>See your recorded activity, priorities and next steps.</p></div><span class="today-live-dot">● Live view</span></div>
   <div class="today-stats">
     <div class="today-stat"><span>Recorded today</span><strong id="todayRecorded">—</strong><small>Includes overlapping sessions</small></div>
@@ -297,15 +297,7 @@ $('qualityDate').value=localDate(now());$('qualityAnalyze').addEventListener('cl
 
 // Stage 6: scheduling remains independent from actual session duration.
 function scheduleDateTime(t){return new Date(t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
-function addSchedule(e){e.preventDefault();ensureModules();const name=$('scheduleName').value.trim(),startAt=new Date($('scheduleStart').value).getTime(),endAt=new Date($('scheduleEnd').value).getTime();if(!name||name.length>80||!Number.isFinite(startAt)||!Number.isFinite(endAt)||endAt<=startAt){alert('Enter a name and valid start/end times.');return}const plan={id:uid(),name,startAt,endAt,notes:$('scheduleNotes').value.trim(),reminder:$('scheduleReminder').checked,status:'planned',sessionId:null,createdAt:now()};data.schedule.push(plan);
- if(!persist()){data.schedule=data.schedule.filter(x=>x.id!==plan.id);$('scheduleAlert').textContent='Plan could not be saved. Check Settings & data and export a recovery backup.';return;}
- let stored=false;try{const snapshot=JSON.parse(localStorage.getItem(ATOMIC_KEY)||'null');stored=!!snapshot?.workspace?.schedule?.some(x=>x.id===plan.id)}catch(_e){}
- if(!stored){$('scheduleAlert').textContent='Save verification failed. The plan remains in memory, but persistence is not confirmed. Export a recovery backup.';return;}
- window.lifeosLastSavedPlanId=plan.id;
- $('scheduleForm').reset();$('scheduleReminder').checked=true;$('scheduleDay').value=localDate(startAt);
- try{render()}catch(err){console.error('Plan saved but page rendering failed',err);renderSchedule()}
- $('scheduleAlert').textContent='Saved: '+name+' · '+scheduleDateTime(startAt)+(syncReady?' · Cloud sync queued.':' · Stored locally; cloud sync not verified.');
- requestAnimationFrame(()=>{$('scheduleList')?.scrollIntoView({behavior:'smooth',block:'start'});});}
+function addSchedule(e){e.preventDefault();ensureModules();const name=$('scheduleName').value.trim(),startAt=new Date($('scheduleStart').value).getTime(),endAt=new Date($('scheduleEnd').value).getTime();if(!name||name.length>80||!Number.isFinite(startAt)||!Number.isFinite(endAt)||endAt<=startAt){alert('Enter a name and valid start/end times.');return}data.schedule.push({id:uid(),name,startAt,endAt,notes:$('scheduleNotes').value.trim(),reminder:$('scheduleReminder').checked,status:'planned',sessionId:null,createdAt:now()});if(!persist()){data.schedule.pop();$('scheduleAlert').textContent='Plan not saved. Export a recovery backup and check storage status.';return;}$('scheduleForm').reset();$('scheduleReminder').checked=true;$('scheduleDay').value=localDate(startAt);render();$('scheduleAlert').textContent='Plan saved on this device'+(syncReady?' · synchronization pending.':' · check Settings & data for server synchronization.');requestAnimationFrame(()=>{$('scheduleList')?.scrollIntoView({behavior:'smooth',block:'start'});})}
 function scheduleAction(action,id){ensureModules();const p=data.schedule.find(x=>x.id===id);if(!p)return;if(action==='start'){if(p.status!=='planned'||p.sessionId)return;start(p.name,p.id);return}if(action==='skip'){if(p.sessionId||p.status!=='planned')return;p.status='skipped';p.updatedAt=now();persist();render();return}if(action==='delete'){if(!confirm('Delete this planned activity? Linked tracked sessions will be kept.'))return;data.schedule=data.schedule.filter(x=>x.id!==id);persist();render()}}
 function scheduleMetrics(p){const s=p.sessionId?data.sessions.find(x=>x.id===p.sessionId):null;const planned=p.endAt-p.startAt;const actual=s?elapsed(s,s.endAt??now()):null;return {s,planned,actual}}
 function lifeosRenderDaySummary(){
@@ -339,32 +331,22 @@ document.addEventListener('click',e=>{
  pick.value=day.dataset.dayPick;pick.dispatchEvent(new Event('change',{bubbles:true}));
 });
 function renderUpcomingPlans(){
- const host=$('loUpcomingPlans');if(!host)return;ensureModules();
- const plans=[...data.schedule].filter(p=>p&&Number.isFinite(p.startAt)&&Number.isFinite(p.endAt)).sort((a,b)=>a.startAt-b.startAt),current=now();
- const upcoming=plans.filter(p=>p.endAt>=current&&p.status!=='skipped'),latest=[...plans].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,4);
- const visible=[...upcoming.slice(0,8)];for(const p of latest)if(!visible.some(x=>x.id===p.id))visible.push(p);
- const tasks=[...(data.todos||[])].filter(t=>t&&!t.done).sort((a,b)=>String(a.due||'9999').localeCompare(String(b.due||'9999'))).slice(0,10);
- host.replaceChildren();const heading=document.createElement('div');heading.className='lo-upcoming-head';
- heading.innerHTML='<strong>My upcoming schedule</strong><small>Activities and to-dos are separate records</small>';host.append(heading);
- const tabs=document.createElement('div');tabs.className='lo-schedule-tabs';
- for(const [kind,label] of [['plans','Planned activities'],['tasks','To-do list']]){const btn=document.createElement('button');btn.type='button';btn.textContent=label;btn.dataset.scheduleTab=kind;btn.setAttribute('aria-pressed',String((host.dataset.activeTab||'plans')===kind));tabs.append(btn)}host.append(tabs);
- const cols=document.createElement('div');cols.className='lo-schedule-columns',left=document.createElement('section'),right=document.createElement('section');
- left.className='lo-schedule-column';left.dataset.scheduleColumn='plans';right.className='lo-schedule-column';right.dataset.scheduleColumn='tasks';
- const lh=document.createElement('h3');lh.textContent='Planned activities · '+plans.length+' saved';left.append(lh);
- const rh=document.createElement('h3');rh.textContent='To-dos · '+(data.todos||[]).filter(t=>!t.done).length+' open';right.append(rh);
- if(!visible.length){const empty=document.createElement('p');empty.className='lo-upcoming-empty';empty.textContent='No saved plans. Add an activity to see it here.';left.append(empty)}
- for(const p of visible){const row=document.createElement('button');row.type='button';row.className='lo-upcoming-item';row.dataset.openPlanDate=localDate(p.startAt);row.dataset.openPlanId=p.id;
- if(p.id===window.lifeosLastSavedPlanId)row.classList.add('lo-plan-new');
- const copy=document.createElement('span'),name=document.createElement('strong'),details=document.createElement('small');
- name.textContent=p.name;details.textContent=scheduleDateTime(p.startAt)+' – '+new Date(p.endAt).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})+' · '+(p.status==='skipped'?'Skipped':p.endAt<current?'Past plan':p.status==='started'?'Tracking':'Planned');
- copy.append(name,details);const arrow=document.createElement('span');arrow.className='lo-plan-arrow';arrow.textContent='View ›';row.append(copy,arrow);left.append(row)}
- if(plans.length>visible.length){const note=document.createElement('p');note.className='lo-upcoming-empty';note.textContent='Showing upcoming and recently added plans. Use the calendar for other dates.';left.append(note)}
- if(!tasks.length){const empty=document.createElement('p');empty.className='lo-upcoming-empty';empty.textContent='No open to-dos.';right.append(empty)}
- for(const t of tasks){const row=document.createElement('div');row.className='lo-upcoming-item lo-todo-overview-item';const copy=document.createElement('span'),name=document.createElement('strong'),details=document.createElement('small');
- name.textContent=t.name;details.textContent=(t.due||'No date')+' · '+(t.startTime||t.dueTime||'Any time')+' · '+(t.priority||'normal')+' priority';copy.append(name,details);row.append(copy);right.append(row)}
- cols.append(left,right);host.append(cols);const active=host.dataset.activeTab||'plans';tabs.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.scheduleTab===active)));cols.dataset.activeTab=active;
+ const host=$('loUpcomingPlans');if(!host)return;
+ ensureModules();
+ const items=(data.schedule||[]).filter(p=>p&&p.status!=='skipped'&&Number.isFinite(p.startAt)&&Number.isFinite(p.endAt)&&p.endAt>=now()-3600000).sort((a,b)=>a.startAt-b.startAt);
+ host.replaceChildren();
+ const head=document.createElement('div');head.className='lo-upcoming-head';
+ const title=document.createElement('strong');title.textContent='Upcoming planned activities';
+ const count=document.createElement('small');count.textContent=items.length+' saved';
+ head.append(title,count);host.append(head);
+ if(!items.length){const empty=document.createElement('p');empty.className='lo-upcoming-empty';empty.textContent='No upcoming plans. Add an activity above to see it here.';host.append(empty);return;}
+ for(const p of items.slice(0,8)){
+  const row=document.createElement('button');row.type='button';row.className='lo-upcoming-item';row.dataset.openPlanDate=localDate(p.startAt);row.dataset.openPlanId=p.id;
+  const copy=document.createElement('span');const name=document.createElement('strong');name.textContent=p.name;const details=document.createElement('small');details.textContent=scheduleDateTime(p.startAt)+' – '+new Date(p.endAt).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})+' · '+(p.status==='started'?'In progress':'Planned');copy.append(name,details);
+  const arrow=document.createElement('span');arrow.className='lo-plan-arrow';arrow.textContent='View ›';row.append(copy,arrow);host.append(row);
+ }
+ if(items.length>8){const more=document.createElement('p');more.className='lo-upcoming-empty';more.textContent='Showing the next 8 plans. Use the calendar below to review other dates.';host.append(more);}
 }
-document.addEventListener('click',e=>{const tab=e.target.closest('[data-schedule-tab]');if(!tab)return;const host=$('loUpcomingPlans');if(!host)return;host.dataset.activeTab=tab.dataset.scheduleTab;renderUpcomingPlans()});
 document.addEventListener('click',e=>{
  const row=e.target.closest('[data-open-plan-date]');if(!row)return;
  const picker=$('scheduleDay');if(!picker)return;
