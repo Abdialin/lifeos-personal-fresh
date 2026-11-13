@@ -115,6 +115,7 @@ function emphasizeTodoTimes(){
  }
 }
 function integrateGoalsInsights(){
+ if($('lo14GoalsBridge'))return;
  const goals=document.querySelector('[data-lifeos-view="goals"]')||$('goalRecoveryPanel');
  if(!goals||$('lo13GoalLink'))return;
  const location=$('goalRecoveryPanel');if(!location)return;
