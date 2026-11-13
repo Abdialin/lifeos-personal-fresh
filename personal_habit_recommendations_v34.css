@@ -1,0 +1,24 @@
+/* LifeOS V34: recommendations live beneath existing Insights evidence, not a duplicate dashboard. */
+#lo34Recommendations{margin:13px 0 17px;min-width:0}
+#lo34Recommendations .lo34-drawer{border:1px solid #36556b;border-radius:14px;padding:12px;background:#111f32}
+#lo34Recommendations summary{cursor:pointer;font-size:15px;font-weight:750;line-height:1.5;color:#e8f4fb;padding:6px 4px}
+#lo34Recommendations summary span{font-size:12px;font-weight:500;color:#a6bdcb}
+#lo34Recommendations .lo34-note{font-size:12px;line-height:1.6;color:#aabed0;margin:13px 4px}
+#lo34Recommendations .lo34-evidence-summary{display:flex;gap:11px;align-items:center;border:1px solid #3a536b;border-radius:10px;background:#192c42;padding:12px;margin:13px 0}
+#lo34Recommendations .lo34-evidence-summary strong{font-size:21px;white-space:nowrap}
+#lo34Recommendations .lo34-evidence-summary span{font-size:11px;color:#b6c9d9;line-height:1.5}
+#lo34Recommendations .lo34-habit{border-top:1px solid #354d66;padding:15px 3px 14px}
+#lo34Recommendations .lo34-top{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+#lo34Recommendations .lo34-top strong{font-size:14px}
+#lo34Recommendations .lo34-top span{border:1px solid #4b6d82;background:#1b3549;border-radius:20px;padding:5px 8px;font-size:11px;color:#bcd7df}
+#lo34Recommendations .lo34-stats{display:flex;gap:7px;flex-wrap:wrap;margin:11px 0}
+#lo34Recommendations .lo34-stats span{font-size:11px;color:#c1d5e1;padding:6px 8px;border-radius:7px;background:#1a3046}
+#lo34Recommendations .lo34-suggestion{padding:11px;margin:9px 0;border:1px solid #476178;border-left-width:3px;border-radius:9px;background:#16293b}
+#lo34Recommendations .lo34-suggestion.positive{border-left-color:#75d4a7}
+#lo34Recommendations .lo34-suggestion.review{border-left-color:#e5b575}
+#lo34Recommendations .lo34-suggestion.evidence{border-left-color:#7699dd}
+#lo34Recommendations .lo34-suggestion.action{border-left-color:#77c1ca}
+#lo34Recommendations .lo34-suggestion strong{font-size:12px}
+#lo34Recommendations .lo34-suggestion p{font-size:12px;color:#b1c6d5;line-height:1.55;margin:6px 0 0}
+#lo34Recommendations .lo34-habit>button{margin-top:8px}
+@media(max-width:400px){#lo34Recommendations .lo34-drawer{padding:9px}#lo34Recommendations .lo34-evidence-summary{padding:9px;gap:7px}#lo34Recommendations .lo34-evidence-summary strong{font-size:17px}}
