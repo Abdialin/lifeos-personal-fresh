@@ -38,7 +38,7 @@ function jump(day){
  const summary=$('lifeosSelectedDaySummary')||$('scheduleList');
  if(summary){summary.scrollIntoView({behavior:'smooth',block:'start'});}
 }
-function render(){calendar();timedTasks()}
+function render(){calendar();const duplicate=$('lo11TimedTasks');if(duplicate)duplicate.remove()}
 function timedTasks(){
  const list=$('scheduleList'),picker=$('scheduleDay');if(!list||!picker)return;const ws=get();if(!ws)return;
  let node=$('lo11TimedTasks');if(!node){node=document.createElement('section');node.id='lo11TimedTasks';node.className='lo11-timed-tasks';list.before(node)}
