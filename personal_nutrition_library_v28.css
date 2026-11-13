@@ -24,3 +24,20 @@
 #lo28NutritionExtras .lo28-bar{height:9px;background:#20344c;border-radius:10px;margin:10px 0;overflow:hidden}
 #lo28NutritionExtras .lo28-bar i{height:100%;display:block;background:#6ecab8;border-radius:10px}
 @media(max-width:430px){#lo28NutritionExtras .lo28-entry{flex-wrap:wrap}#lo28NutritionExtras .lo28-actions{width:100%;justify-content:flex-start}#lo28NutritionExtras .lo28-scores{grid-template-columns:repeat(3,minmax(0,1fr))}#lo28NutritionExtras .lo28-card{padding:10px}}
+
+/* V29: compact scrollable day-level charts with touch-first drilldown. */
+#lo28NutritionExtras .lo29-trend-metrics{display:flex;gap:6px;flex-wrap:wrap;margin:13px 0 10px}
+#lo28NutritionExtras .lo29-trend-metrics button{padding:9px 12px;min-height:42px;border-radius:9px;border:1px solid #3d5874;background:#142b42;color:#c9dbed;font-weight:650}
+#lo28NutritionExtras .lo29-trend-metrics button[aria-pressed="true"]{background:#1e554b;color:#e1fff5;border-color:#79d6bd}
+#lo28NutritionExtras .lo29-trend-visual{padding:10px;border:1px solid #334963;border-radius:11px;background:#101a2d;margin:10px 0}
+#lo28NutritionExtras .lo29-trend-head{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 8px}
+#lo28NutritionExtras .lo29-trend-head strong{font-size:13px}
+#lo28NutritionExtras .lo29-trend-head small{color:#a8bdd3;font-size:11px}
+#lo28NutritionExtras .lo29-trend-columns{display:flex;align-items:stretch;gap:4px;max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;padding:8px 2px 3px;scrollbar-width:thin}
+#lo28NutritionExtras .lo29-day{flex:1 0 20px;max-width:46px;min-width:20px;display:flex;flex-direction:column;gap:5px;align-items:center;justify-content:flex-end;min-height:127px;padding:4px 1px;border:1px solid transparent;background:transparent;border-radius:7px;color:#bfdaec;cursor:pointer}
+#lo28NutritionExtras .lo29-day:hover,#lo28NutritionExtras .lo29-day:focus-visible{border-color:#8adaca;background:#1d3446;outline:none}
+#lo28NutritionExtras .lo29-day-track{height:92px;width:100%;display:flex;align-items:flex-end;background:#16273d;border-radius:5px;overflow:hidden}
+#lo28NutritionExtras .lo29-day-track i{width:100%;background:linear-gradient(0deg,#287e79,#86d6b6);border-radius:4px 4px 0 0}
+#lo28NutritionExtras .lo29-day-track em{align-self:center;width:100%;text-align:center;font-style:normal;color:#92a6bb;font-size:12px}
+#lo28NutritionExtras .lo29-day small{font-size:9px;white-space:nowrap;transform:rotate(-25deg);transform-origin:center}
+@media(max-width:440px){#lo28NutritionExtras .lo29-day{flex-basis:24px}#lo28NutritionExtras .lo29-trend-visual{padding:7px}}
