@@ -26,7 +26,6 @@ function plan(){
   for(const id of open){const d=$(id);if(d?.tagName==='DETAILS')d.open=true}
   const dest=b.dataset.lo44Target==='todoForm'?target.closest('.panel')||target:target;
   dest.scrollIntoView({behavior:'smooth',block:'start'});
-  if(b.dataset.lo44Target==='lo42ImprovementActions')$( 'lo42ImprovementDetails')?.setAttribute('open','');
  });
 }
 function insights(){
@@ -42,7 +41,7 @@ function insights(){
  let moved=0;
  for(const id of sections){const target=$(id);if(target){group.append(target);moved++}}
  if(!moved)return;
- root.after(group);
+ root.append(group);
  // Preserve explicit expansion while switching sections. If a proposal is opened,
  // show its parent section so the existing V35 confirmation stays visible.
  document.addEventListener('click',e=>{
