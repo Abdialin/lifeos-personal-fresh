@@ -309,7 +309,7 @@ function addSchedule(e){
  data.schedule.push(plan);
  if(!persist()){
   data.schedule=data.schedule.filter(p=>p.id!==plan.id);
-  notice.textContent='Plan NOT saved. Browser storage or the offline recovery journal could not accept this change. Keep the form open and export a recovery backup in Settings & data.';
+  notice.textContent='Plan NOT saved. '+(lifeosLastSaveFailure||'Storage verification failed.')+' Keep the form open. Go to Settings & data → Export recovery, and verify that the file downloaded before any further changes.';
   notice.scrollIntoView({block:'nearest'});return;
  }
  // The atomic checkpoint, not a UI toast or a compatibility mirror, is authoritative across refreshes.
@@ -999,19 +999,25 @@ $('bodyMetricsForm').addEventListener('submit',saveBodyMetrics);$('bodyGoalForm'
 // Stage 21: one-key atomic commit for workspace + offline journal.
 // localStorage writes are atomic per key only; legacy keys remain compatibility mirrors.
 const ATOMIC_KEY='lifeos-v4-stage21-atomic';
-let atomicBlocked=false;
+let atomicBlocked=false,lifeosLastSaveFailure='';
 function atomicRecord(workspace,journal,meta){
  validateWorkspace(workspace);
  if(!Array.isArray(journal)||!journal.every(x=>x&&typeof x.id==='string'&&Number.isFinite(x.createdAt)&&x.snapshot&&x.snapshot.version===1))throw new Error('Invalid journal');
  return {format:1,workspace:JSON.parse(JSON.stringify(workspace)),journal:JSON.parse(JSON.stringify(journal)),meta:{revision:Number.isInteger(meta.revision)?meta.revision:null,dirty:meta.dirty===true},committedAt:Date.now()};
 }
 function atomicCommit(workspace,journal,meta){
- if(atomicBlocked||outboxCorrupt)return false;
+ if(atomicBlocked||outboxCorrupt){lifeosLastSaveFailure=atomicBlocked?'Recovery checkpoint is blocked or invalid.':'Offline journal is blocked or invalid.';return false}
  try{
   const record=atomicRecord(workspace,journal,meta);
   localStorage.setItem(ATOMIC_KEY,JSON.stringify(record)); // commit point
+  lifeosLastSaveFailure='';
   return true;
- }catch(e){syncStatus('⚠ Atomic save failed; existing saved state retained. Export a backup.');return false}
+ }catch(e){
+  const quota=e?.name==='QuotaExceededError'||e?.code===22||e?.code===1014;
+  lifeosLastSaveFailure=quota?'Browser storage capacity exceeded.':e?.name==='SecurityError'?'Browser storage access denied.':'Recovery save failed ('+String(e?.name||'unknown error')+').';
+  syncStatus('⚠ '+lifeosLastSaveFailure+' Existing records retained. Export a recovery backup.');
+  return false
+ }
 }
 function recoverAtomic(){
  const raw=localStorage.getItem(ATOMIC_KEY);
@@ -1028,7 +1034,7 @@ function recoverAtomic(){
 }
 const originalPersist=persist;
 persist=function(){
- if(atomicBlocked||outboxCorrupt){syncStatus('⚠ Save blocked: recovery data invalid. Export a backup.');return false}
+ if(atomicBlocked||outboxCorrupt){lifeosLastSaveFailure=atomicBlocked?'Recovery checkpoint is blocked or invalid.':'Offline journal is blocked or invalid.';syncStatus('⚠ '+lifeosLastSaveFailure+' Export a backup.');return false}
  const shouldQueue=!syncSuppressed;
  const next=shouldQueue?[...outbox,{id:uid(),createdAt:now(),snapshot:JSON.parse(JSON.stringify(data))}]:outbox;
  const nextMeta={...syncMeta,dirty:shouldQueue?true:syncMeta.dirty};
