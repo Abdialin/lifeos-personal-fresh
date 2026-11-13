@@ -319,7 +319,7 @@ window.lifeosSocialHabitBridge={
   const original=previous.find(x=>x.id===item?.id);
   if(!original)return {ok:false,error:'Ideal routine no longer exists.'};
   const revisedStart=String(item.start||''),revisedDuration=Number(item.durationMinutes);
-  if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(revisedStart)||!Number.isInteger(revisedDuration)||revisedDuration<5||revisedDuration>1440)return {ok:false,error:'Invalid routine start or duration.'};
+  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(revisedStart)||!Number.isInteger(revisedDuration)||revisedDuration<5||revisedDuration>1440)return {ok:false,error:'Invalid routine start or duration.'};
   // Compare-and-review: a stale proposal may not replace changes made elsewhere.
   if(original.start!==item.originalStart||Number(original.durationMinutes)!==Number(item.originalDuration))
    return {ok:false,error:'Routine changed since preview. Review current values and try again.'};
