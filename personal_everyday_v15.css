@@ -1,0 +1,21 @@
+/* LifeOS Personal V15 — useful day-first experience. */
+.lo15-upcoming{margin:15px 0 18px;padding:16px;border:1px solid var(--lo-border,#33455c);border-radius:19px;background:var(--lo-surface,#06132a)}
+.lo15-upcoming-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.lo15-upcoming-head h2{font-size:18px;margin:0;font-weight:800}
+.lo15-open-plan{background:none;border:0;padding:9px 4px;font:inherit;font-size:12px;font-weight:700;color:var(--lo-accent,#68cbb2);cursor:pointer}
+.lo15-upcoming-list{display:grid;gap:4px}
+.lo15-upcoming-row{border:0;border-bottom:1px solid var(--lo-border,#263855);background:transparent;width:100%;display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:12px 3px;text-align:left;color:var(--lo-text,#f3f7ff);font:inherit;cursor:pointer}
+.lo15-upcoming-row:last-child{border-bottom:0}
+.lo15-upcoming-row:focus-visible,.lo15-open-plan:focus-visible{outline:2px solid var(--lo-accent,#7de2c9);outline-offset:2px}
+.lo15-upcoming-date{color:var(--lo-muted,#98aac4);font-weight:650;font-size:12px;white-space:nowrap}
+.lo15-upcoming-content{min-width:0;display:grid;gap:4px}
+.lo15-upcoming-content strong{font-weight:720;font-size:14px;overflow-wrap:anywhere}
+.lo15-upcoming-content small{color:var(--lo-muted,#9aaac3);font-size:12px}
+.lo15-upcoming-row[data-kind="planned"]{border-left:3px solid #75a8ff;padding-left:11px}
+.lo15-upcoming-row[data-kind="task"]{border-left:3px solid #e9ac60;padding-left:11px}
+.lo15-muted{font-size:13px;color:var(--lo-muted,#95a6bd);margin:12px 0}
+body:not([data-lifeos-view="dashboard"]) #lo15Upcoming{display:none!important}
+.v7-plan-toolbar .lo15-date-jump{display:grid;gap:5px;font-size:12px;color:var(--lo-muted,#a9bacf);min-width:150px;font-weight:700}
+.v7-plan-toolbar .lo15-date-jump input{font:inherit;color:var(--lo-text,#eaf1fe);background:var(--lo-surface-2,#1c2a40);border:1px solid var(--lo-border,#34445d);border-radius:10px;padding:10px;min-height:42px;color-scheme:dark}
+@media(max-width:700px){.v7-plan-toolbar{flex-wrap:wrap!important;gap:12px!important}.v7-plan-toolbar .lo15-date-jump{flex:1 1 150px}.v7-plan-toolbar [data-v7-add-plan]{flex:1 1 118px}.lo15-upcoming{padding:13px}.lo15-upcoming-row{grid-template-columns:75px minmax(0,1fr)}}
+body[data-theme="light"] .v7-plan-toolbar .lo15-date-jump input{color-scheme:light}
