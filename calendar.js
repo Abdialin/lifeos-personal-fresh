@@ -16,6 +16,17 @@ function conflicts(events,workspace){const plans=(workspace?.schedule||[]).filte
 function read(){try{const d=JSON.parse(localStorage.getItem(STORE)||'null');return d&&Array.isArray(d.events)&&Array.isArray(d.approved)?d:{events:[],approved:[],skipped:0}}catch{return{events:[],approved:[],skipped:0}}}
 function workspace(){try{return JSON.parse(localStorage.getItem(LIFE)||'null')}catch{return null}}
 let state=read();let lastSync={source:'None',at:null,count:0};function save(){localStorage.setItem(STORE,JSON.stringify(state))}
+function commitReview(next){
+ // Commit browser review data before changing in-memory approval state.
+ localStorage.setItem(STORE,JSON.stringify(next));state=next;return true;
+}
+function mergeReview(incoming,source){
+ const byId=new Map(state.events.map(e=>[e.source+'|'+e.uid+'|'+e.start,e]));
+ for(const e of incoming)byId.set(e.source+'|'+e.uid+'|'+e.start,e);
+ const events=[...byId.values()];
+ const approvals=new Set(events.map(eventKey));
+ return {events,approved:state.approved.filter(x=>approvals.has(x)),skipped:state.skipped||0};
+}
 function eventKey(e){return e.uid+'|'+e.start}
 function planningKey(e){return e.source+'|'+e.uid+'|'+e.start}
 function prepareHandoff(events,approved,workspace){const selected=events.filter(e=>approved.includes(eventKey(e)));const existing=new Set((workspace?.schedule||[]).filter(p=>p.calendarKey).map(p=>p.calendarKey));return selected.filter(e=>!existing.has(planningKey(e))&&Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.end>e.start&&e.title.trim().length>0).map(e=>({key:planningKey(e),name:e.title.slice(0,80),startAt:e.start,endAt:e.end,source:e.source,uid:e.uid,conflicts:e.conflicts}));}
@@ -67,16 +78,21 @@ for(const id of ['search','source-filter','conflict-filter','approval-filter'])e
 el('send-plans').onclick=()=>{const candidates=prepareHandoff(conflicts(state.events,workspace()),state.approved,workspace());if(!candidates.length){el('message').textContent='No new approved candidates to send.';return}if(candidates.length>100){el('message').textContent='Limit selection to 100 candidates per transfer.';return}try{const previous=localStorage.getItem(HANDOFF);if(previous&&!confirm('Replace the existing unprocessed planning handoff?'))return;localStorage.setItem(HANDOFF,JSON.stringify({format:'lifeos-stage27-plan-handoff-v1',createdAt:Date.now(),candidates}));el('message').textContent=`Prepared ${candidates.length} candidate(s). Open LifeOS and review the transfer before any schedule entry is created.`;}catch(e){el('message').textContent='Could not stage transfer: '+e.message}};
 el('send-changes').onclick=()=>{const candidates=prepareChangeHandoff(reconciliation.proposals,workspace());if(!candidates.length){el('message').textContent='No actionable proposals. Ambiguous matches require manual review.';return;}if(candidates.length>100){el('message').textContent='Review at most 100 changes at once.';return;}try{if(localStorage.getItem(CHANGE_HANDOFF)&&!confirm('Replace the previous pending change review?'))return;localStorage.setItem(CHANGE_HANDOFF,JSON.stringify({format:CHANGE_HANDOFF,createdAt:Date.now(),candidates}));el('message').textContent=`Prepared ${candidates.length} schedule change proposals. Open LifeOS to review each action. No changes applied.`;}catch(e){el('message').textContent='Unable to stage review: '+e.message;}};
 el('export-review').onclick=()=>{const items=conflicts(state.events,workspace());const report={format:'lifeos-stage26-calendar-review',exportedAt:new Date().toISOString(),readOnly:true,summary:reviewSummary(items,state.approved),events:items.map(e=>({uid:e.uid,title:e.title,start:new Date(e.start).toISOString(),end:new Date(e.end).toISOString(),source:e.source,conflicts:e.conflicts,approvedAsCandidate:state.approved.includes(eventKey(e))}))};const url=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='lifeos-calendar-review.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+const oauthError=new URLSearchParams(location.search).get('error');
+const oauthMessages={
+ 'oauth-configuration':'Google Calendar cannot connect: OAuth client ID, client secret, redirect URL or encryption key is not configured on the server.',
+ 'oauth-storage':'Google Calendar could not initialize secure OAuth storage. LifeOS activity records are unchanged.',
+ 'oauth-state':'The Google authorization session expired or did not match. Start a new connection attempt.',
+ 'oauth-token':'Google authorization was not completed. Check the Google account consent and OAuth redirect configuration.'
+};
 async function googleStatus(){try{const r=await fetch('/api/calendar/status',{cache:'no-store'});const x=await r.json();const link=el('google-connect');if(!r.ok)throw Error(x.error||'Status unavailable');
- el('google-status').textContent=x.connected?'Google Calendar connected · read-only':x.configured?'Google Calendar is ready to connect':'Google Calendar cannot connect yet. The server administrator must configure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI and LIFEOS_CALENDAR_ENCRYPTION_KEY.';
+ el('google-status').textContent=oauthMessages[oauthError]||(x.connected?'Google Calendar connected · read-only':x.configured?'Google Calendar is ready to connect':'Google Calendar cannot connect yet. The server administrator must configure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI and LIFEOS_CALENDAR_ENCRYPTION_KEY.');
  if(link){link.hidden=!x.configured;link.setAttribute('aria-disabled',String(!x.configured))}
- }catch(err){el('google-status').textContent='Google Calendar connection status unavailable: '+err.message;const link=el('google-connect');if(link)link.hidden=true}}
-el('google-import').onclick=async()=>{try{const now=new Date(),end=new Date(now.getTime()+30*86400000);const r=await fetch('/api/calendar/events?'+new URLSearchParams({start:now.toISOString(),end:end.toISOString()}),{cache:'no-store'});const x=await r.json();if(!r.ok)throw Error(x.error||'Calendar fetch failed');const incoming=x.events.map(e=>({...e,start:Date.parse(e.start),end:Date.parse(e.end)})).filter(e=>Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.end>e.start);reconciliation=safeReconcile(incoming,workspace(),{complete:!x.truncated,source:'google',truncated:!!x.truncated,windowStart:now.getTime(),windowEnd:end.getTime()});showReconciliation();const merged=new Map(state.events.map(e=>[e.source+'|'+e.uid+'|'+e.start,e]));for(const e of incoming)merged.set(e.source+'|'+e.uid+'|'+e.start,e);state.events=[...merged.values()];lastSync={source:'Google Calendar',at:new Date().toLocaleString(),count:incoming.length};save();render();el('message').textContent=`Previewed ${incoming.length} Google events. ${x.truncated?'More events exist; narrow the window to review all.':''} No LifeOS activities changed.`;}catch(e){el('message').textContent=e.message;}};
-googleStatus();showReconciliation();const oauthError=new URLSearchParams(location.search).get('error');
-if(oauthError==='oauth-configuration')el('google-status').textContent='Google Calendar connection cannot start: OAuth client ID, client secret, redirect URL or encryption key is missing on the LifeOS server.';
-else if(oauthError==='oauth-storage')el('google-status').textContent='Google Calendar could not initialize secure OAuth storage. Existing LifeOS data is safe; the server connection needs attention.';
+ }catch(err){el('google-status').textContent=oauthMessages[oauthError]||('Google Calendar connection status unavailable: '+err.message);const link=el('google-connect');if(link)link.hidden=true}}
+el('google-import').onclick=async()=>{try{const now=new Date(),end=new Date(now.getTime()+30*86400000);const r=await fetch('/api/calendar/events?'+new URLSearchParams({start:now.toISOString(),end:end.toISOString()}),{cache:'no-store'});const x=await r.json();if(!r.ok)throw Error(x.error||'Calendar fetch failed');const incoming=x.events.map(e=>({...e,start:Date.parse(e.start),end:Date.parse(e.end)})).filter(e=>Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.end>e.start);reconciliation=safeReconcile(incoming,workspace(),{complete:!x.truncated,source:'google',truncated:!!x.truncated,windowStart:now.getTime(),windowEnd:end.getTime()});showReconciliation();commitReview(mergeReview(incoming,'google'));lastSync={source:'Google Calendar',at:new Date().toLocaleString(),count:incoming.length};render();el('message').textContent=`Previewed ${incoming.length} Google events. ${x.truncated?'More events exist; narrow the window to review all.':''} No LifeOS activities changed.`;}catch(e){el('message').textContent=e.message;}};
+googleStatus();showReconciliation();
 
-el('import').onclick=async()=>{const file=el('file').files[0];if(!file){el('message').textContent='Select an .ics file.';return}if(file.size>2000000){el('message').textContent='File exceeds 2 MB.';return}try{const parsed=parseICS(await file.text());const old=state;state={events:parsed.events,skipped:parsed.skipped,approved:old.approved.filter(id=>parsed.events.some(e=>id===e.uid+'|'+e.start))};lastSync={source:'ICS file',at:new Date().toLocaleString(),count:parsed.events.length};save();render();el('message').textContent=`Imported ${state.events.length} unique events; ${parsed.skipped} skipped; ${parsed.duplicates} duplicates removed.`}catch(e){el('message').textContent='Import failed: '+e.message}};
+el('import').onclick=async()=>{const file=el('file').files[0];if(!file){el('message').textContent='Select an .ics file.';return}if(file.size>2000000){el('message').textContent='File exceeds 2 MB.';return}try{const parsed=parseICS(await file.text());const next=mergeReview(parsed.events,'ics-import');next.skipped=parsed.skipped;commitReview(next);lastSync={source:'ICS file',at:new Date().toLocaleString(),count:parsed.events.length};render();el('message').textContent=`Previewed ${parsed.events.length} unique ICS events; ${parsed.skipped} skipped; ${parsed.duplicates} duplicates removed. Other review sources and their approvals preserved.`}catch(e){el('message').textContent='Import failed: '+e.message}};
 async function previewDocument(){
  const file=el('document-file')?.files?.[0],status=el('document-status');if(!file){status.textContent='Choose a PDF, TXT or CSV file.';return}
  if(file.size>2_000_000){status.textContent='File exceeds 2 MB.';return}
@@ -91,14 +107,12 @@ async function previewDocument(){
     return {uid:'document-'+file.name+'-'+x.line+'-'+i,title:String(x.name).slice(0,80),start,end,source:'document-import'};
   }).filter(Boolean);
   if(!events.length){status.textContent='No unambiguous dated events found. Try a text-based PDF with one event per line, or enter plans manually.';return}
-  const merged=new Map(state.events.map(e=>[e.source+'|'+e.uid+'|'+e.start,e]));
-  for(const item of events)merged.set(item.source+'|'+item.uid+'|'+item.start,item);
-  state.events=[...merged.values()];state.skipped=Number(body.unparsedLines)||0;save();lastSync={source:'Document preview',at:new Date().toLocaleString(),count:events.length};render();
+  const next=mergeReview(events,'document-import');next.skipped=Number(body.unparsedLines)||0;commitReview(next);lastSync={source:'Document preview',at:new Date().toLocaleString(),count:events.length};render();
   status.textContent='Found '+events.length+' candidate(s). '+state.skipped+' lines not recognized. Check conflicts, edit details, and approve candidates below. No LifeOS plan has been added.';
  }catch(err){status.textContent='Document preview failed: '+err.message}
 }
 el('preview-document')?.addEventListener('click',previewDocument);
-el('clear').onclick=()=>{if(!confirm('Clear Stage 23 imported events and approvals? LifeOS activities are unaffected.'))return;state={events:[],approved:[],skipped:0};save();render();el('message').textContent='Imported calendar data cleared.'};
+el('clear').onclick=()=>{if(!confirm('Clear Stage 23 imported events and approvals? LifeOS activities are unaffected.'))return;try{commitReview({events:[],approved:[],skipped:0})}catch(err){el('message').textContent='Could not clear review data: '+err.message;return}render();el('message').textContent='Imported calendar data cleared.'};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;if(!state.events.some(x=>x.uid+'|'+x.start===id))return;if(b.dataset.act==='edit'){
  const row=state.events.find(x=>eventKey(x)===id);if(!row)return;
  const title=prompt('Activity name (max 80 characters)',row.title);if(title===null)return;
@@ -108,7 +122,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
  if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(startText)||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(endText)){alert('Enter valid local dates and times.');return}
  const start=new Date(startText).getTime(),end=new Date(endText).getTime(),name=title.trim();
  if(!name||name.length>80||!Number.isFinite(start)||!Number.isFinite(end)||end<=start){alert('Name, start or finish is invalid.');return}
- state.approved=state.approved.filter(x=>x!==id);row.title=name;row.start=start;row.end=end;save();render();return
- }if(b.dataset.act==='approve'&&!state.approved.includes(id))state.approved.push(id);if(b.dataset.act==='revoke')state.approved=state.approved.filter(x=>x!==id);save();render()});render();
+ const next=JSON.parse(JSON.stringify(state));const updated=next.events.find(x=>eventKey(x)===id);if(!updated)return;next.approved=next.approved.filter(x=>x!==id);updated.title=name;updated.start=start;updated.end=end;try{commitReview(next)}catch(err){alert('Review edit was NOT saved: '+err.message);return}render();return
+ }const next=JSON.parse(JSON.stringify(state));if(b.dataset.act==='approve'&&!next.approved.includes(id))next.approved.push(id);if(b.dataset.act==='revoke')next.approved=next.approved.filter(x=>x!==id);try{commitReview(next)}catch(err){alert('Approval not saved: '+err.message);return}render()});render();
 if(typeof module!=='undefined')module.exports={parseICS,conflicts,timeValue,reviewSummary,filteredEvents,eventKey,planningKey,prepareHandoff,reconcileCalendar,safeReconcile,prepareChangeHandoff,proposalFingerprint};
 })();
