@@ -602,7 +602,30 @@ function addSchedule(e){
  $('scheduleForm').reset();$('scheduleReminder').checked=true;
  requestAnimationFrame(()=>{const target=inList?$('scheduleList'):$('loUpcomingPlans');target?.scrollIntoView({behavior:'smooth',block:'start'})});
 }
-function scheduleAction(action,id){ensureModules();const p=data.schedule.find(x=>x.id===id);if(!p)return;if(action==='start'){if(p.status!=='planned'||p.sessionId)return;start(p.name,p.id);return}if(action==='skip'){if(p.sessionId||p.status!=='planned')return;p.status='skipped';p.updatedAt=now();persist();render();return}if(action==='delete'){if(!confirm('Delete this planned activity? Linked tracked sessions will be kept.'))return;data.schedule=data.schedule.filter(x=>x.id!==id);persist();render()}}
+function scheduleAction(action,id){
+ ensureModules();
+ const plan=data.schedule.find(x=>x.id===id);if(!plan)return false;
+ if(action==='start'){
+  if(plan.status!=='planned'||plan.sessionId)return false;
+  return start(plan.name,plan.id);
+ }
+ if(action==='skip'){
+  if(plan.sessionId||plan.status!=='planned')return false;
+  const ok=trackingCommit(()=>{
+   const p=data.schedule.find(x=>x.id===id);
+   p.status='skipped';p.updatedAt=now();
+  });
+  if(ok)render();
+  return ok;
+ }
+ if(action==='delete'){
+  if(!confirm('Delete this planned activity? Linked tracked sessions will be kept.'))return false;
+  const ok=trackingCommit(()=>{data.schedule=data.schedule.filter(x=>x.id!==id)});
+  if(ok)render();
+  return ok;
+ }
+ return false;
+}
 function scheduleMetrics(p){const s=p.sessionId?data.sessions.find(x=>x.id===p.sessionId):null;const planned=p.endAt-p.startAt;const actual=s?elapsed(s,s.endAt??now()):null;return {s,planned,actual}}
 function lifeosRenderDaySummary(){
  const picker=$('scheduleDay'),nav=$('lifeosDayNavigation'),box=$('lifeosSelectedDaySummary');
