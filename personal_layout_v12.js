@@ -61,6 +61,7 @@ function distraction(){
  const note=panel.querySelector('p.note');if(note)note.textContent='Distraction is counted only when you record it; unlogged time is never assumed to be distraction.';
 }
 function improveTrack(){
+ if($('lo14SettingsHub'))return;
  const active=$('trackActivePanel'),quick=$('trackQuickPanel');if(!active||!quick)return;
  // Put the primary workflow first: active timers -> start -> distraction -> tasks.
  active.after(quick);
