@@ -52,3 +52,31 @@ body[data-lifeos-view="life"][data-lo-life-section="friends"] #lo32FriendHub{dis
 body[data-lifeos-view="life"] #loLifeSectionTabs.lo-life-tabs{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
 body[data-lifeos-view="life"] #loLifeSectionTabs.lo-life-tabs button{font-size:clamp(10px,2.5vw,12px);padding:10px 3px;min-width:0;overflow-wrap:anywhere}
 @media(max-width:360px){body[data-lifeos-view="life"] #loLifeSectionTabs.lo-life-tabs{gap:3px}body[data-lifeos-view="life"] #loLifeSectionTabs.lo-life-tabs button{font-size:10px;padding:9px 1px}}
+
+/* V33: approved activity evidence, measurable habits, and read-only Insights. */
+#lo32HabitHub .lo33-habit-copy{flex:1;min-width:0}
+#lo32HabitHub .lo33-meter{height:8px;max-width:420px;background:#2c4258;border-radius:8px;overflow:hidden;margin:10px 0}
+#lo32HabitHub .lo33-meter i{display:block;height:100%;background:#7bd8bb;border-radius:8px}
+#lo32HabitHub .lo33-evidence-panel{margin-top:11px;border:1px solid #355469;border-radius:9px;padding:8px;background:#122b3e;max-width:590px}
+#lo32HabitHub .lo33-evidence-panel summary{cursor:pointer;font-size:12px;color:#d2e8e4;font-weight:650;line-height:1.5}
+#lo32HabitHub .lo33-evidence-list{display:grid;gap:7px;margin:10px 0 4px}
+#lo32HabitHub .lo33-evidence{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:9px;border-radius:9px;border:1px solid #38546d}
+#lo32HabitHub .lo33-evidence strong{font-size:12px}
+#lo32HabitHub .lo33-evidence small{display:block;max-width:360px;line-height:1.5;overflow-wrap:anywhere}
+#lo32HabitHub .lo33-evidence button{padding:9px 11px;border:1px solid #6ec6b7;border-radius:8px;color:#def9ef;background:#1d4a44;font-size:12px;min-height:40px}
+#lo32HabitHub .lo32-habit-actions button[data-lo33-edit]{background:#23475a;border-color:#7babbf;color:#e5f3ff}
+#lo32HabitHub #lo33CancelHabitEdit{min-height:42px}
+#lo33HabitInsights{border:1px solid #36566a;border-radius:15px;padding:16px;margin:18px 0;background:#14243a;color:#e3f0fc}
+#lo33HabitInsights .lo33-heading h3{font-size:17px;margin:0 0 5px}
+#lo33HabitInsights .lo33-heading p,#lo33HabitInsights .lo33-insight-muted{font-size:12px;color:#a9bfd2;line-height:1.55}
+#lo33HabitInsights .lo33-insight-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:15px 0}
+#lo33HabitInsights .lo33-insight-stats>div{border:1px solid #344d65;border-radius:10px;padding:11px;min-width:0}
+#lo33HabitInsights .lo33-insight-stats small{font-size:11px;color:#a5c0d3;display:block}
+#lo33HabitInsights .lo33-insight-stats strong{font-size:20px;display:block;overflow-wrap:anywhere;margin-top:5px}
+#lo33HabitInsights .lo33-insight-habit{padding:12px 0;border-top:1px solid #334b5f}
+#lo33HabitInsights .lo33-insight-habit>div:first-child{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap}
+#lo33HabitInsights .lo33-insight-habit strong{font-size:13px}
+#lo33HabitInsights .lo33-insight-habit span,#lo33HabitInsights .lo33-insight-habit small{font-size:11px;color:#acc4d7}
+#lo33HabitInsights .lo33-insight-track{background:#293e56;height:9px;border-radius:9px;overflow:hidden;margin:9px 0 5px}
+#lo33HabitInsights .lo33-insight-track i{display:block;height:100%;background:#72c7ac}
+@media(max-width:450px){#lo33HabitInsights{padding:11px}#lo32HabitHub .lo33-evidence{padding:7px}}
