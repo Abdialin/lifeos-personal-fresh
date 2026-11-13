@@ -196,6 +196,13 @@ class Handler(BaseHTTPRequestHandler):
                 self.reply(503, {'error': 'Calendar storage unavailable'})
             return
         if path == '/api/calendar/connect':
+            if not gcal.ready():
+                self.send_response(303)
+                self.send_header('Location', '/calendar.html?error=oauth-configuration')
+                self.send_header('Cache-Control', 'no-store')
+                self.send_header('Content-Length', '0')
+                self.end_headers()
+                return
             try:
                 target = gcal.begin()
                 self.send_response(302)
@@ -204,7 +211,11 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header('Content-Length', '0')
                 self.end_headers()
             except Exception:
-                self.reply(503, {'error': 'Google OAuth configuration or storage unavailable'})
+                self.send_response(303)
+                self.send_header('Location', '/calendar.html?error=oauth-storage')
+                self.send_header('Cache-Control', 'no-store')
+                self.send_header('Content-Length', '0')
+                self.end_headers()
             return
         if path == '/api/calendar/callback':
             q = parse_qs(urlparse(self.path).query)
