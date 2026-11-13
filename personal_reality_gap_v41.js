@@ -92,7 +92,7 @@ function init(){
  });
  container.addEventListener('toggle',e=>{if(e.target.id==='lo41GapDetails')expanded=e.target.open},true);
  render();
- document.addEventListener('click',e=>{if(e.target.closest('#lifeosNavigation,#scheduleList,#idealRoutineForm,#lo40Compare'))setTimeout(render,130)});
+ document.addEventListener('click',e=>{if(e.target.closest('#lifeosNavigation,#scheduleList,#idealRoutineForm'))setTimeout(render,130)});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
