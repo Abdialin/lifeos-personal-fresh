@@ -846,10 +846,18 @@ function lifeosTodoGroups(){
   week.days.get(task.due).push(task);
  }
  const sortTasks=rows=>rows.sort((a,b)=>(a.startTime||a.dueTime||'99:99').localeCompare(b.startTime||b.dueTime||'99:99')||({high:0,normal:1,low:2}[a.priority||'normal']??1)-({high:0,normal:1,low:2}[b.priority||'normal']??1));
- const taskRow=t=>'<div class="lo-task-item lo-task-'+escape(t.priority||'normal')+'"><input type="checkbox" data-todo-act="toggle" data-todo-id="'+escape(t.id)+'" '+(t.done?'checked':'')+' aria-label="Complete '+escape(t.name)+'"><div><strong>'+escape(t.name)+'</strong><div class="sub">'+(t.startTime?'Scheduled '+escape(t.startTime)+(t.endTime?'–'+escape(t.endTime):'')+' · ':t.dueTime?'Deadline '+escape(t.dueTime)+' · ':t.due?'Due this day · ':'Anytime · ')+escape(t.priority||'normal')+' priority'+(t.category?' · '+escape(t.category):'')+'</div></div><div class="lo21-task-actions"><button class="btn outline tiny" data-todo-act="edit" data-todo-id="'+escape(t.id)+'" aria-label="Edit task timing">Edit</button><button class="btn outline tiny" data-todo-act="delete" data-todo-id="'+escape(t.id)+'" aria-label="Delete task">×</button></div></div>';
+ const taskTimingLabel=t=>{
+  const due=t.due?escape(t.due)+' · ':'';
+  if(t.startTime)return 'Scheduled '+due+escape(t.startTime)+(t.endTime?'–'+escape(t.endTime):'');
+  if(t.dueTime)return 'Deadline '+due+escape(t.dueTime);
+  if(t.due)return 'Due '+due.slice(0,-3)+' · flexible time';
+  return 'Anytime · flexible';
+ };
+ const taskRow=t=>'<div class="lo-task-item lo-task-'+escape(t.priority||'normal')+'"><input type="checkbox" data-todo-act="toggle" data-todo-id="'+escape(t.id)+'" '+(t.done?'checked':'')+' aria-label="Complete '+escape(t.name)+'"><div><strong>'+escape(t.name)+'</strong><div class="sub">'+taskTimingLabel(t)+' · '+escape(t.priority||'normal')+' priority'+(t.category?' · '+escape(t.category):'')+'</div></div><div class="lo21-task-actions"><button class="btn outline tiny" data-todo-act="edit" data-todo-id="'+escape(t.id)+'" aria-label="Edit task timing">Edit</button><button class="btn outline tiny" data-todo-act="delete" data-todo-id="'+escape(t.id)+'" aria-label="Delete task">×</button></div></div>';
+ const currentWeek=lifeosIsoWeek(localDate(now())),currentKey=currentWeek.year+'-'+String(currentWeek.week).padStart(2,'0');
  const sections=[...byWeek].sort((a,b)=>a[0].localeCompare(b[0])).map(([groupKey,w])=>{
   const days=[...w.days].sort((a,b)=>a[0].localeCompare(b[0])).map(([day,rows])=>'<div class="lo-task-day"><h4>'+escape(new Date(day+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}))+'</h4>'+sortTasks(rows).map(taskRow).join('')+'</div>').join('');
-  return '<details class="lo-task-week" data-group-key="'+escape(groupKey)+'" open><summary>Week '+w.week+' · '+w.year+' <span>'+[...w.days.values()].reduce((n,a)=>n+a.length,0)+' open</span></summary>'+days+'</details>';
+  return '<details class="lo-task-week" data-group-key="'+escape(groupKey)+'" '+(groupKey<=currentKey?'open':'')+'><summary>Week '+w.week+' · '+w.year+' <span>'+[...w.days.values()].reduce((n,a)=>n+a.length,0)+' open</span></summary>'+days+'</details>';
  });
  const all=todos.length,done=completed.length,pct=all?Math.round(done/all*100):0;
  const progress='<div class="lo-todo-progress"><div><strong>'+done+' / '+all+' tasks complete</strong><span>'+pct+'%</span></div><div class="lo-todo-track"><div style="width:'+pct+'%"></div></div></div>';
