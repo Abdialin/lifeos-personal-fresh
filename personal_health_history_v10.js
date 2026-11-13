@@ -36,8 +36,13 @@ function history(rows,id,kind){
      item.minutes!=null?duration(item.minutes):null,
      item.sessionId?'Linked timer':null,
      item.intensity||null,
-     item.distanceKm!=null?item.distanceKm+' km':null
-    ]:[item.calories!=null?item.calories+' kcal':'Calories unknown',item.proteinGrams!=null?item.proteinGrams+' g protein':null];
+     item.distanceKm!=null?item.distanceKm+' km':null,
+     item.sets!=null?item.sets+' sets':null,
+     item.reps!=null?item.reps+' reps':null,
+     item.loadKg!=null?item.loadKg+' kg load':null,
+     item.rounds!=null?item.rounds+' rounds':null,
+     item.effort!=null?'Effort '+item.effort+'/10':null
+    ]:[item.mealCategory||null,item.mealTime?'At '+item.mealTime:null,item.calories!=null?item.calories+' kcal':'Calories unknown',item.proteinGrams!=null?item.proteinGrams+' g protein':null];
     const notes=workout?(item.details||''):(item.description||'');
     return '<article class="lo10-entry"><div class="lo10-entry-content"><strong>'+esc(title)+'</strong><div class="lo10-entry-meta">'+esc(info.filter(Boolean).join(' · '))+'</div>'+(notes?'<div class="lo10-note">'+esc(notes)+'</div>':'')+(sample?'<span class="lo10-sample">Development example</span>':'')+'</div><button type="button" class="btn outline tiny lo10-delete" data-delete="'+esc(item.id)+'" aria-label="Delete '+esc(title)+'">Delete</button></article>';
    }).join('');
