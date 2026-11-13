@@ -2,7 +2,7 @@
  * Read-only: an unmatched session means unknown, not a failed commitment. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&gt;','>':'&gt;','"':'&quot;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const key=t=>{const d=new Date(t);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const normal=v=>String(v||'').toLowerCase().replace(/[^a-z0-9\u00c0-\u024f]+/g,' ').trim();
 const mins=ms=>Math.round(ms/60000);
