@@ -313,6 +313,22 @@ window.lifeosNutritionV25={
  saveSettings:settings=>{ensureModules();if(!settings||typeof settings!=='object')return false;const prev=data.nutritionSettings;data.nutritionSettings={...settings};if(!persist()){data.nutritionSettings=prev;return false}return true}
 };
 window.lifeosSocialHabitBridge={
+ reviewIdealChange:(item)=>{
+  ensureModules();
+  const previous=data.idealRoutines||[];
+  const original=previous.find(x=>x.id===item?.id);
+  if(!original)return {ok:false,error:'Ideal routine no longer exists.'};
+  const revisedStart=String(item.start||''),revisedDuration=Number(item.durationMinutes);
+  if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(revisedStart)||!Number.isInteger(revisedDuration)||revisedDuration<5||revisedDuration>1440)return {ok:false,error:'Invalid routine start or duration.'};
+  // Compare-and-review: a stale proposal may not replace changes made elsewhere.
+  if(original.start!==item.originalStart||Number(original.durationMinutes)!==Number(item.originalDuration))
+   return {ok:false,error:'Routine changed since preview. Review current values and try again.'};
+  if(revisedStart===original.start&&revisedDuration===Number(original.durationMinutes))return {ok:false,error:'Nothing changed.'};
+  data.idealRoutines=previous.map(x=>x.id===original.id?{...x,start:revisedStart,durationMinutes:revisedDuration}:x);
+  if(!persist()){data.idealRoutines=previous;return {ok:false,error:'Save failed. Nothing was changed.'}}
+  try{renderIdealRoutines();renderSmartSchedule();render()}catch(err){console.warn('Ideal saved; refresh error',err)}
+  return {ok:true,id:original.id};
+ },
  proposeHabitPlan:(item)=>{
   ensureModules();
   if(!item||typeof item.name!=='string'||!item.name.trim()||item.name.length>80||!Number.isSafeInteger(item.startAt)||!Number.isSafeInteger(item.endAt)||item.endAt<=item.startAt||item.endAt-item.startAt>24*3600000)return {ok:false,error:'Invalid date, time or duration'};
