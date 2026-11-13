@@ -1,0 +1,35 @@
+/* LifeOS Personal V9: health dashboards and structured goal decisions */
+.lo-review-head,.lo-review-card-head,.lo9-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.lo-review-head{padding:8px 0 15px;font-size:12px}.lo-review-head span,.lo9-head span{font-size:11px;color:var(--lo-muted,#b7c3d5)}
+.lo-review-card{padding:14px;border:1px solid var(--lo-border,#34465f);border-radius:15px;margin:12px 0;background:var(--lo-surface-2,#18263a)}
+.lo-review-card h3{font-size:15px;margin:0}.lo-review-status{font-size:11px;border-radius:30px;padding:5px 8px;border:1px solid var(--lo-border,#34465f);color:var(--lo-muted,#b4c2d5)}
+.lo-review-ready{border-color:#5fc6b5;color:#88e9d5}
+.lo-review-week{margin:12px 0}.lo-review-week>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px}
+.lo-review-week b{font-size:12px}.lo-review-meter,.lo9-bar{height:9px;background:rgba(139,169,202,.2);border-radius:12px;overflow:hidden;margin-top:6px}
+.lo-review-meter i,.lo9-bar i{height:100%;display:block;background:linear-gradient(90deg,#50c7ab,#91b0ef);border-radius:12px}
+.lo-review-decision{border-top:1px solid var(--lo-border,#34465f);margin-top:13px;padding-top:12px}
+.lo-review-decision summary{cursor:pointer;font-size:12px;font-weight:700}.lo-review-decision .btn{margin-top:12px;min-height:42px}
+.lo-review-change{display:flex;align-items:center;gap:15px;flex-wrap:wrap;font-size:12px}
+.lo-review-help{font-size:12px;color:var(--lo-muted,#adbbcd)}
+.lo-health-dashboard{padding:15px;margin:11px 0 15px;background:rgba(93,151,202,.075);border:1px solid var(--lo-border,#354761);border-radius:15px}
+.lo-health-dashboard h3{font-size:17px;margin:0 0 12px}.lo-health-dashboard h4{font-size:13px;margin:16px 0 8px}
+.lo9-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.lo9-stat{padding:11px 8px;border:1px solid rgba(128,164,205,.14);background:rgba(100,148,193,.09);border-radius:10px;min-width:0}
+.lo9-stat small{display:block;color:var(--lo-muted,#b7c5d8);font-size:10px;line-height:1.3}
+.lo9-stat strong{display:block;font-size:18px;line-height:1.3;margin:5px 0;overflow-wrap:anywhere}
+.lo9-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:end;gap:6px;margin:12px 0}
+.lo9-week>div{display:flex;align-items:center;flex-direction:column;gap:5px;min-width:0}
+.lo9-week b,.lo9-week small{font-size:10px}
+.lo9-week small{color:var(--lo-muted,#b3c0d3)}
+.lo9-column{height:90px;width:min(100%,31px);display:flex;align-items:end;background:rgba(101,146,193,.18);border-radius:6px 6px 0 0;overflow:hidden}
+.lo9-column i{width:100%;display:block;min-height:1px;background:linear-gradient(#7ddbc7,#5794d9);border-radius:6px 6px 0 0}
+.lo9-chiprow{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.lo9-chiprow span{font-size:11px;border-radius:16px;padding:5px 9px;background:rgba(99,152,190,.18)}
+.lo9-muted{font-size:11px;line-height:1.6;color:var(--lo-muted,#b4c2d8)}
+.lo9-log-details,.lo-health-utilities details{border:1px solid var(--lo-border,#344660);padding:12px;border-radius:13px;margin:13px 0}
+.lo9-log-details summary,.lo-health-utilities summary{font-size:13px;font-weight:700;cursor:pointer}
+.lo9-log-details .item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.lo9-log-details .item strong{overflow-wrap:anywhere;font-size:12px}.lo9-log-details .item .btn{min-width:66px;white-space:nowrap;word-break:normal!important;overflow-wrap:normal!important;font-size:11px}
+#v4Plan .v7-plan-week-balance{display:block!important;order:unset;scroll-margin-top:18px}
+#v4Plan .v6-plan-day{min-height:146px}
+#v4Plan .v6-plan-day:focus-visible{outline:3px solid var(--lo-accent,#80dfce)}
+@media(max-width:510px){.lo9-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lo-review-head{display:grid;gap:3px}#v4Plan .v6-plan-day{min-height:125px}}
