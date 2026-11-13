@@ -227,7 +227,9 @@ function loActivityKind(name){
  if(/work|shift|business|development/.test(n))return 'work';
  if(/eating|meal|breakfast|lunch|dinner/.test(n))return 'food';
  if(/sleep/.test(n))return 'sleep';
- if(/quran|memorization/.test(n))return 'quran';
+ if(/quran|memorization|hifdh|revision of surah/.test(n))return 'quran';
+ if(/study|studying|coursework|assignment|lecture|exam|research|coding practice/.test(n))return 'study';
+ if(/reading|book|literature/.test(n))return 'reading';
  return 'general';
 }
 function loDetailDefinition(kind){
@@ -236,10 +238,12 @@ function loDetailDefinition(kind){
  const kinds={
   prayer:[field('prayer','Prayer','select',['Not specified','Fajr','Dhuhr','Asr','Maghrib','Isha','Other']),field('setting','Where?','select',['Prefer not to say','Home','Mosque','Other']),field('congregation','Congregation','select',['Not specified','Yes','No']),...common],
   fitness:[field('activityType','Fitness activity','select',['Not specified','Gym','Walking','Running','Boxing','Cycling','Swimming','Yoga','Other']),field('exercise','Workout focus'),field('exercises','Exercises, sets, reps','textarea'),field('distanceKm','Distance (km)','number'),field('intensity','Intensity','select',['Not specified','Easy','Moderate','Hard']),...common],
-  work:[field('role','Work / project'),field('breakMinutes','Break minutes','number'),field('workType','Work type','select',['Not specified','Regular','Overtime','On call']),...common],
+  work:[field('role','Work / project'),field('workResult','What was completed?','textarea'),field('breakMinutes','Break minutes','number'),field('workType','Work type','select',['Not specified','Regular','Overtime','On call']),...common],
+  study:[field('subject','Course or subject'),field('studyType','Study activity','select',['Not specified','Lecture','Focused studying','Assignment','Research','Exam preparation','Coding practice','Other']),field('topics','Topics covered','textarea'),field('progress','Progress / outcome','textarea'),field('focusLevel','Focus level','select',['Not specified','Low','Moderate','High']),...common],
+  reading:[field('bookTitle','Book or material'),field('pages','Pages read','number'),field('chapters','Chapter(s) or section(s)'),field('takeaways','Main takeaways','textarea'),...common],
   food:[field('meal','Meal'),field('foodItems','Foods and portions','textarea'),field('calories','Calories (optional manual estimate)','number'),field('proteinGrams','Protein (g)','number'),field('carbsGrams','Carbohydrates (g)','number'),field('fatGrams','Fat (g)','number'),...common],
   sleep:[field('quality','Perceived sleep quality','select',['Not specified','Poor','Fair','Good','Very good']),field('interruptions','Interruptions','number'),...common],
-  quran:[field('surah','Surah / passage'),field('pages','Pages','number'),field('practice','Practice type','select',['Not specified','New memorization','Revision']),...common],
+  quran:[field('surah','Surah / passage'),field('pages','Pages','number'),field('practice','Practice type','select',['Not specified','New memorization','Revision','Listening / recitation']),field('result','Progress or revision notes','textarea'),...common],
   general:common
  };
  return kinds[kind]||common;
