@@ -1,0 +1,47 @@
+/* LifeOS Personal V10 — structured week/day health logs and monthly body progress */
+#fitnessList,#mealList{max-height:none!important;overflow:visible!important}
+.lo10-history-header,.lo10-body-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.lo10-history-header strong,.lo10-body-header h3{font-size:14px;margin:0}
+.lo10-history-header span,.lo10-body-last{font-size:11px;color:var(--lo-muted,#b9c7da)}
+.lo10-week{border:1px solid var(--lo-border,#354865);border-radius:13px;margin:9px 0;background:rgba(102,146,193,.06);overflow:hidden}
+.lo10-week>summary{padding:12px 13px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;list-style:none;font-size:13px}
+.lo10-week>summary::-webkit-details-marker,.lo10-day>summary::-webkit-details-marker{display:none}
+.lo10-week>summary:before,.lo10-day>summary:before{content:'▸';color:var(--lo-accent,#7ee3ca);flex:none}
+.lo10-week[open]>summary:before,.lo10-day[open]>summary:before{content:'▾'}
+.lo10-week>summary strong,.lo10-day>summary span{flex:1;min-width:0}
+.lo10-week>summary small,.lo10-day>summary small{font-size:11px;color:var(--lo-muted,#b4c3d7);text-align:right}
+.lo10-day{margin:2px 11px 11px;border-radius:10px;background:rgba(94,132,179,.08);border:1px solid rgba(135,162,197,.16);overflow:hidden}
+.lo10-day>summary{padding:11px;display:flex;align-items:center;gap:9px;cursor:pointer;list-style:none;font-size:12px;font-weight:650}
+.lo10-entry{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;padding:11px!important;margin:0!important;border-top:1px solid rgba(124,160,201,.18)!important}
+.lo10-entry-content{min-width:0;flex:1}.lo10-entry-content>strong{display:block;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.lo10-entry-meta{font-size:11px;margin-top:4px;color:var(--lo-muted,#b1c2d5);line-height:1.4}
+.lo10-note{font-size:11px;line-height:1.4;overflow-wrap:anywhere;margin-top:5px;color:var(--lo-muted,#bdc8d6)}
+.lo10-sample{display:inline-block;margin-top:6px;padding:3px 6px;border-radius:20px;border:1px solid rgba(218,173,99,.42);font-size:10px;color:#ebcd9b}
+.lo10-delete{flex:none!important;min-width:60px!important;padding:8px 11px!important;white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important;font-size:11px!important}
+.lo10-body-header h3{font-size:16px}.lo10-muted{color:var(--lo-muted,#b2c3d6);font-size:11px;line-height:1.55;margin:8px 0}
+.lo10-body-last{padding:5px 8px;border:1px solid var(--lo-border,#35485e);border-radius:12px}
+.lo10-goal,.lo10-goal-empty{padding:12px;border-radius:12px;background:rgba(88,146,189,.09);border:1px solid rgba(137,162,192,.2);margin:12px 0}
+.lo10-goal-empty{font-size:12px;color:var(--lo-muted,#c0cddd)}
+.lo10-goal-line{display:flex;justify-content:space-between;gap:7px;text-align:center;align-items:center}
+.lo10-goal-line>span:first-child,.lo10-goal-line>span:last-child{flex:1}
+.lo10-goal-line b,.lo10-goal-line small{display:block}.lo10-goal-line b{font-size:17px}.lo10-goal-line small{font-size:10px;color:var(--lo-muted,#b7c4d5)}
+.lo10-goal-track{height:9px;border-radius:14px;background:rgba(122,162,199,.23);overflow:hidden;margin:14px 0}
+.lo10-goal-track i{display:block;background:linear-gradient(90deg,#67cdbb,#86afeb);height:100%;border-radius:14px}
+.lo10-goal-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.lo10-goal-stats>div{min-width:0;background:rgba(100,156,195,.09);border-radius:9px;padding:8px}
+.lo10-goal-stats b,.lo10-goal-stats small{display:block;overflow-wrap:anywhere}
+.lo10-goal-stats b{font-size:15px}.lo10-goal-stats small{font-size:10px;line-height:1.3;color:var(--lo-muted,#b0c0d5)}
+.lo10-chart-wrap{margin-top:12px}.lo10-chart-wrap h4{margin:8px 0 0;font-size:12px}
+.lo10-chart{width:100%;height:auto;min-height:100px;overflow:visible}
+.lo10-grid{stroke:rgba(151,170,197,.24);stroke-width:1;stroke-dasharray:4 4}
+.lo10-axis{fill:var(--lo-muted,#adc0d6);font-size:11px}
+.lo10-line{fill:none;stroke:#75ccba;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.lo10-dot{fill:#a0def2;stroke:var(--lo-surface,#13213a);stroke-width:2}
+.lo10-table-wrap{overflow-x:auto;max-width:100%;border:1px solid var(--lo-border,#364960);border-radius:10px;margin-top:12px}
+.lo10-table{width:100%;border-collapse:collapse;font-size:11px;min-width:310px;font-variant-numeric:tabular-nums}
+.lo10-table caption{padding:10px;text-align:left;font-size:12px;color:var(--lo-muted,#c2cede);font-weight:650}
+.lo10-table th,.lo10-table td{text-align:left;padding:9px 6px;border-bottom:1px solid rgba(131,165,200,.13);white-space:nowrap}
+.lo10-table th{font-size:10px;color:var(--lo-muted,#b9c6d9)}
+.lo10-table tr:last-child td{border:0}
+#loBodyMonth{font-size:14px;margin:6px 0 8px}
+@media(max-width:460px){.lo10-goal-stats b{font-size:13px}.lo10-week>summary{padding:11px 8px}.lo10-entry{gap:7px!important;padding:9px!important}.lo10-delete{min-width:55px!important;padding:7px 9px!important}.lo10-body-last{max-width:100%}}
