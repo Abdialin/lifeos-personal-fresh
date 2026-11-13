@@ -6,7 +6,7 @@ const local=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.
 const inRange=v=>typeof v==='string'&&/^\d{2}:\d{2}$/.test(v)&&Number(v.slice(0,2))<24&&Number(v.slice(3))<60;
 const datetime=(d,t)=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(String(d))||!inRange(t))return null;const x=new Date(d+'T'+t+':00');return Number.isFinite(x.getTime())&&local(x)===d?x.getTime():null};
 const seen=new Set();
-let allowed=false;
+let allowed=typeof Notification!=='undefined'&&Notification.permission==='granted';
 function active(w,t){
  const result=[],horizon=10*M;
  for(const p of w.schedule||[]){
@@ -35,7 +35,7 @@ function init(){
  const list=el('div','lo16-list');panel.append(list);
  const parent=$('lo15Upcoming');(parent||$('todayOverview')).after(panel);
  function render(){
-  const w=ws();if(!w)return;const now=Date.now(),items=active(w,now);list.replaceChildren();
+  const w=ws();if(!w)return;const now=Date.now(),items=active(w,now);allowed=typeof Notification!=='undefined'&&Notification.permission==='granted';list.replaceChildren();
   if(!items.length){list.append(el('p','lo16-empty','No timed tasks or activities need attention right now.'))}
   for(const x of items){
    const row=el('button','lo16-reminder-row');row.type='button';
