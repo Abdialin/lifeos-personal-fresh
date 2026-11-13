@@ -29,15 +29,15 @@ function preview(){
  '<p class="lo35-safe">No overlaps found with currently saved LifeOS plans.</p>')+
  '<p class="lo35-warning">External calendars, including Google Calendar, are not checked here. Review them separately before approval.</p>';
 }
-function show(id){
+function show(id,preferred=null){
  selectedId=id;const def=habit();if(!def)return;
  const host=$('lo35PlanReview');if(!host)return;
  const next=new Date(Date.now()+24*3600000);next.setHours(19,0,0,0);
- const duration=def.targetMode==='minutes'&&Number(def.targetAmount)>=5?Math.min(480,Math.round(def.targetAmount)):30;
+ const duration=preferred?.duration|| (def.targetMode==='minutes'&&Number(def.targetAmount)>=5?Math.min(480,Math.round(def.targetAmount)):30);
  host.hidden=false;host.innerHTML='<div class="lo35-head"><h3>Review a Smart Schedule proposal</h3><button type="button" class="btn outline tiny" id="lo35Close">Close</button></div>'+
  '<p class="lo35-description">For <strong>'+esc(def.title)+'</strong>. You choose the time and must approve the final plan. No habit is marked complete.</p>'+
- '<form id="lo35ProposalForm"><label>Planned activity<input id="lo35PlanName" maxlength="80" required value="'+esc(def.title)+'"></label>'+
- '<label>Start date and time<input id="lo35PlanStart" type="datetime-local" required value="'+esc(toInput(next))+'"></label>'+
+ '<form id="lo35ProposalForm"><label>Planned activity<input id="lo35PlanName" maxlength="80" required value="'+esc(preferred?.name||def.title)+'"></label>'+
+ '<label>Start date and time<input id="lo35PlanStart" type="datetime-local" required value="'+esc(preferred?.startAt?toInput(new Date(preferred.startAt)):toInput(next))+'"></label>'+
  '<label>Duration (minutes)<input id="lo35PlanDuration" type="number" min="5" max="480" step="1" required value="'+duration+'"></label>'+
  '<div id="lo35DraftReview" aria-live="polite"></div>'+
  '<button type="submit" class="btn primary" id="lo35ApprovePlan">Approve & save to LifeOS Plan</button></form>'+
@@ -72,5 +72,6 @@ function init(){
   }
  });
 }
+window.lifeosHabitPlanApprovalV35={show};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
