@@ -297,7 +297,44 @@ $('qualityDate').value=localDate(now());$('qualityAnalyze').addEventListener('cl
 
 // Stage 6: scheduling remains independent from actual session duration.
 function scheduleDateTime(t){return new Date(t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
-function addSchedule(e){e.preventDefault();ensureModules();const name=$('scheduleName').value.trim(),startAt=new Date($('scheduleStart').value).getTime(),endAt=new Date($('scheduleEnd').value).getTime();if(!name||name.length>80||!Number.isFinite(startAt)||!Number.isFinite(endAt)||endAt<=startAt){alert('Enter a name and valid start/end times.');return}data.schedule.push({id:uid(),name,startAt,endAt,notes:$('scheduleNotes').value.trim(),reminder:$('scheduleReminder').checked,status:'planned',sessionId:null,createdAt:now()});if(!persist()){data.schedule.pop();$('scheduleAlert').textContent='Plan not saved. Export a recovery backup and check storage status.';return;}$('scheduleForm').reset();$('scheduleReminder').checked=true;$('scheduleDay').value=localDate(startAt);render();$('scheduleAlert').textContent='Plan saved on this device'+(syncReady?' · synchronization pending.':' · check Settings & data for server synchronization.');requestAnimationFrame(()=>{$('scheduleList')?.scrollIntoView({behavior:'smooth',block:'start'});})}
+function addSchedule(e){
+ e.preventDefault();ensureModules();
+ const name=$('scheduleName').value.trim(),startAt=new Date($('scheduleStart').value).getTime(),endAt=new Date($('scheduleEnd').value).getTime();
+ const notice=$('scheduleAlert');
+ if(!name||name.length>80||!Number.isFinite(startAt)||!Number.isFinite(endAt)||endAt<=startAt){
+  const message='Plan not added: enter a name and valid start/end times (finish must be after start).';
+  notice.textContent=message;alert(message);return;
+ }
+ const plan={id:uid(),name,startAt,endAt,notes:$('scheduleNotes').value.trim(),reminder:$('scheduleReminder').checked,status:'planned',sessionId:null,createdAt:now()};
+ data.schedule.push(plan);
+ if(!persist()){
+  data.schedule=data.schedule.filter(p=>p.id!==plan.id);
+  notice.textContent='Plan NOT saved. Browser storage or the offline recovery journal could not accept this change. Keep the form open and export a recovery backup in Settings & data.';
+  notice.scrollIntoView({block:'nearest'});return;
+ }
+ // The atomic checkpoint, not a UI toast or a compatibility mirror, is authoritative across refreshes.
+ let verified=false;
+ try{
+  const saved=JSON.parse(localStorage.getItem(ATOMIC_KEY)||'null');
+  verified=!!(saved&&saved.format===1&&saved.workspace&&Array.isArray(saved.workspace.schedule)&&saved.workspace.schedule.some(p=>p.id===plan.id));
+ }catch(err){console.warn('Plan save verification unavailable',err)}
+ if(!verified){
+  notice.textContent='Plan save cannot be verified in the recovery checkpoint. Do not refresh until you export a recovery backup. The entry remains in memory.';
+  notice.scrollIntoView({block:'nearest'});return;
+ }
+ window.lifeosLastSavedPlanId=plan.id;
+ $('scheduleDay').value=localDate(startAt);
+ // Make this plan visible even if a separate dashboard renderer encounters an error.
+ try{render()}catch(err){
+  console.error('Plan stored, general refresh failed',err);
+  try{renderSchedule()}catch(inner){console.error('Plan stored, schedule refresh failed',inner)}
+ }
+ const inList=!!$('scheduleList')?.querySelector('[data-schedule-id="'+plan.id+'"]');
+ const message=inList?'Plan saved on this device and visible for '+localDate(startAt)+'.':'Plan saved in recovery storage, but the selected-day list did not update. Check the calendar for '+localDate(startAt)+'.';
+ notice.textContent=message+(syncReady?' Server synchronization may still be pending.':' Server synchronization is not confirmed.');
+ $('scheduleForm').reset();$('scheduleReminder').checked=true;
+ requestAnimationFrame(()=>{const target=inList?$('scheduleList'):$('loUpcomingPlans');target?.scrollIntoView({behavior:'smooth',block:'start'})});
+}
 function scheduleAction(action,id){ensureModules();const p=data.schedule.find(x=>x.id===id);if(!p)return;if(action==='start'){if(p.status!=='planned'||p.sessionId)return;start(p.name,p.id);return}if(action==='skip'){if(p.sessionId||p.status!=='planned')return;p.status='skipped';p.updatedAt=now();persist();render();return}if(action==='delete'){if(!confirm('Delete this planned activity? Linked tracked sessions will be kept.'))return;data.schedule=data.schedule.filter(x=>x.id!==id);persist();render()}}
 function scheduleMetrics(p){const s=p.sessionId?data.sessions.find(x=>x.id===p.sessionId):null;const planned=p.endAt-p.startAt;const actual=s?elapsed(s,s.endAt??now()):null;return {s,planned,actual}}
 function lifeosRenderDaySummary(){
@@ -333,19 +370,24 @@ document.addEventListener('click',e=>{
 function renderUpcomingPlans(){
  const host=$('loUpcomingPlans');if(!host)return;
  ensureModules();
- const items=(data.schedule||[]).filter(p=>p&&p.status!=='skipped'&&Number.isFinite(p.startAt)&&Number.isFinite(p.endAt)&&p.endAt>=now()-3600000).sort((a,b)=>a.startAt-b.startAt);
+ const valid=(data.schedule||[]).filter(p=>p&&Number.isFinite(p.startAt)&&Number.isFinite(p.endAt));
+ const upcoming=valid.filter(p=>p.status!=='skipped'&&p.endAt>=now()-3600000).sort((a,b)=>a.startAt-b.startAt);
+ // Display recent additions even if the user entered a past date or many earlier plans exist.
+ const recent=valid.filter(p=>Number.isFinite(p.createdAt)&&p.createdAt>=now()-7*86400000).sort((a,b)=>b.createdAt-a.createdAt);
+ const items=upcoming.slice(0,8);
+ for(const p of recent){if(items.length>=12)break;if(!items.some(x=>x.id===p.id))items.push(p)}
  host.replaceChildren();
  const head=document.createElement('div');head.className='lo-upcoming-head';
  const title=document.createElement('strong');title.textContent='Upcoming planned activities';
  const count=document.createElement('small');count.textContent=items.length+' saved';
  head.append(title,count);host.append(head);
  if(!items.length){const empty=document.createElement('p');empty.className='lo-upcoming-empty';empty.textContent='No upcoming plans. Add an activity above to see it here.';host.append(empty);return;}
- for(const p of items.slice(0,8)){
-  const row=document.createElement('button');row.type='button';row.className='lo-upcoming-item';row.dataset.openPlanDate=localDate(p.startAt);row.dataset.openPlanId=p.id;
-  const copy=document.createElement('span');const name=document.createElement('strong');name.textContent=p.name;const details=document.createElement('small');details.textContent=scheduleDateTime(p.startAt)+' – '+new Date(p.endAt).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})+' · '+(p.status==='started'?'In progress':'Planned');copy.append(name,details);
+ for(const p of items){
+  const row=document.createElement('button');row.type='button';row.className='lo-upcoming-item';row.dataset.openPlanDate=localDate(p.startAt);row.dataset.openPlanId=p.id;if(p.id===window.lifeosLastSavedPlanId)row.classList.add('lo-plan-new');
+  const copy=document.createElement('span');const name=document.createElement('strong');name.textContent=p.name;const details=document.createElement('small');details.textContent=scheduleDateTime(p.startAt)+' – '+new Date(p.endAt).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})+' · '+(p.status==='skipped'?'Skipped':p.endAt<now()?'Past plan':p.status==='started'?'In progress':'Planned');copy.append(name,details);
   const arrow=document.createElement('span');arrow.className='lo-plan-arrow';arrow.textContent='View ›';row.append(copy,arrow);host.append(row);
  }
- if(items.length>8){const more=document.createElement('p');more.className='lo-upcoming-empty';more.textContent='Showing the next 8 plans. Use the calendar below to review other dates.';host.append(more);}
+ if(valid.length>items.length){const more=document.createElement('p');more.className='lo-upcoming-empty';more.textContent='Showing upcoming and recent plans. Use the calendar below to review other dates.';host.append(more);}
 }
 document.addEventListener('click',e=>{
  const row=e.target.closest('[data-open-plan-date]');if(!row)return;
