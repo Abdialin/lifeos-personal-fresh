@@ -57,10 +57,11 @@ function evaluate(def,checks,records){
 }
 function render(){
  const root=$('lo34Recommendations');if(!root)return;
+ const wasOpen=root.querySelector('.lo34-drawer')?.open??false;
  const b=habits(),records=w(),defs=b.habitDefinitions||[],checks=b.habitChecks||[];
  const results=defs.map(d=>evaluate(d,checks,records));
  const totalDue=results.reduce((x,r)=>x+r.due,0),totalDone=results.reduce((x,r)=>x+r.done,0);
- root.innerHTML='<details class="lo34-drawer"><summary>Evidence-based habit recommendations <span>· '+results.length+' habits</span></summary>'+
+ root.innerHTML='<details class="lo34-drawer" '+(wasOpen?'open':'')+'><summary>Evidence-based habit recommendations <span>· '+results.length+' habits</span></summary>'+
  '<p class="lo34-note">Suggestions use completed scheduled opportunities from the last 28 complete local days, comparing recent and earlier periods where enough evidence exists. They do not edit routines, increase goals or create calendar events.</p>'+
  '<div class="lo34-evidence-summary"><strong>'+totalDone+' / '+totalDue+'</strong><span>past scheduled opportunities completed across habits</span></div>'+
  (results.length?results.map(r=>{
