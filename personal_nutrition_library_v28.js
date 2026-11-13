@@ -36,9 +36,50 @@ function nutritionChart(entries){
  (observed.length?'<div class="lo29-trend-columns" role="group" aria-label="'+esc(label)+' trend">'+columns+'</div>':'<p class="lo28-hint">No recorded data for this metric.</p>')+
  '<p class="lo28-hint">Tap a column to inspect that date’s meals. Unlogged values remain unknown.</p></div>';
 }
+
+function mealInsights(meals,water,entries,goals){
+ const count=meals.length;
+ const numericKeys=[['calories','Calories'],['proteinGrams','Protein'],['carbsGrams','Carbs'],['fatGrams','Fat'],['fiberGrams','Fiber']];
+ const knownCount=key=>meals.filter(m=>num(m[key])!==null).length;
+ const byType=new Map();
+ for(const m of meals){
+  const name=String(m.mealCategory||'Unspecified').trim()||'Unspecified';
+  byType.set(name,(byType.get(name)||0)+1);
+ }
+ const categories=[...byType].sort((a,b)=>b[1]-a[1]);
+ const maximum=Math.max(1,...categories.map(x=>x[1]));
+ const quality='<div class="lo30-quality">'+numericKeys.map(([key,label])=>{
+  const filled=knownCount(key),pct=count?Math.round(100*filled/count):0;
+  return '<div class="lo30-quality-row"><span>'+esc(label)+'</span><div class="lo30-quality-track"><i style="width:'+pct+'%"></i></div><strong>'+filled+'/'+count+'</strong></div>';
+ }).join('')+'</div>';
+ const categoryRows=categories.length?categories.slice(0,7).map(([name,amount])=>
+  '<div class="lo30-category-row"><span>'+esc(name)+'</span><div class="lo30-category-track"><i style="width:'+(amount/maximum*100).toFixed(1)+'%"></i></div><strong>'+amount+'</strong></div>'
+ ).join(''):'<p class="lo28-hint">No meal types recorded in this period.</p>';
+ const assumed=meals.filter(m=>Boolean(m.seedBatch||m.source==='assumed-demo')).length;
+ const entered=count-assumed;
+ // Macronutrient-energy shares are shown only for meals where all three macros were recorded.
+ const complete=meals.filter(m=>['proteinGrams','carbsGrams','fatGrams'].every(k=>num(m[k])!==null&&num(m[k])>=0));
+ const kcalProtein=sum(complete,'proteinGrams')*4,kcalCarbs=sum(complete,'carbsGrams')*4,kcalFat=sum(complete,'fatGrams')*9;
+ const kcal=kcalProtein+kcalCarbs+kcalFat;
+ const protPct=kcal?Math.round(kcalProtein/kcal*100):0,carbPct=kcal?Math.round(kcalCarbs/kcal*100):0;
+ const macro=kcal?'<div class="lo30-macro"><div class="lo30-macro-ring" role="img" aria-label="Approximate macro energy: protein '+protPct+'%, carbs '+(carbPct)+'%, fat '+(100-protPct-carbPct)+'%" style="background:conic-gradient(#69c7b5 0% '+protPct+'%,#6589d9 '+protPct+'% '+(protPct+carbPct)+'%,#e8ad6d '+(protPct+carbPct)+'% 100%)"><span>Macros</span></div><div class="lo30-macro-legend"><span><i style="background:#69c7b5"></i> Protein '+protPct+'%</span><span><i style="background:#6589d9"></i> Carbs '+carbPct+'%</span><span><i style="background:#e8ad6d"></i> Fat '+(100-protPct-carbPct)+'%</span></div></div>':'<p class="lo28-hint">No complete macro records available for a distribution chart.</p>';
+ const target=num(goals?.calories);
+ const completeDays=entries.filter(e=>e.meals>0&&e.coverage===e.meals);
+ const targetDays=target>0?completeDays.filter(e=>Math.abs(e.calories-target)<=target*0.1).length:0;
+ const hydrationDays=entries.filter(e=>e.water!==null).length;
+ return '<details class="lo30-pattern-details"><summary>Meal patterns & data quality</summary>'+
+ '<div class="lo30-kpis"><div><strong>'+count+'</strong><small>Meals in period</small></div><div><strong>'+entered+'</strong><small>Non-assumed records</small></div><div><strong>'+assumed+'</strong><small>Assumed examples</small></div></div>'+
+ '<h4>Recorded meal types</h4><div class="lo30-category-list">'+categoryRows+'</div>'+
+ '<h4>Nutrition data coverage</h4>'+quality+
+ '<h4>Recorded macro-energy proportions</h4>'+macro+
+ '<p class="lo28-hint">Distribution uses '+complete.length+' of '+count+' meals with all three macros recorded, using 4/4/9 kcal per gram. It is an approximation, not a health assessment.</p>'+
+ '<div class="lo30-evidence"><strong>Daily comparison evidence</strong><p>'+completeDays.length+' of '+entries.length+' days had meals with complete calorie values. '+hydrationDays+' days have a water log.'+
+ (target>0?' '+targetDays+' complete days were within ±10% of your chosen '+target+' kcal target.':' Set a calorie target to compare recorded days.')+'</p>'+
+ '<p>Incomplete days are excluded from the calorie-target comparison. Not logging a meal or water does not prove zero intake.</p></div></details>';
+}
 function trends(s){
  const d=new Date();d.setHours(12,0,0,0);const dates=Array.from({length:trendRange},(_,i)=>{const v=new Date(d);v.setDate(v.getDate()-(trendRange-1-i));return dateKey(v)});
- const meals=s.meals||[],water=s.waterIntake||[],entries=dates.map(day=>{
+ const meals=s.meals||[],water=s.waterIntake||[],goals=s.nutritionSettings||{},periodStart=dates[0],periodMeals=meals.filter(m=>m.date>=periodStart&&m.date<=dates.at(-1)),entries=dates.map(day=>{
   const ms=meals.filter(m=>m.date===day),w=water.filter(m=>m.date===day),known=ms.filter(m=>num(m.calories)!==null);
   const pk=ms.filter(m=>num(m.proteinGrams)!==null);
   return {day,meals:ms.length,calories:known.length?sum(known,'calories'):null,protein:pk.length?sum(pk,'proteinGrams'):null,coverage:known.length,water:w.length?sum(w,'ml'):null};
@@ -61,15 +102,15 @@ function trends(s){
  '<p class="lo28-hint">Recorded nutrition from '+esc(first)+' to '+esc(last)+'. Unlogged days and missing values are unknown, not zero.</p>'+
  grouped.map(g=>'<div class="lo28-week"><div><strong>'+esc(g.start)+' – '+esc(g.end)+'</strong><span>'+g.meals+' meals</span></div>'+
  '<div class="lo28-bar"><i style="width:'+Math.min(100,g.meals/(g.days*3)*100).toFixed(0)+'%"></i></div>'+
- '<small>Average recorded calories: '+(g.calories===null?'Unknown':g.calories+' kcal')+' ('+g.calorieDays+'/'+g.days+' days) · Water: '+(g.water===null?'Unknown':(g.water/1000).toFixed(2)+' L')+' ('+g.waterDays+'/'+g.days+' days)</small></div>').join('')+'</details>';
+ '<small>Average recorded calories: '+(g.calories===null?'Unknown':g.calories+' kcal')+' ('+g.calorieDays+'/'+g.days+' days) · Water: '+(g.water===null?'Unknown':(g.water/1000).toFixed(2)+' L')+' ('+g.waterDays+'/'+g.days+' days)</small></div>').join('')+mealInsights(periodMeals,water,entries,goals)+'</details>';
 }
 function render(){
  const anchor=$('lifeosNutritionDashboard'),s=api()?.get();if(!anchor||!s)return;
  let container=$('lo28NutritionExtras');
  if(!container){container=document.createElement('div');container.id='lo28NutritionExtras';container.setAttribute('aria-label','Meal shortcuts and nutrition trends');anchor.after(container)}
- const openA=$('lo28SavedDetails')?.open??false,openB=$('lo28TrendDetails')?.open??false;
+ const openA=$('lo28SavedDetails')?.open??false,openB=$('lo28TrendDetails')?.open??false,openPatterns=$('lo28NutritionExtras .lo30-pattern-details')?.open??false;
  container.innerHTML=templates(s)+trends(s);
- $('lo28SavedDetails').open=openA;$('lo28TrendDetails').open=openB;
+ $('lo28SavedDetails').open=openA;$('lo28TrendDetails').open=openB;const patterns=$('lo28NutritionExtras .lo30-pattern-details');if(patterns)patterns.open=openPatterns;
 }
 function init(){
  const root=$('lifeosNutritionDashboard');if(!root||initialized)return;initialized=true;
