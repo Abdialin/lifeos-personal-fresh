@@ -72,3 +72,10 @@ body[data-lifeos-view="schedule"] #v4Plan .v7-plan-selected-day{display:none!imp
 /* Standalone shortcuts must obey tab ownership just like original panel elements. */
 body:not([data-lifeos-view="tracking"]) #lo14TrackTools{display:none!important}
 body:not([data-lifeos-view="analytics"]) #lo14InsightsBridge{display:none!important}
+
+.lo14-evidence-details{margin:13px 0 19px;border:1px solid var(--lo-border,#334660);border-radius:15px;padding:15px;scroll-margin-top:70px}
+.lo14-evidence-details>summary{font-weight:750;cursor:pointer;color:var(--lo-muted,#b8cadb);font-size:14px;line-height:1.5}
+.lo14-evidence-details[open]>summary{color:var(--lo-accent,#79dfc9);margin-bottom:12px}
+.lo14-evidence-details>.panel{margin:13px 0!important}
+body:not([data-lifeos-view="analytics"]) #lo14EvidenceDetails{display:none!important}
+body:not([data-lifeos-view="goals"]) #lo14GoalReviewDetails{display:none!important}
