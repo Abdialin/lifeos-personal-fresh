@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
+import schedule_document_preview as document_preview
 import google_calendar as gcal
 import calendar_audit_store as audit_store
 import atomic_calendar
@@ -278,6 +279,22 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if not self.private_access(): return
+        if urlparse(self.path).path == '/api/calendar/document-preview':
+            # Stateless preview. No records are saved, approved or synchronized here.
+            try:
+                n=int(self.headers.get('Content-Length','0'))
+                if n<1 or n>2_800_000:
+                    self.reply(413,{'error':'Document upload too large (2 MB maximum)'})
+                    return
+                body=json.loads(self.rfile.read(n))
+                filename=str(body.get('filename',''))[:160]
+                raw=base64.b64decode(body.get('content',''),validate=True)
+                self.reply(200,document_preview.extract(filename,raw))
+            except (ValueError,UnicodeError,KeyError,TypeError,ImportError) as exc:
+                self.reply(400,{'error':str(exc)})
+            except Exception:
+                self.reply(422,{'error':'Could not extract readable schedule data. Please use a text-based PDF or manually enter the activity.'})
+            return
         if urlparse(self.path).path == '/api/calendar/commit':
             if not self.auth(): return
             try:
