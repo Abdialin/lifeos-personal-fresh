@@ -130,19 +130,27 @@ function enhanceViews(){
   const area=lifeSections[0].panel.parentElement;
   area.insertBefore(group,lifeSections[0].panel);
   let selected='routines';
-  const activate=key=>{
+  const activate=(key,fromUser=false)=>{
    selected=key;
+   document.body.dataset.loLifeSection=key;
    for(const item of lifeSections){
     const show=item.key===key;
     item.panel.classList.toggle('lo-life-inactive',!show);
     const button=group.querySelector('[data-lo-life-section="'+item.key+'"]');
     if(button)button.setAttribute('aria-pressed',String(show));
    }
+   const routineDashboard=document.getElementById('loLifeVisual');
+   if(routineDashboard)routineDashboard.hidden=key!=='routines'||document.body.dataset.lifeosView!=='life';
+   if(fromUser){
+    const target=lifeSections.find(item=>item.key===key)?.panel;
+    // After hiding nonselected material, align the selected section directly below its tabs.
+    requestAnimationFrame(()=>{if(target&&document.body.dataset.lifeosView==='life')group.scrollIntoView({block:'start',behavior:'smooth'})});
+   }
   };
   for(const {key,label} of lifeSections){
    const button=document.createElement('button');button.type='button';
    button.dataset.loLifeSection=key;button.textContent=label;
-   button.addEventListener('click',()=>activate(key));
+   button.addEventListener('click',()=>activate(key,true));
    group.appendChild(button);
   }
   activate(selected);
