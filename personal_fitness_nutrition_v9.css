@@ -33,3 +33,10 @@
 #v4Plan .v6-plan-day{min-height:146px}
 #v4Plan .v6-plan-day:focus-visible{outline:3px solid var(--lo-accent,#80dfce)}
 @media(max-width:510px){.lo9-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lo-review-head{display:grid;gap:3px}#v4Plan .v6-plan-day{min-height:125px}}
+
+.lo-meal-camera{padding:12px 0;margin:11px 0;border-top:1px solid var(--lo-border,#324760)}
+.lo-meal-camera .btn,.lo-capture-while-eating{min-height:40px;white-space:normal;overflow-wrap:anywhere}
+#loMealPhotoPreview img{max-width:100%;height:auto;max-height:220px;object-fit:contain}
+#loMealCameraStatus{font-size:12px;line-height:1.5;margin:8px 0}
+#v4Plan .v7-plan-week-balance{margin-top:6px}
+#v4Plan .v6-plan-day{touch-action:manipulation;cursor:pointer}
