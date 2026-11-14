@@ -75,6 +75,7 @@ function mount(){
    host.scrollIntoView({behavior:'smooth',block:'start'});
   }else request.result.message='The review form could not validate the proposed time.';
  });
+ window.addEventListener('lifeos-v65-plan-committed',choices);
  window.addEventListener('storage',e=>{if(e.key===KEY)choices()});
  choices();
 }
