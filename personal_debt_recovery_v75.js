@@ -54,7 +54,7 @@ function review(workspace,input,at=Date.now(),engine=root.LifeOSAccountabilityV7
  if(!debt)return {ok:false,reason:'The original debt is no longer open or its records changed. Refresh the Debt Chamber.'};
  const origin=(workspace?.schedule||[]).find(p=>String(p.id)===String(debt.id));
  if(!origin)return {ok:false,reason:'The original commitment is unavailable.'};
- const result={ok:true,action:input.action,id:String(debt.id),name:String(debt.name),amountMs:debt.outstandingMs,originalStartAt:origin.startAt,originalEndAt:origin.endAt,originalStatus:origin.status,originalSessionId:origin.sessionId||null};
+ const result={ok:true,action:input.action,id:String(debt.id),name:String(debt.name),amountMs:debt.outstandingMs,originalStartAt:origin.startAt,originalEndAt:origin.endAt,originalStatus:origin.status,originalSessionId:origin.sessionId||null,decisionCount:Array.isArray(origin.debtDecisionsV75)?origin.debtDecisionsV75.length:0};
  if(input.action==='recover'||input.action==='carry'){
   const startAt=Number(input.startAt),endAt=Number(input.endAt);
   if(!Number.isSafeInteger(startAt)||!Number.isSafeInteger(endAt)||startAt<=at||endAt<=startAt||startAt>at+MAX_WINDOW||endAt>at+MAX_WINDOW)return {ok:false,reason:'Choose a future recovery period within 14 days.'};
@@ -74,6 +74,7 @@ function applyInMemory(workspace,decision,ids,at=Date.now()){
  if(!decision?.ok||!ACTIONS.includes(decision.action)||!Array.isArray(workspace?.schedule))throw Error('Invalid reviewed decision.');
  const original=workspace.schedule.find(p=>String(p.id)===decision.id);
  if(!original||original.startAt!==decision.originalStartAt||original.endAt!==decision.originalEndAt||original.status!==decision.originalStatus||(original.sessionId||null)!==decision.originalSessionId)throw Error('Original commitment changed since review.');
+ if(!Number.isSafeInteger(decision.decisionCount)||decision.decisionCount!==(Array.isArray(original.debtDecisionsV75)?original.debtDecisionsV75.length:0))throw Error('Approval already used or commitment decision history changed.');
  let recoveryPlanId=null;
  if(decision.action==='recover'||decision.action==='carry'){
   if(typeof ids?.planId!=='string'||!ids.planId||workspace.schedule.some(p=>p.id===ids.planId))throw Error('Unique recovery plan ID required.');
