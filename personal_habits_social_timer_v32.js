@@ -34,7 +34,9 @@ function timer(){
  bar.querySelector('strong').textContent=title;
  bar.querySelector('small').textContent=label+suffix;
  bar.querySelector('.lo32-timer-count').textContent=elapsed;
- bar.classList.toggle('lo79-minimized',document.body.dataset.lo79TimerMinimized==='true');
+ const compact=document.body.dataset.lo79TimerMinimized==='true';
+ bar.classList.toggle('lo79-minimized',compact);
+ const toggle=bar.querySelector('.lo79-minimize');if(toggle){toggle.textContent=compact?'+':'−';toggle.setAttribute('aria-label',compact?'Expand floating timer':'Minimize floating timer');toggle.title=compact?'Expand floating timer':'Minimize floating timer'}
  if(document.querySelector('.modal:not([hidden])'))bar.hidden=true;
  document.title=elapsed+' · '+label+' '+title+' — LifeOS';
 }
