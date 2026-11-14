@@ -15,7 +15,7 @@ function sessionSpan(session,now){
  return spans;
 }
 function provenance(session){
- if(session.source==='development-starter'||session.seedBatch)return {label:'Development example · unverified',kind:'sample'};
+ if(session.source==='development-starter'||session.source==='assumed-demo'||session.seedBatch)return {label:'Development example · unverified',kind:'sample'};
  if(session.precision==='retrospective-approximate')return {label:'Retrospective · approximate time',kind:'historical'};
  if(session.precision==='retrospective'||session.source==='historical-import'||session.source==='import'||session.importedAt)return {label:'Historical record',kind:'historical'};
  return {label:'Tracked record',kind:'tracked'};
