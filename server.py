@@ -170,6 +170,43 @@ class Handler(BaseHTTPRequestHandler):
             return False
         return True
 
+    def do_HEAD(self):
+        # HTTP metadata checks must never return activity payloads.
+        # Preserve the private-access boundary on the main application.
+        path = urlparse(self.path).path
+        if path == '/healthz':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Content-Length', '0')
+            self.send_header('Cache-Control', 'no-store')
+            self.send_header('X-Content-Type-Options', 'nosniff')
+            self.end_headers()
+            return
+        if not self.private_access():
+            return
+        if path in ('/', '/index.html', '/calendar.html'):
+            filename = 'index.html' if path in ('/', '/index.html') else 'calendar.html'
+            try:
+                size = (ROOT / filename).stat().st_size
+            except OSError:
+                self.reply_head_error(503)
+                return
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Content-Length', str(size))
+            self.send_header('Cache-Control', 'no-cache')
+            self.send_header('X-Content-Type-Options', 'nosniff')
+            self.end_headers()
+            return
+        self.reply_head_error(404)
+
+    def reply_head_error(self, status):
+        self.send_response(status)
+        self.send_header('Content-Length', '0')
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.end_headers()
+
     def do_GET(self):
         path = urlparse(self.path).path
         if path == '/healthz':
