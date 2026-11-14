@@ -28,12 +28,14 @@ function timer(){
  const title=normal(current.name)||'Activity';
  const identity=String(current.id);
  if(bar.dataset.currentId!==identity||bar.dataset.currentState!==current.status){
-  bar.innerHTML='<div class="lo32-timer-dot" aria-hidden="true">●</div><div class="lo32-timer-info"><strong></strong><small></small></div><span class="lo32-timer-count"></span><button type="button" class="lo32-open-tracker">Open Track ↗</button>';
+  bar.innerHTML='<div class="lo32-timer-dot" aria-hidden="true">●</div><div class="lo32-timer-info"><strong></strong><small></small></div><span class="lo32-timer-count"></span><button type="button" class="lo32-open-tracker">Review timer ↗</button><button type="button" class="lo79-minimize" aria-label="Minimize floating timer" title="Minimize floating timer">−</button>';
   bar.dataset.currentId=identity;bar.dataset.currentState=current.status;
  }
  bar.querySelector('strong').textContent=title;
  bar.querySelector('small').textContent=label+suffix;
  bar.querySelector('.lo32-timer-count').textContent=elapsed;
+ bar.classList.toggle('lo79-minimized',document.body.dataset.lo79TimerMinimized==='true');
+ if(document.querySelector('.modal:not([hidden])'))bar.hidden=true;
  document.title=elapsed+' · '+label+' '+title+' — LifeOS';
 }
 function scheduledDates(def,days=28){
@@ -316,6 +318,7 @@ function setup(){
   }else if(sectionTab&&sectionTab.dataset.loLifeSection==='habits'){
    $('lo32HabitHub')?.classList.add('lo32-habits-active');
   }
+  if(e.target.closest('.lo79-minimize')){document.body.dataset.lo79TimerMinimized=String(document.body.dataset.lo79TimerMinimized!=='true');timer();return;}
   if(e.target.closest('.lo32-open-tracker'))document.querySelector('#lifeosNavigation [data-view="tracking"]')?.click();
   if(e.target.closest('#lifeosNavigation'))setTimeout(()=>{timer();habitUI();friendsUI()},100);
  });
