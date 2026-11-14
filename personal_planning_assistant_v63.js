@@ -14,7 +14,7 @@ function propose(workspace,weekly,reviewer,now=Date.now()){
  const actions=[],unique=new Set();
  for(const sourceDay of weekly.days){
   if(!sourceDay.highLoad&&!sourceDay.overlaps?.length&&!sourceDay.shortBreaks?.length)continue;
-  const source=eligible.filter(p=>p.startAt>=sourceDay.start&&p.startAt<sourceDay.end).sort((a,b)=>b.startAt-a.startAt);
+  const source=eligible.filter(p=>p.startAt>=sourceDay.start&&p.startAt<sourceDay.end).sort((a,b)=>(a.endAt-a.startAt)-(b.endAt-b.startAt)||a.startAt-b.startAt);
   const destinations=weekly.days.filter(d=>d.date!==sourceDay.date&&!d.highLoad&&d.plannedMs+0.01<sourceDay.plannedMs).sort((a,b)=>a.plannedMs-b.plannedMs);
   for(const plan of source){
    for(const destination of destinations){
@@ -29,7 +29,7 @@ function propose(workspace,weekly,reviewer,now=Date.now()){
      disclosure:'Lower scheduled hours do not prove availability. Review travel, goals, personal commitments and recovery before approving.'});
     break;
    }
-   if(actions.filter(a=>a.sourceDate===sourceDay.date).length>=2)break;
+   if(actions.some(a=>a.sourceDate===sourceDay.date))break;
   }
  }
  return {error:null,suggestions:actions.slice(0,12),considered:eligible.length};
