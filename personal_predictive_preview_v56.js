@@ -47,7 +47,7 @@ function mount(){
  parent.appendChild(section);
  const refresh=()=>{let data=null;try{data=JSON.parse(localStorage.getItem(KEY)||'null')}catch{}render(section,data,Date.now(),root.LifeOSPersonalPlanner)};
  const picker=document.getElementById('lo53-date');
- picker?.addEventListener('change',refresh);window.addEventListener('storage',e=>{if(e.key===KEY)refresh()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();
+ picker?.addEventListener('change',refresh);window.addEventListener('lifeos-v65-plan-committed',refresh);window.addEventListener('storage',e=>{if(e.key===KEY)refresh()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();
 }
 const api={build,credible,windowNextWeek};
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();}
