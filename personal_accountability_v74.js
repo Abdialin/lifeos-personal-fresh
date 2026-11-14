@@ -32,7 +32,7 @@ function debtReport(workspace,at=Date.now(),days=7){
  const start=at-days*86400000,records=[],pending=[];
  const sessionMap=new Map((workspace?.sessions||[]).filter(s=>!sample(s)).map(s=>[s.id,s]));
  for(const p of workspace?.schedule||[]){
-  if(!p||!Number.isFinite(p.endAt)||!Number.isFinite(p.startAt)||p.endAt<=p.startAt||p.endAt>at||p.endAt<start||p.status==='cancelled')continue;
+  if(!p||!Number.isFinite(p.endAt)||!Number.isFinite(p.startAt)||p.endAt<=p.startAt||p.endAt>at||p.endAt<start||p.status==='cancelled'||p.source==='debt-recovery-v75')continue;
   const planned=p.endAt-p.startAt,linked=sessionMap.get(p.sessionId);
   const actual=linked?duration(linked,at):null;
   if(p.status==='skipped'){
