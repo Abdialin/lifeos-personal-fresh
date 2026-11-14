@@ -1,0 +1,16 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {conflictDetails,conflictWarning}=require('./calendar.js');
+const base=Date.UTC(2026,10,14,9,0);
+const candidate={title:'Study',start:base,end:base+60*60000};
+const workspace={schedule:[{name:'Appointment',startAt:base+30*60000,endAt:base+90*60000}],sessions:[{name:'Reading',status:'stopped',segments:[{start:base-10*60000,end:base+10*60000}]}]};
+const detail=conflictDetails(candidate,workspace);
+assert.equal(detail.length,2);
+assert.equal(detail[0].minutes,30);
+assert.equal(detail[0].kind,'Plan');
+assert.equal(detail[1].minutes,10);
+assert.equal(detail[1].kind,'Tracked');
+assert.match(conflictWarning(candidate,workspace),/30 min overlap/);
+assert.equal(conflictWarning(candidate,{schedule:[],sessions:[]}), '');
+assert.equal(conflictDetails(candidate,{schedule:[{name:'Skipped',status:'skipped',startAt:base,endAt:base+60000}]}).length,0);
+console.log('V52 conflict-review regression tests passed');
