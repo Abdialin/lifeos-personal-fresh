@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict');
+const weekly=require('./personal_weekly_planning_v60.js');
+const start=new Date('2026-11-15T00:00:00').getTime(),h=3600000;
+const fake={comparison:{compare(){return {error:null,range:{from:start,to:start+7*24*h},plans:[{name:'Work',startAt:start+8*h,endAt:start+13*h},{name:'Study',startAt:start+12*h,endAt:start+17*h},{name:'Evening',startAt:start+17*h+10*60000,endAt:start+18*h}],ideals:[],predictions:[],evidence:{observedDays:16}}}},predictor:{},planner:{},timeline:{}};
+const state={schedule:[]},before=JSON.stringify(state),report=weekly.review(state,start-4*h,fake);
+assert.equal(report.error,null);
+assert.equal(report.days.length,7);
+assert.equal(report.days[0].plannedMs,10*h+50*60000);
+assert.equal(report.days[0].overlaps.length,1);
+assert.equal(report.days[0].shortBreaks.length,1);
+assert.equal(report.days[0].highLoad,true);
+assert.equal(report.summary.overlapDays,1);
+assert.equal(JSON.stringify(state),before);
+assert.equal(weekly.total([[0,5],[3,8],[9,10]]),9);
+assert.ok(weekly.review({},start,{}).error);
+console.log('V60 weekly planning checks passed');
