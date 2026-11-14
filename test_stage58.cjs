@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {decision}=require('./personal_prediction_approval_v58.js');
+const base={id:'pattern:0:test',name:'Study',requiresApproval:true,startAt:1000,endAt:2000,conflicts:[],actualConflicts:[],recoveryConflicts:[],planConflicts:[],idealConflicts:[]};
+assert.equal(decision(base).allowed,true);
+assert.equal(decision({...base,conflicts:['plan']}).allowed,false);
+assert.equal(decision({...base,actualConflicts:['session']}).allowed,false);
+assert.equal(decision({...base,recoveryConflicts:['buffer']}).allowed,false);
+assert.equal(decision({...base,planConflicts:['new-plan']}).allowed,false);
+assert.equal(decision({...base,requiresApproval:false}).allowed,false);
+assert.equal(decision({...base,endAt:1000}).allowed,false);
+assert.equal(decision({...base,idealConflicts:['preferred-time']}).allowed,true);
+console.log('V58 approval UI guard checks passed');
