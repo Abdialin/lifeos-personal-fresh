@@ -23,6 +23,14 @@ function effective(name,profiles={},guard=root.LifeOSDurationGuardV78){
  const key=category(name),specific=clean(profiles)[key];
  return {category:key,minutes:specific?.minutes??guard?.suggestion?.(name)??60,saved:Boolean(specific)};
 }
+function savedProfiles(store){
+ try{return clean(JSON.parse(store?.getItem?.(KEY)||'{}'))}catch{return {}}
+}
+function settingsForNew(name,store,at=Date.now()){
+ const profiles=savedProfiles(store),key=category(name),profile=profiles[key];
+ if(!profile)return null;
+ return {targetMinutes:profile.minutes,mode:'warn',configuredAt:at,source:'saved-duration-profile-v80'};
+}
 function forgotten(sessions,now=Date.now(),profiles={},guard=root.LifeOSDurationGuardV78){
  return (Array.isArray(sessions)?sessions:[]).filter(s=>s&&s.status==='running').map(s=>{
   const duration=guard?.elapsed?.(s,now)||0,expected=effective(s.name,profiles,guard),limit=expected.minutes*MIN;
@@ -67,7 +75,7 @@ function mount(){
  root.addEventListener('lifeos-v78-duration-changed',redraw);
  root.setInterval(()=>{if(!document.hidden&&box.open)redraw()},60000);
 }
-const api={category,effective,clean,forgotten,validProfile,KEY,LABELS};
+const api={category,effective,clean,forgotten,validProfile,savedProfiles,settingsForNew,KEY,LABELS};
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount()}
 return api;
 });
