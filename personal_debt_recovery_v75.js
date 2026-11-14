@@ -17,9 +17,14 @@ function outstanding(workspace,at=Date.now(),engine=root.LifeOSAccountabilityV74
  for(const item of report.confirmed){
   const original=plans.get(String(item.id));
   if(!original)continue;
-  const decision=original.debtResolutionV75;
-  if(decision&&ACTIONS.includes(decision.action)&&decision.originalStartAt===original.startAt&&decision.originalEndAt===original.endAt&&decision.originalAmountMs===item.outstandingMs)resolved.push({...item,decision});
-  else open.push(item);
+  const history=Array.isArray(original.debtDecisionsV75)?original.debtDecisionsV75:[];
+  const trusted=history.every(d=>d&&ACTIONS.includes(d.action)&&d.originalStartAt===original.startAt&&d.originalEndAt===original.endAt);
+  if(!trusted){open.push({...item,reviewWarning:'Existing decisions require review.'});continue}
+  const closed=history.some(d=>d.action==='adjust'||d.action==='forgive');
+  const reservedMs=history.reduce((sum,d)=>sum+((d.action==='recover'||d.action==='carry')?Math.max(0,d.portionMs||0):0),0);
+  const remainingMs=Math.max(0,item.outstandingMs-reservedMs);
+  if(closed||remainingMs===0)resolved.push({...item,decision:history[history.length-1],reservedMs});
+  else open.push({...item,outstandingMs:remainingMs,originalOutstandingMs:item.outstandingMs,reservedMs});
  }
  return {open,resolved,unverified:report.unverified,openMs:open.reduce((a,x)=>a+x.outstandingMs,0),error:null};
 }
@@ -48,7 +53,7 @@ function review(workspace,input,at=Date.now(),engine=root.LifeOSAccountabilityV7
  const debt=report.open.find(x=>String(x.id)===String(input.id));
  if(!debt)return {ok:false,reason:'The original debt is no longer open or its records changed. Refresh the Debt Chamber.'};
  const origin=(workspace?.schedule||[]).find(p=>String(p.id)===String(debt.id));
- if(!origin||origin.debtResolutionV75)return {ok:false,reason:'This commitment already has a recorded decision.'};
+ if(!origin)return {ok:false,reason:'The original commitment is unavailable.'};
  const result={ok:true,action:input.action,id:String(debt.id),name:String(debt.name),amountMs:debt.outstandingMs,originalStartAt:origin.startAt,originalEndAt:origin.endAt,originalStatus:origin.status,originalSessionId:origin.sessionId||null};
  if(input.action==='recover'||input.action==='carry'){
   const startAt=Number(input.startAt),endAt=Number(input.endAt);
@@ -68,15 +73,17 @@ function review(workspace,input,at=Date.now(),engine=root.LifeOSAccountabilityV7
 function applyInMemory(workspace,decision,ids,at=Date.now()){
  if(!decision?.ok||!ACTIONS.includes(decision.action)||!Array.isArray(workspace?.schedule))throw Error('Invalid reviewed decision.');
  const original=workspace.schedule.find(p=>String(p.id)===decision.id);
- if(!original||original.debtResolutionV75||original.startAt!==decision.originalStartAt||original.endAt!==decision.originalEndAt||original.status!==decision.originalStatus||(original.sessionId||null)!==decision.originalSessionId)throw Error('Original commitment changed since review.');
+ if(!original||original.startAt!==decision.originalStartAt||original.endAt!==decision.originalEndAt||original.status!==decision.originalStatus||(original.sessionId||null)!==decision.originalSessionId)throw Error('Original commitment changed since review.');
  let recoveryPlanId=null;
  if(decision.action==='recover'||decision.action==='carry'){
   if(typeof ids?.planId!=='string'||!ids.planId||workspace.schedule.some(p=>p.id===ids.planId))throw Error('Unique recovery plan ID required.');
   recoveryPlanId=ids.planId;
   workspace.schedule.push({id:recoveryPlanId,name:'Recovery: '+String(original.name||'Activity').slice(0,68),startAt:decision.startAt,endAt:decision.endAt,status:'planned',sessionId:null,createdAt:at,source:'debt-recovery-v75',recoveryForPlanId:original.id,notes:'Approved recovery for a previous commitment; not a tracked activity.',reminder:true});
  }
- original.debtResolutionV75={action:decision.action,decidedAt:at,originalStartAt:original.startAt,originalEndAt:original.endAt,originalAmountMs:decision.amountMs,recoveryPlanId,portionMs:decision.recoveredPortionMs||0,remainingMs:decision.remainingMs??0,acceptedMs:decision.acceptedMs??null};
- return {recoveryPlanId,decision:original.debtResolutionV75};
+ const history=Array.isArray(original.debtDecisionsV75)?original.debtDecisionsV75:[];
+ const entry={action:decision.action,decidedAt:at,originalStartAt:original.startAt,originalEndAt:original.endAt,amountBeforeMs:decision.amountMs,recoveryPlanId,portionMs:decision.recoveredPortionMs||0,remainingMs:decision.remainingMs??0,acceptedMs:decision.acceptedMs??null};
+ original.debtDecisionsV75=[...history,entry];
+ return {recoveryPlanId,decision:entry};
 }
 function localDateTime(ms){
  const d=new Date(ms),pad=n=>String(n).padStart(2,'0');
