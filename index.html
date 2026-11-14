@@ -437,7 +437,7 @@ function trackingCommit(change){
  }
 }
 /* V74: user-approved distraction metadata; saved through existing canonical checkpoint. */
-document.addEventListener('lifeos-v74-classify-distraction',function(event){
+window.addEventListener('lifeos-v74-classify-distraction',function(event){
  const detail=event.detail||{},id=String(detail.id||'');
  const category=String(detail.category||''),trigger=String(detail.trigger||'').trim();
  detail.result={ok:false,message:'Classification not saved.'};
@@ -457,7 +457,7 @@ document.addEventListener('lifeos-v74-classify-distraction',function(event){
  window.dispatchEvent(new Event('lifeos-v74-records-changed'));
 });
 /* V75: user-reviewed and explicitly approved Debt Chamber transactions. */
-document.addEventListener('lifeos-v75-approve-debt',function(event){
+window.addEventListener('lifeos-v75-approve-debt',function(event){
  const d=event.detail||{},api=window.LifeOSDebtRecoveryV75;
  d.result={ok:false,message:'Debt decision not saved.'};
  if(!api)return void(d.result.message='Debt Chamber approval module is unavailable.');
@@ -466,7 +466,7 @@ document.addEventListener('lifeos-v75-approve-debt',function(event){
   // Re-evaluate the ORIGINAL plan and all existing recovery bookings immediately before save.
   const latest=api.review(data,d,now());
   if(!latest.ok||latest.amountMs!==d.amountMs||latest.originalStartAt!==d.originalStartAt||latest.originalEndAt!==d.originalEndAt||
-    latest.action!==d.action||((latest.startAt||null)!==(d.startAt||null))||((latest.endAt||null)!==(d.endAt||null))||
+    latest.action!==d.action||latest.decisionCount!==d.decisionCount||((latest.startAt||null)!==(d.startAt||null))||((latest.endAt||null)!==(d.endAt||null))||
     ((latest.acceptedMs??null)!==(d.acceptedMs??null))){
    d.result.message='The commitment or available time changed. Review and preview it again.';return;
   }
