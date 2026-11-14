@@ -13,3 +13,8 @@ body[data-lifeos-view="life"] #mealForm{max-width:100%}
 
 /* Today's overview belongs to Today, not Fitness or other My Life sections. */
 body:not([data-lifeos-view="dashboard"]) #todayOverview{display:none!important}
+
+/* V77: My Life-only sections must never occupy the Track tab even when another UI module moved them. */
+body:not([data-lifeos-view="life"]) #personalActivityPanel,
+body:not([data-lifeos-view="life"]) #lo32HabitHub,
+body:not([data-lifeos-view="life"]) #lo32FriendHub{display:none!important}
