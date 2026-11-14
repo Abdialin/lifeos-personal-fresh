@@ -10,3 +10,6 @@ section.panel.lo-life-inactive,
 #lo32FriendHub[hidden]{display:none!important}
 body[data-lifeos-view="life"] #fitnessForm,
 body[data-lifeos-view="life"] #mealForm{max-width:100%}
+
+/* Today's overview belongs to Today, not Fitness or other My Life sections. */
+body:not([data-lifeos-view="dashboard"]) #todayOverview{display:none!important}
