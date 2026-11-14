@@ -70,7 +70,7 @@ function mount(){
  const ws=()=>{try{return root.lifeosReadOnlyWorkspace?.()||{}}catch{return {}}};
  function message(s){$('lo81-message').textContent=s}
  function open(){overlay.hidden=false;document.body.classList.add('lo81-open');step=0;redraw()}
- function close(){overlay.hidden=true;document.body.classList.remove('lo81-open')}
+ function close(){overlay.hidden=true;document.body.classList.remove('lo81-open');try{sessionStorage.setItem('lifeos.personal.onboarding.offered.v81','1')}catch{}}
  trigger.addEventListener('click',open);$('lo81-close').addEventListener('click',close);
  overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
  function el(tag,text){const n=document.createElement(tag);n.textContent=text;return n}
@@ -139,6 +139,8 @@ function mount(){
   const w=ws();if((w.sessions||[]).length||(w.schedule||[]).length||(w.todos||[]).length||(w.habitDefinitions||[]).length)return;
   // User chooses to open; never surprise-show during a running activity.
   trigger.classList.add('lo81-new');
+  // Offer once per browser tab on an entirely empty workspace; never overwrite data.
+  try{if(!sessionStorage.getItem('lifeos.personal.onboarding.offered.v81')){sessionStorage.setItem('lifeos.personal.onboarding.offered.v81','1');open()}}catch{}
  },200);
 }
 const api={times,nextWeek,conflicts,prepare};
