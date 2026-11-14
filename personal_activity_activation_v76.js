@@ -26,7 +26,7 @@ function actionReview(plan,action,time=Date.now()){
  if(action.type==='provisional'){
   if(mode(p)!=='automatic'||time<p.startAt||time>=p.endAt)throw Error('Automatic provisional activation requires an approved automatic plan during its scheduled window.');
   p.provisionalActivationV76={observedAt:time,scheduledAt:p.startAt,verified:false};
-  p.activationSnoozedUntilV76=time+30*MIN;
+  // Keep the confirmation visible; provisional activation is NOT actual tracking.
  }
  return p;
 }
@@ -50,7 +50,16 @@ function mount(){
  }
  function scan(){
   const now=Date.now(),pending=evaluate(get()?.schedule,now);
-  active=pending[0]||null;
+  // Automatic mode is provisional only and never starts tracked time without consent.
+  // When the browser is suspended this is noticed on return, not backdated as actual activity.
+  for(const item of pending){
+   if(item.mode==='automatic'&&item.phase==='due'&&!item.provisional){
+    const detail={type:'provisional',id:item.id,result:{ok:false}};
+    root.dispatchEvent(new CustomEvent('lifeos-v76-activation',{detail}));
+    break;
+   }
+  }
+  active=evaluate(get()?.schedule,Date.now())[0]||null;
   if(!active){dock.hidden=true;previousKey='';return}
   dock.hidden=false;
   dock.querySelector('#lo76-dock-name').textContent=active.name+(active.provisional?' · provisional start proposed':'');
