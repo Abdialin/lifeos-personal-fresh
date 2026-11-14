@@ -1,0 +1,12 @@
+/* V76: treat the My Life section switch as a single-view controller. */
+#loLifeSectionTabs{position:relative;z-index:1;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+#loLifeSectionTabs button{min-height:42px}
+#loLifeSectionTabs button[aria-selected="true"]{border-color:#48bda0;background:#06473e;color:#e6fff8}
+#personalActivityPanel.lo-life-inactive,
+section.panel.lo-life-inactive,
+#lo32HabitHub.lo-life-inactive,
+#lo32FriendHub.lo-life-inactive,
+#lo32HabitHub[hidden],
+#lo32FriendHub[hidden]{display:none!important}
+body[data-lifeos-view="life"] #fitnessForm,
+body[data-lifeos-view="life"] #mealForm{max-width:100%}
