@@ -65,6 +65,7 @@ function mount(){
   document.dispatchEvent(new CustomEvent('lifeos-v63-review-suggestion',{detail}));
   host.querySelector('[data-v64-feedback]').textContent=detail.result?.message||'The review form did not accept the suggestion; nothing was saved.';
  });
+ window.addEventListener('lifeos-v65-plan-committed',refresh);
  window.addEventListener('storage',e=>{if(e.key===KEY)refresh()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();
 }
 const api={assess,dateAt};
