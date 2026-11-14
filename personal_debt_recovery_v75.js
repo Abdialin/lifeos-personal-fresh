@@ -14,19 +14,30 @@ function outstanding(workspace,at=Date.now(),engine=root.LifeOSAccountabilityV74
  if(!report)return {open:[],resolved:[],unverified:[],openMs:0,error:'Debt report unavailable'};
  const plans=new Map((workspace?.schedule||[]).map(p=>[String(p.id),p]));
  const open=[],resolved=[];
+ let scheduledMs=0,recoveredMs=0,originalConfirmedMs=0;
+ const realSessions=new Map((workspace?.sessions||[]).filter(x=>x&&x.source!=='development-starter'&&x.source!=='assumed-demo'&&!x.seedBatch).map(x=>[String(x.id),x]));
  for(const item of report.confirmed){
   const original=plans.get(String(item.id));
   if(!original)continue;
   const history=Array.isArray(original.debtDecisionsV75)?original.debtDecisionsV75:[];
   const trusted=history.every(d=>d&&ACTIONS.includes(d.action)&&d.originalStartAt===original.startAt&&d.originalEndAt===original.endAt);
   if(!trusted){open.push({...item,reviewWarning:'Existing decisions require review.'});continue}
+  originalConfirmedMs+=item.outstandingMs;
   const closed=history.some(d=>d.action==='adjust'||d.action==='forgive');
-  const reservedMs=history.reduce((sum,d)=>sum+((d.action==='recover'||d.action==='carry')?Math.max(0,d.portionMs||0):0),0);
+  const reservedMs=history.reduce((sum,d)=>{
+   if(d.action!=='recover'&&d.action!=='carry')return sum;
+   const portion=Math.max(0,d.portionMs||0);
+   const booked=plans.get(String(d.recoveryPlanId||''));
+   const session=booked?.sessionId?realSessions.get(String(booked.sessionId)):null;
+   const verified=session?.status==='finished'?Math.min(portion,engine.duration(session,at)):0;
+   recoveredMs+=verified;scheduledMs+=Math.max(0,portion-verified);
+   return sum+portion;
+  },0);
   const remainingMs=Math.max(0,item.outstandingMs-reservedMs);
   if(closed||remainingMs===0)resolved.push({...item,decision:history[history.length-1],reservedMs});
   else open.push({...item,outstandingMs:remainingMs,originalOutstandingMs:item.outstandingMs,reservedMs});
  }
- return {open,resolved,unverified:report.unverified,openMs:open.reduce((a,x)=>a+x.outstandingMs,0),error:null};
+ return {open,resolved,unverified:report.unverified,openMs:open.reduce((a,x)=>a+x.outstandingMs,0),scheduledMs,recoveredMs,originalConfirmedMs,error:null};
 }
 function conflicts(workspace,startAt,endAt){
  return (workspace?.schedule||[]).some(p=>p&&p.status!=='skipped'&&p.status!=='cancelled'&&Number.isFinite(p.startAt)&&Number.isFinite(p.endAt)&&p.startAt<endAt&&startAt<p.endAt);
@@ -106,7 +117,7 @@ function mount(){
   selection.replaceChildren(new Option('Select outstanding commitment',''));
   for(const item of report.open)selection.add(new Option(String(item.name)+' · '+(root.LifeOSAccountabilityV74?.fmt?.(item.outstandingMs)||Math.round(item.outstandingMs/60000)+' minutes'),String(item.id)));
   selection.value=[...selection.options].some(o=>o.value===old)?old:'';
-  $('lo75-resolved').textContent=report.resolved.length+' resolved decision(s) recorded. '+report.unverified.length+' unverified plans are excluded from debt until reviewed.';
+  $('lo75-resolved').textContent='Allocated to approved recovery plans (not necessarily completed): '+Math.round(report.scheduledMs/60000)+' minutes. Verified completed recovery: '+Math.round(report.recoveredMs/60000)+' minutes. '+report.resolved.length+' commitment(s) have approved decisions covering their outstanding time. '+report.unverified.length+' unverified plans are excluded from debt until reviewed.';
  }
  function updateInputs(){
   invalidate();const mode=action.value;
