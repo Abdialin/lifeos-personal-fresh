@@ -66,4 +66,12 @@ assert.equal(second.ok,true);v75.applyInMemory(w3,second,{planId:'big-part-2'},n
 assert.equal(v75.outstanding(w3,now).open.some(x=>x.id==='big'),false);
 assert.equal(w3.schedule.find(x=>x.id==='big').debtDecisionsV75.length,2);
 assert.equal(w3.schedule.filter(x=>x.source==='debt-recovery-v75').length,2);
+assert.equal(v75.outstanding(w,now).scheduledMs,2*H,'booked recovery is not yet finished');
+assert.equal(v75.outstanding(w,now).recoveredMs,0,'booked does not equal recovered');
+const studyRecovery=w.schedule.find(x=>x.id==='new-plan');
+const completedAt=studyRecovery.endAt+H;
+w.sessions.push({id:'recovered-study',name:'Recovery: Study',status:'finished',startAt:studyRecovery.startAt,endAt:studyRecovery.endAt,segments:[{start:studyRecovery.startAt,end:studyRecovery.endAt}]});
+studyRecovery.sessionId='recovered-study';
+assert.equal(v75.outstanding(w,completedAt).recoveredMs,H,'completed recovery requires a real linked finished timer');
+assert.equal(v75.outstanding(w,completedAt).scheduledMs,H,'the other booked recovery remains unverified');
 console.log('V75 Debt Chamber: all regression assertions passed.');
