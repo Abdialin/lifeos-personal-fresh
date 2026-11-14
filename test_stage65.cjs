@@ -1,0 +1,16 @@
+'use strict';const assert=require('node:assert/strict');
+const v=require('./personal_planning_validation_v65.js');
+const a={id:'p1',name:'Study',startAt:100,endAt:200,status:'planned'},b={...a,startAt:300,endAt:400};
+const state={sessions:[{id:'s1'}],events:[{id:'e1'}],schedule:[a,{id:'p2',startAt:500,endAt:600}]};
+const after={...state,schedule:[b,state.schedule[1]]};
+assert.equal(v.comparePlanVersions(state,after,'p1').ok,true);
+assert.equal(v.comparePlanVersions(state,{...after,sessions:[]},'p1').ok,false);
+assert.equal(v.comparePlanVersions(state,{...after,schedule:[{...b,name:'Different'},state.schedule[1]]},'p1').ok,false);
+assert.equal(v.comparePlanVersions(state,{...after,schedule:[{...b,endAt:450},state.schedule[1]]},'p1').ok,false);
+const standard={format:1,workspace:after};
+assert.equal(v.verify(JSON.stringify(standard),'p1',300,400).ok,true);
+assert.equal(v.verify(JSON.stringify(standard),'p1',301,400).ok,false);
+assert.equal(v.verify(JSON.stringify({format:2,payload:'compact'}),'p1',300,400,()=>standard).ok,true);
+assert.equal(v.verify(JSON.stringify({format:2,payload:'compact'}),'p1',300,400).ok,false);
+assert.equal(v.verify('broken','p1',300,400).ok,false);
+console.log('V65 canonical persistence checks passed');
