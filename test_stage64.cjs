@@ -1,0 +1,16 @@
+'use strict';
+const assert=require('node:assert/strict');
+const rank=require('./personal_alternative_ranking_v64.js');
+const reviewer=require('./personal_weekly_plan_review_v62.js');
+const now=new Date('2026-11-14T08:00:00').getTime(),sunday=new Date('2026-11-15T00:00:00').getTime(),monday=new Date('2026-11-16T00:00:00').getTime(),tuesday=new Date('2026-11-17T00:00:00').getTime(),h=3600000;
+const plans=[{id:'p1',name:'Reading',status:'planned',startAt:sunday+9*h,endAt:sunday+10*h},{id:'p2',name:'Work',status:'planned',priority:'high',startAt:sunday+8*h,endAt:sunday+17*h}];
+const state={schedule:plans,sessions:[],idealRoutines:[{name:'Reading',dayOfWeek:1,start:'09:00',durationMinutes:60}]};
+const weekly={days:[{date:'2026-11-15',start:sunday,end:monday,highLoad:true,plannedMs:9*h,overlaps:[{first:'Reading',second:'Work'}],shortBreaks:[]},{date:'2026-11-16',start:monday,end:tuesday,highLoad:false,plannedMs:0,overlaps:[],shortBreaks:[]},{date:'2026-11-17',start:tuesday,end:tuesday+24*h,highLoad:false,plannedMs:2*h,overlaps:[],shortBreaks:[]}]};
+const original=JSON.stringify(state),r=rank.assess(state,weekly,reviewer,now);
+assert.equal(r.error,null);assert.equal(r.options.length,1);
+assert.equal(r.options[0].planId,'p1');assert.equal(r.options[0].to,monday+9*h);
+assert.equal(r.options[0].factors.idealAlignment,true);assert.equal(r.options[0].requiresApproval,true);
+assert.equal(JSON.stringify(state),original);
+assert.ok(rank.assess({},null,reviewer,now).error);
+assert.equal(rank.assess(state,weekly,{preview(){return {ok:false}}},now).options.length,0);
+console.log('V64 alternative ranking checks passed');
