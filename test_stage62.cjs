@@ -1,0 +1,11 @@
+'use strict';const assert=require('node:assert/strict');const {preview}=require('./personal_weekly_plan_review_v62.js');const now=1000000,h=3600000,plan={id:'p1',name:'Study',startAt:now+2*h,endAt:now+3*h,status:'planned',sessionId:null},state={schedule:[plan],sessions:[]};const start=now+4*h;
+const ok=preview(state,'p1',start,plan.startAt,plan.endAt,now);
+assert.equal(ok.ok,true);assert.equal(ok.durationMs,h);assert.equal(ok.endAt,start+h);
+assert.equal(preview(state,'p1',plan.startAt,plan.startAt,plan.endAt,now).ok,false);
+assert.equal(preview(state,'p1',start,plan.startAt+1,plan.endAt,now).ok,false);
+assert.equal(preview({schedule:[{...plan,status:'started'}]},'p1',start,plan.startAt,plan.endAt,now).ok,false);
+assert.equal(preview({...state,schedule:[plan,{id:'p2',name:'Work',startAt:start,endAt:start+h,status:'planned'}]},'p1',start,plan.startAt,plan.endAt,now).ok,false);
+assert.equal(preview({...state,sessions:[{name:'Real activity',status:'finished',segments:[{start:start,end:start+h}]}]},'p1',start,plan.startAt,plan.endAt,now).ok,false);
+assert.equal(preview(state,'p1',now-1000,plan.startAt,plan.endAt,now).ok,false);
+assert.equal(state.schedule[0].startAt,now+2*h);
+console.log('V62 proposal preview guards passed');
