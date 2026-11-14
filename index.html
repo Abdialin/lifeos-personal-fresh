@@ -475,6 +475,35 @@ document.addEventListener('lifeos-v58-approve-prediction',function(evt){
   render();
  }catch(err){request.result={ok:false,message:String(err&&err.message||err)};}
 });
+/* V62: guarded, transactional plan move from the weekly review panel. */
+document.addEventListener('lifeos-v62-move-plan',function(evt){
+ const request=evt.detail;if(!request||typeof request!=='object')return;
+ request.result={ok:false,message:'Plan change was not completed.'};
+ try{
+  const tool=window.LifeOSWeeklyPlanReviewV62;
+  if(!tool||typeof tool.preview!=='function')throw Error('Weekly review module unavailable.');
+  const check=tool.preview(data,request.id,request.newStartAt,request.expectedStartAt,request.expectedEndAt,now());
+  if(!check.ok)throw Error('Plan not moved: '+check.reason);
+  const target=data.schedule.find(p=>String(p.id)===String(request.id));
+  if(!target)throw Error('Plan is no longer available.');
+  const previous={startAt:target.startAt,endAt:target.endAt};
+  if(!trackingCommit(()=>{
+   target.startAt=check.startAt;target.endAt=check.endAt;
+  }))throw Error('Plan save failed; prior schedule restored.');
+  let saved=false;
+  try{
+   const checkpoint=JSON.parse(localStorage.getItem(ATOMIC_KEY)||'null');
+   saved=!!(checkpoint&&(checkpoint.format===1||checkpoint.format===2)&&Array.isArray(checkpoint.workspace?.schedule)&&checkpoint.workspace.schedule.some(p=>String(p.id)===String(request.id)&&p.startAt===check.startAt&&p.endAt===check.endAt));
+  }catch(err){console.warn('V62 checkpoint verification unavailable',err)}
+  if(!saved){
+   request.result={ok:false,message:'Plan changed in memory but could not be verified in the recovery checkpoint. Export a backup before refreshing.'};
+   return;
+  }
+  request.result={ok:true,message:'Plan moved and verified in recovery storage: '+target.name+' · '+new Date(target.startAt).toLocaleString()+'. Server sync is not confirmed.'};
+  $('scheduleDay').value=localDate(target.startAt);
+  try{render()}catch(err){console.warn('V62 saved but rendering failed',err)}
+ }catch(err){request.result={ok:false,message:String(err&&err.message||err)}}
+});
 function pause(id){
  const original=data.sessions.find(x=>x.id===id);if(!original||original.status!=='running')return false;
  const ok=trackingCommit(()=>{
