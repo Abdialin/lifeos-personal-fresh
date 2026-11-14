@@ -1,0 +1,21 @@
+'use strict';
+const assert=require('node:assert/strict');
+const three=require('./personal_three_view_v57.js');
+const planner=require('./personal_predictive_planner.js');
+const predictor=require('./personal_predictive_preview_v56.js');
+const timeline=require('./personal_activity_timeline_v54.js');
+const anchor=new Date('2026-11-14T12:00:00').getTime(),baseline=new Date('2026-10-17T00:00:00');
+const sessions=[];
+for(let i=0;i<28;i++){const d=new Date(baseline);d.setDate(d.getDate()+i);d.setHours(9,0,0,0);const start=d.getTime();sessions.push({id:'s'+i,name:'Study',status:'finished',startAt:start,endAt:start+3600000,segments:[{start,end:start+3600000}]})}
+const state={sessions,schedule:[],idealRoutines:[{id:'ideal-study',name:'Study target',dayOfWeek:0,start:'09:00',durationMinutes:60}]};
+const result=three.compare(state,anchor,predictor,planner,timeline);
+assert.equal(result.error,null);
+assert.equal(result.reality.length,7);
+assert.ok(result.predictions.length>0);
+assert.ok(result.ideals.length>0);
+assert.ok(result.predictions.every(p=>p.requiresApproval));
+assert.ok(result.predictions.some(p=>p.idealConflicts.length>0));
+const blank=three.compare({sessions:[],schedule:[],idealRoutines:[]},anchor,predictor,planner,timeline);
+assert.equal(blank.predictions.length,0);
+assert.equal(blank.ideals.length,0);
+console.log('V57 comparison checks passed');
