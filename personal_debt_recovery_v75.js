@@ -23,18 +23,21 @@ function outstanding(workspace,at=Date.now(),engine=root.LifeOSAccountabilityV74
   const trusted=history.every(d=>d&&ACTIONS.includes(d.action)&&d.originalStartAt===original.startAt&&d.originalEndAt===original.endAt);
   if(!trusted){open.push({...item,reviewWarning:'Existing decisions require review.'});continue}
   originalConfirmedMs+=item.outstandingMs;
-  const closed=history.some(d=>d.action==='adjust'||d.action==='forgive');
-  const reservedMs=history.reduce((sum,d)=>{
-   if(d.action!=='recover'&&d.action!=='carry')return sum;
-   const portion=Math.max(0,d.portionMs||0);
-   const booked=plans.get(String(d.recoveryPlanId||''));
-   const session=booked?.sessionId?realSessions.get(String(booked.sessionId)):null;
-   const verified=session?.status==='finished'?Math.min(portion,engine.duration(session,at)):0;
-   recoveredMs+=verified;scheduledMs+=Math.max(0,portion-verified);
-   return sum+portion;
-  },0);
-  const remainingMs=Math.max(0,item.outstandingMs-reservedMs);
-  if(closed||remainingMs===0)resolved.push({...item,decision:history[history.length-1],reservedMs});
+  let reservedMs=0,remainingMs=item.outstandingMs;
+  for(const d of history){
+   if(d.action==='recover'||d.action==='carry'){
+    const portion=Math.max(0,d.portionMs||0);
+    const booked=plans.get(String(d.recoveryPlanId||''));
+    const session=booked?.sessionId?realSessions.get(String(booked.sessionId)):null;
+    const verified=session?.status==='finished'?Math.min(portion,engine.duration(session,at)):0;
+    recoveredMs+=verified;scheduledMs+=Math.max(0,portion-verified);
+    reservedMs+=portion;remainingMs=Math.max(0,remainingMs-portion);
+   }else if(d.action==='adjust'){
+    // Adjusting the target reduces what remains owed; it does not erase a nonzero remainder.
+    remainingMs=Math.min(remainingMs,Math.max(0,d.acceptedMs||0));
+   }else if(d.action==='forgive')remainingMs=0;
+  }
+  if(remainingMs===0)resolved.push({...item,decision:history[history.length-1],reservedMs});
   else open.push({...item,outstandingMs:remainingMs,originalOutstandingMs:item.outstandingMs,reservedMs});
  }
  return {open,resolved,unverified:report.unverified,openMs:open.reduce((a,x)=>a+x.outstandingMs,0),scheduledMs,recoveredMs,originalConfirmedMs,error:null};
