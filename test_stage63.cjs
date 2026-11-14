@@ -9,7 +9,7 @@ const busy={id:'p2',name:'Work',status:'planned',startAt:sunday+10*hour,endAt:su
 const workspace={schedule:[first,busy],sessions:[]};
 const weekly={days:[{date:'2026-11-15',start:sunday,end:monday,highLoad:true,plannedMs:9*hour,overlaps:[{first:'Coursework',second:'Work'}],shortBreaks:[]},{date:'2026-11-16',start:monday,end:monday+24*hour,highLoad:false,plannedMs:0,overlaps:[],shortBreaks:[]}]};
 const before=JSON.stringify(workspace),result=app.propose(workspace,weekly,checker,now);
-assert.equal(result.error,null);assert.ok(result.suggestions.length>0);
+assert.equal(result.error,null);assert.equal(result.suggestions.length,1,'one proposed move per affected day');
 assert.equal(result.suggestions[0].to,monday+9*hour);
 assert.equal(result.suggestions[0].requiresApproval,true);
 assert.equal(JSON.stringify(workspace),before);
