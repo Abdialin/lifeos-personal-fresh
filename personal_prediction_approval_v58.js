@@ -20,9 +20,9 @@ function mount(){
  rootEl.dataset.v58Mounted='1';
  const refresh=()=>{
   rootEl.querySelectorAll('[data-v57-index]').forEach(button=>{
-   button.textContent='Approve into LifeOS schedule';
-   button.classList.add('lo58-approve');
-   button.title='Explicit approval, not automatic tracking or Google Calendar sync';
+   if(!button.disabled&&button.textContent!=='Approve into LifeOS schedule')button.textContent='Approve into LifeOS schedule';
+   if(!button.classList.contains('lo58-approve'))button.classList.add('lo58-approve');
+   if(button.title!=='Explicit approval, not automatic tracking or Google Calendar sync')button.title='Explicit approval, not automatic tracking or Google Calendar sync';
   });
  };
  rootEl.addEventListener('click',e=>{
