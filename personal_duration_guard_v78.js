@@ -59,6 +59,20 @@ function shouldAutoFinish(session,at=Date.now()){
  const report=inspect(session,at),guard=valid(session);
  return Boolean(report?.overdue&&guard?.mode==='auto'&&Number.isFinite(report.dueAt));
 }
+// Reuse the notification permission/service worker already established by LifeOS reminders.
+async function notifyOnce(id,target,title,body){
+ if(typeof Notification==='undefined'||Notification.permission!=='granted')return false;
+ const key='lifeos-v78-duration-notice-'+String(id)+'-'+String(target);
+ try{if(sessionStorage.getItem(key))return false;sessionStorage.setItem(key,'1')}catch(_){}
+ try{
+  const options={body,tag:'lifeos-duration-'+id,requireInteraction:true};
+  if('serviceWorker'in navigator){
+   const registration=await Promise.race([navigator.serviceWorker.ready,new Promise((_,reject)=>setTimeout(()=>reject(Error('No notification worker')),3000))]);
+   await registration.showNotification(title,options);
+  }else new Notification(title,options);
+  return true;
+ }catch(_){try{sessionStorage.removeItem(key)}catch(_){}return false}
+}
 function mount(){
  const panel=document.getElementById('trackActivePanel');if(!panel||document.getElementById('lo78-duration'))return;
  const box=document.createElement('section');box.id='lo78-duration';box.className='lo78-duration';
@@ -83,10 +97,10 @@ function mount(){
   if(item&&info?.configured){
    if(info.overdue){
     const key=item.id+'|'+info.targetMinutes+'|'+info.mode;
-    if(lastWarning!==key){lastWarning=key;showStatus('⚠ '+item.name+' has reached its '+info.targetMinutes+' minute limit. Finish now or extend the timer.')}
+    if(lastWarning!==key){lastWarning=key;showStatus('⚠ '+item.name+' has reached its '+info.targetMinutes+' minute limit. Finish now or extend the timer.');notifyOnce(item.id,'due-'+info.targetMinutes,'LifeOS · Activity duration reached',item.name+' · '+info.targetMinutes+' active minutes. Finish or extend in LifeOS.')}
    }else if(info.remainingMs<=5*MIN){
     const key=item.id+'|near|'+info.targetMinutes;
-    if(lastWarning!==key){lastWarning=key;showStatus('Upcoming end: '+item.name+' · '+Math.ceil(info.remainingMs/MIN)+' minute(s) remaining.')}
+    if(lastWarning!==key){lastWarning=key;showStatus('Upcoming end: '+item.name+' · '+Math.ceil(info.remainingMs/MIN)+' minute(s) remaining.');notifyOnce(item.id,'near-'+info.targetMinutes,'LifeOS · Activity ending soon',item.name+' · about '+Math.ceil(info.remainingMs/MIN)+' minute(s) left. Finish or extend in LifeOS.')}
    }
   }else if(item&&elapsed(item,Date.now())>=suggestion(item.name)*MIN){
    const key=item.id+'|unconfigured';
