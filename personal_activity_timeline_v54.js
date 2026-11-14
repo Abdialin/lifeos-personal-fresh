@@ -39,7 +39,7 @@ function mount(){
  const section=document.createElement('section');section.id='lo54-timeline';section.className='lo54-timeline';section.innerHTML='<h3>24-hour timeline · Reality / Plan</h3><p class="sub">Read-only view of recorded intervals, calendar plans and gaps in the record.</p><p data-v54-stats class="lo54-stats" role="status"></p><div data-v54-tracks></div><p data-v54-note class="sub"></p>';host.appendChild(section);
  const picker=host.querySelector('#lo53-date');
  const update=()=>{try{const d=JSON.parse(localStorage.getItem(KEY)||'null');render(section,d,picker?.value||'',Date.now())}catch{section.querySelector('[data-v54-stats]').textContent='Unable to read activity records safely.'}};
- picker?.addEventListener('change',update);window.addEventListener('storage',e=>{if(e.key===KEY)update()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});update();setInterval(()=>{if(!document.hidden)update()},15000);
+ picker?.addEventListener('change',update);window.addEventListener('lifeos-v65-plan-committed',update);window.addEventListener('storage',e=>{if(e.key===KEY)update()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});update();setInterval(()=>{if(!document.hidden)update()},15000);
 }
 const api={bounds,clip,merge,length,gaps,classify,build};
 if(typeof window!=='undefined')window.LifeOSActivityTimelineV54=api;
