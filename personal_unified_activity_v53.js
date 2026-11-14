@@ -77,7 +77,7 @@ function mount(){
  target.closest('section')?.insertAdjacentElement('afterend',host);
  const picker=host.querySelector('#lo53-date');picker.value=localDate(Date.now());
  const update=()=>{try{const state=JSON.parse(localStorage.getItem(KEY)||'null');render(host,state,picker.value);}catch(e){host.querySelector('[data-v53-stats]').textContent='Unable to read activity records safely.';}};
- picker.addEventListener('change',update);window.addEventListener('storage',e=>{if(e.key===KEY)update()});
+ picker.addEventListener('change',update);window.addEventListener('lifeos-v65-plan-committed',update);window.addEventListener('storage',e=>{if(e.key===KEY)update()});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
  update();setInterval(()=>{if(!document.hidden)update()},5000);
 }
