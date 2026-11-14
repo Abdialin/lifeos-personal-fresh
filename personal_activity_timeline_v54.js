@@ -42,6 +42,7 @@ function mount(){
  picker?.addEventListener('change',update);window.addEventListener('storage',e=>{if(e.key===KEY)update()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});update();setInterval(()=>{if(!document.hidden)update()},15000);
 }
 const api={bounds,clip,merge,length,gaps,classify,build};
+if(typeof window!=='undefined')window.LifeOSActivityTimelineV54=api;
 if(typeof module==='object'&&module.exports)module.exports=api;
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();}
 })(typeof window!=='undefined'?window:globalThis);
