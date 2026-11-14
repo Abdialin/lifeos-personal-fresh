@@ -451,6 +451,30 @@ function start(name,plannedId=null){
  if(ok)render();
  return ok;
 }
+/* V58: approve predicted plans through the existing transactional workspace path. */
+document.addEventListener('lifeos-v58-approve-prediction',function(evt){
+ const request=evt.detail;if(!request||typeof request!=='object')return;
+ request.result={ok:false,message:'Approval was not completed.'};
+ try{
+  const predictor=window.LifeOSPredictivePreviewV56,planner=window.LifeOSPersonalPlanner;
+  if(!predictor||!planner)throw Error('Prediction engine is unavailable.');
+  const fresh=predictor.build(data,now(),planner);
+  if(fresh.error||fresh.confidence!=='reviewable')throw Error('Prediction evidence is no longer sufficient.');
+  const candidate=fresh.suggestions.find(p=>p.id===request.id);
+  if(!candidate)throw Error('This prediction is no longer available. Refresh the comparison.');
+  if(candidate.startAt<=now())throw Error('The proposed start time has passed.');
+  const overlapping=(data.schedule||[]).some(p=>p.status!=='skipped'&&p.status!=='cancelled'&&Number.isFinite(p.startAt)&&Number.isFinite(p.endAt)&&p.startAt<candidate.endAt&&candidate.startAt<p.endAt);
+  if(overlapping||candidate.conflicts.length||candidate.actualConflicts.length||candidate.recoveryConflicts.length)
+   throw Error('An existing plan, activity or recovery buffer conflicts with this suggestion. Review the schedule first.');
+  const plan=planner.approve(candidate,data.schedule,uid(),now());
+  plan.source='approved-prediction-v58';
+  const ok=trackingCommit(()=>{data.schedule.push(plan)});
+  if(!ok)throw Error('Plan could not be saved. Existing schedule was restored.');
+  // Persistence uses the existing LifeOS checkpoint; no external calendar write.
+  request.result={ok:true,message:'Approved and saved: '+plan.name+' · '+new Date(plan.startAt).toLocaleString()+'.',planId:plan.id};
+  render();
+ }catch(err){request.result={ok:false,message:String(err&&err.message||err)};}
+});
 function pause(id){
  const original=data.sessions.find(x=>x.id===id);if(!original||original.status!=='running')return false;
  const ok=trackingCommit(()=>{
