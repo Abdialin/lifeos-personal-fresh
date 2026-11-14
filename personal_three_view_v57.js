@@ -73,7 +73,7 @@ function mount(){
  host.appendChild(section);
  const update=()=>{try{const data=JSON.parse(localStorage.getItem(KEY)||'null');render(section,data,Date.now())}catch(e){section.querySelector('[data-v57-status]').textContent='Unable to read activity records.'}};
  document.getElementById('lo53-date')?.addEventListener('change',update);
- window.addEventListener('storage',e=>{if(e.key===KEY)update()});
+ window.addEventListener('lifeos-v65-plan-committed',update);window.addEventListener('storage',e=>{if(e.key===KEY)update()});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});update();
 }
 const api={compare,idealOccurrences,localDate};
