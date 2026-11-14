@@ -111,9 +111,18 @@ function mount(){
    for(const [label,entries,type]of [['Habits',draft.habits,'habits'],['Tasks',draft.tasks,'tasks']]){area.append(el('h3',label));const list=el('ul','');for(const [i,v]of entries.entries()){const li=el('li',v.title||v.name);const b=el('button','Remove');b.type='button';b.className='btn outline';b.onclick=()=>{draft[type].splice(i,1);redraw()};li.append(b);list.append(li)}area.append(list)}
   }else{
    area.append(el('p','Optional: import Google Calendar or an existing schedule file using the Plan import tools. Imported information must be reviewed and approved there before it becomes a plan.'));
-   const openImports=el('button','Open Plan imports');openImports.type='button';openImports.className='btn outline';openImports.onclick=()=>{close();document.querySelector('#lifeosNavigation button[data-view="schedule"]')?.click();const target=document.getElementById('lo12CalendarTools')||document.getElementById('scheduleEditorPanel');target?.scrollIntoView({block:'start',behavior:'smooth'})};area.append(openImports);
+   const openImports=el('a','Open Calendar Review (Google, ICS and documents)');openImports.className='btn outline';openImports.href='/calendar.html';area.append(openImports);
+   const transfer=el('button','Review imported candidates in Plan');transfer.type='button';transfer.className='btn outline';
+   transfer.onclick=()=>{close();document.querySelector('#lifeosNavigation button[data-view="schedule"]')?.click();root.setTimeout(()=>document.getElementById('calendarHandoffPanel')?.scrollIntoView({block:'start',behavior:'smooth'}),90)};
+   area.append(transfer);
+   area.append(el('p','After previewing your source in Calendar Review, approve its transfer there, return to LifeOS Plan, and approve its addition to your schedule. Imported plans are not actual tracked sessions.'));
    area.append(el('p','You can also add fixed deadlines in Plan → Tasks. Fitness and nutrition details remain optional.'));
    const preview=prepare(draft,ws(),Date.now());if(!preview.ok)return message(preview.error);
+   const existing=ws()?.schedule||[];
+   const from=new Date();from.setHours(0,0,0,0);const until=new Date(from);until.setDate(until.getDate()+7);
+   const actual=existing.filter(p=>p&&Number.isFinite(p.startAt)&&Number.isFinite(p.endAt)&&p.startAt<until.getTime()&&p.endAt>from.getTime()&&p.status!=='cancelled');
+   const imported=actual.filter(p=>p.calendarSource==='google'||p.calendarSource==='ics-import');
+   area.append(el('p','Already in your week: '+actual.length+' plans, including '+imported.length+' calendar imports. New proposals below are checked against these plans.'));
    area.append(el('h3','First-week preview'));
    area.append(el('p',preview.plans.length+' nonconflicting proposed plans · '+preview.blocked.length+' conflicts/duplicates excluded · '+preview.habits.length+' habits · '+preview.tasks.length+' tasks.'));
    const list=el('ul','');for(const p of preview.plans.slice(0,30))list.append(el('li',p.name+' · '+new Date(p.startAt).toLocaleString()+' – '+new Date(p.endAt).toLocaleTimeString()));area.append(list);
