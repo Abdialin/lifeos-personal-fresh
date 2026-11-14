@@ -47,7 +47,9 @@ function check(){
   const live=window.lifeosReadOnlyWorkspace?.();
   if(!live)throw Error('LifeOS activity workspace is unavailable');
   const raw=localStorage.getItem(KEY),unpack=window.LifeOSCompactRecovery?.unpack;
-  const info=inspect(live,raw,unpack);
+  const strict=window.LifeOSPersistenceValidatorV70;
+  const result=strict?.verify(raw,live,unpack);
+  const info=result?{ok:result.ok,reason:result.ok?'All active sessions, plans and event records match the canonical recovery checkpoint.':'The active workspace differs from the canonical recovery checkpoint.',storedSessions:result.counts?.sessions?.saved,storedPlans:result.counts?.schedule?.saved,finished:result.ok?live.sessions.filter(s=>s.status==='finished').length:undefined,linkedPlans:result.ok?live.schedule.filter(p=>p.sessionId).length:undefined,issues:result.issues,format:result.format}:inspect(live,raw,unpack);
   root.innerHTML='<strong class="'+(info.ok?'lo46-good':'lo46-bad')+'">'+(info.ok?'✓ Local checkpoint verified':'⚠ Checkpoint needs attention')+'</strong>'+
    '<p>'+esc(info.reason)+'</p>'+
    (info.storedSessions!==undefined?'<div class="lo46-stats"><span>Saved timers: <b>'+info.storedSessions+'</b></span><span>Finished: <b>'+info.finished+'</b></span><span>Saved plans: <b>'+info.storedPlans+'</b></span><span>Linked plans: <b>'+info.linkedPlans+'</b></span></div>':'')+
