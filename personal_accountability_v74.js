@@ -66,9 +66,10 @@ function mount(){
   const prev=select.value;select.replaceChildren(new Option('Choose a distraction',''));
   for(const s of w.sessions||[])if(distract(s)&&!sample(s))select.add(new Option(String(s.name||'Distraction')+' · '+new Date(s.startAt).toLocaleString(),String(s.id)));
   select.value=[...select.options].some(x=>x.value===prev)?prev:'';
-  const d=debtReport(w),box=debt.querySelector('#lo74-debt-results');box.replaceChildren();
-  const overview=document.createElement('p');overview.textContent='Confirmed outstanding: '+fmt(d.totalMs)+' across '+d.confirmedCount+' commitment(s). '+d.unverifiedCount+' past plan(s) need completion review.';box.append(overview);
-  const confirmed=document.createElement('ul');for(const row of d.confirmed.slice(0,12)){const li=document.createElement('li');li.textContent=row.name+': −'+fmt(row.outstandingMs)+' ('+row.reason.replaceAll('-',' ')+')';confirmed.append(li)}box.append(confirmed);
+  const d=debtReport(w),extended=root.LifeOSDebtRecoveryV75?.outstanding?.(w,Date.now(),api),box=debt.querySelector('#lo74-debt-results');box.replaceChildren();
+  const open=extended?.open||d.confirmed,openMs=extended?.openMs??d.totalMs,resolved=extended?.resolved?.length||0;
+  const overview=document.createElement('p');overview.textContent='Outstanding after approved decisions: '+fmt(openMs)+' across '+open.length+' commitment(s). '+resolved+' resolved or scheduled for recovery. '+d.unverifiedCount+' past plan(s) need completion review.';box.append(overview);
+  const confirmed=document.createElement('ul');for(const row of open.slice(0,12)){const li=document.createElement('li');li.textContent=row.name+': −'+fmt(row.outstandingMs)+' ('+row.reason.replaceAll('-',' ')+')';confirmed.append(li)}box.append(confirmed);
  }
  select.addEventListener('change',()=>{const item=workspace()?.sessions?.find(x=>x.id===select.value);if(item){category.value=CATEGORIES.includes(item.distractionCategory)?item.distractionCategory:'Other';trigger.value=String(item.distractionTrigger||'')}});
  analytics.querySelector('#lo74-save').addEventListener('click',()=>{
@@ -78,6 +79,7 @@ function mount(){
   render();
  });
  root.addEventListener('lifeos-v74-records-changed',render);
+ root.addEventListener('lifeos-v75-changed',render);
  root.addEventListener('lifeos-v65-plan-committed',render);
  root.addEventListener('focus',render);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
