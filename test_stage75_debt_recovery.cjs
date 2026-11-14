@@ -50,6 +50,16 @@ assert.equal(w2.schedule.find(x=>x.id==='gym').status,'skipped');
 const adjust=v75.review(workspace(),{id:'gym',action:'adjust',acceptedMs:30*60000},now);
 assert.equal(adjust.ok,true);
 assert.equal(v75.review(workspace(),{id:'gym',action:'adjust',acceptedMs:2*H},now).ok,false);
+const wAdjust=workspace();
+const firstAdjustment=v75.review(wAdjust,{id:'gym',action:'adjust',acceptedMs:30*60000},now);
+assert.equal(firstAdjustment.ok,true);
+v75.applyInMemory(wAdjust,firstAdjustment,{},now);
+assert.equal(v75.outstanding(wAdjust,now).open.find(x=>x.id==='gym').outstandingMs,30*60000,'30 minutes remain owed after adjustment');
+const forgiveRest=v75.review(wAdjust,{id:'gym',action:'forgive'},now);
+assert.equal(forgiveRest.ok,true);
+v75.applyInMemory(wAdjust,forgiveRest,{},now);
+assert.equal(v75.outstanding(wAdjust,now).open.some(x=>x.id==='gym'),false);
+
 assert.equal(v75.review(workspace(),{id:'unknown',action:'forgive'},now).ok,false);
 assert.equal(v75.review(workspace(),{id:'gym',action:'carry',startAt:now+D,endAt:now+D+H},now).ok,false);
 const w3=workspace();w3.schedule.push({id:'big',name:'Project',startAt:now-2*D,endAt:now-2*D+5*H,status:'skipped'});
