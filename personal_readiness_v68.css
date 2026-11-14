@@ -1,0 +1,7 @@
+/* V68: compact readiness diagnostics and mobile navigation */
+#lo68-readiness{max-width:100%;margin:9px 0 16px;background:#18283e;border:1px solid #3a5870;border-radius:12px;padding:12px 14px}
+#lo68-readiness summary{cursor:pointer;font-size:13px;font-weight:750;line-height:1.5}
+#lo68-readiness p{font-size:12px;color:#b8cce2;line-height:1.6;overflow-wrap:anywhere}
+#lo68-readiness button{min-height:44px;max-width:100%;margin:7px 0}
+#lo68-result{white-space:normal;overflow-wrap:anywhere}
+#lo60-weekly,#lo62-plan-review{scroll-margin-top:20px}
