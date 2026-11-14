@@ -74,6 +74,7 @@ function mount(){
  panel.innerHTML='<h3>Weekly improvement suggestions</h3><p class="sub">Actionable planning reviews based on commitments already recorded. These do not create bookings or confirm that a time slot is free.</p><p class="lo61-status" data-v61-status role="status"></p><div class="lo61-actions" data-v61-actions></div>';
  anchor.appendChild(panel);
  const update=()=>{let state=null;try{state=JSON.parse(localStorage.getItem(STORE)||'null')}catch{}render(panel,state,Date.now())};
+ window.addEventListener('lifeos-v65-plan-committed',refresh);
  window.addEventListener('storage',e=>{if(e.key===STORE)update()});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
  update();
