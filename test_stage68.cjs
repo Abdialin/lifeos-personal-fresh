@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const readiness=require('./personal_readiness_v68.js');
+assert.equal(readiness.inspect({}).available,0);
+assert.equal(readiness.inspect({}).ok,false);
+const names=['LifeOSActivityTimelineV54','LifeOSActivityIntelligenceV55','LifeOSPredictivePreviewV56','LifeOSThreeViewV57','LifeOSPredictionApprovalV58','LifeOSScheduleImprovementV59','LifeOSWeeklyPlanningV60','LifeOSWeeklyRecommendationsV61','LifeOSWeeklyPlanReviewV62','LifeOSPlanningAssistantV63','LifeOSAlternativeRankingV64','LifeOSPlanningValidationV65'];
+const complete=Object.fromEntries(names.map(name=>[name,{}]));
+assert.equal(readiness.inspect(complete).ok,true);
+assert.equal(readiness.inspect(complete).available,12);
+assert.equal(readiness.inspect({...complete,LifeOSWeeklyPlanningV60:null}).missing[0],'LifeOSWeeklyPlanningV60');
+assert.equal(readiness.inspect(complete).missing.length,0);
+console.log('V68 readiness checks passed');
