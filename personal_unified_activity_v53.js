@@ -52,7 +52,7 @@ function buildDay(workspace,date,now=Date.now()){
  const counts={planned:0,running:0,paused:0,completed:0,historical:0,sample:0};
  for(const r of rows){
   if(r.kind==='plan'){if(r.status==='planned'||r.status==='needs-review')counts.planned++;}
-  else{if(r.status==='running')counts.running++;else if(r.status==='paused')counts.paused++;else counts.completed++;
+  else{if(r.status==='running')counts.running++;else if(r.status==='paused')counts.paused++;else if(r.provenanceKind!=='sample')counts.completed++;
    if(r.provenanceKind==='historical')counts.historical++;
    if(r.provenanceKind==='sample')counts.sample++;
   }
