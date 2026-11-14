@@ -486,11 +486,15 @@ document.addEventListener('lifeos-v62-move-plan',function(evt){
   if(!check.ok)throw Error('Plan not moved: '+check.reason);
   const target=data.schedule.find(p=>String(p.id)===String(request.id));
   if(!target)throw Error('Plan is no longer available.');
-  const previous={startAt:target.startAt,endAt:target.endAt};
+  const validation=window.LifeOSPlanningValidationV65;
+  if(!validation||typeof validation.comparePlanVersions!=='function')throw Error('Plan safety validation unavailable.');
+  const baseline={sessions:data.sessions,events:data.events,schedule:data.schedule};
+  const proposed={sessions:data.sessions,events:data.events,schedule:data.schedule.map(p=>String(p.id)===String(request.id)?{...p,startAt:check.startAt,endAt:check.endAt}:p)};
+  const safety=validation.comparePlanVersions(baseline,proposed,request.id);
+  if(!safety.ok)throw Error('Plan change rejected: a linked record, another plan, or the original duration would be altered.');
   if(!trackingCommit(()=>{
    target.startAt=check.startAt;target.endAt=check.endAt;
   }))throw Error('Plan save failed; prior schedule restored.');
-  const validation=window.LifeOSPlanningValidationV65;
   const verified=validation?.verify(localStorage.getItem(ATOMIC_KEY),request.id,check.startAt,check.endAt,window.LifeOSCompactRecovery?.unpack);
   if(!verified?.ok){
    request.result={ok:false,message:'Plan save could not be verified: '+(verified?.reason||'Validation unavailable')+'. Preserve your recovery checkpoint and export a backup before refreshing.'};
