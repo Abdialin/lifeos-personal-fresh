@@ -1,0 +1,69 @@
+'use strict';
+const assert=require('node:assert/strict');
+const v74=require('./personal_accountability_v74.js');
+globalThis.LifeOSAccountabilityV74=v74;
+const v75=require('./personal_debt_recovery_v75.js');
+const H=3600000,D=24*H,now=Date.UTC(2026,10,14,12);
+function workspace(){
+ return {version:1,sessions:[{id:'finished',name:'Study',status:'finished',startAt:now-4*H,endAt:now-3*H,segments:[{start:now-4*H,end:now-3*H}]}],events:[],schedule:[
+  {id:'study',name:'Study',startAt:now-4*H,endAt:now-2*H,status:'started',sessionId:'finished'},
+  {id:'gym',name:'Gym',startAt:now-3*D,endAt:now-3*D+H,status:'skipped',sessionId:null},
+  {id:'unknown',name:'Work',startAt:now-2*D,endAt:now-2*D+H,status:'planned',sessionId:null},
+  {id:'future',name:'Appointment',startAt:now+2*D,endAt:now+2*D+H,status:'planned',sessionId:null}
+ ]};
+}
+let w=workspace(),report=v75.outstanding(w,now);
+assert.equal(report.open.length,2);assert.equal(report.unverified.length,1);
+assert.equal(report.openMs,2*H);
+const short=report.open.find(x=>x.id==='study');
+const suggestion=v75.suggest(w,short,now);
+assert.ok(suggestion);assert.equal(suggestion.endAt-suggestion.startAt,H);
+assert.equal(v75.conflicts(w,now+2*D,now+2*D+H),true);
+assert.equal(v75.review(w,{id:'study',action:'recover',startAt:now+2*D,endAt:now+2*D+H},now).ok,false);
+const approved=v75.review(w,{id:'study',action:'recover',startAt:suggestion.startAt,endAt:suggestion.endAt},now);
+assert.equal(approved.ok,true);
+const result=v75.applyInMemory(w,approved,{planId:'new-plan'},now);
+assert.equal(result.recoveryPlanId,'new-plan');
+assert.equal(w.schedule.find(x=>x.id==='study').startAt,now-4*H);
+assert.equal(w.schedule.find(x=>x.id==='study').sessionId,'finished');
+assert.equal(w.schedule.find(x=>x.id==='new-plan').status,'planned');
+assert.equal(w.schedule.find(x=>x.id==='new-plan').recoveryForPlanId,'study');
+assert.equal(v75.outstanding(w,now).open.some(x=>x.id==='study'),false);
+assert.equal(v75.outstanding(w,now).resolved.some(x=>x.id==='study'),true);
+assert.equal(v74.debtReport(w,now,28).unverified.some(x=>x.id==='new-plan'),false);
+assert.equal(v75.review(w,{id:'study',action:'recover',startAt:suggestion.startAt,endAt:suggestion.endAt},now).ok,false);
+assert.throws(()=>v75.applyInMemory(w,approved,{planId:'duplicate'},now),/Original commitment changed|already/);
+const debt=v75.outstanding(w,now).open.find(x=>x.id==='gym');
+const carry=v75.suggest(w,debt,now,'carry');
+assert.ok(carry);assert.ok(carry.startAt>=now+6*D);
+const carried=v75.review(w,{id:'gym',action:'carry',startAt:carry.startAt,endAt:carry.endAt},now);
+assert.equal(carried.ok,true);
+v75.applyInMemory(w,carried,{planId:'gym-next-week'},now);
+assert.equal(v75.outstanding(w,now).open.some(x=>x.id==='gym'),false);
+assert.equal(v75.outstanding(w,now).resolved.some(x=>x.id==='gym'),true);
+const w2=workspace();
+const forgiven=v75.review(w2,{id:'gym',action:'forgive'},now);
+assert.equal(forgiven.ok,true);
+v75.applyInMemory(w2,forgiven,{},now);
+assert.equal(v75.outstanding(w2,now).open.some(x=>x.id==='gym'),false);
+assert.equal(w2.schedule.find(x=>x.id==='gym').status,'skipped');
+const adjust=v75.review(workspace(),{id:'gym',action:'adjust',acceptedMs:30*60000},now);
+assert.equal(adjust.ok,true);
+assert.equal(v75.review(workspace(),{id:'gym',action:'adjust',acceptedMs:2*H},now).ok,false);
+assert.equal(v75.review(workspace(),{id:'unknown',action:'forgive'},now).ok,false);
+assert.equal(v75.review(workspace(),{id:'gym',action:'carry',startAt:now+D,endAt:now+D+H},now).ok,false);
+const w3=workspace();w3.schedule.push({id:'big',name:'Project',startAt:now-2*D,endAt:now-2*D+5*H,status:'skipped'});
+let big=v75.outstanding(w3,now).open.find(x=>x.id==='big');
+assert.equal(big.outstandingMs,5*H);
+let slot=v75.suggest(w3,big,now);assert.equal(slot.portionMs,3*H);
+let first=v75.review(w3,{id:'big',action:'recover',startAt:slot.startAt,endAt:slot.endAt},now);
+assert.equal(first.ok,true);v75.applyInMemory(w3,first,{planId:'big-part-1'},now);
+big=v75.outstanding(w3,now).open.find(x=>x.id==='big');
+assert.equal(big.outstandingMs,2*H);
+slot=v75.suggest(w3,big,now);assert.equal(slot.portionMs,2*H);
+let second=v75.review(w3,{id:'big',action:'recover',startAt:slot.startAt,endAt:slot.endAt},now);
+assert.equal(second.ok,true);v75.applyInMemory(w3,second,{planId:'big-part-2'},now);
+assert.equal(v75.outstanding(w3,now).open.some(x=>x.id==='big'),false);
+assert.equal(w3.schedule.find(x=>x.id==='big').debtDecisionsV75.length,2);
+assert.equal(w3.schedule.filter(x=>x.source==='debt-recovery-v75').length,2);
+console.log('V75 Debt Chamber: all regression assertions passed.');
