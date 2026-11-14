@@ -1,0 +1,28 @@
+'use strict';
+const assert=require('node:assert/strict');
+const act=require('./personal_activity_activation_v76.js');
+const now=Date.UTC(2026,10,14,14),MIN=60000;
+function plan(overrides={}){return {id:'p1',name:'Study',status:'planned',sessionId:null,startAt:now-60000,endAt:now+3600000,...overrides};}
+assert.equal(act.mode(plan()),'assisted');
+assert.equal(act.mode(plan({activationMode:'manual'})),'manual');
+assert.equal(act.mode(plan({activationMode:'automatic'})),'automatic');
+assert.equal(act.evaluate([plan()],now).length,1);
+assert.equal(act.evaluate([plan({activationMode:'manual'})],now).length,0);
+assert.equal(act.evaluate([plan({status:'started',sessionId:'s1'})],now).length,0);
+assert.equal(act.evaluate([plan({startAt:now+20*MIN,endAt:now+30*MIN})],now).length,0);
+assert.equal(act.evaluate([plan({startAt:now+4*MIN,endAt:now+30*MIN})],now)[0].phase,'upcoming');
+assert.equal(act.evaluate([plan({activationSnoozedUntilV76:now+MIN})],now).length,0);
+assert.equal(act.evaluate([plan({activationDismissedAtV76:now})],now).length,0);
+assert.equal(act.evaluate([plan({provisionalActivationV76:{verified:false}})],now)[0].provisional,true);
+const provisional=act.actionReview(plan({activationMode:'automatic'}),{type:'provisional'},now);
+assert.equal(provisional.provisionalActivationV76.verified,false);
+assert.equal(provisional.provisionalActivationV76.observedAt,now);
+assert.equal(provisional.provisionalActivationV76.scheduledAt,now-60000);
+assert.equal(provisional.sessionId,null);
+assert.equal(act.actionReview(plan(),{type:'snooze'},now).activationSnoozedUntilV76,now+10*MIN);
+assert.equal(act.actionReview(plan(),{type:'dismiss'},now).activationDismissedAtV76,now);
+assert.equal(act.actionReview(plan(),{type:'mode',value:'manual'},now).activationMode,'manual');
+assert.throws(()=>act.actionReview(plan(),{type:'mode',value:'magic'},now));
+assert.throws(()=>act.actionReview(plan(),{type:'provisional'},now));
+assert.throws(()=>act.actionReview(plan({status:'finished'}),{type:'snooze'},now));
+console.log('V76: 21 scheduled activation assertions passed.');
