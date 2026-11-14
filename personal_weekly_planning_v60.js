@@ -48,6 +48,7 @@ function mount(){
  const parent=document.getElementById('lo59-improvements');if(!parent||document.getElementById('lo60-weekly'))return;
  const section=document.createElement('section');section.id='lo60-weekly';section.className='lo60-weekly';section.innerHTML='<h3>Intelligent weekly planning</h3><p class="sub">A review-only seven-day planner. Plans, ideal routines and predictions remain separate, and unlogged time is unknown.</p><p data-v60-summary class="lo60-summary" role="status"></p><div data-v60-days class="lo60-grid"></div><p class="sub">Workload flags use an illustrative threshold of 8 scheduled hours. Breaks under 30 minutes are highlighted for review; neither flag establishes personal recovery requirements. No schedule changes are made automatically.</p>';parent.appendChild(section);
  const refresh=()=>{let w=null;try{w=JSON.parse(localStorage.getItem(KEY)||'null')}catch{}render(section,w,Date.now())};
+ window.addEventListener('lifeos-v65-plan-committed',refresh);
  window.addEventListener('storage',e=>{if(e.key===KEY)refresh()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();
 }
 const api={review,union,total,span};
