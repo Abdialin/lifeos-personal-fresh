@@ -80,3 +80,17 @@ body[data-lifeos-view="life"] #loLifeSectionTabs.lo-life-tabs button{font-size:c
 #lo33HabitInsights .lo33-insight-track{background:#293e56;height:9px;border-radius:9px;overflow:hidden;margin:9px 0 5px}
 #lo33HabitInsights .lo33-insight-track i{display:block;height:100%;background:#72c7ac}
 @media(max-width:450px){#lo33HabitInsights{padding:11px}#lo32HabitHub .lo33-evidence{padding:7px}}
+
+/* V79 — floating timer must never obscure a modal's save/skip/finish controls. */
+.modal:not([hidden]){z-index:2400!important;overflow-y:auto;align-items:flex-start;padding-top:max(18px,env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+.modal:not([hidden]) .modal-card{max-height:calc(100dvh - 42px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-bottom:calc(32px + env(safe-area-inset-bottom))}
+body:has(.modal:not([hidden])) #lo32ActiveTimer{display:none!important}
+#lo32ActiveTimer .lo79-minimize{font-size:19px;font-weight:700;min-width:32px;padding:4px 7px;flex-shrink:0}
+#lo32ActiveTimer.lo79-minimized{left:auto;right:max(8px,env(safe-area-inset-right));width:auto;max-width:min(94vw,255px);padding:7px 9px;gap:7px}
+#lo32ActiveTimer.lo79-minimized .lo32-timer-info,
+#lo32ActiveTimer.lo79-minimized .lo32-open-tracker,
+#lo32ActiveTimer.lo79-minimized .lo32-timer-dot{display:none!important}
+#lo32ActiveTimer.lo79-minimized .lo79-minimize{order:2}
+body{scroll-padding-bottom:180px}
+#sessions details.lo17-session{scroll-margin-bottom:190px}
+@media(max-width:600px){#lo32ActiveTimer{gap:7px}#lo32ActiveTimer .lo32-timer-count{font-size:14px}#lo32ActiveTimer .lo32-timer-info strong{font-size:12px}#lo32ActiveTimer .lo32-open-tracker{font-size:11px;padding:7px}}
