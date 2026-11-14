@@ -45,7 +45,7 @@ function mount(){
  const parent=document.getElementById('lo57-three-view');if(!parent||document.getElementById('lo59-improvements'))return;
  const section=document.createElement('section');section.id='lo59-improvements';section.className='lo59-improvements';section.innerHTML='<h3>Intelligent schedule improvements</h3><p class="sub">Explainable recommendations based on recorded evidence, planned commitments, preferred routines and conflicts. Nothing is applied automatically.</p><p data-v59-status class="lo59-status" role="status"></p><div class="lo59-list" data-v59-list></div>';parent.appendChild(section);
  const refresh=()=>{let data=null;try{data=JSON.parse(localStorage.getItem(KEY)||'null')}catch{}render(section,data,Date.now())};
- window.addEventListener('storage',e=>{if(e.key===KEY)refresh()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();
+ window.addEventListener('lifeos-v65-plan-committed',refresh);window.addEventListener('storage',e=>{if(e.key===KEY)refresh()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();
 }
 const api={summarize,overlapping};
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount()}
