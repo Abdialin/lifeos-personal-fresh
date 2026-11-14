@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-global.LifeOSPersistenceValidatorV70=require('./personal_persistence_validator_v70.js');
+globalThis.LifeOSPersistenceValidatorV70=require('./personal_persistence_validator_v70.js');
 const v=require('./personal_background_tracking_v72.js');
 const now=10_000_000,h=3600000;
 const running={id:'running',name:'Study',status:'running',segments:[{start:now-3*h,end:null}]};
