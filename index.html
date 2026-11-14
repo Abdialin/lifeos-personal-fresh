@@ -470,9 +470,16 @@ document.addEventListener('lifeos-v58-approve-prediction',function(evt){
   plan.source='approved-prediction-v58';
   const ok=trackingCommit(()=>{data.schedule.push(plan)});
   if(!ok)throw Error('Plan could not be saved. Existing schedule was restored.');
-  // Persistence uses the existing LifeOS checkpoint; no external calendar write.
-  request.result={ok:true,message:'Approved and saved: '+plan.name+' · '+new Date(plan.startAt).toLocaleString()+'.',planId:plan.id};
-  render();
+  // The canonical recovery checkpoint is authoritative, including compact format 2.
+  const validation=window.LifeOSPlanningValidationV65;
+  const verified=validation?.verify(localStorage.getItem(ATOMIC_KEY),plan.id,plan.startAt,plan.endAt,window.LifeOSCompactRecovery?.unpack);
+  if(!verified?.ok){
+   request.result={ok:false,message:'Prediction approval cannot be verified in recovery storage: '+(verified?.reason||'Validator unavailable')+'. Export a recovery backup before refreshing.'};
+   return;
+  }
+  request.result={ok:true,message:'Approved and verified in recovery storage: '+plan.name+' · '+new Date(plan.startAt).toLocaleString()+'. Server sync is not confirmed.',planId:plan.id};
+  try{render()}catch(err){console.warn('V66 saved prediction but dashboard render failed',err)}
+  window.dispatchEvent(new CustomEvent('lifeos-v65-plan-committed',{detail:{planId:String(plan.id),startAt:plan.startAt,endAt:plan.endAt}}));
  }catch(err){request.result={ok:false,message:String(err&&err.message||err)};}
 });
 /* V62: guarded, transactional plan move from the weekly review panel. */
