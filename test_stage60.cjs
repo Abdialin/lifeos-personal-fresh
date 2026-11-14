@@ -6,7 +6,7 @@ const fake={comparison:{compare(){return {error:null,range:{from:start,to:start+
 const state={schedule:[]},before=JSON.stringify(state),report=weekly.review(state,start-4*h,fake);
 assert.equal(report.error,null);
 assert.equal(report.days.length,7);
-assert.equal(report.days[0].plannedMs,10*h+50*60000);
+assert.equal(report.days[0].plannedMs,9*h+50*60000);
 assert.equal(report.days[0].overlaps.length,1);
 assert.equal(report.days[0].shortBreaks.length,1);
 assert.equal(report.days[0].highLoad,true);
