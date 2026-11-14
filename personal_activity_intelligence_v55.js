@@ -62,5 +62,6 @@ function mount(){
 }
 const api={inspect,intersect,trend,previousDates};
 if(typeof module==='object'&&module.exports)module.exports=api;
+if(typeof window!=='undefined')window.LifeOSActivityIntelligenceV55=api;
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount()}
 })(typeof window!=='undefined'?window:globalThis);
