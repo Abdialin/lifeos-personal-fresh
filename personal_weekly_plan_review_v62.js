@@ -55,7 +55,7 @@ function mount(){
   const detail={id:snapshot.id,expectedStartAt:snapshot.originalStart,expectedEndAt:snapshot.originalEnd,newStartAt:last.startAt,result:null};
   document.dispatchEvent(new CustomEvent('lifeos-v62-move-plan',{detail}));
   notice.textContent=detail.result?.message||'No confirmation from the LifeOS save system. No success assumed.';
-  reset();if(detail.result?.ok)choices();
+  reset();if(detail.result?.ok){const savedMessage=notice.textContent;choices();notice.textContent=savedMessage;}
  });
  window.addEventListener('storage',e=>{if(e.key===KEY)choices()});
  choices();
