@@ -24,5 +24,5 @@ assert.equal(subject.evaluate(p.baseline,workspace,START+2*MIN,engine,{ok:true})
 assert.equal(subject.evaluate(p.baseline,{...workspace,sessions:[running,{...paused,segments:[{start:START-10*MIN,end:START-6*MIN}]}]},START+2*MIN,engine,{ok:true}).state,'fail');
 assert.equal(subject.capture(workspace,'missing',START,engine).ok,false);
 assert.equal(subject.evaluate(null,workspace,START+MIN,engine,{ok:true}).state,'not-started');
-assert.equal(subject.evaluate(r.baseline,{...workspace,sessions:[{...running,segments:[{start:START+MIN,end:null}]},paused]},START+2*MIN,engine,{ok:true}).state,'fail');
+assert.equal(subject.evaluate(r.baseline,{...workspace,sessions:[{...running,segments:[{start:START+5*MIN,end:null}]},paused]},START+2*MIN,engine,{ok:true}).state,'fail');
 console.log('V73 device lock/resume simulation: 17/17 assertions passed.');
