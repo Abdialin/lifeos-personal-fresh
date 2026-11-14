@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const app=require('./personal_planning_assistant_v63.js');
+const checker=require('./personal_weekly_plan_review_v62.js');
+const now=new Date('2026-11-14T11:00:00').getTime();
+const sunday=new Date('2026-11-15T00:00:00').getTime(),monday=new Date('2026-11-16T00:00:00').getTime(),hour=3600000;
+const first={id:'p1',name:'Coursework',status:'planned',startAt:sunday+9*hour,endAt:sunday+11*hour};
+const busy={id:'p2',name:'Work',status:'planned',startAt:sunday+10*hour,endAt:sunday+18*hour};
+const workspace={schedule:[first,busy],sessions:[]};
+const weekly={days:[{date:'2026-11-15',start:sunday,end:monday,highLoad:true,plannedMs:9*hour,overlaps:[{first:'Coursework',second:'Work'}],shortBreaks:[]},{date:'2026-11-16',start:monday,end:monday+24*hour,highLoad:false,plannedMs:0,overlaps:[],shortBreaks:[]}]};
+const before=JSON.stringify(workspace),result=app.propose(workspace,weekly,checker,now);
+assert.equal(result.error,null);assert.ok(result.suggestions.length>0);
+assert.equal(result.suggestions[0].to,monday+9*hour);
+assert.equal(result.suggestions[0].requiresApproval,true);
+assert.equal(JSON.stringify(workspace),before);
+assert.equal(app.propose(workspace,weekly,{preview(){return {ok:false}}},now).suggestions.length,0);
+assert.ok(app.propose({},null,checker,now).error);
+console.log('V63 proposed-adjustment checks passed');
