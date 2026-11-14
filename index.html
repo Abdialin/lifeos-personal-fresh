@@ -1441,16 +1441,35 @@ $('bodyMetricsForm').addEventListener('submit',saveBodyMetrics);$('bodyMetricCan
 // localStorage writes are atomic per key only; legacy keys remain compatibility mirrors.
 const ATOMIC_KEY='lifeos-v4-stage21-atomic';
 let atomicBlocked=false,lifeosLastSaveFailure='',compactMode=false;
+// V71: prevent an older tab from overwriting a newer canonical workspace.
+let v71ObservedCheckpoint=localStorage.getItem(ATOMIC_KEY),v71StaleTab=false;
+function v71CheckpointUnchanged(current){return !v71StaleTab&&current===v71ObservedCheckpoint}
+function v71StopStaleTab(){
+ if(v71StaleTab)return;
+ v71StaleTab=true;atomicBlocked=true;
+ lifeosLastSaveFailure='A second LifeOS tab updated the recovery checkpoint. This tab cannot save until reloaded.';
+ stopSync();
+ const warning='⚠ This LifeOS tab has older data. Do not start or edit activities here. Export a recovery backup if needed, then reload to use the latest saved records.';
+ try{syncStatus(warning)}catch(_){}
+ const label=document.getElementById('status');if(label)label.textContent=warning;
+}
+window.addEventListener('storage',event=>{
+ if(event.storageArea===localStorage&&(event.key===ATOMIC_KEY||event.key===null)&&event.newValue!==v71ObservedCheckpoint)v71StopStaleTab();
+});
 function atomicRecord(workspace,journal,meta){
  validateWorkspace(workspace);
  if(!Array.isArray(journal)||!journal.every(x=>x&&typeof x.id==='string'&&Number.isFinite(x.createdAt)&&x.snapshot&&x.snapshot.version===1))throw new Error('Invalid journal');
  return {format:1,workspace:JSON.parse(JSON.stringify(workspace)),journal:JSON.parse(JSON.stringify(journal)),meta:{revision:Number.isInteger(meta.revision)?meta.revision:null,dirty:meta.dirty===true},committedAt:Date.now()};
 }
 function atomicCommit(workspace,journal,meta){
+ // Also compare directly: storage events are asynchronous and may arrive after a save click.
+ try{if(!v71CheckpointUnchanged(localStorage.getItem(ATOMIC_KEY))){v71StopStaleTab();return false}}catch(_){lifeosLastSaveFailure='Recovery storage cannot be read.';return false}
  if(atomicBlocked||outboxCorrupt){lifeosLastSaveFailure=atomicBlocked?'Recovery checkpoint is blocked or invalid.':'Offline journal is blocked or invalid.';return false}
  try{
   const record=compactMode?window.LifeOSCompactRecovery.pack(workspace,journal,meta):atomicRecord(workspace,journal,meta);
-  localStorage.setItem(ATOMIC_KEY,JSON.stringify(record)); // commit point
+  const serialized=JSON.stringify(record);
+  localStorage.setItem(ATOMIC_KEY,serialized); // commit point
+  v71ObservedCheckpoint=serialized;
   lifeosLastSaveFailure='';
   return true;
  }catch(e){
@@ -1504,7 +1523,9 @@ function repairCompactStorage(){
   // Legacy mirror is redundant: the original atomic checkpoint still holds every snapshot.
   // Freeing it first allows the much smaller verified replacement to fit within browser quota.
   if(oldMirror!==null)localStorage.removeItem(OUTBOX_KEY);
-  localStorage.setItem(ATOMIC_KEY,JSON.stringify(converted));
+  const compactSerialized=JSON.stringify(converted);
+  localStorage.setItem(ATOMIC_KEY,compactSerialized);
+  v71ObservedCheckpoint=compactSerialized;
   const readback=JSON.parse(localStorage.getItem(ATOMIC_KEY)||'null');
   const restored=window.LifeOSCompactRecovery.unpack(readback);
   if(!window.LifeOSCompactRecovery.equal(restored.workspace,data)||!window.LifeOSCompactRecovery.equal(restored.journal,outbox))throw Error('Read-back verification mismatch');
