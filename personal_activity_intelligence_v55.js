@@ -58,7 +58,7 @@ function mount(){
  host.innerHTML='<h3>Activity intelligence · 7-day perspective</h3><p class="sub">Compare evidence, plans and tracking coverage without changing your records.</p><div class="lo55-grid" data-v55-cards></div><h4>Recorded time across the last 7 dates</h4><div data-v55-trend></div><p class="lo55-note" data-v55-note></p>';parent.appendChild(host);
  const picker=parent.querySelector('#lo53-date');
  const update=()=>{try{const workspace=JSON.parse(localStorage.getItem(KEY)||'null');render(host,workspace,picker?.value||'',Date.now(),window.LifeOSActivityTimelineV54)}catch(e){host.querySelector('[data-v55-cards]').textContent='Could not read the activity workspace.';}};
- picker?.addEventListener('change',update);window.addEventListener('storage',e=>{if(e.key===KEY)update()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});update();setInterval(()=>{if(!document.hidden)update()},30000);
+ picker?.addEventListener('change',update);window.addEventListener('lifeos-v65-plan-committed',update);window.addEventListener('storage',e=>{if(e.key===KEY)update()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});update();setInterval(()=>{if(!document.hidden)update()},30000);
 }
 const api={inspect,intersect,trend,previousDates};
 if(typeof module==='object'&&module.exports)module.exports=api;
