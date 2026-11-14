@@ -8,7 +8,7 @@ function clip(a,b,l,r){return safeNum(a)&&safeNum(b)&&b>a&&b>l&&a<r?[Math.max(a,
 function merge(intervals){const sorted=intervals.filter(x=>Array.isArray(x)&&x[1]>x[0]).sort((a,b)=>a[0]-b[0]);const out=[];for(const [a,b] of sorted){const last=out[out.length-1];if(last&&a<=last[1])last[1]=Math.max(last[1],b);else out.push([a,b])}return out}
 function length(intervals){return merge(intervals).reduce((sum,[a,b])=>sum+(b-a),0)}
 function gaps(occupied,start,end,min=GAP_MS){if(end<=start)return [];let cursor=start,out=[];for(const [a,b] of merge(occupied)){if(a>cursor&&a-cursor>=min)out.push([cursor,a]);cursor=Math.max(cursor,b)}if(end>cursor&&end-cursor>=min)out.push([cursor,end]);return out}
-function classify(s){if(s?.source==='development-starter'||s?.seedBatch)return 'sample';if(s?.source==='historical-import'||s?.source==='import'||s?.importedAt||String(s?.precision||'').startsWith('retrospective'))return 'historical';return 'tracked'}
+function classify(s){if(s?.source==='development-starter'||s?.source==='assumed-demo'||s?.seedBatch)return 'sample';if(s?.source==='historical-import'||s?.source==='import'||s?.importedAt||String(s?.precision||'').startsWith('retrospective'))return 'historical';return 'tracked'}
 function build(workspace,day,now=Date.now()){
  const b=bounds(day);if(!b)return {error:'Invalid date',records:[],plans:[],gaps:[],stats:{}};
  const [start,end]=b,cutoff=Math.max(start,Math.min(end,now));
