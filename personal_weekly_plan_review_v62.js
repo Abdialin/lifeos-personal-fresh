@@ -57,6 +57,24 @@ function mount(){
   notice.textContent=detail.result?.message||'No confirmation from the LifeOS save system. No success assumed.';
   reset();if(detail.result?.ok){const savedMessage=notice.textContent;choices();notice.textContent=savedMessage;}
  });
+ document.addEventListener('lifeos-v63-review-suggestion',event=>{
+  const request=event.detail;
+  if(!request||typeof request!=='object')return;
+  request.result={ok:false,message:'Suggestion was not transferred.'};
+  const state=read(),plan=(state?.schedule||[]).find(p=>String(p.id)===String(request.planId));
+  if(!plan||!valid(plan)||plan.status!=='planned'||plan.sessionId){request.result.message='The proposed plan is no longer eligible for rescheduling.';return;}
+  if(!Number.isFinite(request.newStartAt)){request.result.message='The proposed time is invalid.';return;}
+  const assessment=preview(state,String(plan.id),request.newStartAt,plan.startAt,plan.endAt,Date.now());
+  if(!assessment.ok){request.result.message='Suggestion needs a new review: '+assessment.reason;return;}
+  choices();
+  picker.value=String(plan.id);
+  input.value=localInput(request.newStartAt);
+  previewButton.click();
+  if(!applyButton.disabled){
+   request.result={ok:true,message:'Proposal loaded into the review form. Check the impact and explicitly confirm to save.'};
+   host.scrollIntoView({behavior:'smooth',block:'start'});
+  }else request.result.message='The review form could not validate the proposed time.';
+ });
  window.addEventListener('storage',e=>{if(e.key===KEY)choices()});
  choices();
 }
