@@ -28,7 +28,7 @@ function mount(){
  const panel=document.getElementById('trackActivePanel'),body=document.body;
  if(!panel||document.getElementById('lo77-timer-quick'))return;
  const top=document.createElement('div');top.id='lo77-timer-quick';top.className='lo77-quick';
- top.innerHTML='<div class="lo77-timer-line"><span class="lo77-led" aria-hidden="true">●</span><div class="lo77-name-group"><strong id="lo77-name">No active timer</strong><small id="lo77-count">0 active</small></div><strong id="lo77-clock" class="lo77-clock" role="timer">00:00:00</strong></div><div class="lo77-actions"><button type="button" class="btn outline" data-v77-action="review">Review timer</button><button type="button" class="btn outline" data-v77-action="pause">Pause</button><button type="button" class="btn outline" data-v77-action="resume">Resume</button></div><p class="lo77-message" id="lo77-status" role="status"></p>';
+ top.innerHTML='<div class="lo77-timer-line"><span class="lo77-led" aria-hidden="true">●</span><div class="lo77-name-group"><strong id="lo77-name">No active timer</strong><small id="lo77-count">0 active</small></div><strong id="lo77-clock" class="lo77-clock" role="timer">00:00:00</strong></div><div class="lo77-actions"><button type="button" class="btn outline" data-v77-action="review">Review timer</button><button type="button" class="btn outline" data-v77-action="pause">Pause</button><button type="button" class="btn outline" data-v77-action="resume">Resume</button><button type="button" class="btn danger" data-v77-action="finish">Finish activity</button></div><p class="lo77-message" id="lo77-status" role="status"></p>';
  panel.insertBefore(top,panel.querySelector('#sessions'));
  const name=top.querySelector('#lo77-name'),count=top.querySelector('#lo77-count'),timer=top.querySelector('#lo77-clock');
  const pause=top.querySelector('[data-v77-action="pause"]'),resume=top.querySelector('[data-v77-action="resume"]'),status=top.querySelector('#lo77-status');
@@ -73,7 +73,8 @@ function mount(){
   const item=choose(state(),id||currentId);
   if(!item){status.textContent='No timer is available.';return}
   if(action==='review')return go(item.id);
-  if(!['pause','resume'].includes(action))return;
+  if(!['pause','resume','finish'].includes(action))return;
+  if(action==='finish'&&!root.confirm('Finish '+item.name+' now? You can add details after saving.'))return;
   const request={id:String(item.id),action,result:{ok:false,message:'Timer operation unavailable.'}};
   root.dispatchEvent(new CustomEvent('lifeos-v77-timer-action',{detail:request}));
   status.textContent=request.result?.message||'Timer action could not be completed.';
