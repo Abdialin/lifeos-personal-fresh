@@ -66,6 +66,7 @@ body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*{
  border-radius:14px;min-width:0;padding:11px!important;min-height:94px;
  border:1px solid var(--lo-border);background:var(--lo-surface-2);
  color:var(--lo-text);font-size:12px;overflow-wrap:anywhere;word-break:normal;
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:5px;
  transition:background .12s ease
 }
 body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*[data-lo126-category="spiritual"]{border-top:3px solid var(--lo121-prayer)}
@@ -173,6 +174,7 @@ body[data-lifeos-view="tracking"] .lo126-extras .lo126-extra-intro{
 body[data-lifeos-view="tracking"] .lo126-extras .lo126-extra-intro p{margin:0 0 7px}
 body[data-lifeos-view="tracking"] .lo126-extras .lo126-extra-list{padding-bottom:5px}
 body[data-lifeos-view="tracking"] #lo14TrackTools{display:none!important}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .history{max-height:none;overflow:visible}
 body[data-lifeos-view="tracking"] #trackHistoryPanel .history details{border-radius:12px}
 body[data-lifeos-view="tracking"] #trackHistoryPanel .history details summary{min-height:44px}
 @media(max-width:520px){
