@@ -8,7 +8,7 @@ import sqlite3
 
 MAX_BYTES = 100_000
 FORMAT = 'lifeos.personal.preferences.v88'
-GROUPS = frozenset(('durations', 'workouts'))
+GROUPS = frozenset(('durations', 'workouts', 'exercisePlans'))
 DURATION_KEYS = frozenset(('fajr','dhuhr','asr','maghrib','isha','prayer','quran','gym','study','work','reading','other'))
 WORKOUT_TYPES = frozenset(('Gym','Walking','Running','Boxing','Cycling','Swimming','Yoga','Team sports','Other'))
 
@@ -38,6 +38,32 @@ def validate(data):
             if w['minutes'] is not None and (type(w['minutes']) is not int or not 0<=w['minutes']<=1440):
                 raise ValueError('Invalid workout minutes')
         clean['workouts']=a
+    if 'exercisePlans' in data:
+        plans=data['exercisePlans']
+        if not isinstance(plans,list) or len(plans)>20:
+            raise ValueError('Invalid exercise plan list')
+        ids=set()
+        for p in plans:
+            if not isinstance(p,dict) or set(p)!=set(('id','name','type','exercises')):
+                raise ValueError('Invalid exercise plan fields')
+            if not isinstance(p['id'],str) or not 1<=len(p['id'])<=100 or p['id'] in ids:
+                raise ValueError('Invalid or duplicated plan ID')
+            ids.add(p['id'])
+            if not isinstance(p['name'],str) or not 1<=len(p['name'].strip())<=70 or p['type'] not in WORKOUT_TYPES:
+                raise ValueError('Invalid plan name or type')
+            exercises=p['exercises']
+            if not isinstance(exercises,list) or not 1<=len(exercises)<=30:
+                raise ValueError('Exercise plans require 1–30 exercises')
+            for e in exercises:
+                if not isinstance(e,dict) or set(e)!=set(('name','sets','reps','load')):
+                    raise ValueError('Invalid exercise fields')
+                if not isinstance(e['name'],str) or not 1<=len(e['name'].strip())<=65:
+                    raise ValueError('Invalid exercise name')
+                if type(e['sets']) is not int or not 1<=e['sets']<=20 or type(e['reps']) is not int or not 1<=e['reps']<=100:
+                    raise ValueError('Invalid exercise sets or reps')
+                if e['load'] is not None and (type(e['load']) not in (int,float) or not 0<=e['load']<=1000):
+                    raise ValueError('Invalid exercise load')
+        clean['exercisePlans']=plans
     if len(json.dumps(clean,ensure_ascii=False).encode())>MAX_BYTES:
         raise ValueError('Preferences exceed size limit')
     return clean
