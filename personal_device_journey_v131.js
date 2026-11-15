@@ -5,6 +5,7 @@ const $=id=>root.document.getElementById(id);
 const make=(tag,cls,content)=>{const e=root.document.createElement(tag);if(cls)e.className=cls;if(content!==undefined)e.textContent=content;return e};
 const stateMessage=text=>{
  const s=String(text||'').toLowerCase();
+ if(s.includes('no test baseline captured')||s.includes('snapshot cleared'))return 'idle';
  if(s.includes('✓ pass:'))return 'pass';
  if(s.includes('⚠ failed:')||s.includes('cannot capture')||s.includes('invalid')||s.includes('cannot save'))return 'fail';
  if(s.includes('baseline captured')||s.includes('previous test baseline'))return 'ready';
