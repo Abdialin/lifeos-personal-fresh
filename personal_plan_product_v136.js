@@ -18,7 +18,7 @@ const displayDate=s=>new Date(s+'T12:00:00').toLocaleDateString(undefined,{weekd
 const tasks=x=>Array.isArray(x.todos)?x.todos:[];
 const all=()=>{const x=w();return {x,plans:(x.schedule||[]).filter(valid).filter(p=>!['cancelled','skipped'].includes(p.status)),real:(x.sessions||[]).filter(valid).filter(confirmed),samples:(x.sessions||[]).filter(valid).filter(preview)}};
 const intersect=(r,from,to)=>+r.startAt<to&&+r.endAt>from;
-let host,source,selected='calendar',anchor=datekey(Date.now()),range='day',compare='reality',showAll=false,detailsOpen=false,reviewMode='shortfalls';
+let host,source,selected='calendar',anchor=datekey(Date.now()),range='day',compare='reality',compareWindow=7,showAll=false,detailsOpen=false,reviewMode='shortfalls';
 function cleanName(s){return String(s||'Activity').trim().toLowerCase().replace(/[^a-z0-9\u00c0-\u024f]+/g,' ')}
 function getDayRows(data,key){const from=startday(key),to=startday(datekey(from+86400000)),plans=data.plans.filter(p=>intersect(p,from,to)),real=data.real.filter(s=>intersect(s,from,to));
  return [...real.map(s=>({name:s.name||'Activity',start:s.startAt,end:s.endAt,kind:'record',category:cat(s.name),flag:suspicious(s),source:s})),...plans.filter(p=>!real.some(s=>String(s.plannedId||'')===String(p.id)||String(p.sessionId||'')===String(s.id))).map(p=>({name:p.name||'Plan',start:p.startAt,end:p.endAt,kind:'plan',category:cat(p.name),flag:false,source:p}))]
@@ -39,25 +39,85 @@ function renderCalendar(){
  $('v136Days').innerHTML=grid; $('v136Days').classList.toggle('v137-month-grid',range==='month');
  const rows=getDayRows(d,anchor),visible=showAll?rows:rows.slice(0,5),b=startday(anchor),e=startday(datekey(b+86400000));
  const dayPlans=d.plans.filter(x=>intersect(x,b,e)),dayReal=d.real.filter(x=>intersect(x,b,e)),flagged=dayReal.filter(suspicious).length;
- const midnight=dayReal.filter(x=>new Date(+x.startAt).getHours()===0&&new Date(+x.startAt).getMinutes()===0).length;
- $('v136DaySummary').innerHTML='<h3>'+esc(displayDate(anchor))+'</h3><p>'+dayPlans.length+' plans · '+dayReal.length+' finished sessions'+(flagged?' · '+flagged+' needs review':'')+'</p>'+(midnight>=3?'<p class="v138-caution">'+midnight+' recorded sessions begin at 00:00. Verify timestamps before interpreting the timeline.</p>':'');
+ const overnight=dayReal.filter(x=>+x.startAt<b).length;
+ $('v136DaySummary').innerHTML='<h3>'+esc(displayDate(anchor))+'</h3><p>'+dayPlans.length+' plans · '+dayReal.length+' finished sessions'+(flagged?' · '+flagged+' needs review':'')+'</p>'+(overnight?'<p class="v138-caution">'+overnight+' tracked session'+(overnight===1?'':'s')+' carried over from the previous day. The timeline shows only the time inside this day.</p>':'');
  $('v136Timeline').innerHTML=visible.length?visible.map(x=>{const time=Math.max(x.start,b);const minutes=Math.max(0,Math.round((time-b)/60000));const actual=(Math.max(0,Math.min(+x.end,e)-Math.max(+x.start,b))/60000);
-  return '<article class="v136-event" data-kind="'+x.kind+'" data-category="'+x.category+'"><span class="v136-event-time">'+hh(time)+'</span><div class="v136-event-rail"><i></i></div><button type="button" class="v136-event-main v137-activity-open" data-v137-activity="'+esc(x.kind)+'" data-v137-id="'+esc(x.source?.id||'')+'" aria-label="Review '+esc(x.name)+'"><div><strong>'+esc(x.name)+'</strong><span class="v136-pill">'+(x.kind==='record'?'Tracked':'Planned')+'</span></div><small>'+dur(actual*60000)+(x.flag?' · Duration needs verification':'')+'</small></button></article>'}).join(''):'<div class="v136-empty">No plans or verified sessions for this day.<small>Unlogged time is unknown, not necessarily free.</small></div>';
+  return '<article class="v136-event" data-kind="'+x.kind+'" data-category="'+x.category+'"><span class="v136-event-time">'+hh(time)+'</span><div class="v136-event-rail"><i></i></div><button type="button" class="v136-event-main v137-activity-open" data-v137-activity="'+esc(x.kind)+'" data-v137-id="'+esc(x.source?.id||'')+'" aria-label="Review '+esc(x.name)+'"><div><strong>'+esc(x.name)+'</strong><span class="v136-pill">'+(x.kind==='record'?'Tracked':'Planned')+'</span></div><small>'+(x.start<b?'Continued · ':'')+dur(actual*60000)+(x.start<b?' this day of '+dur(+x.end- +x.start)+' total':'')+(x.flag?' · Verify total duration':'')+'</small></button></article>'}).join(''):'<div class="v136-empty">No plans or verified sessions for this day.<small>Unlogged time is unknown, not necessarily free.</small></div>';
  $('v136MoreRows').hidden=rows.length<=8;$('v136MoreRows').textContent=showAll?'Show fewer': 'Show '+(rows.length-5)+' more activities';
  const clashes=[];for(let i=0;i<dayPlans.length;i++)for(let j=i+1;j<dayPlans.length;j++)if(intersect(dayPlans[i],+dayPlans[j].startAt,+dayPlans[j].endAt))clashes.push([dayPlans[i],dayPlans[j]]);
  $('v136Conflicts').innerHTML=clashes.length?'<span class="v136-warning">⚠ '+clashes.length+' overlapping plan pair'+(clashes.length===1?'':'s')+' · review before booking more.</span>':'<span class="v136-muted">No overlapping planned activities detected for this day.</span>';
 }
-function aggregate(rows,periodDays){const m=new Map();for(const x of rows){const k=cleanName(x.name);let item=m.get(k);if(!item){item={name:x.name,cat:cat(x.name),count:0,ms:0,flag:0};m.set(k,item)}item.count++;item.ms+=(+x.endAt- +x.startAt);item.flag+=suspicious(x)?1:0}return [...m.values()].sort((a,b)=>b.ms-a.ms)}
+
+function compareUnion(rows){
+ const sorted=rows.map(x=>[+x.startAt,+x.endAt]).filter(x=>Number.isFinite(x[0])&&Number.isFinite(x[1])&&x[1]>x[0]).sort((a,b)=>a[0]-b[0]);
+ let total=0,overlap=0,prev=null;
+ for(const [a,b] of sorted){if(!prev){prev=[a,b];continue}if(a<=prev[1]){overlap+=Math.max(0,Math.min(prev[1],b)-a);prev[1]=Math.max(prev[1],b)}else{total+=prev[1]-prev[0];prev=[a,b]}}
+ if(prev)total+=prev[1]-prev[0];
+ return {unique:total,overlap:overlap};
+}
+function aggregate(rows){
+ const groups=new Map();
+ for(const x of rows){
+  const key=cleanName(x.name),duration=Math.max(0,+x.endAt- +x.startAt);
+  if(!groups.has(key))groups.set(key,{name:x.name||'Activity',count:0,ms:0,items:[],days:new Set()});
+  const v=groups.get(key);v.count++;v.ms+=duration;v.days.add(datekey(+x.startAt));v.items.push(x);
+ }
+ return [...groups.values()].sort((a,b)=>b.ms-a.ms);
+}
+function idealRows(x,from,to){
+ const routines=Array.isArray(x?.idealRoutines)?x.idealRoutines:[];
+ const list=[];
+ for(let t=from;t<to;t+=86400000){
+  const day=new Date(t),key=datekey(t);
+  for(const routine of routines){
+   if(+routine.dayOfWeek!==day.getDay())continue;
+   const match=/^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(routine.start||''));
+   const length=+routine.durationMinutes;
+   if(!match||!(length>0&&length<=1440))continue;
+   const begin=new Date(key+'T'+match[1]+':'+match[2]+':00').getTime();
+   const item={name:routine.name||'Ideal activity',startAt:begin,endAt:begin+length*60000};
+   if(item.endAt<=to)list.push(item);
+  }
+ }
+ return list;
+}
 function renderCompare(){
- const d=all(),now=Date.now(),from=now-7*86400000,to=now+7*86400000,source=compare==='reality'?d.real.filter(x=>x.startAt>=from&&x.startAt<now):compare==='planned'?d.plans.filter(x=>x.startAt>=now&&x.startAt<to):((d.x.idealRoutines||[]).map(r=>({name:r.name,startAt:now,endAt:now+Math.max(0,+r.durationMinutes||0)*60000})));
- const suspect=compare==='reality'?source.filter(suspicious):[];
- const reliable=compare==='reality'?source.filter(x=>!suspicious(x)):source;
- const groups=aggregate(reliable),total=groups.reduce((a,x)=>a+x.ms,0);
- $('v136CompareIntro').textContent=compare==='reality'?'Finished, non-development sessions from the previous seven days. '+suspect.length+' unusually long duration(s) excluded from the chart until reviewed.':compare==='planned'?'Saved future commitments only. These are not predictions.':'Your preferred routine definitions. They are not booked activities.';
- $('v136CompareMetrics').innerHTML='<div><strong>'+reliable.length+'</strong><small>'+({reality:'Sessions in chart',planned:'Upcoming plans',ideal:'Routine definitions'})[compare]+'</small></div><div><strong>'+dur(total)+'</strong><small>Summed duration</small></div>';
- const top=groups.slice(0,6),max=Math.max(1,...top.map(x=>x.ms));
- $('v136CompareBars').innerHTML=top.length?top.map(x=>'<div class="v136-bar-row"><div><strong>'+esc(x.name)+'</strong><span>'+dur(x.ms)+'</span></div><div class="v136-bar"><i style="width:'+Math.min(100,100*x.ms/max)+'%"></i></div>'+(x.flag?'<small>'+x.flag+' unusual duration'+(x.flag>1?'s':'')+' · verify before interpreting</small>':'')+'</div>').join(''):'<p class="v136-muted">Not enough eligible records to calculate a meaningful comparison.</p>';
+ const d=all(),now=Date.now(),today=startday(datekey(now)),n=compareWindow;
+ const historical=compare==='reality',from=historical?today-n*86400000:today,to=historical?today:today+n*86400000;
+ const raw=historical?d.real.filter(x=>+x.startAt<to&&+x.endAt>from):compare==='planned'?d.plans.filter(x=>+x.startAt<to&&+x.endAt>from):idealRows(d.x,from,to);
+ // Exclude implausibly long spans from aggregate totals; keep them in the review queue.
+ const flags=historical?raw.filter(suspicious):[];
+ const eligible=historical?raw.filter(x=>!suspicious(x)):raw;
+ const rows=eligible.map(x=>({...x,startAt:Math.max(+x.startAt,from),endAt:Math.min(+x.endAt,to)})).filter(valid);
+ const grouped=aggregate(rows),union=compareUnion(rows),summed=rows.reduce((t,x)=>t+(+x.endAt- +x.startAt),0);
+ const type=historical?'Finished tracking':compare==='planned'?'Saved commitments':'Preferred routines';
+ const descr=historical?'Past '+n+' complete days · Only eligible finished records. Unknown and example time is not filled in.':compare==='planned'?'Next '+n+' days · Saved plans, not automatically generated predictions.':'Next '+n+' days · Preferences, not booked commitments.';
+ $('v136CompareIntro').textContent=descr;
+ const label=historical?'Eligible sessions':compare==='planned'?'Saved plans':'Routine occurrences';
+ $('v136CompareMetrics').innerHTML='<div><strong>'+rows.length+'</strong><small>'+label+'</small></div>'+
+ '<div><strong>'+dur(union.unique)+'</strong><small>Unique '+(historical?'recorded':'scheduled')+' time</small></div>';
+ const note=$('v139CompareEvidence');
+ if(note){
+  const clamped=Math.max(0,summed-union.unique);
+  note.innerHTML='<div class="v139-badges"><span class="v139-tag">'+esc(type)+'</span><span class="v139-tag">'+n+'-day window</span></div>'+
+  '<div class="v139-evidence-line"><span>Summed duration</span><strong>'+dur(summed)+'</strong></div>'+
+  '<div class="v139-evidence-line"><span>Concurrent time counted twice in sum</span><strong>'+dur(clamped)+'</strong></div>'+
+  (flags.length?'<button type="button" data-v139-review>⚠ '+flags.length+' unusual session'+(flags.length===1?'':'s')+' excluded · review →</button>':'')+
+  '<p>'+(historical?'Unique time counts overlapping intervals once. These figures come from stored finish timestamps; they are not proof of what you did if a timer was left running.':compare==='planned'?'These are intentions, not evidence of completed activities.':'Preferred routines are suggestions for your ideal schedule, not actual tracked time.')+'</p>';
+ }
+ const top=grouped.slice(0,6),max=Math.max(1,...top.map(x=>x.ms));
+ const chart=$('v136CompareBars');
+ chart.innerHTML=top.length?top.map(x=>{
+  const items=x.items.slice().sort((a,b)=>a.startAt-b.startAt);
+  const display=items.slice(0,7).map(item=>'<li><span>'+esc(new Date(+item.startAt).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}))+'</span><strong>'+dur(+item.endAt- +item.startAt)+'</strong></li>').join('');
+  return '<details class="v139-group"><summary><div class="v139-group-heading"><strong>'+esc(x.name)+'</strong><span>'+dur(x.ms)+'</span></div>'+
+  '<div class="v136-bar"><i style="width:'+Math.min(100,x.ms/max*100)+'%"></i></div>'+
+  '<small>'+x.count+' record'+(x.count===1?'':'s')+' · '+x.days.size+' day'+(x.days.size===1?'':'s')+' · view details ⌄</small></summary>'+
+  '<ul>'+display+(items.length>7?'<li class="v139-muted">+'+(items.length-7)+' more in this period</li>':'')+'</ul></details>';
+ }).join(''):'<div class="v139-empty"><strong>No eligible '+(historical?'recorded activity':compare==='planned'?'saved plans':'ideal routines')+' in this window.</strong><p>No missing time has been assumed. Use another period or review your records.</p></div>';
+ if(grouped.length>6)chart.insertAdjacentHTML('beforeend','<p class="v139-muted">'+(grouped.length-6)+' additional activity types omitted from this summary. The detailed comparison remains available below.</p>');
  host.querySelectorAll('[data-v136-compare]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v136Compare===compare)));
+ host.querySelectorAll('[data-v139-days]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v139Days===n)));
 }
 function renderImprove(){
  const d=all(),recent=d.real.filter(x=>+x.startAt>Date.now()-7*86400000),flag=recent.filter(suspicious),plans=d.plans.filter(x=>+x.startAt>Date.now()).sort((a,b)=>a.startAt-b.startAt),pairs=[];
@@ -129,7 +189,7 @@ function init(){
  '<div class="v136-days" id="v136Days"></div><div id="v136DaySummary" class="v136-day-summary"></div><div id="v136Timeline"></div><button id="v136MoreRows" class="v136-link" type="button" hidden>Show more</button><div id="v136Conflicts"></div></div>'+
  '<details class="v136-drawer" id="v136PlanFormDetails"><summary>＋ Create or edit a plan</summary><div id="v136PlanForm"></div></details><details class="v136-drawer"><summary>Full calendar controls & detailed plan review</summary><div id="v136Old-calendar"></div></details></section>'+
  '<section class="v136-screen" data-v136-screen="tasks" hidden><div class="v136-card"><span class="v136-kicker">YOUR TASKS</span><h3>Flexible tasks and deadlines</h3><p>Tasks have their own deadlines and optional time windows. A task is not automatically a calendar appointment.</p><button type="button" class="v136-cta" data-v136-action="tasks">Open task manager →</button></div></section>'+
- '<section class="v136-screen" data-v136-screen="compare" hidden><div class="v136-card"><span class="v136-kicker">TIME INTELLIGENCE</span><h3>See the difference.</h3><div class="v136-segments">'+[['reality','Reality'],['planned','Planned'],['ideal','Ideal']].map(([k,v])=>'<button type="button" data-v136-compare="'+k+'">'+v+'</button>').join('')+'</div><p id="v136CompareIntro"></p><div class="v136-two" id="v136CompareMetrics"></div><div id="v136CompareBars" class="v136-compare-bars"></div></div><details class="v136-drawer"><summary>Detailed comparison and evidence</summary><div id="v136Old-compare"></div></details></section>'+
+ '<section class="v136-screen" data-v136-screen="compare" hidden><div class="v136-card"><span class="v136-kicker">TIME INTELLIGENCE</span><h3>See the difference.</h3><div class="v136-segments">'+[['reality','Reality'],['planned','Planned'],['ideal','Ideal']].map(([k,v])=>'<button type="button" data-v136-compare="'+k+'">'+v+'</button>').join('')+'</div><p id="v136CompareIntro"></p><div class="v136-two" id="v136CompareMetrics"></div><div class="v139-window" role="group" aria-label="Comparison period"><button type="button" data-v139-days="7" aria-pressed="true">7 days</button><button type="button" data-v139-days="14">14 days</button><button type="button" data-v139-days="30">30 days</button></div><div id="v139CompareEvidence"></div><div id="v136CompareBars" class="v136-compare-bars"></div></div><details class="v136-drawer"><summary>Detailed comparison and evidence</summary><div id="v136Old-compare"></div></details></section>'+
  '<section class="v136-screen" data-v136-screen="improve" hidden><div class="v136-card"><span class="v136-kicker">PRIORITIZED INSIGHTS</span><h3>Improve what matters.</h3><p>Only a few useful recommendations appear first. Suggestions never alter your calendar without approval.</p><div id="v136ImproveCards"></div></div><details class="v136-drawer"><summary>Advanced predictions and weekly planning</summary><div id="v136Old-improve"></div></details></section>'+
  '<section class="v136-screen" data-v136-screen="review" hidden><div class="v136-card"><span class="v136-kicker">COMMITMENT REVIEW</span><h3>Understand first. Recover second.</h3><p>Untracked does not mean missed. A recovery is only a plan until you approve it and then complete it.</p><div id="v136ReviewMetrics" class="v136-three"></div><div class="v138-review-switch" role="tablist" aria-label="Review type"><button type="button" data-v138-review="shortfalls" aria-selected="true">Commitments</button><button type="button" data-v138-review="unknown">Unverified</button><button type="button" data-v138-review="durations">Durations</button></div><h4 id="v138ReviewTitle">Commitments to confirm</h4><div id="v136ReviewList"></div><p class="v136-muted" id="v136ReviewNote"></p><details class="v136-subdrawer"><summary>Unusual activity durations</summary><div id="v136ReviewAnomalies"></div></details></div><details class="v136-drawer" id="v136RecoveryDrawer"><summary>Advanced recovery decisions & audit history</summary><div id="v136Old-review"></div></details></section>'+
  '<section class="v136-screen" data-v136-screen="more" hidden><div class="v136-card"><span class="v136-kicker">ADVANCED FEATURES</span><h3>Everything else, organized.</h3><p>Imports, diagnostics, configuration and development utilities are available here without cluttering your day.</p></div><details class="v136-drawer"><summary>Advanced planning, imports and diagnostics</summary><div id="v136Old-more"></div></details></section>';
@@ -156,6 +216,8 @@ function init(){
   if(b.dataset.v136Date){anchor=b.dataset.v136Date;range='day';showAll=false;renderCalendar();return}
   if(b.dataset.v136Move){dateShift(+b.dataset.v136Move);return}
   if(b.dataset.v136Compare){compare=b.dataset.v136Compare;renderCompare();return}
+  if(b.dataset.v139Days){compareWindow=+b.dataset.v139Days;renderCompare();return}
+  if(b.hasAttribute('data-v139-review')){reviewMode='durations';screen('review');return}
   if(b.dataset.v136Recovery){$('v136RecoveryDrawer').open=true;const old=$('lo75-debt-tools'),pick=$('lo75-item');if(old)old.open=true;if(pick){pick.value=b.dataset.v136Recovery;pick.dispatchEvent(new Event('change',{bubbles:true}))}$('v136RecoveryDrawer').scrollIntoView({behavior:'smooth',block:'start'});return}
   if(b.id==='v136MoreRows'){showAll=!showAll;renderCalendar();return}
   if(b.dataset.v136Action==='today'){anchor=datekey(Date.now());range='day';showAll=false;renderCalendar();return}

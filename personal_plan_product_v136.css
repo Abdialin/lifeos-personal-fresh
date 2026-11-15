@@ -161,3 +161,33 @@ body[data-lifeos-view="schedule"] #scheduleEditorPanel.v136-managed{margin-top:0
 #v136Workspace #v136Old-review{max-width:100%;min-width:0;overflow-wrap:anywhere}
 #v136Workspace #v136Old-review :is(select,input,textarea){max-width:100%;min-width:0;box-sizing:border-box}
 #v136Workspace .v136-screen[data-v136-screen=review]>.v136-card>p:first-of-type{margin-bottom:13px}
+
+/* V139 — focused Compare. A dashboard, not a long diagnostics report. */
+#v136Workspace .v139-window{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0 15px}
+#v136Workspace .v139-window button{border:1px solid #38566e;color:#d1e2ee;border-radius:10px;min-height:40px;background:#122e44;font-size:12px;font-weight:800}
+#v136Workspace .v139-window button[aria-pressed=true]{background:#0a7158;border-color:#55d5ad;color:white}
+#v136Workspace #v139CompareEvidence{border:1px solid #345566;border-radius:13px;background:#0b2134;padding:13px;margin:14px 0 12px}
+#v136Workspace .v139-badges{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+#v136Workspace .v139-tag{padding:5px 8px;border:1px solid #3d695f;border-radius:999px;color:#94e2cf;font-size:10px;font-weight:850}
+#v136Workspace .v139-evidence-line{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:7px 0;border-top:1px solid #28465b;font-size:11px}
+#v136Workspace .v139-evidence-line>span{color:#a4bed1;line-height:1.45}
+#v136Workspace .v139-evidence-line>strong{white-space:nowrap;font-size:12px;font-variant-numeric:tabular-nums}
+#v136Workspace #v139CompareEvidence button{width:100%;background:#443428;border:1px solid #a07c52;color:#ffe0b5;font-size:12px;font-weight:800;border-radius:11px;min-height:41px;padding:9px 11px;margin:9px 0}
+#v136Workspace #v139CompareEvidence p{font-size:11px;line-height:1.6;color:#aabfd0;margin:9px 0 0}
+#v136Workspace .v139-group{background:#0b2135;border:1px solid #304f66;border-radius:13px;overflow:hidden}
+#v136Workspace .v139-group summary{list-style:none;cursor:pointer;display:block;padding:12px 13px;min-height:68px}
+#v136Workspace .v139-group summary::-webkit-details-marker{display:none}
+#v136Workspace .v139-group .v139-group-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 11px}
+#v136Workspace .v139-group-heading strong{font-size:13px;line-height:1.35;overflow-wrap:anywhere}
+#v136Workspace .v139-group-heading span{font-weight:900;font-size:13px;white-space:nowrap}
+#v136Workspace .v139-group .v136-bar{height:8px}
+#v136Workspace .v139-group summary small{display:block;margin:9px 0 0;color:#a5bfd1;font-size:10px}
+#v136Workspace .v139-group[open]{border-color:#52ad97}
+#v136Workspace .v139-group ul{list-style:none;padding:4px 12px 9px;margin:0;border-top:1px solid #2c4d64}
+#v136Workspace .v139-group li{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid #233e54;font-size:11px;color:#c0d4e0}
+#v136Workspace .v139-group li:last-child{border:0}
+#v136Workspace .v139-group li strong{font-size:11px;font-variant-numeric:tabular-nums;color:#f4faff}
+#v136Workspace .v139-empty{padding:22px 14px;border:1px dashed #3b5d70;border-radius:13px;text-align:center}
+#v136Workspace .v139-empty strong{font-size:13px}
+#v136Workspace .v139-empty p,#v136Workspace .v139-muted{font-size:11px;color:#aabfce;line-height:1.6}
+#v136Workspace #v136CompareBars{display:grid;gap:9px;margin:14px 0}
