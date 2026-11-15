@@ -77,9 +77,9 @@ function showOriginal(){
  const p=plan();if(!p)return;
  refreshPlan();
  hide();
- const box=$('v136Old-calendar')?.closest('details');
- if(box)box.open=true;
  const list=$('scheduleList');
+ let n=list;while(n){if(n.tagName==='DETAILS')n.open=true;n=n.parentElement}
+ const box=$('v136Old-calendar')?.closest('details');if(box)box.open=true;
  list?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function alternatePlan(){
