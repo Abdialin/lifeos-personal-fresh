@@ -15,9 +15,11 @@ function renderToday(ws,now){
  const target=$('v4Today');if(!target)return;
  const d=new Date(now),m=day(ws,d,now);
  const rows=m.recorded.slice().sort((a,b)=>a.start-b.start).slice(0,16);
- const timeline='<div class="v4-timeline" role="img" aria-label="Recorded activity timeline for today">'+rows.map((r,i)=>{const st=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),en=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime(),span=en-st,left=Math.max(0,Math.min(100,(r.start-st)/span*100)),width=Math.max(0,Math.min(100-left,(r.end-Math.max(r.start,st))/span*100));return '<div class="v4-lane"><span>'+esc(r.name)+'</span><div class="v4-track"><i style="left:'+left+'%;width:'+Math.max(.4,width)+'%"></i></div></div>'}).join('')+'</div><div class="v4-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>';
+ const timeline='<div class="v4-timeline" role="img" aria-label="Recorded activity timeline for today">'+rows.map((r,i)=>{const st=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),en=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime(),span=en-st,left=Math.max(0,Math.min(100,(r.start-st)/span*100)),width=Math.max(0,Math.min(100-left,(r.end-Math.max(r.start,st))/span*100));const when=x=>new Date(x).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});const time=when(r.start)+'–'+when(r.end);
+ return '<div class="v4-lane"><span title="'+esc(r.name)+'">'+esc(r.name)+'</span><div class="v4-track" title="'+esc(r.name)+' · '+time+'"><i style="left:'+left+'%;width:'+Math.min(100-left,Math.max(.4,width))+'%"></i></div><small class="v4-lane-time">'+time+'</small></div>'}).join('')+'</div><div class="v4-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>';
  const empty='<p class="v4-muted">No recorded activity yet. Start a timer in Track to populate this view.</p>';
- target.innerHTML=chartCard('Your 24-hour reality',rows.length?timeline:empty)+chartCard('Recorded vs unique time','<div class="v4-metrics"><div><strong>'+fmt(m.summedRecordedMs)+'</strong><span>Recorded</span></div><div><strong>'+fmt(m.uniqueRecordedMs)+'</strong><span>Unique</span></div><div><strong>'+fmt(m.overlapRecordedMs)+'</strong><span>Overlap</span></div></div>');
+ const note=rows.length?'<p class="v4-muted">Full 24-hour scale · small bars represent short intervals. Listed time ranges make near-midnight activities easier to check. Concurrent recordings are counted separately in totals.</p>':'';
+ target.innerHTML=chartCard('Your 24-hour reality',rows.length?timeline+note:empty)+chartCard('Recorded vs unique time','<div class="v4-metrics"><div><strong>'+fmt(m.summedRecordedMs)+'</strong><span>Recorded</span></div><div><strong>'+fmt(m.uniqueRecordedMs)+'</strong><span>Unique</span></div><div><strong>'+fmt(m.overlapRecordedMs)+'</strong><span>Overlap</span></div></div><p class="v4-muted">Overlap is the extra sum of simultaneous activity durations, not additional time in your day.</p>');
 }
 function renderInsights(ws,now){
  const target=$('v4Insights');if(!target)return;
@@ -173,9 +175,9 @@ function init(){const today=$('todayOverview'),nav=$('lifeosNavigation');if(!tod
 .v4-section[hidden]{display:none!important}.v4-card{min-width:0;background:#131e33;border:1px solid #30415f;border-radius:16px;padding:16px;color:#eaf0ff}
 .v4-card h3{margin:0 0 14px;font-size:16px}.v4-muted{font-size:12px;color:#aabbd4;line-height:1.5}
 .v4-metrics{display:flex;gap:14px;flex-wrap:wrap}.v4-metrics div{display:grid;gap:3px}.v4-metrics strong{font-size:22px}.v4-metrics span{font-size:12px;color:#aabbd4}
-.v4-lane{display:grid;grid-template-columns:105px 1fr;gap:8px;align-items:center;margin:6px 0;font-size:11px}.v4-lane>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v4-lane{display:grid;grid-template-columns:minmax(85px,115px) minmax(50px,1fr) auto;gap:8px;align-items:center;margin:8px 0;font-size:11px}.v4-lane>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.v4-lane-time{font-size:10px;color:#b5c5dc;font-variant-numeric:tabular-nums;white-space:nowrap}
 .v4-track{height:12px;border-radius:6px;background:#263752;position:relative;overflow:hidden}.v4-track i{position:absolute;top:0;bottom:0;background:#6ddac4;border-radius:5px}
-.v4-axis{display:flex;justify-content:space-between;color:#9aacc8;font-size:10px;padding-left:112px}
+.v4-axis{display:flex;justify-content:space-between;color:#9aacc8;font-size:10px;padding-left:122px;padding-right:78px}
 .v4-bars{height:180px;display:flex;gap:9px;align-items:end;justify-content:space-around}.v4-bar-col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px}
 .v4-bar-stack{height:135px;width:100%;max-width:34px;position:relative;background:#24334b;border-radius:6px 6px 0 0;overflow:hidden}
 .v4-bar-stack i{position:absolute;bottom:0;width:100%;left:0}.v4-recorded{background:#71a5e6}.v4-unique{background:#4bd7bd;opacity:.88}
