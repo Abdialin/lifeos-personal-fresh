@@ -76,8 +76,15 @@ function init(){
  // The former standalone Reminders panel is intentionally merged into this card.
  const oldPanel=$('lo16ReminderPanel');if(oldPanel)oldPanel.remove();
  let expandedMore=false;
+ let lastPresentation='';
  function render(){
   const w=ws();if(!w)return;const current=Date.now(),items=entries(w,current);
+  const capable='Notification'in window&&window.isSecureContext;
+  const permission=capable?Notification.permission:'unavailable';
+  const presentation=JSON.stringify(items.map(x=>[x.key,x.start,x.name,status(x,current).level]))+'|'+permission;
+  // Avoid rebuilding focusable buttons every five seconds. Keep expanded state.
+  if(presentation===lastPresentation)return;
+  lastPresentation=presentation;
   list.replaceChildren();
   // Today's primary dashboard shows the two most relevant commitments.
   // Other reminders stay reachable without requiring a long vertical scroll.
@@ -107,8 +114,6 @@ function init(){
    extra.addEventListener('toggle',()=>{expandedMore=extra.open});
    extra.append(moreList);list.append(extra);
   }
-  const capable='Notification'in window&&window.isSecureContext;
-  const permission=capable?Notification.permission:'unavailable';
   // A disabled "Notifications enabled" button occupied an entire row on
   // mobile. Only show the button when the user can actually enable alerts.
   notificationButton.hidden=!capable||permission!=='default';
