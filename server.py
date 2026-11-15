@@ -264,10 +264,10 @@ class Handler(BaseHTTPRequestHandler):
             return
         if not self.private_access():
             return
-        if self.handle_account_request('GET',path):return
         if path == '/api/account/v117/status':
             self.reply(200, {'enabled':account_boundary is not None})
             return
+        if self.handle_account_request('GET',path):return
         if path == '/api/preferences/v89':
             if not self.auth(): return
             try:
