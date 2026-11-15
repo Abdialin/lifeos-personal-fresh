@@ -11,15 +11,29 @@ const workspace=()=>typeof window.lifeosReadOnlyWorkspace==='function'?window.li
 const engine=()=>window.LifeOSUnifiedAnalytics;
 function day(ws,d,now){const start=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),end=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime();return engine().summarize(ws,{start,end,now});}
 function chartCard(title,body){return '<div class="v4-card"><h3>'+title+'</h3>'+body+'</div>';}
+function todayCategory(name){
+ const n=String(name||'');
+ if(/prayer|salah|fajr|dhuhr|asr|maghrib|isha/i.test(n))return 'prayer';
+ if(/study|quran|memor|arabic|reading|assignment|learning/i.test(n))return 'learning';
+ if(/security|shift|work|meeting/i.test(n))return 'work';
+ if(/gym|fitness|walk|run|workout/i.test(n))return 'fitness';
+ if(/distraction/i.test(n))return 'distraction';
+ return 'other';
+}
 function renderToday(ws,now){
  const target=$('v4Today');if(!target)return;
  const d=new Date(now),m=day(ws,d,now);
  const rows=m.recorded.slice().sort((a,b)=>a.start-b.start).slice(0,16);
  const timeline='<div class="v4-timeline" role="img" aria-label="Recorded activity timeline for today">'+rows.map((r,i)=>{const st=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),en=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime(),span=en-st,left=Math.max(0,Math.min(100,(r.start-st)/span*100)),width=Math.max(0,Math.min(100-left,(r.end-Math.max(r.start,st))/span*100));const when=x=>new Date(x).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});const time=when(r.start)+'–'+when(r.end);
- return '<div class="v4-lane"><span title="'+esc(r.name)+'">'+esc(r.name)+'</span><div class="v4-track" title="'+esc(r.name)+' · '+time+'"><i style="left:'+left+'%;width:'+Math.min(100-left,Math.max(.4,width))+'%"></i></div><small class="v4-lane-time">'+time+'</small></div>'}).join('')+'</div><div class="v4-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>';
+ return '<div class="v4-lane" data-lo121-category="'+todayCategory(r.name)+'"><span title="'+esc(r.name)+'">'+esc(r.name)+'</span><div class="v4-track" title="'+esc(r.name)+' · '+time+'"><i style="left:'+left+'%;width:'+Math.min(100-left,Math.max(.4,width))+'%"></i></div><small class="v4-lane-time">'+time+'</small></div>'}).join('')+'</div><div class="v4-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>';
  const empty='<p class="v4-muted">No recorded activity yet. Start a timer in Track to populate this view.</p>';
+ const total=Math.max(0,m.summedRecordedMs),unique=Math.max(0,Math.min(total,m.uniqueRecordedMs));
+ const uniquePercent=total?Math.round(unique/total*1000)/10:0;
+ const overlapPercent=total?100-uniquePercent:0;
+ const composition=total?'<div class="lo121-time-composition" role="img" aria-label="Recorded duration consists of '+uniquePercent+' percent unique clock coverage and '+overlapPercent+' percent additional concurrent activity duration"><div class="lo121-unique" style="width:'+uniquePercent+'%"></div><div class="lo121-overlap" style="width:'+overlapPercent+'%"></div></div><p class="lo121-time-legend"><span><i class="lo121-legend-dot unique"></i>Unique clock coverage</span><span><i class="lo121-legend-dot overlap"></i>Additional overlapping duration</span></p>':'';
+
  const note=rows.length?'<p class="v4-muted">Full 24-hour scale · small bars represent short intervals. Listed time ranges make near-midnight activities easier to check. Concurrent recordings are counted separately in totals.</p>':'';
- target.innerHTML=chartCard('Your 24-hour reality',rows.length?timeline+note:empty)+chartCard('Recorded vs unique time','<div class="v4-metrics"><div><strong>'+fmt(m.summedRecordedMs)+'</strong><span>Recorded</span></div><div><strong>'+fmt(m.uniqueRecordedMs)+'</strong><span>Unique</span></div><div><strong>'+fmt(m.overlapRecordedMs)+'</strong><span>Overlap</span></div></div><p class="v4-muted">Overlap is the extra sum of simultaneous activity durations, not additional time in your day.</p>');
+ target.innerHTML=chartCard('Your 24-hour reality',rows.length?timeline+note:empty)+chartCard('How recorded time adds up',composition+'<div class="v4-metrics"><div><strong>'+fmt(m.summedRecordedMs)+'</strong><span>Recorded</span></div><div><strong>'+fmt(m.uniqueRecordedMs)+'</strong><span>Unique</span></div><div><strong>'+fmt(m.overlapRecordedMs)+'</strong><span>Overlap</span></div></div><p class="v4-muted">Overlap is the extra sum of simultaneous activity durations, not additional time in your day.</p>');
 }
 function renderInsights(ws,now){
  const target=$('v4Insights');if(!target)return;
