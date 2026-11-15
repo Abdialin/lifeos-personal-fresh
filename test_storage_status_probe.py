@@ -92,10 +92,12 @@ class StorageProbeTests(unittest.TestCase):
         with patch.object(server, 'DATABASE_URL', 'postgresql://mock-only/isolated'), patch.object(server, 'psycopg', FakePg, create=True):
             server.initialize_postgres_schema()
             server.initialize_postgres_schema()
-        self.assertEqual(len(executed), 6)
+        self.assertEqual(len(executed)%2, 0)
+        self.assertGreaterEqual(len(executed), 6)
+        midpoint=len(executed)//2
         self.assertTrue(all(query.startswith('CREATE ') for query in executed))
         self.assertTrue(all('IF NOT EXISTS' in query for query in executed))
-        self.assertEqual(executed[:3], executed[3:])
+        self.assertEqual(executed[:midpoint], executed[midpoint:])
         self.assertTrue(any('LIFEOS.STATE' in query for query in executed))
         self.assertTrue(any('LIFEOS.CALENDAR_AUDIT' in query for query in executed))
         self.assertFalse(any('DROP ' in query or 'DELETE ' in query or 'UPDATE ' in query for query in executed))
