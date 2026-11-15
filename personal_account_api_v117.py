@@ -14,10 +14,11 @@ import time
 from collections import defaultdict, deque
 import personal_social_isolated_v114 as social
 import personal_account_workspace_v115 as workspace
+import personal_account_migration_v119 as migration
 
 ROUTES = frozenset((
     ('POST','/register'),('POST','/login'),('POST','/logout'),
-    ('GET','/workspace'),('PUT','/workspace'),
+    ('GET','/workspace'),('PUT','/workspace'),('POST','/workspace/migrate'),
     ('POST','/friends/invite'),('GET','/friends/inbox'),
     ('POST','/friends/respond'),('POST','/friends/grant'),
     ('POST','/friends/remove'),('POST','/friends/share'),
@@ -95,6 +96,11 @@ class AccountApi:
                 data=self._require_fields(body,('revision','data'))
                 result=workspace.commit(self.db,token,data['revision'],data['data'],now)
                 return (200 if result['ok'] else 409),result
+            if path=='/workspace/migrate':
+                data=self._require_fields(body,('backup','confirmedUsername','approved','expectedRevision'))
+                result=migration.migrate(self.db,token,data['backup'],data['confirmedUsername'],
+                                         data['approved'],data['expectedRevision'],now)
+                return (201 if result['ok'] else 409),result
             if path=='/friends/invite':
                 data=self._require_fields(body,('username',))
                 iid=social.invite(self.db,token,data['username'],now)
