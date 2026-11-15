@@ -9,6 +9,7 @@
 'use strict';
 const HOUR=3600000,DAY=24*HOUR,MAX_WINDOW=14*DAY;
 const ACTIONS=['recover','carry','adjust','forgive'];
+const HISTORY_ACTIONS=[...ACTIONS,'cancel'];
 function outstanding(workspace,at=Date.now(),engine=root.LifeOSAccountabilityV74){
  const report=engine?.debtReport?.(workspace,at,28);
  if(!report)return {open:[],resolved:[],unverified:[],openMs:0,error:'Debt report unavailable'};
@@ -20,11 +21,13 @@ function outstanding(workspace,at=Date.now(),engine=root.LifeOSAccountabilityV74
   const original=plans.get(String(item.id));
   if(!original)continue;
   const history=Array.isArray(original.debtDecisionsV75)?original.debtDecisionsV75:[];
-  const trusted=history.every(d=>d&&ACTIONS.includes(d.action)&&d.originalStartAt===original.startAt&&d.originalEndAt===original.endAt);
+  const trusted=history.every(d=>d&&HISTORY_ACTIONS.includes(d.action)&&d.originalStartAt===original.startAt&&d.originalEndAt===original.endAt);
   if(!trusted){open.push({...item,reviewWarning:'Existing decisions require review.'});continue}
   originalConfirmedMs+=item.outstandingMs;
   let reservedMs=0,remainingMs=item.outstandingMs;
-  for(const d of history){
+  const cancelled=new Set(history.filter(d=>d?.action==='cancel'&&Number.isInteger(d.cancelDecisionIndex)).map(d=>d.cancelDecisionIndex));
+  for(const [decisionIndex,d] of history.entries()){
+   if(d.action==='cancel'||cancelled.has(decisionIndex))continue;
    if(d.action==='recover'||d.action==='carry'){
     const portion=Math.max(0,d.portionMs||0);
     const booked=plans.get(String(d.recoveryPlanId||''));
@@ -156,7 +159,7 @@ function mount(){
  window.addEventListener('focus',options);
  options();updateInputs();
 }
-const api={outstanding,suggest,review,applyInMemory,conflicts,ACTIONS};
+const api={outstanding,suggest,review,applyInMemory,conflicts,ACTIONS,HISTORY_ACTIONS};
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount()}
 return api;
 });
