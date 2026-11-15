@@ -1,0 +1,131 @@
+/* LifeOS V125 — Today command center, display-only.
+   Preserves all existing metric IDs, tracking actions, plan linkage calculations,
+   sessions and history. Detailed evidence remains one tap away. */
+body[data-lifeos-view="dashboard"] #todayOverview{
+ padding:clamp(15px,2.5vw,23px);
+ border-radius:21px;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-welcome{
+ display:flex;align-items:flex-start;gap:10px;justify-content:space-between;
+ margin-bottom:12px;padding-bottom:13px;border-bottom:1px solid var(--lo-border);
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-welcome h2{
+ margin:5px 0 4px;font-size:clamp(21px,3.4vw,28px);line-height:1.13;letter-spacing:-.045em
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-welcome p{
+ margin:0;font-size:12px;line-height:1.5;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-live-dot{
+ font-size:10px;flex:0 0 auto;margin-top:6px
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-stats{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:9px;margin:0;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-stat{
+ min-width:0;min-height:90px;padding:12px 13px;
+ border-radius:13px;display:grid;align-content:space-between;gap:6px;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-stat span{
+ font-size:11px;line-height:1.4;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-stat strong{
+ font-size:clamp(18px,2.6vw,25px);line-height:1.13;
+ margin:0;white-space:nowrap;letter-spacing:-.05em;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-stat small{
+ font-size:10px;line-height:1.35;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-actions{
+ display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,.7fr) minmax(0,.7fr);
+ gap:8px;margin:13px 0;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-actions button{
+ border-radius:12px;min-width:0;min-height:49px;
+ padding:10px 12px;font-size:12px;white-space:normal;
+ text-align:center;display:flex;align-items:center;justify-content:center;gap:7px;
+ line-height:1.2;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-actions .lo125-main-action{
+ background:var(--lo-accent);border-color:transparent;color:var(--lo-bg);
+ font-weight:850;font-size:13px;justify-content:space-between;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-actions .lo125-main-action span{
+ font-size:18px;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-actions .lo125-secondary-action{
+ background:var(--lo-surface-2);border:1px solid var(--lo-border);
+ color:var(--lo-text);font-weight:750;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-priority{
+ display:flex;flex-wrap:wrap;align-items:center;
+ gap:5px 12px;min-width:0;border-radius:13px;
+ background:var(--lo-surface-2);padding:12px 14px;
+ border:1px solid var(--lo-border);border-left:3px solid var(--lo-accent);
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-focus-head{
+ display:flex;align-items:center;gap:8px;min-width:0;flex:0 0 auto;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-focus-head strong{
+ font-size:12px;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-focus-icon{
+ color:var(--lo-accent);
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-priority p{
+ margin:0;flex:1 1 200px;min-width:0;line-height:1.45;
+ font-size:13px;overflow-wrap:anywhere;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-progress-details{
+ margin-top:11px;border:1px solid var(--lo-border);
+ border-radius:13px;background:var(--lo-surface-2);min-width:0;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-progress-details>summary{
+ cursor:pointer;display:flex;align-items:center;
+ justify-content:space-between;gap:10px;padding:12px 13px;
+ min-height:58px;list-style:none;color:var(--lo-text);
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-progress-details>summary::-webkit-details-marker{display:none}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-progress-details>summary span:first-child{
+ display:grid;gap:3px;min-width:0;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-progress-details>summary strong{
+ font-size:13px;letter-spacing:-.01em;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-progress-details>summary small{
+ color:var(--lo-muted);font-size:11px;line-height:1.35;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-expand-symbol{
+ font-size:23px;color:var(--lo-muted);transition:transform .16s ease;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-progress-details[open] .lo125-expand-symbol{
+ transform:rotate(180deg);
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-progress-details[open]>summary{
+ border-bottom:1px solid var(--lo-border);
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo-daily-progress{
+ margin:12px;padding:12px;border-radius:11px;
+ background:var(--lo-surface);border:1px solid var(--lo-border);
+}
+body[data-lifeos-view="dashboard"] #todayOverview .today-clarity{
+ margin:0 14px 13px;font-size:11px;line-height:1.5;
+}
+body[data-lifeos-view="dashboard"] #todayOverview .lo125-progress-details>summary:focus-visible,
+body[data-lifeos-view="dashboard"] #todayOverview .today-actions button:focus-visible{
+ outline:3px solid var(--lo-accent);outline-offset:2px;
+}
+@media(max-width:700px){
+ body[data-lifeos-view="dashboard"] #todayOverview .today-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-lifeos-view="dashboard"] #todayOverview .today-stat{min-height:92px}
+ body[data-lifeos-view="dashboard"] #todayOverview .today-actions{grid-template-columns:minmax(0,1.6fr) minmax(0,.75fr) minmax(0,.75fr)}
+}
+@media(max-width:375px){
+ body[data-lifeos-view="dashboard"] #todayOverview .today-stat strong{font-size:19px}
+ body[data-lifeos-view="dashboard"] #todayOverview .today-actions button{font-size:11px;padding:9px 6px}
+ body[data-lifeos-view="dashboard"] #todayOverview .today-actions .lo125-main-action{font-size:11px}
+ body[data-lifeos-view="dashboard"] #todayOverview .today-welcome p{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-lifeos-view="dashboard"] #todayOverview .lo125-expand-symbol{transition:none}
+}
