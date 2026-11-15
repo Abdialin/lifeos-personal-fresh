@@ -11,6 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 import schedule_document_preview as document_preview
+import schedule_table_preview_v98 as table_preview
 import google_calendar as gcal
 import calendar_audit_store as audit_store
 import atomic_calendar
@@ -365,7 +366,7 @@ class Handler(BaseHTTPRequestHandler):
                 body=json.loads(self.rfile.read(n))
                 filename=str(body.get('filename',''))[:160]
                 raw=base64.b64decode(body.get('content',''),validate=True)
-                self.reply(200,document_preview.extract(filename,raw))
+                self.reply(200,table_preview.extract(filename,raw) if filename.lower().endswith(('.csv','.xlsx')) else document_preview.extract(filename,raw))
             except (ValueError,UnicodeError,KeyError,TypeError,ImportError) as exc:
                 self.reply(400,{'error':str(exc)})
             except Exception:
