@@ -75,20 +75,37 @@ function init(){
  card.append(note);
  // The former standalone Reminders panel is intentionally merged into this card.
  const oldPanel=$('lo16ReminderPanel');if(oldPanel)oldPanel.remove();
+ let expandedMore=false;
  function render(){
   const w=ws();if(!w)return;const current=Date.now(),items=entries(w,current);
   list.replaceChildren();
-  if(!items.length)list.append(el('p','lo15-muted','No upcoming activities or timed to-dos. New saved plans appear here.'));
-  for(const x of items){
-   const s=status(x,current),row=el('button','lo15-upcoming-row');row.type='button';row.dataset.kind=x.kind.toLowerCase();row.dataset.reminderStatus=s.level;
+  // Today's primary dashboard shows the two most relevant commitments.
+  // Other reminders stay reachable without requiring a long vertical scroll.
+  const primary=el('div','lo121-next-grid');
+  const extra=el('details','lo121-more');
+  const extraLabel=el('summary','',items.length>2?'More plans · '+(items.length-2):'');
+  if(items.length>2)extra.append(extraLabel);
+  const moreList=el('div','lo121-more-list');
+  if(!items.length)list.append(el('p','lo15-muted','No upcoming commitments. Add or review activities in Plan.'));
+  for(const [index,x] of items.entries()){
+   const st=status(x,current),row=el('button','lo15-upcoming-row lo121-upcoming-item');row.type='button';
+   row.dataset.kind=x.kind.toLowerCase();row.dataset.reminderStatus=st.level;
+   row.classList.add(index===0?'lo121-featured':'lo121-secondary');
    const date=el('span','lo15-upcoming-date',new Date(x.start).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}));
    const body=el('span','lo15-upcoming-content');
    const name=el('strong','',x.name);
    const timeLabel=new Date(x.start).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
    body.append(name,el('small','',x.kind+' · '+(x.anytime?'Any time':timeLabel)));
-   const badge=el('span','lo16-combined-badge '+s.level,(s.level==='soon'||s.level==='now'?'● ':'')+s.label);
-   row.append(date,body,badge);row.addEventListener('click',()=>go(x));list.append(row);
+   const badge=el('span','lo16-combined-badge '+st.level,st.label);
+   row.append(date,body,badge);row.addEventListener('click',()=>go(x));
+   if(index<2)primary.append(row);else moreList.append(row);
    if(x.remind&&!x.past&&x.start-current<=10*MIN&&x.start-current>=-MIN)void showNotice(x);
+  }
+  if(primary.childElementCount)list.append(primary);
+  if(items.length>2){
+   extra.open=expandedMore;
+   extra.addEventListener('toggle',()=>{expandedMore=extra.open});
+   extra.append(moreList);list.append(extra);
   }
   const capable='Notification'in window&&window.isSecureContext;
   const permission=capable?Notification.permission:'unavailable';
