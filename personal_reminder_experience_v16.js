@@ -22,13 +22,14 @@ function entries(w,time){
  }
  const upcoming=result.filter(x=>x.end>=time-60*MIN&&x.start<=time+7*DAY).sort((a,b)=>a.start-b.start);
  // Include a freshly added historical plan, so saving is immediately visible.
- const recent=result.filter(x=>x.kind==='Activity').sort((a,b)=>b.created-a.created).slice(0,3);
- const selected=upcoming.slice(0,8);
- for(const x of recent){if(x.created&&time-x.created<20*MIN&&!selected.some(y=>y.key===x.key))selected.push(x)}
- return selected;
+ // Recently created past plans stay in Plan history, not in the upcoming
+ // feed: showing them here confused finished and overdue activity.
+ return upcoming.slice(0,6);
 }
 function status(x,t){
- if(x.past)return {label:'Past · Review',level:'past'};
+ // A plan that started long ago must never remain labelled "Due now" because
+ // its planned end is in the future or its duration is unusually long.
+ if(x.past||x.start<t-10*MIN)return {label:'Earlier · Review',level:'past'};
  if(x.start<=t)return {label:'Due now',level:'now'};
  const minutes=Math.ceil((x.start-t)/MIN);
  if(minutes<=10)return {label:'Starting soon · '+minutes+'m',level:'soon'};
