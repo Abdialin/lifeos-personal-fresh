@@ -26,6 +26,10 @@ on:
       - 'personal_preferences_sync_v89.js'
       - 'personal_exercise_plans_v95.js'
       - 'test_*.test.cjs'
+      - 'test_today_structure_v120.cjs'
+      - 'personal_reminder_experience_v16.js'
+      - 'personal_visual_intelligence_v4.js'
+      - 'index.html'
       - '.github/workflows/lifeos-module-tests.yml'
   workflow_dispatch:
 jobs:
@@ -43,5 +47,7 @@ jobs:
           node-version: '22'
       - name: Python isolated Friends tests
         run: python -m unittest -v test_social_isolated_v114.py test_account_workspace_v115.py test_account_api_v117.py test_account_http_v117.py test_account_friends_http_v118.py test_account_migration_v119.py
+      - name: Today read-only layout checks
+        run: node test_today_structure_v120.cjs
       - name: JavaScript isolated module regression tests
         run: node --test test_debt_cancellation_v102.test.cjs test_preferences_v104.test.cjs test_exercise_transfer_v105.test.cjs test_core_completion_v110.test.cjs test_account_friends_v118.test.cjs test_account_migration_v119.test.cjs
