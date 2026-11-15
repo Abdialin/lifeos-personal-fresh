@@ -108,6 +108,31 @@ function mount(){
   const result=el('lo110-results');result.replaceChildren();const grid=document.createElement('div');grid.className='lo110-grid';
   for(const [label,value,note] of cards){const art=document.createElement('article'),title=document.createElement('span'),v=document.createElement('strong'),caption=document.createElement('small');title.textContent=label;v.textContent=value;caption.textContent=note;art.append(title,v,caption);grid.append(art)}result.append(grid);
   const notes=document.createElement('p');notes.className='sub';notes.textContent='V107: '+(timers.overdue?timers.overdue+' overdue timer(s) need explicit review; no automatic end time is assumed.':'No overdue running timers found.')+' V108: habit completion is based on confirmed checks. V110: Calendar Review remains approval-only.';result.append(notes);
+  const detail=document.createElement('details');
+  const summary=document.createElement('summary');summary.textContent='Review items and open existing tools';detail.append(summary);
+  const describe=(label,text,action)=>{
+   const line=document.createElement('p');const strong=document.createElement('strong');strong.textContent=label+': ';
+   const span=document.createElement('span');span.textContent=text;line.append(strong,span);
+   if(action){const button=document.createElement('button');button.type='button';button.className='btn outline';button.textContent=action.label;button.addEventListener('click',()=>{const nav=document.querySelector('#lifeosNavigation button[data-view="'+action.view+'"]');nav?.click();root.setTimeout(()=>{if(action.section)root.LifeOSLifeNavigationV76?.choose?.(action.section);const target=document.getElementById(action.id);if(target){if(target.tagName==='DETAILS')target.open=true;target.scrollIntoView({behavior:'smooth',block:'start'})}},150)});line.append(button)}
+   detail.append(line);
+  };
+  for(const item of timers.items.filter(x=>x.overdue||x.malformed).slice(0,8)){
+   describe('Timer needs review',item.name+' · '+Math.round(item.minutes)+' recorded minutes · expected '+item.expectedMinutes+' minutes · '+item.reason,{label:'Open timer controls',view:'tracking',id:'lo80-profiles'});
+  }
+  const pendingHabits=habits.rows.filter(h=>h.scheduled>h.completed).sort((a,b)=>(b.scheduled-b.completed)-(a.scheduled-a.completed));
+  for(const h of pendingHabits.slice(0,5)){
+   describe('Habit opportunities',h.name+' · '+h.completed+' / '+h.scheduled+' confirmed. No automatic completion.',{label:'Review habits',view:'life',section:'habits',id:'lo32HabitHub'});
+  }
+  for(const e of life.exercises.slice(0,4)){
+   describe('Recorded exercise',e.exercise+' · '+e.count+' confirmed entry/entries'+(e.bestLoad===null?'':' · max logged load '+e.bestLoad+' kg'),{label:'Open fitness',view:'life',section:'fitness',id:'lo100-progress'});
+  }
+  if(cal.pending||cal.conflicts||cal.invalid){
+   describe('Calendar review',cal.pending+' pending, '+cal.conflicts+' approved events overlapping existing plans, '+cal.invalid+' invalid date ranges.',{label:'Open Calendar Review',view:'schedule',id:'scheduleEditorPanel'});
+  }
+  if(!timers.items.some(x=>x.overdue||x.malformed)&&!pendingHabits.length&&!cal.pending&&!cal.conflicts&&!cal.invalid){
+   describe('No urgent flags','No overdue timers, missed habit opportunities or pending calendar items were identified. Tracking completeness may still be limited.');
+  }
+  result.append(detail);
   el('lo110-notice').textContent='Checked local workspace. No changes were made.';
  }
  el('lo110-period').onchange=render;el('lo110-refresh').onclick=render;
