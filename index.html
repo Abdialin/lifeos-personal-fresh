@@ -1387,7 +1387,10 @@ function inspectJournal(){const result=journalDiagnostic();let integrity=null;tr
     const original=localStorage.getItem(ATOMIC_KEY),mirror=localStorage.getItem(KEY);
     if(v71StaleTab||!v71CheckpointUnchanged(original))throw Error('Another LifeOS tab changed storage. Reload this tab before restoring.');
     const existing=mirror?validateWorkspace(JSON.parse(mirror)):data;
-    const candidateMerged=merge(candidate,existing);
+    // Protect independently recoverable records in the current canonical checkpoint too.
+    let canonicalExisting=null,canonicalWarning='';
+    if(original){try{const stored=JSON.parse(original);const w=stored.format===2?window.LifeOSCompactRecovery.unpack(stored).workspace:stored.workspace;canonicalExisting=validateWorkspace(w)}catch(e){canonicalWarning='Current canonical checkpoint could not be decoded ('+String(e.message||e)+'). Its raw bytes remain in your current-browser export.'}}
+    const candidateMerged=merge(merge(candidate,canonicalExisting||{}),existing);
     validateWorkspace(candidateMerged);
     const stats=summary(candidateMerged);
     const warnings=[];
@@ -1396,7 +1399,7 @@ function inspectJournal(){const result=journalDiagnostic();let integrity=null;tr
       sourceCount:summary(candidate),mergedCount:stats};
     output.textContent=previewText(candidate)+'\n\nAfter safe merge: '+stats.sessions+' sessions, '+stats.schedule+' plans and '+stats.todos+' tasks.\n'+
       'The '+warnings.length+' running timer(s) will be paused at their last known start for duration review (no extra time added).\n'+
-      'Cloud records will not be uploaded or replaced.';
+      'Cloud records will not be uploaded or replaced.'+(canonicalWarning?'\nWARNING: '+canonicalWarning:'');
     commit.disabled=false;
    }catch(e){output.textContent='Cannot prepare restoration: '+String(e.message||e)}
   });
