@@ -1,5 +1,6 @@
 /* LifeOS V122 Today: reusable compact/detailed agenda + interactive evidence.
    Display controls are scoped to Today; read-only charts preserve data. */
+body:not([data-lifeos-view="dashboard"]) #lo122-agenda,body:not([data-lifeos-view="dashboard"]) #lo122-timeline-detail{display:none!important}
 #lo122-agenda{
  background:var(--lo-surface);border:1px solid var(--lo-border);
  border-radius:20px;padding:clamp(14px,2vw,20px);margin:14px 0 18px;
