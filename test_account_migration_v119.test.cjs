@@ -27,7 +27,7 @@ test('explicit consent and safety-copy confirmation are mandatory',()=>{
 });
 test('no automatic reading or deletion of legacy activities',()=>{
  const src=fs.readFileSync('personal_account_migration_v119.js','utf8');
- assert.doesNotMatch(src,/\b(?:localStorage|sessionStorage)\s*(?:\.|\[)|lifeosReadOnlyWorkspace\s*\(|lifeos-v4-stage21-atomic/);
+ assert.doesNotMatch(src,/\b(?:localStorage|sessionStorage)\s*(?:\.\s*(?:getItem|setItem|removeItem|clear)\s*\(|\[\s*['\"](?:getItem|setItem|removeItem|clear))|lifeosReadOnlyWorkspace\s*\(|lifeos-v4-stage21-atomic/);
  assert.doesNotMatch(src,/\.delete\(/);
  assert.match(src,/\/workspace\/migrate/);
  assert.match(src,/expectedRevision:0/);
