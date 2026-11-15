@@ -3,6 +3,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const exercise=require('./personal_exercise_plans_v95.js');
+globalThis.LifeOSExercisePlansV95=exercise;
 const hub=require('./personal_preferences_hub_v88.js');
 const sync=require('./personal_preferences_sync_v89.js');
 const key=exercise.KEY;
