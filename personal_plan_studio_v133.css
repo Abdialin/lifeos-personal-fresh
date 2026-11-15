@@ -1,0 +1,84 @@
+/* LifeOS PLAN V133 • visual studio. Existing data and write paths remain unchanged. */
+body[data-lifeos-view="schedule"] #scheduleEditorPanel{--lo133-blue:#729DFF;--lo133-mint:#58CFB1;--lo133-violet:#B39AF5;--lo133-amber:#EFB87D}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel>.head{margin-bottom:12px}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel>.head .sub{display:none}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel>.head h2{font-size:17px;letter-spacing:-.02em}
+body[data-lifeos-view="schedule"] #lo12PlanIntro{padding:14px 16px!important;margin:0 0 14px!important}
+body[data-lifeos-view="schedule"] #lo12PlanIntro p,body[data-lifeos-view="schedule"] #lo12PlanIntro span{font-size:12px;line-height:1.4}
+body[data-lifeos-view="schedule"] #lo133PlanStudio{margin:12px 0 16px;border:1px solid var(--lo-border);background:linear-gradient(150deg,color-mix(in srgb,var(--lo-surface) 94%,var(--lo-accent)),var(--lo-surface) 65%);border-radius:22px;padding:clamp(14px,3vw,22px);box-shadow:var(--lo-shadow);color:var(--lo-text)}
+#lo133PlanStudio .lo133-studio-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+#lo133PlanStudio .lo133-kicker{font-size:10px;letter-spacing:.15em;font-weight:850;color:var(--lo-accent)}
+#lo133PlanStudio h2{font-size:clamp(23px,5vw,29px);line-height:1.15;letter-spacing:-.045em;margin:6px 0}
+#lo133PlanStudio .lo133-studio-head p{font-size:12px;line-height:1.45;color:var(--lo-muted);max-width:340px;margin:5px 0}
+#lo133PlanStudio button{cursor:pointer;font-family:inherit}
+#lo133PlanStudio .lo133-add{border:0;border-radius:14px;background:var(--lo-accent);color:var(--lo-bg);padding:10px 12px;min-height:47px;font-weight:850;font-size:15px;white-space:nowrap}
+#lo133PlanStudio .lo133-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:17px}
+#lo133PlanStudio .lo133-kpi{border-radius:13px;padding:12px 10px;background:var(--lo-surface-2);border:1px solid var(--lo-border);display:flex;flex-direction:column;gap:8px;min-width:0}
+#lo133PlanStudio .lo133-kpi:nth-child(1){border-top:3px solid var(--lo133-blue)}
+#lo133PlanStudio .lo133-kpi:nth-child(2){border-top:3px solid var(--lo133-mint)}
+#lo133PlanStudio .lo133-kpi:nth-child(3){border-top:3px solid var(--lo133-violet)}
+#lo133PlanStudio .lo133-kpi span{font-size:10px;color:var(--lo-muted);line-height:1.3}
+#lo133PlanStudio .lo133-kpi strong{font-size:25px;font-variant-numeric:tabular-nums;letter-spacing:-.06em}
+#lo133PlanStudio .lo133-segments{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;background:var(--lo-surface-2);border:1px solid var(--lo-border);border-radius:13px;padding:4px}
+#lo133PlanStudio .lo133-segments button{border:1px solid transparent;border-radius:10px;padding:9px 2px;min-height:42px;background:transparent;color:var(--lo-muted);font-size:12px;font-weight:800;white-space:nowrap}
+#lo133PlanStudio .lo133-segments button[aria-pressed="true"]{background:color-mix(in srgb,var(--lo-accent) 22%,var(--lo-surface-2));border-color:var(--lo-accent);color:var(--lo-text)}
+#lo133PlanStudio .lo133-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:15px 0 12px}
+#lo133PlanStudio .lo133-nav strong{font-size:14px;text-align:center;line-height:1.3;letter-spacing:-.015em}
+#lo133PlanStudio .lo133-nav button{flex:none;width:39px;height:39px;border-radius:11px;background:var(--lo-surface-2);border:1px solid var(--lo-border);color:var(--lo-text);font-size:23px}
+#lo133PlanStudio .lo133-day-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+#lo133PlanStudio .lo133-day-card{border:1px solid var(--lo-border);border-radius:17px;padding:14px;background:var(--lo-surface-2);min-width:0}
+#lo133PlanStudio .lo133-day-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+#lo133PlanStudio .lo133-day-head small{color:var(--lo-muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:750}
+#lo133PlanStudio .lo133-day-head h3{font-size:24px;line-height:1.1;letter-spacing:-.04em;margin:3px 0}
+#lo133PlanStudio .lo133-day-head h3 span{font-size:13px;font-weight:650;color:var(--lo-muted);letter-spacing:normal}
+#lo133PlanStudio .lo133-day-count{font-size:10px;text-align:right;line-height:1.7;color:var(--lo-muted);max-width:135px}
+#lo133PlanStudio .lo133-blue-dot,#lo133PlanStudio .lo133-green-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin:0 4px 0 7px}
+#lo133PlanStudio .lo133-blue-dot{background:var(--lo133-blue)}#lo133PlanStudio .lo133-green-dot{background:var(--lo133-mint)}
+#lo133PlanStudio .lo133-day-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:12px}
+#lo133PlanStudio .lo133-day-overview>div{display:grid;gap:4px;padding:9px 7px;background:var(--lo-surface);border-radius:10px;min-width:0;text-align:center}
+#lo133PlanStudio .lo133-day-overview strong{font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
+#lo133PlanStudio .lo133-day-overview small{font-size:10px;color:var(--lo-muted)}
+#lo133PlanStudio .lo133-event{display:grid;grid-template-columns:54px minmax(0,1fr) 7px;align-items:center;gap:10px;border-top:1px solid var(--lo-border);padding:11px 0;min-width:0}
+#lo133PlanStudio .lo133-event-time{display:grid;gap:4px;font-variant-numeric:tabular-nums}
+#lo133PlanStudio .lo133-event-time strong{font-size:13px}
+#lo133PlanStudio .lo133-event-time span{font-size:11px;color:var(--lo-muted)}
+#lo133PlanStudio .lo133-event-body{display:grid;gap:5px;min-width:0}
+#lo133PlanStudio .lo133-event-body>strong{font-size:13px;line-height:1.3;overflow-wrap:anywhere}
+#lo133PlanStudio .lo133-event-body small{font-size:10px;color:var(--lo-muted);line-height:1.35}
+#lo133PlanStudio .lo133-type-mark{width:6px;min-height:34px;border-radius:10px;background:var(--lo133-blue)}
+#lo133PlanStudio .lo133-event[data-type="record"] .lo133-type-mark{background:var(--lo133-mint)}
+#lo133PlanStudio .lo133-event[data-tone="spiritual"] .lo133-event-body>strong{color:color-mix(in srgb,var(--lo-text) 80%,var(--lo133-violet))}
+#lo133PlanStudio .lo133-review-flag{display:inline-flex;width:max-content;max-width:100%;padding:3px 6px;background:color-mix(in srgb,var(--lo133-amber) 17%,var(--lo-surface));color:var(--lo133-amber);border-radius:5px;font-size:10px}
+#lo133PlanStudio .lo133-more-note{font-size:11px;color:var(--lo-muted);margin:9px 0 0}
+#lo133PlanStudio .lo133-empty{padding:18px 10px;color:var(--lo-muted);font-size:12px;text-align:center}
+#lo133PlanStudio .lo133-empty small{display:block;margin-top:7px}
+#lo133PlanStudio .lo133-open-day{display:flex;align-items:center;justify-content:space-between;width:100%;border:1px solid var(--lo-border);background:var(--lo-surface);color:var(--lo-text);padding:11px 13px;border-radius:10px;font-size:12px;font-weight:750;margin-top:6px}
+#lo133PlanStudio .lo133-open-day span{color:var(--lo-accent)}
+#lo133PlanStudio .lo133-foot{display:flex;gap:14px;flex-wrap:wrap;margin-top:15px;color:var(--lo-muted);font-size:10px}
+#lo133PlanStudio .lo133-foot span{display:flex;align-items:center;gap:5px}
+#lo133PlanStudio .lo133-foot i{width:8px;height:8px;border-radius:50%;display:inline-block}
+#lo133PlanStudio .lo133-legend-green{background:var(--lo133-mint)}#lo133PlanStudio .lo133-legend-blue{background:var(--lo133-blue)}#lo133PlanStudio .lo133-legend-orange{background:var(--lo133-amber)}
+#lo133PlanStudio #lo133MonthPanel[hidden],#lo133PlanStudio #lo133View[hidden]{display:none!important}
+#lo133PlanStudio #lo11ScheduleCalendar{margin:0;border:0;background:none;padding:0;box-shadow:none}
+#lo133PlanStudio #lo11ScheduleCalendar .lo11-calendar-top>div:first-child{display:none}
+#lo133PlanStudio #lo11ScheduleCalendar .lo11-cal-day{border-radius:9px;min-height:50px}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel .lo133-disclosure{margin:12px 0;border:1px solid var(--lo-border);border-radius:15px;overflow:hidden;background:var(--lo-surface-2)}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel .lo133-disclosure>summary{padding:15px;display:flex;justify-content:space-between;gap:10px;align-items:center;min-height:48px;cursor:pointer;list-style:none;font-size:13px;font-weight:800;color:var(--lo-text)}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel .lo133-disclosure>summary::-webkit-details-marker{display:none}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel .lo133-disclosure[open]>summary{border-bottom:1px solid var(--lo-border)}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel .lo133-chevron{font-size:17px;color:var(--lo-accent);transition:transform .15s}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel .lo133-disclosure[open] .lo133-chevron{transform:rotate(180deg)}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel #lo133UpcomingDetails>#loUpcomingPlans,body[data-lifeos-view="schedule"] #scheduleEditorPanel #lo133DailyDetails>*:not(summary){margin:12px}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel #lo133DailyDetails #scheduleList{margin-top:15px}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel #scheduleForm{border:1px solid var(--lo-border);border-radius:16px;padding:15px;background:var(--lo-surface-2);margin:13px 0}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel #scheduleDay{max-width:250px;margin:7px 0 12px}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel .lo133-date-label{font-size:11px;font-weight:750}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel>.divider{display:none}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel .lo-plan-timetable-content strong{font-size:12px}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel .lo-plan-timetable-row{padding:10px 5px}
+body[data-lifeos-view="schedule"] #lo12DevDetails .lo12-development>summary{min-height:46px}
+body[data-lifeos-view="schedule"] #lo12CalendarTools .lo12-tool-details>summary{min-height:46px}
+#lo133PlanStudio button:focus-visible,body[data-lifeos-view="schedule"] #scheduleEditorPanel .lo133-disclosure>summary:focus-visible{outline:3px solid var(--lo-accent);outline-offset:2px}
+@media(min-width:840px){#lo133PlanStudio .lo133-day-grid:has(>.lo133-day-card:nth-child(3)){grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:390px){#lo133PlanStudio .lo133-add{padding:10px 9px}#lo133PlanStudio .lo133-kpi{padding:10px 7px}#lo133PlanStudio .lo133-studio-head p{font-size:11px}#lo133PlanStudio .lo133-day-head{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){#lo133PlanStudio *,#scheduleEditorPanel .lo133-chevron{transition:none!important}}
