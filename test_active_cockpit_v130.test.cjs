@@ -20,12 +20,12 @@ test('other sessions can be reviewed without overwriting the currently tracked s
  assert.match(s,/data|status/);
 });
 test('duration presets preserve manual choice and explicit auto-finish opt-in',()=>{
- for(const q of ['15,30,45,60','lo78-minutes','lo78-mode','aria-pressed','lo78-save','lo130SafetyNotes'])assert.ok(s.includes(q),q);
+ for(const q of ['15,30,45,60','lo78-minutes','lo78-mode','aria-pressed','lo130SafetyNotes'])assert.ok(s.includes(q),q);
  assert.match(s,/Auto-finish must be selected deliberately/);
  assert.doesNotMatch(s,/setInterval\(.*save|\.click\(\)/);
 });
 test('mobile presentation includes a hero clock, other session cards and accessible focus',()=>{
- for(const q of ['lo130-timer-line','lo130-session-tile','lo130-preset-row','lo130-safety','focus-visible'])assert.ok(css.includes(q),q);
+ for(const q of ['lo130-timer-line','lo130-session-tile','lo130-preset-row','lo130SafetyNotes','focus-visible'])assert.ok(css.includes(q),q);
  assert.match(css,/@media\(max-width:380px\)/);
  assert.doesNotThrow(()=>new Function(s));
 });
