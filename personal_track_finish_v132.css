@@ -1,0 +1,71 @@
+/* LifeOS V132 — Track final editorial pass: compact archive, readable evidence. */
+body[data-lifeos-view="tracking"] #trackHistoryPanel.lo132-archive{--lo132-warn:#e2ae65}
+body[data-lifeos-view="tracking"] #history .lo-history-day{overflow:hidden}
+body[data-lifeos-view="tracking"] #history .lo-history-item{
+ border:1px solid color-mix(in srgb,var(--lo-border) 82%,transparent)!important;
+ border-radius:12px!important;padding:11px 13px!important;margin:8px 6px!important;
+ background:color-mix(in srgb,var(--lo-surface-2) 55%,transparent);
+}
+body[data-lifeos-view="tracking"] #history .lo-history-entry{
+ display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap;
+}
+body[data-lifeos-view="tracking"] #history .lo-history-entry>strong{
+ font-size:13px!important;line-height:1.35;letter-spacing:-.012em;flex:1 1 120px;min-width:0;
+}
+body[data-lifeos-view="tracking"] #history .lo-history-entry>span:not(.lo132-type):not(.lo132-flag){
+ font-size:13px!important;font-weight:850;white-space:nowrap;
+}
+body[data-lifeos-view="tracking"] #history .lo-history-foot{
+ display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap;margin:5px 0 0!important;
+}
+body[data-lifeos-view="tracking"] #history .lo-history-foot>small{
+ flex:1 1 145px;font-size:10px!important;line-height:1.5;min-width:0;color:var(--lo-muted);
+}
+body[data-lifeos-view="tracking"] #history .lo-history-actions{
+ display:none!important;width:100%;gap:8px;margin-top:8px;padding-top:9px;border-top:1px solid var(--lo-border);
+}
+body[data-lifeos-view="tracking"] #history .lo-history-item.lo132-expanded .lo-history-actions{
+ display:flex!important;justify-content:flex-end;
+}
+body[data-lifeos-view="tracking"] #history .lo-history-actions button{min-height:37px!important;font-size:11px!important}
+body[data-lifeos-view="tracking"] #history .lo132-more{
+ border:1px solid var(--lo-border);color:#b9d7ff;background:transparent;
+ border-radius:9px;min-height:32px;padding:5px 9px;font-size:10px;font-weight:780;
+ cursor:pointer;white-space:nowrap;
+}
+body[data-lifeos-view="tracking"] #history .lo132-more:focus-visible,
+body[data-lifeos-view="tracking"] #history .lo132-flag:focus-visible{outline:2px solid #81b1ff;outline-offset:2px}
+body[data-lifeos-view="tracking"] #history .lo132-type{
+ font-size:9px;line-height:1.1;padding:5px 7px;border-radius:20px;
+ background:color-mix(in srgb,#3cc4a0 12%,var(--lo-surface-2));color:#84d9c4;font-weight:800;
+}
+body[data-lifeos-view="tracking"] #history .lo132-review{
+ border-color:color-mix(in srgb,#dfa657 48%,var(--lo-border))!important;
+}
+body[data-lifeos-view="tracking"] #history .lo132-flag{
+ font-size:10px;font-weight:800;border:1px solid #a77c42;border-radius:9px;
+ color:#ffd197;background:color-mix(in srgb,#db9845 10%,var(--lo-surface-2));
+ padding:6px 9px;min-height:32px;cursor:pointer;
+}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo132-history-note{
+ margin:6px 0 11px;padding:10px 12px;border-left:3px solid #6396f0;
+ background:color-mix(in srgb,#6396f0 7%,var(--lo-surface-2));
+ border-radius:0 9px 9px 0;font-size:10px;line-height:1.5;color:var(--lo-muted);
+}
+body[data-lifeos-view="tracking"] #todayLegacyOverviewPanel #lo132TimeExplainer{
+ font-size:10px;line-height:1.55;color:var(--lo-muted);margin:0 0 13px;
+}
+body[data-lifeos-view="tracking"] #todayLegacyOverviewPanel .lo132-footnote{
+ font-size:10px!important;line-height:1.5!important;
+}
+body[data-lifeos-view="tracking"] #trackDistractionPanel .lo132-distraction-note{
+ font-size:10px!important;line-height:1.5!important;margin:8px 0!important;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep .lo132-original-report{
+ font-size:11px;line-height:1.55;color:var(--lo-muted);
+}
+@media(max-width:390px){
+ body[data-lifeos-view="tracking"] #history .lo-history-item{padding:10px!important;margin:7px 3px!important}
+ body[data-lifeos-view="tracking"] #history .lo-history-entry>strong{font-size:12px!important}
+}
+@media(prefers-reduced-motion:reduce){body[data-lifeos-view="tracking"] #history .lo132-more{transition:none}}
