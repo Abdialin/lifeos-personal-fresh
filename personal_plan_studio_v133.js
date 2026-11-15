@@ -40,6 +40,7 @@ function render(){
  const counts=days.reduce((r,k)=>{r.planned+=data.plans.filter(x=>spans(x.startAt,x.endAt,k)>0).length;r.recorded+=data.records.filter(x=>spans(x.startAt,x.endAt,k)>0).length;return r},{planned:0,recorded:0});
  const title=mode==='week'?'Week of '+dayDate(days[0]).toLocaleDateString(undefined,{month:'short',day:'numeric'}):mode==='three'?'Three-day outlook':dayDate(chosen).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
  const summary=$('lo133Overview');if(summary)summary.innerHTML='<div class="lo133-kpi"><span>Planned entries</span><strong>'+counts.planned+'</strong></div><div class="lo133-kpi"><span>Recorded entries</span><strong>'+counts.recorded+'</strong></div><div class="lo133-kpi"><span>Days in view</span><strong>'+days.length+'</strong></div>';
+ root.dataset.mode=mode;
  root.querySelector('#lo133DateHeading').textContent=title;
  root.querySelector('#lo133View').innerHTML=dayCards;
  root.querySelectorAll('[data-lo133-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lo133Mode===mode)));
@@ -53,7 +54,7 @@ function init(){const editor=$('scheduleEditorPanel'),calendar=$('lo11ScheduleCa
  const hero=document.createElement('section');hero.id='lo133PlanStudio';hero.className='lo133-studio';hero.setAttribute('aria-label','Visual schedule');
  hero.innerHTML='<header class="lo133-studio-head"><div><span class="lo133-kicker">YOUR WEEK · LIVE PLANNING</span><h2>Plan with clarity</h2><p>Plans, real tracking, and tasks—separate, but easy to compare.</p></div><button type="button" id="lo133Add" class="lo133-add" aria-label="Add a planned activity">＋ <span>Add</span></button></header>'+
  '<div class="lo133-overview" id="lo133Overview"></div>'+
- '<div class="lo133-toolbar"><div class="lo133-segments" role="group" aria-label="Calendar view"><button type="button" data-lo133-mode="day">Day</button><button type="button" data-lo133-mode="three">3 days</button><button type="button" data-lo133-mode="week">Week</button><button type="button" data-lo133-mode="month">Month</button></div><div class="lo133-nav"><button type="button" data-lo133-shift="-1" aria-label="Previous period">‹</button><strong id="lo133DateHeading"></strong><button type="button" data-lo133-shift="1" aria-label="Next period">›</button></div></div><div id="lo133View" class="lo133-day-grid"></div><div id="lo133MonthPanel" hidden></div><footer class="lo133-foot"><span><i class="lo133-legend-green"></i> Tracked</span><span><i class="lo133-legend-blue"></i> Planned</span><span><i class="lo133-legend-orange"></i> Tasks</span></footer>';
+ '<div class="lo133-toolbar"><div class="lo133-segments" role="group" aria-label="Calendar view"><button type="button" data-lo133-mode="day">Day</button><button type="button" data-lo133-mode="three">3 days</button><button type="button" data-lo133-mode="week">Week</button><button type="button" data-lo133-mode="month">Month</button></div><div class="lo133-nav"><button type="button" data-lo133-shift="-1" aria-label="Previous period">‹</button><strong id="lo133DateHeading"></strong><button type="button" data-lo133-shift="1" aria-label="Next period">›</button></div><button class="lo133-today" type="button" data-lo133-today>Jump to today</button></div><div id="lo133View" class="lo133-day-grid"></div><div id="lo133MonthPanel" hidden></div><footer class="lo133-foot"><span><i class="lo133-legend-green"></i> Tracked</span><span><i class="lo133-legend-blue"></i> Planned</span><span><i class="lo133-legend-orange"></i> Tasks</span></footer>';
  const intro=$('lo12PlanIntro')||editor.querySelector(':scope > .head');if(intro)intro.after(hero);else editor.prepend(hero);
  hero.querySelector('#lo133MonthPanel').append(calendar);
  makeDetails('lo133UpcomingDetails','Upcoming planned activities',upcoming);
@@ -66,6 +67,7 @@ function init(){const editor=$('scheduleEditorPanel'),calendar=$('lo11ScheduleCa
  hero.querySelector('#lo133Add').addEventListener('click',()=>{const toggle=$('v7TogglePlanForm'),form=$('scheduleForm');if(form?.hidden)toggle?.click();form?.scrollIntoView({behavior:'smooth',block:'center'});});
  hero.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
  if(b.dataset.lo133Mode){mode=b.dataset.lo133Mode;render();return}
+ if(b.hasAttribute('data-lo133-today')){picker.value=dayKey(Date.now());picker.dispatchEvent(new Event('change',{bubbles:true}));render();return}
  if(b.hasAttribute('data-lo133-shift')){const d=dayDate(picker.value||dayKey(Date.now()));d.setDate(d.getDate()+Number(b.dataset.lo133Shift)*(mode==='week'?7:mode==='three'?3:mode==='month'?30:1));picker.value=dayKey(d);picker.dispatchEvent(new Event('change',{bubbles:true}));render();return}
  if(b.dataset.lo133OpenDay){picker.value=b.dataset.lo133OpenDay;picker.dispatchEvent(new Event('change',{bubbles:true}));mode='day';render();}
  });
