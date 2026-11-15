@@ -49,7 +49,7 @@
 .lo122-timeline-detail .lo122-interval-label{font-size:12px;color:var(--lo-muted);margin:0}
 body[data-lo122-mode="compact"][data-lifeos-view="dashboard"] #todayOverview .today-clarity{font-size:11px}
 body[data-lo122-mode="compact"][data-lifeos-view="dashboard"] .v4-section[data-v4-view="dashboard"] .v4-card:nth-child(2) .v4-muted{display:none}
-body[data-lo122-mode="compact"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities:not(.lo-today-expanded)>.lo-today-activity:nth-child(n+3){display:none}
+body[data-lo122-mode="compact"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities:not(.lo-today-expanded)>.lo-today-activity:nth-child(n+4){display:none}
 body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities:not(.lo-today-expanded)>.lo-today-activity:nth-child(-n+6){display:flex}
 body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities:not(.lo-today-expanded)>.lo-today-activity:nth-child(n+7){display:none}
 body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities:not(.lo-today-expanded)>.lo-today-activity:nth-child(-n+6){display:flex}
