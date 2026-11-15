@@ -1,0 +1,110 @@
+/* V131 — guided local timer recovery, refined disclosure. */
+body[data-lifeos-view="tracking"] #trackActivePanel #lo130LiveHeading{margin-top:5px}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo131TechnicalDiagnostics{margin:12px 0;border:1px solid var(--lo-border);border-radius:14px;background:var(--lo-surface-2);overflow:hidden}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo131TechnicalDiagnostics>summary{padding:13px 14px;font-size:12px;font-weight:730;cursor:pointer;color:var(--lo-muted)}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo131TechnicalDiagnostics .lo72-background{margin:0!important;border:0!important;box-shadow:none!important;background:transparent!important;padding:13px!important}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test.lo131-device{
+ background:linear-gradient(150deg,color-mix(in srgb,#315EC0 8%,var(--lo-surface)),var(--lo-surface));
+ border:1px solid color-mix(in srgb,#78A8F2 30%,var(--lo-border));
+ border-radius:17px;padding:16px!important;margin:11px 0!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test.lo131-device>h3{
+ font-size:19px!important;letter-spacing:-.03em;margin:0 0 6px!important;font-weight:850;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test.lo131-device>p.sub{
+ font-size:11px!important;line-height:1.5!important;margin:7px 0 14px!important;color:var(--lo-muted);
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo131-steps{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 15px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo131-step{
+ min-width:0;display:flex;align-items:center;gap:5px;padding:10px 6px;
+ border:1px solid var(--lo-border);border-radius:11px;background:var(--lo-surface-2);
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo131-step[data-status="complete"]{
+ background:color-mix(in srgb,#39BB9D 11%,var(--lo-surface-2));border-color:color-mix(in srgb,#39BB9D 45%,var(--lo-border));
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo131-step[data-status="current"]{
+ border-color:#80AFFC;background:color-mix(in srgb,#80AFFC 9%,var(--lo-surface-2));
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo131-step-index{
+ width:22px;height:22px;min-width:22px;border-radius:7px;display:flex;
+ align-items:center;justify-content:center;background:color-mix(in srgb,#6C9EFD 16%,var(--lo-surface));
+ color:#A5C4FF;font-size:10px;font-weight:900;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo131-step[data-status="complete"] .lo131-step-index{
+ background:color-mix(in srgb,#55D9B6 22%,var(--lo-surface));color:#9AF0DB;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo131-step-title{
+ font-size:10px;font-weight:730;line-height:1.25;color:var(--lo-text);
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test .field{
+ margin:5px 0 10px!important;min-height:46px!important;font-size:13px!important;border-radius:11px!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test label.sub{
+ font-size:11px!important;font-weight:760;margin:3px 0!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo131TestToolbar{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ margin:10px 0;padding-top:10px;border-top:1px solid var(--lo-border);font-size:11px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo131-progress{
+ font-size:10px;font-weight:800;background:color-mix(in srgb,#74A8EF 15%,var(--lo-surface-2));
+ border-radius:20px;padding:7px 10px;color:#AACFFF;white-space:nowrap;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel [data-lo131-state="pass"] .lo131-progress{
+ background:color-mix(in srgb,#49CDA9 17%,var(--lo-surface-2));color:#9FF2D9;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel [data-lo131-state="fail"] .lo131-progress{
+ background:color-mix(in srgb,#E9768E 17%,var(--lo-surface-2));color:#FFA9C0;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test .lo131-actions{
+ display:grid!important;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test .lo131-actions button{
+ width:100%!important;min-width:0!important;min-height:49px!important;
+ margin:0!important;padding:10px 7px!important;font-size:12px!important;
+ font-weight:820!important;border-radius:11px!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test #lo73-capture{
+ border:1px solid color-mix(in srgb,#74A8FF 38%,var(--lo-border));
+ background:color-mix(in srgb,#74A8FF 12%,var(--lo-surface-2));
+ color:#B9D1FF;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test #lo73-verify{
+ background:#077B63!important;border:1px solid #1A9B7D!important;color:#fff!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test .lo131-action-hint{
+ font-size:11px;line-height:1.5;color:#AEC8E7;
+ margin:10px 0 8px;padding:11px 12px;border-radius:10px;
+ background:color-mix(in srgb,#719EEF 8%,var(--lo-surface-2));
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo73-device-test #lo73-status{
+ font-size:11px!important;line-height:1.5!important;margin:9px 0!important;
+ padding:12px!important;border:1px solid var(--lo-border);border-radius:11px;
+ background:var(--lo-surface-2);
+}
+body[data-lifeos-view="tracking"] #trackActivePanel [data-lo131-state="pass"] #lo73-status{
+ border-color:#35B995!important;color:#B1F5DB!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel [data-lo131-state="fail"] #lo73-status{
+ border-color:#D46F85!important;color:#FEB6C5!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo131Aux{
+ margin-top:10px;border:1px solid var(--lo-border);border-radius:10px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo131Aux>summary{
+ font-size:11px!important;padding:12px;color:var(--lo-muted);cursor:pointer;font-weight:740;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo131Aux #lo73-clear{
+ display:block;width:calc(100% - 20px);min-height:43px!important;margin:8px 10px 12px!important;
+ font-size:12px!important;border-radius:9px!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo131Aux .lo73-note{
+ display:block;font-size:10px;line-height:1.5;color:var(--lo-muted);margin:0 10px 12px;
+}
+@media(max-width:380px){
+ body[data-lifeos-view="tracking"] #trackActivePanel .lo131-step{gap:4px;padding:8px 4px}
+ body[data-lifeos-view="tracking"] #trackActivePanel .lo131-step-title{font-size:9px}
+ body[data-lifeos-view="tracking"] #trackActivePanel .lo131-step-index{width:19px;height:19px;min-width:19px}
+}
