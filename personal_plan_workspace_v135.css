@@ -35,3 +35,9 @@ body[data-lifeos-view="schedule"] #lo135Workspace{background:linear-gradient(155
 #lo135Workspace #lo135DecisionHost .lo75-tools{border:0!important;margin:0;padding:0;box-shadow:none}
 #lo135Workspace button:focus-visible{outline:3px solid #8ef3d5;outline-offset:2px}
 @media(max-width:380px){#lo135Workspace .lo135-mainhead h2{font-size:19px}#lo135Workspace .lo135-review-card{align-items:flex-start}#lo135Workspace .lo135-review-stats small{font-size:9px}}
+
+/* Keep the floating timer discoverable without covering the review approval button. */
+body[data-lifeos-view="schedule"] #lo32ActiveTimer.lo79-minimized{right:10px;bottom:calc(82px + env(safe-area-inset-bottom));max-width:160px;border-radius:999px;background:#113b36;padding:7px 10px;z-index:800}
+body[data-lifeos-view="schedule"] #lo32ActiveTimer.lo79-minimized .lo32-timer-count{font-size:12px}
+body[data-lifeos-view="schedule"] #lo32ActiveTimer.lo79-minimized .lo79-minimize{min-height:30px;min-width:30px}
+body[data-lifeos-view="schedule"] #lo86-timer{display:none!important}

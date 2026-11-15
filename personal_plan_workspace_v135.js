@@ -44,7 +44,7 @@ function read(){try{return window.lifeosReadOnlyWorkspace?.()||{}}catch{return {
 function debt(){try{return window.LifeOSDebtRecoveryV75?.outstanding?.(read(),Date.now())||null}catch{return null}}
 function renderReview(){
  const el=$('lo135Recovery');if(!el)return;const w=read(),d=debt(),list=Array.isArray(d?.open)?d.open:[],unknown=Array.isArray(d?.unverified)?d.unverified:[],history=Array.isArray(w.sessions)?w.sessions:[];
- const flagged=history.filter(s=>s.status==='finished'&&!s.assumed&&!s.isExample&&Number.isFinite(+s.startAt)&&Number.isFinite(+s.endAt)&&(+s.endAt- +s.startAt)/60000>=180&&/prayer|fajr|dhuhr|asr|maghrib|isha/i.test(s.name||''));
+ const flagged=history.filter(s=>s.status==='finished'&&!s.assumed&&!s.isExample&&!s.seedBatch&&s.source!=='development-starter'&&Number.isFinite(+s.startAt)&&Number.isFinite(+s.endAt)&&(+s.endAt- +s.startAt)/60000>=180&&/prayer|fajr|dhuhr|asr|maghrib|isha/i.test(s.name||''));
  el.innerHTML='<div class="lo135-recovery-heading"><span class="lo135-kicker">COMMITMENTS · REVIEW FIRST</span><h3>Resolve, don\'t accumulate.</h3><p>Unverified plans are not missed time. Recoveries stay proposals until you approve them.</p></div>'+
  '<div class="lo135-review-stats"><div><strong>'+list.length+'</strong><small>Calculated shortfalls</small></div><div><strong>'+unknown.length+'</strong><small>Unverified plans</small></div><div><strong>'+flagged.length+'</strong><small>Suspicious durations</small></div></div>'+
  (list.length?'<div class="lo135-review-list">'+list.slice(0,12).map(x=>'<article class="lo135-review-card"><div><strong>'+escape(x.name||'Commitment')+'</strong><small>'+format(x.outstandingMs)+' calculated shortfall · confirm before recovery</small></div><button type="button" data-lo135-choose="'+escape(x.id)+'">Review</button></article>').join('')+'</div>':'<p class="lo135-clear">No calculated shortfalls currently require a recovery decision.</p>')+
@@ -76,6 +76,9 @@ function init(){
  '<section class="lo135-screen" data-lo135-screen="tools" hidden><h3>More planning tools</h3><p>Imports, diagnostics, generated development records, advanced planning modules and verification remain here, outside the everyday schedule.</p></section>';
  editor.prepend(root);
  root.addEventListener('click',e=>{const b=e.target.closest('[data-lo135-tab]');if(b)set(b.dataset.lo135Tab)});
+ // Default to a compact floating timer when entering Plan; user may expand it manually.
+ if(document.body.dataset.lifeosView==='schedule')document.body.dataset.lo79TimerMinimized='true';
+ document.querySelector('#lifeosNavigation [data-view="schedule"]')?.addEventListener('click',()=>{document.body.dataset.lo79TimerMinimized='true'});
  $('lo135Now').onclick=()=>{set('calendar');refreshToday(true)};
  $('lo135OpenTasks').onclick=()=>{const todo=$('todoForm');const section=todo?.closest('.panel');if(section){document.querySelector('#lifeosNavigation [data-view="goals"]')?.click();setTimeout(()=>section.scrollIntoView({behavior:'smooth',block:'start'}),150)}else document.querySelector('#lifeosNavigation [data-view="goals"]')?.click()};
  mark();
