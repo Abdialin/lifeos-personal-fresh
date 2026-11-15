@@ -41,7 +41,8 @@ function go(x){
  setTimeout(()=>$('scheduleList')?.scrollIntoView({behavior:'smooth',block:'start'}),100);
 }
 async function showNotice(x){
- if(!('Notification'in window)||Notification.permission!=='granted')return;
+ const preferences=window.LifeOSNotificationControlsV87?.read?.(localStorage);
+ if(!preferences?.enabled||!('Notification'in window)||Notification.permission!=='granted')return;
  const stamp=x.key+':'+x.start;if(shownNotices.has(stamp))return;
  const hh=new Date(x.start).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
  try{
