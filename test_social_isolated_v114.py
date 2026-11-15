@@ -58,7 +58,9 @@ class SocialTests(unittest.TestCase):
         social.set_grant(self.db,self.alice,'bob','workoutDays',True,NOW)
         social.publish(self.db,self.alice,'workoutDays',7,DAY,4,NOW)
         self.assertEqual(social.leaderboard(self.db,self.bob,'workoutDays',7,DAY,NOW)[0]['verified'],False)
-        self.assertEqual(social.leaderboard(self.db,self.bob,'workoutDays',7,DAY,NOW+social.SHARE_TTL+1),[])
+        later=NOW+social.SHARE_TTL+1
+        refreshed=social.login(self.db,'bob','correct-horse-battery-bob',later)
+        self.assertEqual(social.leaderboard(self.db,refreshed,'workoutDays',7,DAY,later),[])
     def test_rejects_invalid_metrics(self):
         with self.assertRaises(ValueError):
             social.publish(self.db,self.alice,'prayerTimes',7,DAY,4,NOW)
