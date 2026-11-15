@@ -67,11 +67,16 @@ function mount(){
  (settings||header||document.body).append(trigger);
  const $=id=>document.getElementById(id);
  const draft={routines:[],habits:[],tasks:[]};let step=0,approved=null;
+ const resume=root.LifeOSOnboardingResumeV85;
+ const saved=resume?.read?.(localStorage);
+ if(saved?.ok){Object.assign(draft,saved.draft);step=saved.step;trigger.textContent='Resume guided setup'}
+ function saveDraft(){const result=resume?.save?.(localStorage,draft,step);if(result&&!result.ok)message(result.reason);else trigger.textContent='Resume guided setup'}
  const ws=()=>{try{return root.lifeosReadOnlyWorkspace?.()||{}}catch{return {}}};
  function message(s){$('lo81-message').textContent=s}
- function open(){overlay.hidden=false;document.body.classList.add('lo81-open');step=0;redraw()}
- function close(){overlay.hidden=true;document.body.classList.remove('lo81-open');try{sessionStorage.setItem('lifeos.personal.onboarding.offered.v81','1')}catch{}}
- trigger.addEventListener('click',open);$('lo81-close').addEventListener('click',close);
+ function open(){const current=resume?.read?.(localStorage);if(current?.ok){Object.assign(draft,current.draft);step=current.step}overlay.hidden=false;document.body.classList.add('lo81-open');redraw()}
+ function close(){if(!root.__lifeosV85OnboardingSaved)saveDraft();overlay.hidden=true;document.body.classList.remove('lo81-open');try{sessionStorage.setItem('lifeos.personal.onboarding.offered.v81','1')}catch{}}
+ trigger.addEventListener('click',open);
+ try{const url=new URL(root.location.href);if(url.searchParams.get('resumeSetup')==='1'){root.setTimeout(open,100);url.searchParams.delete('resumeSetup');root.history.replaceState(null,'',url.pathname+url.search+url.hash)}}catch{}$('lo81-close').addEventListener('click',close);
  overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
  function el(tag,text){const n=document.createElement(tag);n.textContent=text;return n}
  function field(label,type,attrs={}){
@@ -96,28 +101,32 @@ function mount(){
    const selector=document.createElement('div');selector.className='lo81-weekdays';
    for(let i=0;i<7;i++){const wrap=document.createElement('label');const inp=document.createElement('input');inp.type='checkbox';inp.value=i;wrap.append(inp,el('span',DAYS[i]));selector.append(wrap)}area.append(selector);
    const add=document.createElement('button');add.type='button';add.className='btn outline';add.textContent='Add weekly activity';area.append(add);
-   add.onclick=()=>{const days=[...selector.querySelectorAll('input:checked')].map(x=>Number(x.value)),entry=times(name.input.value,days,time.input.value,Number(min.input.value));if(!entry)return message('Enter a name, valid time, duration and at least one weekday.');draft.routines.push(entry);redraw()};
-   const list=el('ul','');for(const [i,r]of draft.routines.entries()){const li=el('li',r.name+' · '+r.days.map(d=>DAYS[d]).join(', ')+' · '+r.time+' · '+r.minutes+' min');const remove=el('button','Remove');remove.type='button';remove.className='btn outline';remove.onclick=()=>{draft.routines.splice(i,1);redraw()};li.append(remove);list.append(li)}area.append(list);
+   add.onclick=()=>{const days=[...selector.querySelectorAll('input:checked')].map(x=>Number(x.value)),entry=times(name.input.value,days,time.input.value,Number(min.input.value));if(!entry)return message('Enter a name, valid time, duration and at least one weekday.');draft.routines.push(entry);saveDraft();redraw()};
+   const list=el('ul','');for(const [i,r]of draft.routines.entries()){const li=el('li',r.name+' · '+r.days.map(d=>DAYS[d]).join(', ')+' · '+r.time+' · '+r.minutes+' min');const remove=el('button','Remove');remove.type='button';remove.className='btn outline';remove.onclick=()=>{draft.routines.splice(i,1);saveDraft();redraw()};li.append(remove);list.append(li)}area.append(list);
   }else if(step===2){
    area.append(el('p','Choose habits and optional tasks. Detailed workout plans, favorite foods and nutrition preferences can be completed later.'));
    const habit=field('Habit name','text',{placeholder:'e.g. Read Quran, walk, read a book',maxLength:80});
    const freq=field('Repeat every N days','number',{value:'1',min:1,max:30});
    area.append(habit.box,freq.box);
    const addH=el('button','Add habit');addH.type='button';addH.className='btn outline';area.append(addH);
-   addH.onclick=()=>{if(!habit.input.value.trim()||!Number.isSafeInteger(Number(freq.input.value))||Number(freq.input.value)<1||Number(freq.input.value)>30)return message('Add a valid habit and repetition interval.');draft.habits.push({title:habit.input.value.trim(),everyDays:Number(freq.input.value)});redraw()};
+   addH.onclick=()=>{if(!habit.input.value.trim()||!Number.isSafeInteger(Number(freq.input.value))||Number(freq.input.value)<1||Number(freq.input.value)>30)return message('Add a valid habit and repetition interval.');draft.habits.push({title:habit.input.value.trim(),everyDays:Number(freq.input.value)});saveDraft();redraw()};
    const todo=field('Flexible to-do (optional)','text',{maxLength:80,placeholder:'e.g. Buy groceries or submit application'});area.append(todo.box);
    const addT=el('button','Add to-do');addT.type='button';addT.className='btn outline';area.append(addT);
-   addT.onclick=()=>{if(!todo.input.value.trim())return message('Enter a task.');draft.tasks.push({name:todo.input.value.trim()});redraw()};
-   for(const [label,entries,type]of [['Habits',draft.habits,'habits'],['Tasks',draft.tasks,'tasks']]){area.append(el('h3',label));const list=el('ul','');for(const [i,v]of entries.entries()){const li=el('li',v.title||v.name);const b=el('button','Remove');b.type='button';b.className='btn outline';b.onclick=()=>{draft[type].splice(i,1);redraw()};li.append(b);list.append(li)}area.append(list)}
+   addT.onclick=()=>{if(!todo.input.value.trim())return message('Enter a task.');draft.tasks.push({name:todo.input.value.trim()});saveDraft();redraw()};
+   for(const [label,entries,type]of [['Habits',draft.habits,'habits'],['Tasks',draft.tasks,'tasks']]){area.append(el('h3',label));const list=el('ul','');for(const [i,v]of entries.entries()){const li=el('li',v.title||v.name);const b=el('button','Remove');b.type='button';b.className='btn outline';b.onclick=()=>{draft[type].splice(i,1);saveDraft();redraw()};li.append(b);list.append(li)}area.append(list)}
   }else{
    area.append(el('p','Optional: import Google Calendar or an existing schedule file using the Plan import tools. Imported information must be reviewed and approved there before it becomes a plan.'));
-   const openImports=el('a','Open Calendar Review (Google, ICS and documents)');openImports.className='btn outline';openImports.href='/calendar.html';area.append(openImports);
+   const openImports=el('a','Open Calendar Review (Google, ICS and documents)');openImports.className='btn outline';openImports.href='/calendar.html';openImports.onclick=()=>saveDraft();area.append(openImports);
    const transfer=el('button','Review imported candidates in Plan');transfer.type='button';transfer.className='btn outline';
-   transfer.onclick=()=>{close();document.querySelector('#lifeosNavigation button[data-view="schedule"]')?.click();root.setTimeout(()=>document.getElementById('calendarHandoffPanel')?.scrollIntoView({block:'start',behavior:'smooth'}),90)};
+   transfer.onclick=()=>{saveDraft();close();document.querySelector('#lifeosNavigation button[data-view="schedule"]')?.click();root.setTimeout(()=>document.getElementById('calendarHandoffPanel')?.scrollIntoView({block:'start',behavior:'smooth'}),90)};
    area.append(transfer);
    area.append(el('p','After previewing your source in Calendar Review, approve its transfer there, return to LifeOS Plan, and approve its addition to your schedule. Imported plans are not actual tracked sessions.'));
    area.append(el('p','You can also add fixed deadlines in Plan → Tasks. Fitness and nutrition details remain optional.'));
    const preview=prepare(draft,ws(),Date.now());if(!preview.ok)return message(preview.error);
+   let pending=null;try{pending=root.LifeOSImportReviewV82?.inspect?.(localStorage.getItem('lifeos-stage27-plan-handoff-v1'),ws())}catch{}
+   if(pending?.state==='ready')area.append(el('p','Pending import review: '+pending.count+' calendar events, '+pending.duplicates+' duplicates, '+pending.conflicts+' conflicts. These have NOT yet been added to your week.'));
+   else if(pending?.state==='invalid')area.append(el('p','⚠ Pending calendar transfer is invalid. Resolve it in Calendar Review before approving imported plans.'));
+   const reload=el('button','Refresh first-week preview');reload.className='btn outline';reload.type='button';reload.onclick=redraw;area.append(reload);
    const existing=ws()?.schedule||[];
    const from=new Date();from.setHours(0,0,0,0);const until=new Date(from);until.setDate(until.getDate()+7);
    const actual=existing.filter(p=>p&&Number.isFinite(p.startAt)&&Number.isFinite(p.endAt)&&p.startAt<until.getTime()&&p.endAt>from.getTime()&&p.status!=='cancelled');
@@ -130,9 +139,9 @@ function mount(){
    approved=preview;
   }
  }
- $('lo81-back').onclick=()=>{if(step>0){step--;redraw()}};
+ $('lo81-back').onclick=()=>{if(step>0){step--;saveDraft();redraw()}};
  $('lo81-next').onclick=()=>{
-  if(step<STEPS.length-1){step++;redraw();return}
+  if(step<STEPS.length-1){step++;saveDraft();redraw();return}
   const latest=prepare(draft,ws(),Date.now());
   if(!latest.ok)return message(latest.error);
   // Revalidate against current workspace at approval time; no write from the UI.
@@ -140,11 +149,12 @@ function mount(){
   if(!root.confirm('Approve '+latest.plans.length+' first-week plans, '+latest.habits.length+' habits and '+latest.tasks.length+' tasks? No tracked activities will be generated.'))return message('Setup not applied.');
   root.dispatchEvent(new CustomEvent('lifeos-v81-approve-onboarding',{detail}));
   message(detail.result?.message||'Setup could not be saved.');
-  if(detail.result?.ok){try{localStorage.setItem('lifeos.personal.onboarded.v81','1')}catch{}close();document.querySelector('#lifeosNavigation button[data-view="dashboard"]')?.click()}
+  if(detail.result?.ok){try{localStorage.setItem('lifeos.personal.onboarded.v81','1')}catch{}resume?.clear?.(localStorage);root.__lifeosV85OnboardingSaved=true;close();document.querySelector('#lifeosNavigation button[data-view="dashboard"]')?.click()}
  };
  // For genuinely empty accounts only. Do not interrupt an existing populated workspace.
  root.setTimeout(()=>{
   if(localStorage.getItem('lifeos.personal.onboarded.v81'))return;
+  if(resume?.read?.(localStorage)?.ok){trigger.classList.add('lo81-new');return}
   const w=ws();if((w.sessions||[]).length||(w.schedule||[]).length||(w.todos||[]).length||(w.habitDefinitions||[]).length)return;
   // User chooses to open; never surprise-show during a running activity.
   trigger.classList.add('lo81-new');
