@@ -1,0 +1,92 @@
+/* LifeOS Personal V123 — chronological evidence ladder for Today.
+ * Read-only. No manipulation of tracked activities or inferred time.
+ * Design language: rail + semantic category node + compact activity detail. */
+#todayActivityHistoryPanel .lo123-history-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+#todayActivityHistoryPanel .lo123-sort{
+ min-height:40px;padding:8px 11px;border-radius:11px;
+ border:1px solid var(--lo-border);background:var(--lo-surface-2);
+ color:var(--lo-text);font-size:12px;font-weight:720;
+}
+#todayActivityHistoryPanel .lo123-sort:focus-visible{
+ outline:3px solid var(--lo-accent);outline-offset:2px;
+}
+#todayActivityHistoryPanel .lo-today-activities{
+ display:grid;gap:0;position:relative;
+ margin:10px 0 0;
+ padding:0 0 0 0;
+}
+#todayActivityHistoryPanel .lo123-ladder-item{
+ --lo123-node:var(--lo121-neutral);
+ display:grid!important;
+ grid-template-columns:72px minmax(0,1fr);
+ gap:13px;align-items:stretch;
+ position:relative;min-height:92px;margin:0;
+ padding:0!important;border:0!important;border-radius:0!important;
+ background:transparent!important;box-shadow:none!important;
+}
+#todayActivityHistoryPanel .lo123-ladder-item[data-lo121-category="prayer"]{--lo123-node:var(--lo121-prayer)}
+#todayActivityHistoryPanel .lo123-ladder-item[data-lo121-category="learning"]{--lo123-node:var(--lo121-learning)}
+#todayActivityHistoryPanel .lo123-ladder-item[data-lo121-category="work"]{--lo123-node:var(--lo121-work)}
+#todayActivityHistoryPanel .lo123-ladder-item[data-lo121-category="fitness"]{--lo123-node:var(--lo121-fitness)}
+#todayActivityHistoryPanel .lo123-ladder-item[data-lo121-category="distraction"]{--lo123-node:var(--lo121-alert)}
+#todayActivityHistoryPanel .lo123-rail-time{
+ display:flex;align-items:flex-start;justify-content:flex-end;position:relative;
+ padding:14px 9px 17px 0;min-width:0;
+}
+#todayActivityHistoryPanel .lo123-rail-time::before{
+ content:"";position:absolute;top:0;bottom:0;right:-8px;width:2px;
+ background:var(--lo-border);
+}
+#todayActivityHistoryPanel .lo123-ladder-item:first-child .lo123-rail-time::before{top:22px}
+#todayActivityHistoryPanel .lo123-ladder-item:last-child .lo123-rail-time::before{bottom:calc(100% - 22px)}
+#todayActivityHistoryPanel .lo123-rail-time time{
+ font-size:12px;font-weight:780;font-variant-numeric:tabular-nums;
+ color:var(--lo-muted);white-space:nowrap;
+}
+#todayActivityHistoryPanel .lo123-rail-dot{
+ width:14px;height:14px;border:3px solid var(--lo-bg);
+ box-shadow:0 0 0 2px var(--lo123-node);border-radius:50%;
+ background:var(--lo123-node);
+ position:absolute;top:16px;right:-14px;z-index:1;
+}
+#todayActivityHistoryPanel .lo123-ladder-card{
+ min-width:0;margin-bottom:10px;
+ padding:12px 13px;
+ background:var(--lo-surface-2);
+ border:1px solid var(--lo-border);
+ border-top:3px solid var(--lo123-node);
+ border-radius:13px;
+}
+#todayActivityHistoryPanel .lo123-ladder-top{
+ display:flex;justify-content:space-between;align-items:start;gap:8px;
+}
+#todayActivityHistoryPanel .lo123-ladder-top strong{
+ font-size:14px;line-height:1.35;overflow-wrap:anywhere;
+}
+#todayActivityHistoryPanel .lo123-duration{
+ display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+ padding:4px 7px;border-radius:9px;background:var(--lo-surface-3);
+ color:var(--lo-text);font-size:11px;font-weight:780;white-space:nowrap;
+ font-variant-numeric:tabular-nums;
+}
+#todayActivityHistoryPanel .lo123-ladder-meta{
+ margin-top:6px;color:var(--lo-muted);font-size:11px;
+ display:flex;gap:6px;flex-wrap:wrap;line-height:1.4;
+}
+#todayActivityHistoryPanel .lo123-ladder-range{
+ margin-top:6px;color:var(--lo-muted);font-size:11px;
+ font-variant-numeric:tabular-nums;
+}
+#todayActivityHistoryPanel .lo123-ladder-item .lo-today-activity-badge{margin:0}
+#todayActivityHistoryPanel .lo-today-activities:not(.lo-today-expanded)>.lo123-ladder-item:nth-child(n+4){display:none!important}
+body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities:not(.lo-today-expanded)>.lo123-ladder-item:nth-child(-n+6){display:grid!important}
+body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities:not(.lo-today-expanded)>.lo123-ladder-item:nth-child(n+7){display:none!important}
+body[data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities.lo-today-expanded>.lo123-ladder-item{display:grid!important}
+@media(max-width:410px){
+ #todayActivityHistoryPanel .lo123-ladder-item{grid-template-columns:58px minmax(0,1fr);gap:11px}
+ #todayActivityHistoryPanel .lo123-rail-time time{font-size:11px}
+ #todayActivityHistoryPanel .lo123-ladder-card{padding:10px}
+ #todayActivityHistoryPanel .lo123-ladder-top{flex-wrap:wrap}
+ #todayActivityHistoryPanel .lo123-ladder-top strong{font-size:13px}
+ #todayActivityHistoryPanel .lo123-rail-dot{right:-13px}
+}
