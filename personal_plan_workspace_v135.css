@@ -1,0 +1,37 @@
+/* LifeOS V135 | Exclusive planning workspaces. Existing controls remain in DOM. */
+body[data-lifeos-view="schedule"] #scheduleEditorPanel{scroll-margin-top:12px}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel>[data-lo135-pane]:not([data-lo135-pane="shell"])[hidden]{display:none!important}
+body[data-lifeos-view="schedule"] #scheduleEditorPanel #lo134Shell{display:none!important}
+body[data-lifeos-view="schedule"] #lo135Workspace{background:linear-gradient(155deg,#09283a,#071326);border:1px solid #315b69;border-radius:20px;padding:16px;margin:0 0 12px;color:#f1f6fe;scroll-margin-top:10px}
+#lo135Workspace .lo135-kicker{color:#74e0c1;font-size:10px;letter-spacing:.15em;font-weight:800}
+#lo135Workspace .lo135-mainhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#lo135Workspace h2{font-size:clamp(21px,5vw,29px);line-height:1.18;letter-spacing:-.04em;margin:6px 0 15px}
+#lo135Workspace h3{font-size:18px;margin:9px 0}
+#lo135Workspace p,#lo135Workspace .lo135-intro span{color:#afc3d5;font-size:12px;line-height:1.6}
+#lo135Workspace button{font:inherit;cursor:pointer}
+#lo135Now{border:1px solid #56b99e;background:#084c41;border-radius:999px;padding:10px 13px;color:#ddffef;min-width:75px;min-height:42px;font-weight:800;white-space:nowrap}
+#lo135Workspace .lo135-menu{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 0 8px;margin:0 -2px 12px}
+#lo135Workspace .lo135-menu::-webkit-scrollbar{display:none}
+#lo135Workspace .lo135-menu button{flex:0 0 auto;padding:10px 12px;border-radius:11px;border:1px solid #365569;background:#122d42;color:#c5d8e6;min-height:43px;font-size:12px;font-weight:800}
+#lo135Workspace .lo135-menu button[aria-selected=true]{background:#08684f;border-color:#47d7ad;color:white}
+#lo135Workspace [data-lo135-screen][hidden]{display:none!important}
+#lo135Workspace .lo135-intro{display:grid;gap:3px}
+#lo135Workspace .lo135-intro strong{font-size:15px}
+#lo135Workspace .lo135-recovery-heading h3{font-size:22px;letter-spacing:-.03em}
+#lo135Workspace .lo135-review-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:14px 0}
+#lo135Workspace .lo135-review-stats>div{background:#0b2339;border:1px solid #2c5264;border-radius:12px;padding:11px 7px;min-width:0}
+#lo135Workspace .lo135-review-stats strong{display:block;font-size:22px}
+#lo135Workspace .lo135-review-stats small{font-size:10px;color:#b5cbdb;line-height:1.3}
+#lo135Workspace .lo135-review-list{display:grid;gap:9px}
+#lo135Workspace .lo135-review-card{display:flex;justify-content:space-between;gap:9px;align-items:center;padding:11px;background:#0e293c;border:1px solid #35566d;border-radius:13px;min-width:0}
+#lo135Workspace .lo135-review-card>div{min-width:0;display:grid;gap:4px}
+#lo135Workspace .lo135-review-card strong{font-size:13px;overflow-wrap:anywhere}
+#lo135Workspace .lo135-review-card small{font-size:10px;color:#adbdce;line-height:1.4}
+#lo135Workspace .lo135-review-card button,#lo135OpenTasks{flex:none;padding:9px 11px;border:1px solid #46ad94;border-radius:10px;background:#0c594b;color:#e4fff7;font-size:12px;font-weight:800;min-height:39px}
+#lo135Workspace .lo135-clear{border:1px solid #328671;border-radius:12px;padding:12px;background:#0b3936}
+#lo135Workspace .lo135-unknown,#lo135Workspace #lo135RecoveryControls{margin:12px 0;border:1px solid #31526a;border-radius:13px;padding:13px;background:#0b2035}
+#lo135Workspace details>summary{cursor:pointer;font-weight:750;line-height:1.4}
+#lo135Workspace #lo135DecisionHost{margin-top:12px}
+#lo135Workspace #lo135DecisionHost .lo75-tools{border:0!important;margin:0;padding:0;box-shadow:none}
+#lo135Workspace button:focus-visible{outline:3px solid #8ef3d5;outline-offset:2px}
+@media(max-width:380px){#lo135Workspace .lo135-mainhead h2{font-size:19px}#lo135Workspace .lo135-review-card{align-items:flex-start}#lo135Workspace .lo135-review-stats small{font-size:9px}}
