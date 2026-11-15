@@ -24,7 +24,7 @@ function entries(w,time){
  // Include a freshly added historical plan, so saving is immediately visible.
  // Recently created past plans stay in Plan history, not in the upcoming
  // feed: showing them here confused finished and overdue activity.
- return upcoming.slice(0,6);
+ return upcoming.slice(0,4);
 }
 function status(x,t){
  // A plan that started long ago must never remain labelled "Due now" because
@@ -91,8 +91,13 @@ function init(){
    if(x.remind&&!x.past&&x.start-current<=10*MIN&&x.start-current>=-MIN)void showNotice(x);
   }
   const capable='Notification'in window&&window.isSecureContext;
-  notificationButton.hidden=!capable;
-  if(capable){notificationButton.textContent=Notification.permission==='granted'?'Notifications enabled':Notification.permission==='denied'?'Notifications blocked':'Enable notifications';notificationButton.disabled=Notification.permission!=='default'}
+  const permission=capable?Notification.permission:'unavailable';
+  // A disabled "Notifications enabled" button occupied an entire row on
+  // mobile. Only show the button when the user can actually enable alerts.
+  notificationButton.hidden=!capable||permission!=='default';
+  notificationButton.disabled=permission!=='default';
+  if(!notificationButton.hidden)notificationButton.textContent='Enable notifications';
+  note.textContent=permission==='granted'?'Phone alerts enabled · delivery while the browser is closed is not guaranteed.':permission==='denied'?'Phone notifications blocked in browser settings. In-app reminders remain available.':'In-app reminders are available. Phone alerts require permission and may stop when the browser closes.';
  }
  notificationButton.addEventListener('click',async()=>{
   if(!('Notification'in window)||!window.isSecureContext)return;
