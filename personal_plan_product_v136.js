@@ -49,9 +49,11 @@ function renderCalendar(){
 function aggregate(rows,periodDays){const m=new Map();for(const x of rows){const k=cleanName(x.name);let item=m.get(k);if(!item){item={name:x.name,cat:cat(x.name),count:0,ms:0,flag:0};m.set(k,item)}item.count++;item.ms+=(+x.endAt- +x.startAt);item.flag+=suspicious(x)?1:0}return [...m.values()].sort((a,b)=>b.ms-a.ms)}
 function renderCompare(){
  const d=all(),now=Date.now(),from=now-7*86400000,to=now+7*86400000,source=compare==='reality'?d.real.filter(x=>x.startAt>=from&&x.startAt<now):compare==='planned'?d.plans.filter(x=>x.startAt>=now&&x.startAt<to):((d.x.idealRoutines||[]).map(r=>({name:r.name,startAt:now,endAt:now+Math.max(0,+r.durationMinutes||0)*60000})));
- const groups=aggregate(source),total=groups.reduce((a,x)=>a+x.ms,0),issue=compare==='reality'?source.filter(suspicious).length:compare==='planned'?d.plans.filter(x=>x.startAt>=now&&x.startAt<to).length:0;
- $('v136CompareIntro').textContent=compare==='reality'?'Finished, non-development sessions in the previous seven days. Suspect durations are flagged.':compare==='planned'?'Saved future commitments only. These are not predictions.':'Your preferred routine definitions. They are not booked activities.';
- $('v136CompareMetrics').innerHTML='<div><strong>'+source.length+'</strong><small>'+({reality:'Recorded sessions',planned:'Upcoming plans',ideal:'Routine definitions'})[compare]+'</small></div><div><strong>'+dur(total)+'</strong><small>Summed duration</small></div>';
+ const suspect=compare==='reality'?source.filter(suspicious):[];
+ const reliable=compare==='reality'?source.filter(x=>!suspicious(x)):source;
+ const groups=aggregate(reliable),total=groups.reduce((a,x)=>a+x.ms,0);
+ $('v136CompareIntro').textContent=compare==='reality'?'Finished, non-development sessions from the previous seven days. '+suspect.length+' unusually long duration(s) excluded from the chart until reviewed.':compare==='planned'?'Saved future commitments only. These are not predictions.':'Your preferred routine definitions. They are not booked activities.';
+ $('v136CompareMetrics').innerHTML='<div><strong>'+reliable.length+'</strong><small>'+({reality:'Sessions in chart',planned:'Upcoming plans',ideal:'Routine definitions'})[compare]+'</small></div><div><strong>'+dur(total)+'</strong><small>Summed duration</small></div>';
  const top=groups.slice(0,6),max=Math.max(1,...top.map(x=>x.ms));
  $('v136CompareBars').innerHTML=top.length?top.map(x=>'<div class="v136-bar-row"><div><strong>'+esc(x.name)+'</strong><span>'+dur(x.ms)+'</span></div><div class="v136-bar"><i style="width:'+Math.min(100,100*x.ms/max)+'%"></i></div>'+(x.flag?'<small>'+x.flag+' unusual duration'+(x.flag>1?'s':'')+' · verify before interpreting</small>':'')+'</div>').join(''):'<p class="v136-muted">Not enough eligible records to calculate a meaningful comparison.</p>';
  host.querySelectorAll('[data-v136-compare]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v136Compare===compare)));
