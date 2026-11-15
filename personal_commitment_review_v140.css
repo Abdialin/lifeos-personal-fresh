@@ -1,0 +1,42 @@
+/* V140: focused commitment review modal, preserves native V75 approval. */
+#v140Dialog{position:fixed;inset:0;z-index:3500;display:grid;align-items:end;justify-items:center}
+#v140Dialog[hidden]{display:none!important}
+#v140Dialog .v140-screen-dim{position:absolute;inset:0;background:#010711bc}
+#v140Dialog .v140-panel{position:relative;width:min(100%,650px);max-height:91dvh;overflow-y:auto;overscroll-behavior:contain;background:linear-gradient(155deg,#102d3b,#08182c 80%);border:1px solid #4b827b;border-radius:24px 24px 0 0;box-shadow:0 -28px 76px #000b;color:#f2f9ff;padding:10px 18px calc(20px + env(safe-area-inset-bottom,0px))}
+#v140Dialog .v140-grip{width:43px;height:5px;margin:1px auto 17px;border-radius:999px;background:#718995}
+#v140Dialog .v140-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+#v140Dialog .v140-header span{font-size:10px;letter-spacing:.14em;font-weight:900;color:#89dfc4}
+#v140Dialog .v140-header h2{font-size:22px;letter-spacing:-.04em;line-height:1.2;margin:7px 0}
+#v140Dialog .v140-header p{font-size:13px;color:#c4d6e4;margin:5px 0}
+#v140Dialog .v140-header button{min-width:42px;height:42px;border-radius:11px;background:#203e50;color:white;border:1px solid #527386;font-size:17px;cursor:pointer}
+#v140Dialog .v140-guide{margin:17px 0 11px;border-left:3px solid #65cdb0;padding:9px 12px;background:#102f37;border-radius:8px}
+#v140Dialog .v140-guide strong{font-size:13px}
+#v140Dialog .v140-guide p{font-size:11px;line-height:1.55;color:#bacddd;margin:5px 0 0}
+#v140Dialog .v140-modes{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0 13px}
+#v140Dialog .v140-modes button{display:grid;gap:6px;align-content:center;min-height:77px;padding:11px 12px;text-align:left;border:1px solid #355468;border-radius:13px;background:#0b2238;color:#deecf6;cursor:pointer}
+#v140Dialog .v140-modes button[aria-pressed=true]{border-color:#61d8b7;background:#0d5a4c;box-shadow:inset 0 0 0 1px #3fa78d}
+#v140Dialog .v140-modes strong{font-size:12px}
+#v140Dialog .v140-modes small{font-size:10px;color:#adc6d7;line-height:1.35}
+#v140Dialog .v140-modes button[aria-pressed=true] small{color:#d0f6e9}
+#v140Dialog .v140-explanation{color:#a6c5d8;font-size:11px;line-height:1.5;margin:4px 0 11px}
+#v140Dialog #lo75-debt-tools{margin:0;border:0;padding:0;background:transparent;box-shadow:none}
+#v140Dialog #lo75-debt-tools>:is(summary,.sub):not(#lo75-result){display:none!important}
+#v140Dialog #lo75-debt-tools #lo75-item,#v140Dialog #lo75-debt-tools #lo75-action{display:none!important}
+#v140Dialog #lo75-debt-tools #lo75-time-wrap label,#v140Dialog #lo75-debt-tools #lo75-adjust-wrap label{display:block!important;color:#bbd0df;font-size:11px;font-weight:730;margin:10px 0 6px}
+#v140Dialog #lo75-debt-tools input{max-width:100%;width:100%;font-size:16px;border:1px solid #45697f;border-radius:11px;background:#23354a;color:#f6faff;min-height:45px;padding:9px 11px}
+#v140Dialog #lo75-debt-tools .lo75-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 4px}
+#v140Dialog #lo75-debt-tools .lo75-actions button{min-width:0;width:100%;padding:10px 7px;min-height:45px;border-radius:10px;font-size:12px;font-weight:850}
+#v140Dialog #lo75-propose{background:#1b394b;color:#e5f4f7;border:1px solid #628b99}
+#v140Dialog #lo75-approve{background:#0b7558;color:white;border:1px solid #62d5aa}
+#v140Dialog #lo75-approve:disabled{opacity:.4;cursor:not-allowed}
+#v140Dialog #lo75-result{font-size:11px;line-height:1.5;border-radius:11px;border:1px solid #35566c;background:#0b2739;color:#cfe3ee;padding:11px;margin:11px 0}
+#v140Dialog #lo75-resolved{font-size:10px;line-height:1.5;color:#829bad;border-top:1px solid #294b5b;padding:9px 0 0}
+#v140Dialog .v140-footnote{font-size:10px;color:#99b9c9;line-height:1.55;margin:14px 0 0}
+body.v140-open{overflow:hidden!important}
+#v136Workspace .v140-audit{border:1px solid #375168;border-radius:12px;margin:4px 0 14px;background:#0c2335;padding:11px}
+#v136Workspace .v140-audit>summary{font-size:12px;font-weight:800;line-height:1.5;cursor:pointer}
+#v136Workspace .v140-audit[open]>summary{padding-bottom:12px;border-bottom:1px solid #365466}
+#v136Workspace .v140-audit>div,#v136Workspace .v140-audit #lo74-debt{max-width:100%;overflow-wrap:anywhere}
+#v140Dialog button:focus-visible{outline:3px solid #9bf4d6;outline-offset:2px}
+@media(min-width:720px){#v140Dialog{align-items:center}#v140Dialog .v140-panel{border-radius:22px;max-height:85dvh}}
+@media(max-width:370px){#v140Dialog .v140-panel{padding-left:12px;padding-right:12px}#v140Dialog .v140-modes button{padding:8px}#v140Dialog .v140-modes strong{font-size:11px}}
