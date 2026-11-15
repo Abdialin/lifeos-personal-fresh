@@ -8,6 +8,9 @@ on:
       - 'test_account_workspace_v115.py'
       - 'personal_account_api_v117.py'
       - 'test_account_api_v117.py'
+      - 'personal_account_http_v117.py'
+      - 'test_account_http_v117.py'
+      - 'server.py'
       - 'test_social_isolated_v114.py'
       - 'personal_debt_cancellation_v102.js'
       - 'personal_debt_recovery_v75.js'
@@ -34,6 +37,6 @@ jobs:
         with:
           node-version: '22'
       - name: Python isolated Friends tests
-        run: python -m unittest -v test_social_isolated_v114.py test_account_workspace_v115.py test_account_api_v117.py
+        run: python -m unittest -v test_social_isolated_v114.py test_account_workspace_v115.py test_account_api_v117.py test_account_http_v117.py
       - name: JavaScript isolated module regression tests
         run: node --test test_debt_cancellation_v102.test.cjs test_preferences_v104.test.cjs test_exercise_transfer_v105.test.cjs test_core_completion_v110.test.cjs
