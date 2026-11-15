@@ -9,7 +9,7 @@ test('live clock calculations format durations without mutating sessions',()=>{
  assert.equal(api.elapsed({segments:[{start:0,end:10000}]},10000),10000);
 });
 test('existing V77 actions remain attached; no replacement event handlers',()=>{
- for(const q of ['lo77-timer-quick','lo77-clock','lo128SessionsDetails','LifeOSReviewTimer'])assert.match(s,new RegExp(q));
+ for(const q of ['lo77-timer-quick','lo130-timer-line','lo128SessionsDetails','LifeOSReviewTimer'])assert.match(s,new RegExp(q));
  assert.doesNotMatch(s,/cloneNode|innerHTML|saveSession|deleteSession|\.sessions\.push/);
  assert.match(s,/lifeosReadOnlyWorkspace/);
 });
