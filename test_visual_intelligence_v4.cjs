@@ -15,7 +15,7 @@ assert.ok(!/\bpersist\s*\(|\blocalStorage\.setItem\s*\(/.test(visual),'Visualiza
 assert.match(visual,/Unique time covered on this date/,'Daily coverage must be explained separately');
 assert.match(visual,/Long session · review optional/,'Long activity warnings must be informational');
 assert.match(visual,/Manually corrected/,'Preserve provenance of corrected sessions');
-assert.match(html,/11:\['goals'\]/,'Goals recovery should not duplicate Insights');
+assert.match(html,/goals:data\.goals\|\|\[\]/,'Visual workspace must expose one canonical goals collection');
 const now=new Date(2026,10,11,12).getTime(),hour=3600000;
 const workspace={sessions:[{id:'a',name:'Work',status:'finished',segments:[{start:now-2*hour,end:now}]},{id:'b',name:'Study',status:'running',segments:[{start:now-hour,end:null}]}],schedule:[{name:'Gym',startAt:now+hour,endAt:now+2*hour}]};
 const day=analytics.daily(workspace,{year:2026,month:11,day:11,now});
