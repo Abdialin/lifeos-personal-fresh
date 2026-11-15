@@ -34,6 +34,7 @@ function mount(){
  const input=id=>$(id).value.trim();
  function session(){return active&&token&&Date.now()<expiryAt}
  function reset(message){
+  root.LifeOSMigrationV119?.clear?.();
   epoch++;token=null;username='';expiryAt=0;active=false;$('lo118-pass').value='';
   $('lo118-logged').hidden=true;$('lo118-auth').hidden=false;social.hidden=true;$('lo118-invites').replaceChildren();$('lo118-rows').replaceChildren();
   status.textContent=message||'Not signed in. Legacy LifeOS records are unaffected.';
@@ -68,6 +69,7 @@ function mount(){
    $('lo118-pass').value='';$('lo118-auth').hidden=true;$('lo118-logged').hidden=false;social.hidden=false;
    $('lo118-identity').textContent='Signed in as '+username+' (isolated staging account)';
    status.textContent='Account session active in this tab only. Existing LifeOS data is not migrated.';
+   root.LifeOSMigrationV119?.mount?.({host:$('lo118-logged'),accountName:name,request:(path,method='GET',data=null)=>request(path,method,data)});
   }catch(e){reset(String(e.message||e))}
  };
  $('lo118-register').onclick=async()=>{
