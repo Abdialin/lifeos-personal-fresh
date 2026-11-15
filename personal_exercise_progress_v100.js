@@ -8,7 +8,9 @@ function valid(input){
  const workoutId=String(input?.workoutId||''),exercise=String(input?.exercise||'').trim();
  const sets=Number(input?.sets),reps=Number(input?.reps),load=input?.load==null||input.load===''?null:Number(input.load);
  const date=String(input?.date||'');
- if(!workoutId||workoutId.length>100||!exercise||exercise.length>65||!/^\d{4}-\d\d-\d\d$/.test(date)||!Number.isFinite(new Date(date+'T12:00:00').getTime()))return null;
+ if(!workoutId||workoutId.length>100||!exercise||exercise.length>65||!/^\d{4}-\d\d-\d\d$/.test(date))return null;
+ const parsed=new Date(date+'T12:00:00');
+ if(!Number.isFinite(parsed.getTime())||[parsed.getFullYear(),String(parsed.getMonth()+1).padStart(2,'0'),String(parsed.getDate()).padStart(2,'0')].join('-')!==date)return null;
  if(!Number.isInteger(sets)||sets<1||sets>20||!Number.isInteger(reps)||reps<1||reps>100||load!==null&&(!Number.isFinite(load)||load<0||load>1000))return null;
  return {workoutId,exercise,date,sets,reps,load};
 }
