@@ -55,6 +55,15 @@ function attach(){
   element('small','','Search and correct sessions; historical examples remain labeled.'));
  archive.append(archiveIntro);
  moveInto(archive,'trackHistoryPanel');moveInto(archive,'lo126PastDetails');moveInto(archive,'lo126TotalsDetails');
+ // The visual analytics chart is useful, but should not block access to search
+ // and edit controls. Keep it one tap away below the history filters.
+ const chart=$('lo126WeekChart'),toolbar=history.querySelector('.lo-history-toolbar');
+ if(chart&&toolbar&&!$('lo127WeekDetails')){
+  const chartDetails=element('details','lo127-week-details');
+  chartDetails.id='lo127WeekDetails';
+  chartDetails.append(element('summary','','▥ Seven-day recording chart'));
+  toolbar.after(chartDetails);chartDetails.append(chart);
+ }
  const reviewIntro=element('div','lo127-pane-intro');
  reviewIntro.append(element('strong','','Optional analysis and tools'),
   element('small','','Technical diagnostics and detailed reports are available on demand.'));
