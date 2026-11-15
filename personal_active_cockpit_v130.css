@@ -1,0 +1,184 @@
+/* V130 • Live activity cockpit: one dominant clock, thoughtful controls. */
+body[data-lifeos-view="tracking"] #trackActivePanel.lo130-cockpit{
+ background:linear-gradient(155deg,color-mix(in srgb,var(--lo-surface) 97%,#57ccb4),var(--lo-surface));
+ padding:18px!important;border-radius:20px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel.lo130-cockpit>.head{margin:0 0 14px}
+body[data-lifeos-view="tracking"] #trackActivePanel.lo130-cockpit>.head h2{font-size:21px!important;letter-spacing:-.045em}
+body[data-lifeos-view="tracking"] #trackActivePanel.lo130-cockpit>.head .sub{font-size:11px!important}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-heading{
+ display:flex;justify-content:space-between;gap:8px;align-items:center;margin:0 0 10px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-kicker{
+ font-size:10px;letter-spacing:.12em;font-weight:850;color:#62CFB3;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-live-dot{
+ color:#60D5B4;background:color-mix(in srgb,#60D5B4 10%,var(--lo-surface));
+ font-size:10px;font-weight:800;border-radius:30px;padding:7px 10px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick{
+ border-radius:18px!important;padding:17px!important;
+ background:radial-gradient(circle at 90% 10%,color-mix(in srgb,#3DAF96 18%,var(--lo-surface-2)),var(--lo-surface-2) 65%)!important;
+ border:1px solid color-mix(in srgb,#52C9A7 42%,var(--lo-border))!important;
+ box-shadow:0 12px 22px #00000017,inset 0 1px 0 #ffffff10!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick .lo130-timer-line{
+ display:grid!important;grid-template-columns:19px minmax(0,1fr);
+ column-gap:9px;row-gap:10px;align-items:center;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick .lo77-led{
+ font-size:13px;color:#50D0A9;grid-column:1;grid-row:1;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick .lo77-name-group{
+ min-width:0;grid-column:2;grid-row:1;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick #lo77-name{
+ font-size:clamp(17px,4.8vw,23px);font-weight:850;line-height:1.2;letter-spacing:-.025em;
+ overflow-wrap:anywhere;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick #lo77-count{
+ font-size:11px;color:#91BDAF;margin-top:4px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick #lo77-clock{
+ grid-column:1/-1;grid-row:2;
+ font-size:clamp(36px,9vw,53px)!important;font-weight:820!important;
+ text-align:center;letter-spacing:.02em;
+ font-variant-numeric:tabular-nums;color:var(--lo-text);
+ padding:10px 0 8px;margin:0;border-bottom:1px solid var(--lo-border);
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick .lo130-actions{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:9px;margin:12px 0 0;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick .lo130-actions button{
+ min-height:46px;min-width:0!important;width:100%;margin:0!important;
+ font-size:12px!important;font-weight:780!important;padding:10px!important;
+ border-radius:12px!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick .lo130-actions [data-v77-action="finish"]{
+ grid-column:1/-1;min-height:48px;
+ background:color-mix(in srgb,#EF7E9B 13%,var(--lo-surface-2))!important;
+ color:#F4A0B4!important;border:1px solid color-mix(in srgb,#EF7E9B 35%,var(--lo-border))!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick #lo77-status{
+ font-size:11px;line-height:1.45;margin:8px 0 0;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick #lo77-status:empty{display:none}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo130OtherSessions{
+ margin:12px 0 0;padding:12px;border:1px solid var(--lo-border);
+ border-radius:14px;background:var(--lo-surface-2);
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo130OtherSessions[hidden]{display:none!important}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-other-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ font-size:10px;letter-spacing:.09em;color:var(--lo-muted);margin-bottom:8px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-other-heading span{
+ background:color-mix(in srgb,#69C7AE 14%,var(--lo-surface));
+ color:#7DD9BD;border-radius:20px;padding:2px 8px;font-size:12px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-session-tile{
+ width:100%;min-height:64px;border-radius:12px;margin:0 0 7px;
+ display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:10px;
+ padding:9px 10px;border:1px solid var(--lo-border);
+ background:var(--lo-surface);color:var(--lo-text);text-align:left;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-session-icon{
+ background:color-mix(in srgb,#A890E8 14%,var(--lo-surface-2));
+ color:#BBA0F8;width:36px;height:36px;border-radius:11px;
+ display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-session-middle{display:grid;gap:4px;min-width:0}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-session-middle strong{
+ font-size:12px;font-weight:780;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-session-middle small{
+ font-size:10px;color:var(--lo-muted)
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-session-duration{
+ font-variant-numeric:tabular-nums;font-weight:800;font-size:14px;white-space:nowrap;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-other-empty{
+ color:var(--lo-muted);font-size:11px;margin:5px 0;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo128SessionsDetails{
+ margin:11px 0!important;border-radius:13px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo128SessionsDetails>summary{
+ font-size:12px!important;min-height:46px;font-weight:750;line-height:1.3;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo126TimerSettings{
+ margin:11px 0 0!important;border-radius:13px;background:var(--lo-surface-2);
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo126TimerSettings>summary{
+ font-size:12px!important;min-height:46px;padding:12px!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo126TimerSettings .lo126-help{
+ font-size:11px!important;line-height:1.45;margin:11px!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration.lo130-smart{
+ padding:14px!important;margin:8px!important;border-radius:15px!important;
+ background:var(--lo-surface)!important;border:1px solid var(--lo-border)!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration h3{
+ font-size:18px!important;letter-spacing:-.025em;margin:0 0 7px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration .sub{
+ font-size:11px!important;line-height:1.5!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration>label{
+ display:block;margin:14px 0 6px!important;
+ font-size:11px;font-weight:730;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration .field{
+ min-height:45px!important;margin:0 0 5px!important;
+ border-radius:11px!important;font-size:14px!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration .lo130-preset-row{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:8px 0 5px;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration .lo130-preset{
+ border:1px solid var(--lo-border);border-radius:10px;min-height:39px;
+ background:var(--lo-surface-2);color:var(--lo-muted);font-size:12px;font-weight:760;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration .lo130-preset[aria-pressed="true"]{
+ border-color:#42BBA0;background:color-mix(in srgb,#42BBA0 18%,var(--lo-surface-2));color:#A9F4E2;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration .lo130-mode-tip{
+ margin:7px 0 3px;color:var(--lo-muted);font-size:10px;line-height:1.45;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration .lo78-actions{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration .lo78-actions button{
+ min-width:0;width:100%;min-height:44px!important;font-size:12px!important;
+ padding:8px!important;margin:0!important;border-radius:10px!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration #lo78-save{
+ grid-column:1/-1;font-weight:800!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration #lo78-extend,
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration #lo78-finish{
+ font-size:12px!important;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration #lo78-alert:empty{display:none!important}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration #lo130SafetyNotes{
+ border:1px solid var(--lo-border);border-radius:10px;margin:10px 0 0;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration #lo130SafetyNotes>summary{
+ padding:11px 12px;font-size:11px;color:var(--lo-muted);cursor:pointer;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration #lo130SafetyNotes>small{
+ display:block;margin:10px;line-height:1.5;
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-session-tile:focus-visible,
+body[data-lifeos-view="tracking"] #trackActivePanel .lo130-preset:focus-visible{
+ outline:3px solid var(--lo-accent);outline-offset:2px;
+}
+@media(max-width:380px){
+ body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick{padding:12px!important}
+ body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick #lo77-clock{font-size:34px!important}
+ body[data-lifeos-view="tracking"] #trackActivePanel .lo130-session-duration{font-size:12px}
+ body[data-lifeos-view="tracking"] #trackActivePanel #lo78-duration.lo130-smart{padding:10px!important}
+}
+@media(prefers-reduced-motion:reduce){body[data-lifeos-view="tracking"] #trackActivePanel .lo130-session-tile{transition:none}}
