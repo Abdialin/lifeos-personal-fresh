@@ -73,7 +73,7 @@ function mount(){
  function saveDraft(){const result=resume?.save?.(localStorage,draft,step);if(result&&!result.ok)message(result.reason);else trigger.textContent='Resume guided setup'}
  const ws=()=>{try{return root.lifeosReadOnlyWorkspace?.()||{}}catch{return {}}};
  function message(s){$('lo81-message').textContent=s}
- function open(){const current=resume?.read?.(localStorage);if(current?.ok){Object.assign(draft,current.draft);step=current.step}overlay.hidden=false;document.body.classList.add('lo81-open');redraw()}
+ function open(){root.__lifeosV85OnboardingSaved=false;const current=resume?.read?.(localStorage);if(current?.ok){Object.assign(draft,current.draft);step=current.step}overlay.hidden=false;document.body.classList.add('lo81-open');redraw()}
  function close(){if(!root.__lifeosV85OnboardingSaved)saveDraft();overlay.hidden=true;document.body.classList.remove('lo81-open');try{sessionStorage.setItem('lifeos.personal.onboarding.offered.v81','1')}catch{}}
  trigger.addEventListener('click',open);
  try{const url=new URL(root.location.href);if(url.searchParams.get('resumeSetup')==='1'){root.setTimeout(open,100);url.searchParams.delete('resumeSetup');root.history.replaceState(null,'',url.pathname+url.search+url.hash)}}catch{}$('lo81-close').addEventListener('click',close);
@@ -144,6 +144,7 @@ function mount(){
   if(step<STEPS.length-1){step++;saveDraft();redraw();return}
   const latest=prepare(draft,ws(),Date.now());
   if(!latest.ok)return message(latest.error);
+  if(!resume?.sameReview?.(approved,latest)){redraw();return message('The schedule changed since this preview. Please review the updated first-week proposal before approving.')}
   // Revalidate against current workspace at approval time; no write from the UI.
   const detail={draft:JSON.parse(JSON.stringify(draft)),review:latest,result:{ok:false,message:'Setup not saved.'}};
   if(!root.confirm('Approve '+latest.plans.length+' first-week plans, '+latest.habits.length+' habits and '+latest.tasks.length+' tasks? No tracked activities will be generated.'))return message('Setup not applied.');
