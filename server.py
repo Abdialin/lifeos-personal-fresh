@@ -16,6 +16,7 @@ import google_calendar as gcal
 import calendar_audit_store as audit_store
 import atomic_calendar
 import personal_preferences_store_v89 as preference_store
+import personal_account_http_v117 as account_http
 
 ROOT = Path(__file__).resolve().parent
 DB = Path(os.environ.get('LIFEOS_DB', str(ROOT / 'data' / 'lifeos.sqlite3')))
@@ -25,6 +26,24 @@ USERNAME = os.environ.get('LIFEOS_USERNAME', '')
 PASSWORD = os.environ.get('LIFEOS_PASSWORD', '')
 PORT = int(os.environ.get('PORT', '8080'))
 lock = threading.RLock()
+# Account routes are OFF unless explicitly enabled. They never use the legacy
+# shared activity state, Basic Auth sync token, or automatic migration.
+ACCOUNT_ENABLED = os.environ.get('LIFEOS_ACCOUNT_API_ENABLED','0') == '1'
+ACCOUNT_ORIGIN = os.environ.get('LIFEOS_ACCOUNT_API_ORIGIN','')
+ACCOUNT_DB_PATH = os.environ.get('LIFEOS_ACCOUNT_DB_PATH','')
+account_boundary = None
+def initialize_account_boundary():
+    global account_boundary
+    if not ACCOUNT_ENABLED:
+        return
+    if DATABASE_URL:
+        raise RuntimeError('V117 account API requires an independently reviewed PostgreSQL adapter; disabled with legacy PostgreSQL storage')
+    if not ACCOUNT_ORIGIN or not ACCOUNT_DB_PATH:
+        raise RuntimeError('V117 account API requires HTTPS origin and separate absolute persistent SQLite path')
+    if Path(ACCOUNT_DB_PATH).resolve() == DB.resolve():
+        raise RuntimeError('Account database must not equal the legacy LifeOS database')
+    account_boundary = account_http.AccountBoundary(ACCOUNT_DB_PATH, ACCOUNT_ORIGIN)
+
 
 if DATABASE_URL:
     if not DATABASE_URL.startswith(('postgresql://', 'postgres://')):
@@ -179,6 +198,28 @@ class Handler(BaseHTTPRequestHandler):
             return False
         return True
 
+    def handle_account_request(self, method, path):
+        if not path.startswith(account_http.PREFIX+'/'):
+            return False
+        if account_boundary is None:
+            self.reply(404, {'error':'Not found'})
+            return True
+        raw=None
+        if method in ('POST','PUT'):
+            try:
+                n=int(self.headers.get('Content-Length','0'))
+            except ValueError:
+                self.reply(400,{'error':'Invalid content length'});return True
+            if n<1 or n>account_http.MAX_REQUEST:
+                self.reply(413,{'error':'Account request exceeds limit'});return True
+            raw=self.rfile.read(n)
+        try:
+            status,result=account_boundary.route(method,path,self.headers,raw,client=self.client_address[0])
+            self.reply(status,result)
+        except Exception:
+            self.reply(503,{'error':'Account service unavailable; no legacy data changed'})
+        return True
+
     def do_HEAD(self):
         # HTTP metadata checks must never return activity payloads.
         # Preserve the private-access boundary on the main application.
@@ -223,6 +264,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if not self.private_access():
             return
+        if self.handle_account_request('GET',path):return
         if path == '/api/preferences/v89':
             if not self.auth(): return
             try:
@@ -356,6 +398,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if not self.private_access(): return
+        if self.handle_account_request('POST',urlparse(self.path).path):return
         if urlparse(self.path).path == '/api/calendar/document-preview':
             # Stateless preview. No records are saved, approved or synchronized here.
             try:
@@ -410,6 +453,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self.private_access():
             return
         path = urlparse(self.path).path
+        if self.handle_account_request('PUT',path):return
         if path not in ('/api/state','/api/preferences/v89'):
             self.reply(404, {'error': 'Not found'})
             return
@@ -468,6 +512,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
+    initialize_account_boundary()
     # Backend mode only: never log database URLs, credentials, or activity content.
     # flush=True ensures Render captures this diagnostic before normal request logs.
     print('LifeOS startup | storage_backend=' + ('postgresql' if DATABASE_URL else 'sqlite') + ' | configured_by=' + ('LIFEOS_DATABASE_URL' if DATABASE_URL else 'LIFEOS_DB'), flush=True)
