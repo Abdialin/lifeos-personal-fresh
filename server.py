@@ -214,7 +214,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.reply(413,{'error':'Account request exceeds limit'});return True
             raw=self.rfile.read(n)
         try:
-            status,result=account_boundary.route(method,path,self.headers,raw,client=self.client_address[0])
+            status,result=account_boundary.route(method,self.path,self.headers,raw,client=self.client_address[0])
             self.reply(status,result)
         except Exception:
             self.reply(503,{'error':'Account service unavailable; no legacy data changed'})
@@ -265,6 +265,9 @@ class Handler(BaseHTTPRequestHandler):
         if not self.private_access():
             return
         if self.handle_account_request('GET',path):return
+        if path == '/api/account/v117/status':
+            self.reply(200, {'enabled':account_boundary is not None})
+            return
         if path == '/api/preferences/v89':
             if not self.auth(): return
             try:
