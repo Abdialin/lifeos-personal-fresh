@@ -79,7 +79,7 @@ function createDistractionDesign(){
    });controls.append(b);
   }
   dashboard.append(controls);
-  dashboard.append(el('div','lo129-stat-grid')).append();
+  dashboard.append(el('div','lo129-stat-grid'));
   const chartCard=el('div','lo129-chart-card');
   chartCard.append(el('div','lo129-chart-title','Recorded distraction by day'),el('div','lo129-chart-sub','Daily recorded duration · not unlogged time'));
   chartCard.append(el('div','lo129-chart-slot'));
@@ -96,6 +96,12 @@ function createDistractionDesign(){
   deep=el('details','lo129-deep');deep.id='lo129DistractionDeep';
   deep.append(el('summary','','Detailed statistics & original reports'));
   shell.append(deep);
+ }
+ // Move every verbose legacy analytics child behind the second-level drawer,
+ // not just the V94 report. The existing classification forms and handlers stay intact.
+ for(const node of [...shell.children]){
+  if(node===dashboard||node===deep||node.tagName==='SUMMARY'||node.classList?.contains('lo128-context'))continue;
+  deep.append(node);
  }
  // Move existing large report *inside* a second-level drawer.
  // Its original select and handlers continue running; nothing is cloned.
