@@ -1,0 +1,11 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const js=fs.readFileSync('personal_plan_studio_v133.js','utf8');
+const css=fs.readFileSync('personal_plan_studio_v133.css','utf8');
+const html=fs.readFileSync('index.html','utf8');
+const server=fs.readFileSync('server.py','utf8');
+test('visual Plan assets load and are served',()=>{assert.match(html,/personal_plan_studio_v133\.css/);assert.match(html,/personal_plan_studio_v133\.js/);assert.match(server,/personal_plan_studio_v133\.js/);assert.match(server,/personal_plan_studio_v133\.css/);});
+test('code parses and defers until DOM is ready',()=>{const calls=[];const context={document:{readyState:'loading',addEventListener:(name,fn)=>calls.push([name,fn])},window:{},Date,setInterval:()=>{throw Error('premature interval')},console};vm.runInNewContext(js,context,{timeout:2000});assert.equal(calls[0][0],'DOMContentLoaded');});
+test('controls preserve original calendar and schedule editing',()=>{for(const k of ['lo11ScheduleCalendar','scheduleDay','v7TogglePlanForm','loUpcomingPlans','lifeosSelectedDaySummary','scheduleList','lifeosReadOnlyWorkspace'])assert.ok(js.includes(k),k);assert.match(js,/picker\.dispatchEvent\(new Event\('change'/);assert.match(js,/data-lo133-mode="three"/);assert.match(js,/data-lo133-mode="week"/);assert.match(js,/data-lo133-mode="month"/);});
+test('no direct mutation of personal activities or calendar changes',()=>{assert.doesNotMatch(js,/localStorage\.setItem|sessionStorage\.setItem|fetch\(|postMessage\(|\.push\(\{[^}]*startAt/);assert.match(js,/Duration needs review/);assert.match(js,/Empty does not mean available/);});
+test('mobile week is swipable and accessibility supported',()=>{assert.match(css,/scroll-snap-type:x mandatory/);assert.match(css,/prefers-reduced-motion/);assert.match(js,/aria-pressed/);assert.match(css,/:focus-visible/);});
