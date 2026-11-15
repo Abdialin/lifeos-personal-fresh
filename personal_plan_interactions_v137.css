@@ -1,0 +1,60 @@
+/* LifeOS V137 — dense visual calendar, activity sheet, timer attention. */
+#v136Workspace .v136-event{padding:5px 0!important;grid-template-columns:47px 11px minmax(0,1fr)!important;gap:8px!important}
+#v136Workspace .v136-event-main.v137-activity-open{width:100%;text-align:left;display:block;min-height:64px;border:1px solid #314f68;border-radius:13px;padding:10px 12px;background:#0b2236;color:#ebf6ff;transition:background .15s,border-color .15s}
+#v136Workspace .v136-event-main.v137-activity-open:active{background:#143d4d}
+#v136Workspace .v136-event-main.v137-activity-open:hover{border-color:#59bea9}
+#v136Workspace .v136-event-main.v137-activity-open:focus-visible{outline:2px solid #8defd2;outline-offset:2px}
+#v136Workspace .v136-event-main.v137-activity-open>div{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#v136Workspace .v136-event-main.v137-activity-open strong{font-size:12px}
+#v136Workspace .v136-event-main.v137-activity-open small{font-size:10px;margin-top:3px}
+#v136Workspace .v136-event-time{font-size:11px;padding-top:8px}
+#v136Workspace .v136-event-rail i{margin-top:8px}
+#v136Workspace .v136-event-rail::before{top:17px}
+#v136Workspace .v136-day-summary{padding:11px 2px 5px}
+#v136Workspace .v136-day-summary h3{font-size:15px}
+#v136Workspace #v136Timeline{margin-top:3px}
+#v136Workspace .v136-days.v137-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;overflow:visible}
+#v136Workspace .v137-month-grid .v136-day{width:100%;min-width:0;min-height:53px;padding:4px 0;flex-basis:auto}
+#v136Workspace .v137-month-grid .v136-day span{font-size:14px}
+#v136Workspace .v137-month-grid .v136-day strong{font-size:9px}
+#v136Workspace .v137-month-grid .v136-day i{font-size:8px}
+#v136Workspace .v136-pill{font-size:9px}
+#v136Workspace .v136-kpi-row{gap:6px}
+#v136Workspace .v136-kpi-row>div{padding:10px 7px}
+#v136Workspace .v136-kpi-row strong{font-size:21px}
+#v136Workspace .v136-next{padding:11px 12px}
+#v136Workspace .v136-card{padding:15px 12px}
+#v137ActivityModal{position:fixed;inset:0;z-index:3100;display:grid;align-items:end;justify-items:center}
+#v137ActivityModal[hidden]{display:none!important}
+#v137ActivityModal .v137-backdrop{position:absolute;inset:0;background:#020817b8}
+#v137ActivityModal .v137-modal-sheet{position:relative;background:linear-gradient(150deg,#0d2c3b,#091c32 75%);width:min(100%,620px);border:1px solid #4c847f;border-radius:24px 24px 0 0;max-height:91dvh;overflow-y:auto;overscroll-behavior:contain;color:#eefaff;box-shadow:0 -22px 60px #0008;padding:10px 19px calc(27px + env(safe-area-inset-bottom,0px))}
+#v137ActivityModal .v137-modal-bar{height:5px;width:44px;border-radius:999px;background:#526f80;margin:0 auto 17px}
+#v137ActivityModal .v137-modal-heading{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:18px}
+#v137ActivityModal .v137-modal-heading span{color:#69dcb7;font-size:10px;letter-spacing:.14em;font-weight:900}
+#v137ActivityModal .v137-modal-heading h2{font-size:24px;line-height:1.2;letter-spacing:-.04em;margin:7px 0 0}
+#v137ActivityModal .v137-close{flex:none;border:1px solid #45677b;border-radius:11px;background:#14344a;color:#d8f2f2;width:43px;height:43px;cursor:pointer}
+#v137ActivityModal .v137-datetime{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+#v137ActivityModal .v137-datetime span{padding:12px;background:#0b2237;border:1px solid #34556a;border-radius:12px;color:#a5c4d4;font-size:11px;min-width:0}
+#v137ActivityModal .v137-datetime strong{display:block;color:#fff;font-size:13px;margin-top:7px;line-height:1.5}
+#v137ActivityModal .v137-detail-line{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #2b4b5d;padding:15px 0;font-size:13px}
+#v137ActivityModal .v137-detail-line>span{color:#b4cadb}
+#v137ActivityModal .v137-detail-line strong{text-align:right}
+#v137ActivityModal .v137-muted{font-size:11px;line-height:1.55;color:#adbed0;margin:14px 0}
+#v137ActivityModal .v137-note{padding:13px;background:#0b243b;border-radius:12px;font-size:12px;margin-top:12px;white-space:pre-wrap}
+#v137ActivityModal .v137-primary{width:100%;min-height:48px;border:1px solid #57c4a0;border-radius:12px;background:#08745b;color:white;font-weight:800;font-size:14px;cursor:pointer}
+#v137ActivityModal .v137-actions-secondary{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+#v137ActivityModal .v137-actions-secondary button{min-height:44px;border:1px solid #466a7e;border-radius:11px;background:#123149;color:#def2fb;font-size:12px;font-weight:750;cursor:pointer}
+#v137ActivityModal .v137-actions-secondary button:last-child{border-color:#73524d;color:#edb9aa;background:#2b252d}
+#v137ActivityModal .v137-link{border:0;background:none;color:#97e7d5;text-decoration:underline;padding:14px 0;font-size:12px;cursor:pointer}
+#v137ActivityModal .v137-status:not(:empty){background:#2c2830;color:#ffd1a1;border-radius:11px;padding:11px;font-size:12px;line-height:1.55}
+body.v137-modal-open{overflow:hidden!important}
+#v136Workspace .v137-timer-notice{border:1px solid #b08b54;background:#392c24;border-radius:14px;padding:12px;display:grid;grid-template-columns:26px minmax(0,1fr);gap:7px 10px;color:#ffe5bb;margin-top:11px}
+#v136Workspace .v137-notice-icon{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#85532e;font-weight:900}
+#v136Workspace .v137-timer-notice strong{display:block;font-size:12px}
+#v136Workspace .v137-timer-notice small{display:block;font-size:11px;color:#e4cdb4;margin-top:5px;line-height:1.5}
+#v136Workspace .v137-notice-actions{grid-column:2;display:flex;gap:8px;flex-wrap:wrap}
+#v136Workspace .v137-notice-actions button{font-size:11px;font-weight:850;border:1px solid #9d8060;color:#ffe4c7;background:#533a29;border-radius:10px;padding:8px 11px;min-height:36px}
+#v136Workspace .v137-notice-actions button:first-child{background:#0b6e5a;border-color:#5fc5a9;color:#fff}
+#v136Workspace .v137-explainer{margin:0 0 10px;color:#ffe2b5;background:#3a3027;border-left:3px solid #e6ad5c;border-radius:8px;padding:11px;font-size:12px;line-height:1.5}
+@media(min-width:720px){#v137ActivityModal{align-items:center}#v137ActivityModal .v137-modal-sheet{border-radius:22px;max-height:85dvh}}
+@media(max-width:360px){#v137ActivityModal .v137-modal-sheet{padding-left:12px;padding-right:12px}#v137ActivityModal .v137-datetime strong{font-size:12px}}
