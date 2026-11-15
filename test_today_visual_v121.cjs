@@ -12,9 +12,9 @@ assert.doesNotThrow(()=>new Function(visual),'Timeline JavaScript should parse')
 assert.doesNotThrow(()=>new Function(reminders),'Reminder JavaScript should parse');
 assert.match(html,/href="personal_today_visual_refresh_v121\.css"/,'New stylesheet should load');
 assert.match(server,/'personal_today_visual_refresh_v121\.css'/,'Stylesheet should be served');
-assert.match(reminders,/lo121-next-grid/,'Two next-up cards should be present');
-assert.match(reminders,/lo121-more/,'Additional reminders should be progressive disclosure');
-assert.match(reminders,/if\(index<2\)primary\.append/,'Only two primary cards should appear');
+assert.match(reminders,/lo124-next/,'Next-up area should be present');
+assert.match(reminders,/lo124-more/,'Additional reminders should use progressive disclosure');
+assert.match(reminders,/if\(future\.length\)nextGroup\.append\(makeRow\(future\[0\],true\)\)/,'Only future activity can be featured');
 assert.match(reminders,/presentation===lastPresentation/,'Reminder refresh should preserve controls');
 assert.match(visual,/lo121-time-composition/,'Unique versus overlap composition should render');
 assert.match(visual,/todayCategory\(r\.name\)/,'Visual categories should be read-only');
