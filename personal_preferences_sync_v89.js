@@ -4,13 +4,13 @@
 (function(root,factory){const api=factory(root);if(typeof module==='object'&&module.exports)module.exports=api;else root.LifeOSPreferencesSyncV89=api;})(typeof globalThis!=='undefined'?globalThis:this,function(root){
 'use strict';
 const ENDPOINT='/api/preferences/v89';
-const ALLOWED=['durations','workouts'];
+const ALLOWED=['durations','workouts','exercisePlans'];
 function cloudSubset(local){const out={};for(const k of ALLOWED)if(Object.prototype.hasOwnProperty.call(local||{},k))out[k]=local[k];return out}
 function mergeRemote(remote,local,selected){const result={...cloudSubset(remote)};for(const name of selected)if(ALLOWED.includes(name)&&Object.prototype.hasOwnProperty.call(local,name))result[name]=local[name];return result}
 function mount(){
  const host=document.getElementById('lo88-preferences');if(!host||document.getElementById('lo89-cloud'))return;
  const section=document.createElement('section');section.id='lo89-cloud';
- section.innerHTML='<h4>Single-workspace cloud preferences · optional</h4><p>This uses your existing LifeOS private workspace and sync token. It is not a multi-user account service. Only duration profiles and favorite workout presets can be exchanged. Device notification permissions stay on each phone.</p><div><button type="button" class="btn outline" id="lo89-load">Compare cloud preferences</button></div><div id="lo89-preview" hidden></div><p id="lo89-status" role="status"></p><small>For another device: use the existing server sync token, compare cloud settings, review differences, and approve each direction. Cloud conflicts will not be silently overwritten. No activity history is included.</small>';
+ section.innerHTML='<h4>Single-workspace cloud preferences · optional</h4><p>This uses your existing LifeOS private workspace and sync token. It is not a multi-user account service. Duration profiles, favorite workout presets and exercise plan templates can be exchanged. Device notification permissions stay on each phone.</p><div><button type="button" class="btn outline" id="lo89-load">Compare cloud preferences</button></div><div id="lo89-preview" hidden></div><p id="lo89-status" role="status"></p><small>For another device: use the existing server sync token, compare cloud settings, review differences, and approve each direction. Cloud conflicts will not be silently overwritten. No activity history is included.</small>';
  host.append(section);
  const el=id=>section.querySelector('#'+id),status=el('lo89-status'),preview=el('lo89-preview');
  const hub=root.LifeOSPreferencesV88;
@@ -47,7 +47,7 @@ function mount(){
    const there=exists?remote[name]:null;
    const here=Object.prototype.hasOwnProperty.call(local,name)?local[name]:null;
    const diff=JSON.stringify(here)!==JSON.stringify(there);
-   const row=document.createElement('p');row.textContent=(name==='durations'?'Duration profiles':'Workout favorites')+': '+(diff?'different':'matches')+' · cloud '+(exists?'has settings':'empty')+' · this device '+(here===null?'empty':'has settings');preview.append(row);
+   const row=document.createElement('p');row.textContent=(name==='durations'?'Duration profiles':name==='exercisePlans'?'Exercise plan templates':'Workout favorites')+': '+(diff?'different':'matches')+' · cloud '+(exists?'has settings':'empty')+' · this device '+(here===null?'empty':'has settings');preview.append(row);
   }
   const receive=document.createElement('div');receive.innerHTML='<strong>Restore selected cloud groups on this device</strong>';preview.append(receive);
   const send=document.createElement('div');send.innerHTML='<strong>Upload selected local groups to cloud</strong>';preview.append(send);
@@ -56,7 +56,7 @@ function mount(){
     if(!Object.prototype.hasOwnProperty.call(values,name))continue;
     const label=document.createElement('label');label.style.display='block';
     const box=document.createElement('input');box.type='checkbox';box.value=name;box.dataset.direction=prefix;
-    label.append(box,document.createTextNode(' '+(name==='durations'?'Duration profiles':'Workout favorites')));parent.append(label);
+    label.append(box,document.createTextNode(' '+(name==='durations'?'Duration profiles':name==='exercisePlans'?'Exercise plan templates':'Workout favorites')));parent.append(label);
    }
   }
   checkboxes(receive,remote,'receive');checkboxes(send,local,'send');
