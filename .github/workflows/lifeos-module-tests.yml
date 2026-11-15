@@ -1,0 +1,35 @@
+name: LifeOS Personal isolated module tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'personal_social_isolated_v114.py'
+      - 'test_social_isolated_v114.py'
+      - 'personal_debt_cancellation_v102.js'
+      - 'personal_debt_recovery_v75.js'
+      - 'personal_exercise_progress_v100.js'
+      - 'personal_core_completion_v110.js'
+      - 'personal_exercise_transfer_v105.js'
+      - 'personal_preferences_hub_v88.js'
+      - 'personal_preferences_sync_v89.js'
+      - 'personal_exercise_plans_v95.js'
+      - 'test_*.test.cjs'
+      - '.github/workflows/lifeos-module-tests.yml'
+  workflow_dispatch:
+jobs:
+  isolated-domain-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Python isolated Friends tests
+        run: python -m unittest -v test_social_isolated_v114.py
+      - name: JavaScript isolated module regression tests
+        run: node --test test_debt_cancellation_v102.test.cjs test_preferences_v104.test.cjs test_exercise_transfer_v105.test.cjs test_core_completion_v110.test.cjs
