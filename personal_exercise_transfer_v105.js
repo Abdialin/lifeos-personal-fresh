@@ -37,7 +37,7 @@ function inspect(raw,workouts,existing=[],progress=root.LifeOSExerciseProgressV1
   note:'Only explicitly selected exercise details can be restored; imported workouts are never created.'};
 }
 function exportData(records,now=new Date().toISOString()){
- const entries=(Array.isArray(records)?records:[]).map(validateEntry).filter(Boolean).slice(0,MAX);
+ const entries=(Array.isArray(records)?records:[]).map(row=>validateEntry(row)).filter(Boolean).slice(0,MAX);
  return {format:FORMAT,version:VERSION,scope:'exercise-progress-only',exportedAt:now,entries};
 }
 function applySelected(store,review,selected,workouts,progress=root.LifeOSExerciseProgressV100){
