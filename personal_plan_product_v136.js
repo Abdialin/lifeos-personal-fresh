@@ -28,7 +28,7 @@ function tabs(){host.querySelectorAll('[data-v136-tab]').forEach(b=>b.setAttribu
 function overview(){const d=all(),begin=startday(datekey(Date.now())),finish=startday(datekey(begin+86400000)),plans=d.plans.filter(x=>intersect(x,begin,finish)),records=d.real.filter(x=>intersect(x,begin,finish)),alerts=records.filter(suspicious).length;
  const next=d.plans.filter(x=>+x.startAt>Date.now()).sort((a,b)=>a.startAt-b.startAt)[0];
  $('v136TodayOverview').innerHTML='<div class="v136-kpi-row"><div><strong>'+plans.length+'</strong><span>Planned today</span></div><div><strong>'+records.length+'</strong><span>Verified sessions</span></div><div><strong>'+alerts+'</strong><span>Review duration</span></div></div>'+
- '<div class="v136-next"><div><small>NEXT COMMITMENT</small><strong>'+esc(next?.name||'No upcoming commitments')+'</strong><span>'+ (next?esc(new Date(+next.startAt).toLocaleString(undefined,{weekday:'short',hour:'2-digit',minute:'2-digit'})):'Nothing scheduled')+'</span></div><button type="button" data-v136-action="new" aria-label="Add plan">＋</button></div>';
+ '<div class="v136-next"><div><small>NEXT COMMITMENT</small><strong>'+esc(next?.name||'No upcoming commitments')+'</strong><span>'+ (next?esc(new Date(+next.startAt).toLocaleString(undefined,{weekday:'short',hour:'2-digit',minute:'2-digit'})):'Nothing scheduled')+'</span></div><button type="button" data-v136-action="next" aria-label="Show next commitment">→</button></div>';
 }
 function periodKeys(){if(range==='month'){const d=new Date(anchor+'T12:00:00');d.setDate(1);return Array.from({length:new Date(d.getFullYear(),d.getMonth()+1,0).getDate()},(_,i)=>datekey(new Date(d.getFullYear(),d.getMonth(),i+1)))}const n=range==='three'?3:range==='week'?7:1;const d=new Date(anchor+'T12:00:00');if(range==='week')d.setDate(d.getDate()-(d.getDay()+6)%7);return Array.from({length:n},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return datekey(x)})}
 function dateShift(dir){const d=new Date(anchor+'T12:00:00');if(range==='month'){d.setDate(1);d.setMonth(d.getMonth()+dir)}else d.setDate(d.getDate()+dir*(range==='week'?7:range==='three'?3:1));anchor=datekey(d);showAll=false;renderCalendar()}
@@ -91,14 +91,20 @@ function makeAdvanced(){
  for(const n of contents){const key=categorize(n);const slot=$('v136Old-'+key)||$('v136Old-more');if(slot)slot.append(n)}
  const form=$('scheduleForm');if(form){const entry=$('v136PlanForm');if(entry)entry.append(form)}
  const picker=$('scheduleDay');if(picker){picker.value=anchor}
+ // Move the original V12 *outer* tools and development wrappers, not only their children.
+ // Their linked inputs and listeners remain in place and accessible under More.
+ const advanced=$('v136Old-more');
+ for(const id of ['lo12CalendarTools','lo12DevDetails']){
+  const outer=$(id);if(outer&&advanced&&!advanced.contains(outer))advanced.append(outer);
+ }
  // These legacy schedule panels used to appear BEFORE the calendar, forcing long scrolling.
  // Keep their original nodes and approval handlers, but present them under More.
  for(const id of ['calendarHandoffPanel','calendarChangePanel','smartSchedulePanel','calendarReviewPanel']){
   const panel=$(id),slot=$('v136Old-more');if(panel&&slot&&!slot.contains(panel))slot.append(panel);
  }
 }
-function screen(tab){selected=tab;tabs();if(tab==='calendar')renderCalendar();if(tab==='compare')renderCompare();if(tab==='improve')renderImprove();if(tab==='review')renderReview();window.scrollTo({top:0,behavior:'instant'})}
-function openForm(){screen('calendar');const box=$('v136PlanFormDetails');box.open=true;const form=$('scheduleForm'),toggle=$('v7TogglePlanForm');if(form?.hidden)toggle?.click();box.scrollIntoView({behavior:'smooth',block:'start'})}
+function screen(tab){selected=tab;tabs();if(tab==='calendar')renderCalendar();if(tab==='compare')renderCompare();if(tab==='improve')renderImprove();if(tab==='review')renderReview();host.scrollIntoView({block:'start',behavior:'instant'})}
+function openForm(){screen('calendar');const box=$('v136PlanFormDetails');box.open=true;const form=$('scheduleForm'),toggle=$('v7TogglePlanForm');if(form?.hidden)toggle?.click();$('scheduleName')?.focus({preventScroll:true})}
 function init(){
  source=$('scheduleEditorPanel');if(!source||$('v136Workspace'))return;
  host=document.createElement('section');host.id='v136Workspace';
@@ -135,10 +141,14 @@ function init(){
   if(b.dataset.v136Compare){compare=b.dataset.v136Compare;renderCompare();return}
   if(b.dataset.v136Recovery){$('v136RecoveryDrawer').open=true;const old=$('lo75-debt-tools'),pick=$('lo75-item');if(old)old.open=true;if(pick){pick.value=b.dataset.v136Recovery;pick.dispatchEvent(new Event('change',{bubbles:true}))}$('v136RecoveryDrawer').scrollIntoView({behavior:'smooth',block:'start'});return}
   if(b.id==='v136MoreRows'){showAll=!showAll;renderCalendar();return}
-  if(b.dataset.v136Action==='today'){anchor=datekey(Date.now());showAll=false;renderCalendar();return}
+  if(b.dataset.v136Action==='today'){anchor=datekey(Date.now());range='day';showAll=false;renderCalendar();return}
+  if(b.dataset.v136Action==='next'){const p=all().plans.filter(x=>+x.startAt>Date.now()).sort((a,b)=>a.startAt-b.startAt)[0];if(p){anchor=datekey(+p.startAt);range='day';showAll=false;renderCalendar();$('v136DaySummary')?.scrollIntoView({block:'center',behavior:'smooth'})}return}
   if(b.dataset.v136Action==='new'){openForm();return}
   if(b.dataset.v136Action==='tasks'){document.querySelector('#lifeosNavigation button[data-view="goals"]')?.click();const target=$('todoForm');if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),150);return}
  });
+ const sheet=$('v136PlanFormDetails');
+ sheet?.addEventListener('toggle',()=>{document.body.classList.toggle('v136-sheet-open',sheet.open)});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheet?.open){sheet.open=false;document.body.classList.remove('v136-sheet-open')}});
  window.addEventListener('lifeos-v75-changed',()=>{if(selected==='review')renderReview()});
  window.addEventListener('lifeos-v65-plan-committed',()=>{if(selected==='calendar')renderCalendar()});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){overview();if(selected==='calendar')renderCalendar()}});
