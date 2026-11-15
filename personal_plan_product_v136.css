@@ -146,3 +146,18 @@ body[data-lifeos-view="schedule"] #scheduleEditorPanel.v136-managed{margin-top:0
   content:'';position:fixed;inset:0;z-index:2599;background:#000a;pointer-events:none;
  }
 }
+
+/* V138 — Review works like three focused screens, not one huge debt report */
+#v136Workspace .v138-review-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;background:#0b2439;border:1px solid #345568;border-radius:13px;padding:4px;margin:16px 0 18px}
+#v136Workspace .v138-review-switch button{background:transparent;border:1px solid transparent;border-radius:10px;min-height:43px;color:#bed0de;font-size:11px;font-weight:780;padding:8px 2px;min-width:0}
+#v136Workspace .v138-review-switch button[aria-selected=true]{background:#0b7259;color:white;border-color:#49c39f}
+#v136Workspace .v136-review-row{gap:10px;padding:13px 0;min-height:72px}
+#v136Workspace .v136-review-row>div{flex:1 1 auto;min-width:0}
+#v136Workspace .v136-review-row em{display:inline-flex;align-self:flex-start;font-style:normal;font-size:10px;color:#edc38f;padding:3px 7px;border:1px solid #745a3d;border-radius:999px;margin-top:2px}
+#v136Workspace .v136-review-row button{padding:9px 11px;min-height:39px;border-radius:10px}
+#v136Workspace .v136-card h4#v138ReviewTitle{font-size:15px;margin:6px 0}
+#v136Workspace .v138-caution{color:#f4c58b;border-left:3px solid #ca995b;background:#312b27;padding:10px 11px;border-radius:8px;font-size:11px;line-height:1.55}
+#v136Workspace #v136RecoveryDrawer[open]{margin-top:2px}
+#v136Workspace #v136Old-review{max-width:100%;min-width:0;overflow-wrap:anywhere}
+#v136Workspace #v136Old-review :is(select,input,textarea){max-width:100%;min-width:0;box-sizing:border-box}
+#v136Workspace .v136-screen[data-v136-screen=review]>.v136-card>p:first-of-type{margin-bottom:13px}

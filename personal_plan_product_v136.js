@@ -18,7 +18,7 @@ const displayDate=s=>new Date(s+'T12:00:00').toLocaleDateString(undefined,{weekd
 const tasks=x=>Array.isArray(x.todos)?x.todos:[];
 const all=()=>{const x=w();return {x,plans:(x.schedule||[]).filter(valid).filter(p=>!['cancelled','skipped'].includes(p.status)),real:(x.sessions||[]).filter(valid).filter(confirmed),samples:(x.sessions||[]).filter(valid).filter(preview)}};
 const intersect=(r,from,to)=>+r.startAt<to&&+r.endAt>from;
-let host,source,selected='calendar',anchor=datekey(Date.now()),range='day',compare='reality',showAll=false,detailsOpen=false;
+let host,source,selected='calendar',anchor=datekey(Date.now()),range='day',compare='reality',showAll=false,detailsOpen=false,reviewMode='shortfalls';
 function cleanName(s){return String(s||'Activity').trim().toLowerCase().replace(/[^a-z0-9\u00c0-\u024f]+/g,' ')}
 function getDayRows(data,key){const from=startday(key),to=startday(datekey(from+86400000)),plans=data.plans.filter(p=>intersect(p,from,to)),real=data.real.filter(s=>intersect(s,from,to));
  return [...real.map(s=>({name:s.name||'Activity',start:s.startAt,end:s.endAt,kind:'record',category:cat(s.name),flag:suspicious(s),source:s})),...plans.filter(p=>!real.some(s=>String(s.plannedId||'')===String(p.id)||String(p.sessionId||'')===String(s.id))).map(p=>({name:p.name||'Plan',start:p.startAt,end:p.endAt,kind:'plan',category:cat(p.name),flag:false,source:p}))]
@@ -27,7 +27,7 @@ function getDayRows(data,key){const from=startday(key),to=startday(datekey(from+
 function tabs(){host.querySelectorAll('[data-v136-tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v136Tab===selected)));host.querySelectorAll('.v136-screen').forEach(x=>x.hidden=x.dataset.v136Screen!==selected)}
 function overview(){const d=all(),begin=startday(datekey(Date.now())),finish=startday(datekey(begin+86400000)),plans=d.plans.filter(x=>intersect(x,begin,finish)),records=d.real.filter(x=>intersect(x,begin,finish)),alerts=records.filter(suspicious).length;
  const next=d.plans.filter(x=>+x.startAt>Date.now()).sort((a,b)=>a.startAt-b.startAt)[0];
- $('v136TodayOverview').innerHTML='<div class="v136-kpi-row"><div><strong>'+plans.length+'</strong><span>Planned today</span></div><div><strong>'+records.length+'</strong><span>Verified sessions</span></div><div><strong>'+alerts+'</strong><span>Review duration</span></div></div>'+
+ $('v136TodayOverview').innerHTML='<div class="v136-kpi-row"><div><strong>'+plans.length+'</strong><span>Planned today</span></div><div><strong>'+records.length+'</strong><span>Finished sessions</span></div><div><strong>'+alerts+'</strong><span>Review duration</span></div></div>'+
  '<div class="v136-next"><div><small>NEXT COMMITMENT</small><strong>'+esc(next?.name||'No upcoming commitments')+'</strong><span>'+ (next?esc(new Date(+next.startAt).toLocaleString(undefined,{weekday:'short',hour:'2-digit',minute:'2-digit'})):'Nothing scheduled')+'</span></div><button type="button" data-v136-action="next" aria-label="Show next commitment">→</button></div>';
 }
 function periodKeys(){if(range==='month'){const d=new Date(anchor+'T12:00:00');d.setDate(1);return Array.from({length:new Date(d.getFullYear(),d.getMonth()+1,0).getDate()},(_,i)=>datekey(new Date(d.getFullYear(),d.getMonth(),i+1)))}const n=range==='three'?3:range==='week'?7:1;const d=new Date(anchor+'T12:00:00');if(range==='week')d.setDate(d.getDate()-(d.getDay()+6)%7);return Array.from({length:n},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return datekey(x)})}
@@ -39,7 +39,8 @@ function renderCalendar(){
  $('v136Days').innerHTML=grid; $('v136Days').classList.toggle('v137-month-grid',range==='month');
  const rows=getDayRows(d,anchor),visible=showAll?rows:rows.slice(0,5),b=startday(anchor),e=startday(datekey(b+86400000));
  const dayPlans=d.plans.filter(x=>intersect(x,b,e)),dayReal=d.real.filter(x=>intersect(x,b,e)),flagged=dayReal.filter(suspicious).length;
- $('v136DaySummary').innerHTML='<h3>'+esc(displayDate(anchor))+'</h3><p>'+dayPlans.length+' plans · '+dayReal.length+' verified sessions'+(flagged?' · '+flagged+' needs review':'')+'</p>';
+ const midnight=dayReal.filter(x=>new Date(+x.startAt).getHours()===0&&new Date(+x.startAt).getMinutes()===0).length;
+ $('v136DaySummary').innerHTML='<h3>'+esc(displayDate(anchor))+'</h3><p>'+dayPlans.length+' plans · '+dayReal.length+' finished sessions'+(flagged?' · '+flagged+' needs review':'')+'</p>'+(midnight>=3?'<p class="v138-caution">'+midnight+' recorded sessions begin at 00:00. Verify timestamps before interpreting the timeline.</p>':'');
  $('v136Timeline').innerHTML=visible.length?visible.map(x=>{const time=Math.max(x.start,b);const minutes=Math.max(0,Math.round((time-b)/60000));const actual=(Math.max(0,Math.min(+x.end,e)-Math.max(+x.start,b))/60000);
   return '<article class="v136-event" data-kind="'+x.kind+'" data-category="'+x.category+'"><span class="v136-event-time">'+hh(time)+'</span><div class="v136-event-rail"><i></i></div><button type="button" class="v136-event-main v137-activity-open" data-v137-activity="'+esc(x.kind)+'" data-v137-id="'+esc(x.source?.id||'')+'" aria-label="Review '+esc(x.name)+'"><div><strong>'+esc(x.name)+'</strong><span class="v136-pill">'+(x.kind==='record'?'Tracked':'Planned')+'</span></div><small>'+dur(actual*60000)+(x.flag?' · Duration needs verification':'')+'</small></button></article>'}).join(''):'<div class="v136-empty">No plans or verified sessions for this day.<small>Unlogged time is unknown, not necessarily free.</small></div>';
  $('v136MoreRows').hidden=rows.length<=8;$('v136MoreRows').textContent=showAll?'Show fewer': 'Show '+(rows.length-5)+' more activities';
@@ -70,13 +71,25 @@ function renderImprove(){
 }
 function renderReview(){
  const d=all(),now=Date.now(),report=(()=>{try{return window.LifeOSDebtRecoveryV75?.outstanding?.(d.x,now)}catch{return null}})(),
- open=report?.open||[],unknown=report?.unverified||[],flag=d.real.filter(x=>+x.endAt>now-14*86400000&&suspicious(x)),s=el=>esc(el||'');
- $('v136ReviewMetrics').innerHTML='<div><strong>'+open.length+'</strong><small>Calculated shortfalls</small></div><div><strong>'+unknown.length+'</strong><small>Unverified plans</small></div><div><strong>'+flag.length+'</strong><small>Unusual sessions</small></div>';
- $('v136ReviewList').innerHTML=(open.slice(0,8).map(x=>'<article class="v136-review-row"><div><strong>'+s(x.name)+'</strong><small>'+dur(x.outstandingMs)+' calculated shortfall · confirm circumstances first</small></div><button type="button" data-v136-recovery="'+s(x.id)+'">Review</button></article>').join(''))||
- '<p class="v136-muted">No calculated recovery commitments are currently reported.</p>';
- $('v136ReviewNote').textContent=unknown.length?unknown.length+' past plans have no verified linked completion; they are not automatically counted as missed.':'No additional unverified past plans were reported.';
- const issues=flag.slice(0,5).map(x=>'<div class="v136-review-mini"><strong>'+s(x.name)+'</strong><span>'+dur(+x.endAt- +x.startAt)+' · '+s(new Date(+x.startAt).toLocaleDateString())+'</span></div>').join('');
- $('v136ReviewAnomalies').innerHTML=issues||'<p class="v136-muted">No recent unusually long verified sessions found.</p>';
+ open=Array.isArray(report?.open)?report.open:[],unknown=Array.isArray(report?.unverified)?report.unverified:[],
+ flag=d.real.filter(x=>+x.endAt>now-14*86400000&&suspicious(x)),safe=x=>esc(x||'');
+ $('v136ReviewMetrics').innerHTML='<div><strong>'+open.length+'</strong><small>Calculated shortfalls</small></div><div><strong>'+unknown.length+'</strong><small>Unverified plans</small></div><div><strong>'+flag.length+'</strong><small>Duration checks</small></div>';
+ host.querySelectorAll('[data-v138-review]').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v138Review===reviewMode)));
+ const list=$('v136ReviewList'),title=$('v138ReviewTitle'),desc=$('v136ReviewNote');
+ if(reviewMode==='shortfalls'){
+  title.textContent='Commitments to confirm';
+  desc.textContent='These are calculated shortfalls, not proof that a commitment was missed. Review before making a recovery decision.';
+  list.innerHTML=open.length?open.slice(0,8).map(x=>'<article class="v136-review-row"><div><strong>'+safe(x.name)+'</strong><small>'+dur(x.outstandingMs)+' calculated shortfall</small><em>Needs your confirmation</em></div><button type="button" data-v136-recovery="'+safe(x.id)+'">Review →</button></article>').join(''):'<p class="v136-muted">No calculated shortfalls currently require attention.</p>';
+ }else if(reviewMode==='unknown'){
+  title.textContent='Plans without confirmed completion';
+  desc.textContent='A missing linked timer does not mean the activity was missed. Check other sources before deciding.';
+  list.innerHTML=unknown.length?unknown.slice(0,12).map(x=>'<article class="v136-review-row"><div><strong>'+safe(x.name||x.planName||'Unverified plan')+'</strong><small>'+safe(Number.isFinite(+x.startAt)?new Date(+x.startAt).toLocaleDateString():'Attendance not confirmed')+'</small><em>Unknown · not automatically missed</em></div></article>').join(''):'<p class="v136-muted">No unverified past plans were reported.</p>';
+ }else{
+  title.textContent='Check recorded durations';
+  desc.textContent='The total start-to-end span may differ from a short slice displayed on a particular calendar day.';
+  list.innerHTML=flag.length?flag.slice(0,10).map(x=>'<article class="v136-review-row"><div><strong>'+safe(x.name)+'</strong><small>'+dur(+x.endAt- +x.startAt)+' total span · '+safe(new Date(+x.startAt).toLocaleDateString())+'</small><em>Review original session in Track</em></div><button type="button" data-v138-open-track>Open Track →</button></article>').join(''):'<p class="v136-muted">No unusually long finished sessions detected in the review window.</p>';
+ }
+ $('v136ReviewAnomalies').innerHTML=flag.slice(0,5).map(x=>'<div class="v136-review-mini"><strong>'+safe(x.name)+'</strong><span>'+dur(+x.endAt- +x.startAt)+' total span · '+safe(new Date(+x.startAt).toLocaleDateString())+'</span></div>').join('')||'<p class="v136-muted">No unusual durations detected.</p>';
 }
 function categorize(n){const id=n.id||'';if(/^(lo133PlanStudio|scheduleForm|lo133DailyDetails|lo133UpcomingDetails|lo11ScheduleCalendar|scheduleDay|scheduleList)/.test(id))return 'calendar';
  if(/^(lo74-debt|lo75-debt|lo99-audit|lo102)/.test(id)||/debt|outstanding|recovery audit/i.test(id))return 'review';
@@ -118,7 +131,7 @@ function init(){
  '<section class="v136-screen" data-v136-screen="tasks" hidden><div class="v136-card"><span class="v136-kicker">YOUR TASKS</span><h3>Flexible tasks and deadlines</h3><p>Tasks have their own deadlines and optional time windows. A task is not automatically a calendar appointment.</p><button type="button" class="v136-cta" data-v136-action="tasks">Open task manager →</button></div></section>'+
  '<section class="v136-screen" data-v136-screen="compare" hidden><div class="v136-card"><span class="v136-kicker">TIME INTELLIGENCE</span><h3>See the difference.</h3><div class="v136-segments">'+[['reality','Reality'],['planned','Planned'],['ideal','Ideal']].map(([k,v])=>'<button type="button" data-v136-compare="'+k+'">'+v+'</button>').join('')+'</div><p id="v136CompareIntro"></p><div class="v136-two" id="v136CompareMetrics"></div><div id="v136CompareBars" class="v136-compare-bars"></div></div><details class="v136-drawer"><summary>Detailed comparison and evidence</summary><div id="v136Old-compare"></div></details></section>'+
  '<section class="v136-screen" data-v136-screen="improve" hidden><div class="v136-card"><span class="v136-kicker">PRIORITIZED INSIGHTS</span><h3>Improve what matters.</h3><p>Only a few useful recommendations appear first. Suggestions never alter your calendar without approval.</p><div id="v136ImproveCards"></div></div><details class="v136-drawer"><summary>Advanced predictions and weekly planning</summary><div id="v136Old-improve"></div></details></section>'+
- '<section class="v136-screen" data-v136-screen="review" hidden><div class="v136-card"><span class="v136-kicker">COMMITMENT REVIEW</span><h3>Understand first. Recover second.</h3><p>Untracked does not mean missed. A recovery is only a plan until you approve it and then complete it.</p><div id="v136ReviewMetrics" class="v136-three"></div><h4>Calculated shortfalls</h4><div id="v136ReviewList"></div><p class="v136-muted" id="v136ReviewNote"></p><details class="v136-subdrawer"><summary>Unusual activity durations</summary><div id="v136ReviewAnomalies"></div></details></div><details class="v136-drawer" id="v136RecoveryDrawer"><summary>Recovery approval & history</summary><div id="v136Old-review"></div></details></section>'+
+ '<section class="v136-screen" data-v136-screen="review" hidden><div class="v136-card"><span class="v136-kicker">COMMITMENT REVIEW</span><h3>Understand first. Recover second.</h3><p>Untracked does not mean missed. A recovery is only a plan until you approve it and then complete it.</p><div id="v136ReviewMetrics" class="v136-three"></div><div class="v138-review-switch" role="tablist" aria-label="Review type"><button type="button" data-v138-review="shortfalls" aria-selected="true">Commitments</button><button type="button" data-v138-review="unknown">Unverified</button><button type="button" data-v138-review="durations">Durations</button></div><h4 id="v138ReviewTitle">Commitments to confirm</h4><div id="v136ReviewList"></div><p class="v136-muted" id="v136ReviewNote"></p><details class="v136-subdrawer"><summary>Unusual activity durations</summary><div id="v136ReviewAnomalies"></div></details></div><details class="v136-drawer" id="v136RecoveryDrawer"><summary>Advanced recovery decisions & audit history</summary><div id="v136Old-review"></div></details></section>'+
  '<section class="v136-screen" data-v136-screen="more" hidden><div class="v136-card"><span class="v136-kicker">ADVANCED FEATURES</span><h3>Everything else, organized.</h3><p>Imports, diagnostics, configuration and development utilities are available here without cluttering your day.</p></div><details class="v136-drawer"><summary>Advanced planning, imports and diagnostics</summary><div id="v136Old-more"></div></details></section>';
  source.prepend(host);source.classList.add('v136-managed');
  const legacy=document.createElement('div');legacy.id='v136LegacyDock';legacy.hidden=true;source.append(legacy);
@@ -137,6 +150,8 @@ function init(){
  host.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.v136Tab){screen(b.dataset.v136Tab);return}
+  if(b.dataset.v138Review){reviewMode=b.dataset.v138Review;renderReview();return}
+  if(b.hasAttribute('data-v138-open-track')){document.querySelector('#lifeosNavigation button[data-view="tracking"]')?.click();return}
   if(b.dataset.v136Range){range=b.dataset.v136Range;renderCalendar();return}
   if(b.dataset.v136Date){anchor=b.dataset.v136Date;range='day';showAll=false;renderCalendar();return}
   if(b.dataset.v136Move){dateShift(+b.dataset.v136Move);return}
