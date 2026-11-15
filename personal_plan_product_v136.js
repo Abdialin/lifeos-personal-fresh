@@ -88,7 +88,12 @@ function makeAdvanced(){
  // Move, do not clone: existing handlers and original form IDs remain intact.
  for(const n of contents){const key=categorize(n);const slot=$('v136Old-'+key)||$('v136Old-more');if(slot)slot.append(n)}
  const form=$('scheduleForm');if(form){const entry=$('v136PlanForm');if(entry)entry.append(form)}
- const picker=$('scheduleDay');if(picker){const original=picker.closest('label')||picker;/* V133 retains date-change integration. */picker.value=anchor}
+ const picker=$('scheduleDay');if(picker){picker.value=anchor}
+ // These legacy schedule panels used to appear BEFORE the calendar, forcing long scrolling.
+ // Keep their original nodes and approval handlers, but present them under More.
+ for(const id of ['calendarHandoffPanel','calendarChangePanel','smartSchedulePanel','calendarReviewPanel']){
+  const panel=$(id),slot=$('v136Old-more');if(panel&&slot&&!slot.contains(panel))slot.append(panel);
+ }
 }
 function screen(tab){selected=tab;tabs();if(tab==='calendar')renderCalendar();if(tab==='compare')renderCompare();if(tab==='improve')renderImprove();if(tab==='review')renderReview();window.scrollTo({top:0,behavior:'instant'})}
 function openForm(){screen('calendar');const box=$('v136PlanFormDetails');box.open=true;const form=$('scheduleForm'),toggle=$('v7TogglePlanForm');if(form?.hidden)toggle?.click();box.scrollIntoView({behavior:'smooth',block:'start'})}
