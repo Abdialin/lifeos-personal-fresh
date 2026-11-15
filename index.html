@@ -1327,6 +1327,125 @@ function journalDiagnostic(){
  const bytes=(key)=>{try{return (localStorage.getItem(key)||'').length*2}catch{return null}};const atomicBytes=bytes('lifeos-v4-stage21-atomic'),mirrorBytes=bytes('lifeos-live-v1'),journalBytes=bytes(OUTBOX_KEY);return {status:outboxCorrupt?'blocked':problem?'unreadable':syncMeta.dirty?'pending':'clean',pending,oldest:dates.length?new Date(Math.min(...dates)).toISOString():null,newest:dates.length?new Date(Math.max(...dates)).toISOString():null,revision:syncMeta.revision,dirty:syncMeta.dirty,corrupt:outboxCorrupt,problem,storageEstimateBytes:{atomicCheckpoint:atomicBytes,workspaceMirror:mirrorBytes,journalMirror:journalBytes,subtotal:(atomicBytes||0)+(mirrorBytes||0)+(journalBytes||0)},note:'Read-only storage estimate. No records or offline changes are removed.'};
 }
 function inspectJournal(){const result=journalDiagnostic();let integrity=null;try{integrity=LifeOSOfflineIntegrity.inspect(data,outbox,syncMeta)}catch(e){integrity={requiresReview:true,issues:['integrity-check-unavailable'],detail:String(e.message||e)}}$('journalDetails').textContent=JSON.stringify({journal:result,integrity},null,2)+'\nRead-only review: no records were changed. Review warnings before reconnecting.';return {journal:result,integrity}}
+
+/* V150: user-controlled local recovery from a privately selected JSON file.
+   No network upload, no automatic restoration, and no alteration of the source file. */
+(function setupRecoveryV150(){
+ const kinds=['sessions','events','todos','workouts','meals','goals','schedule','personalLogs','bodyMetrics','waterIntake','mealTemplates','habitDefinitions','habitChecks','friendShares','idealRoutines'];
+ const clone=x=>JSON.parse(JSON.stringify(x));
+ let reviewed=null;
+ function summary(w){const o={};for(const k of kinds)o[k]=Array.isArray(w?.[k])?w[k].length:0;return o}
+ function merge(src,local){
+  const result={...clone(src)};
+  // Preserve any newer local records, including edits to shared record IDs.
+  for(const k of kinds){
+   const left=Array.isArray(src[k])?src[k]:[],right=Array.isArray(local[k])?local[k]:[];
+   const byId=new Map(),order=[];
+   for(const e of left){if(e&&typeof e.id==='string'){if(!byId.has(e.id))order.push(e.id);byId.set(e.id,clone(e))}}
+   for(const e of right){if(e&&typeof e.id==='string'){if(!byId.has(e.id))order.push(e.id);byId.set(e.id,clone(e))}}
+   const both=order.map(id=>byId.get(id));
+   // Non-ID records remain intact and are never silently discarded.
+   const none=left.filter(e=>!e||typeof e.id!=='string').map(clone)
+     .concat(right.filter(e=>!e||typeof e.id!=='string').map(clone));
+   result[k]=both.concat(none);
+  }
+  for(const [k,v] of Object.entries(local)){
+   if(kinds.includes(k)||k==='version')continue;
+   if(v!==null&&v!==undefined&&!(Array.isArray(v)&&v.length===0)&&!(typeof v==='object'&&Object.keys(v).length===0))result[k]=clone(v);
+  }
+  result.version=1;
+  return result;
+ }
+ function previewText(workspace){
+  const c=summary(workspace),assumed=workspace.sessions.filter(s=>s.source==='development-starter'||s.seedBatch).length;
+  const running=workspace.sessions.filter(s=>s.status==='running').length;
+  return 'Backup contains: '+c.sessions+' sessions, '+c.events+' events, '+c.schedule+' plans, '+c.todos+' tasks, '+c.goals+' goals, '+c.idealRoutines+' ideal routines.\n'+
+   assumed+' session(s) are labeled development examples and will keep their labels. '+running+' active timer(s) require review.';
+ }
+ function loadPanel(){
+  const recovery=$('recoveryTools');if(!recovery||$('lifeosV150Restore'))return;
+  const ui=document.createElement('div');ui.id='lifeosV150Restore';
+  ui.innerHTML='<h3>Restore a saved workspace</h3><p>Use your original LifeOS recovery JSON file. Nothing is changed while selecting or reviewing it. Existing local records are kept.</p>'+
+   '<label for="lifeosV150File">Choose recovery file</label><input id="lifeosV150File" type="file" accept=".json,application/json">'+
+   '<div id="lifeosV150Preview" role="status" aria-live="polite">Select a recovery file to begin.</div>'+
+   '<button type="button" id="lifeosV150Backup" class="btn outline">1. Export current browser backup</button>'+
+   '<label class="lifeos-v150-check"><input type="checkbox" id="lifeosV150ConfirmBackup"> I checked that the current browser backup was downloaded and stored safely.</label>'+
+   '<button type="button" id="lifeosV150Commit" class="btn primary" disabled>2. Restore reviewed records on this device</button>'+
+   '<p class="lifeos-v150-warning">Local-only restore. Cloud upload stays disabled until you explicitly review the server copy. Reload after successful restore.</p>';
+  recovery.append(ui);
+  const style=document.createElement('style');style.textContent='#lifeosV150Restore{border:1px solid #397a7b;border-radius:16px;padding:16px;margin:20px 0;background:#0b2631;color:#e9f7f6}#lifeosV150Restore h3{font-size:19px;margin:0 0 8px}#lifeosV150Restore p,#lifeosV150Restore label{display:block;font-size:13px;line-height:1.55;color:#c2d5df;margin:8px 0}#lifeosV150File{display:block;width:100%;padding:12px;border:1px solid #466a77;border-radius:10px;background:#192f43;color:white;max-width:100%}#lifeosV150Preview{white-space:pre-wrap;font-size:13px;line-height:1.6;padding:12px;border-radius:12px;background:#071d2a;border:1px solid #365a69;margin:14px 0;overflow-wrap:anywhere}#lifeosV150Restore button{display:block;margin:10px 0;min-height:48px;width:100%;white-space:normal}#lifeosV150Restore button:disabled{opacity:.45}#lifeosV150Restore .lifeos-v150-check{display:flex;gap:9px;align-items:flex-start;margin:13px 0}#lifeosV150Restore .lifeos-v150-check input{flex:none;width:20px;height:20px;margin-top:3px}#lifeosV150Restore .lifeos-v150-warning{color:#f1d4a0}';document.head.append(style);
+  const file=$('lifeosV150File'),output=$('lifeosV150Preview'),check=$('lifeosV150ConfirmBackup'),commit=$('lifeosV150Commit');
+  const reset=()=>{reviewed=null;check.checked=false;commit.disabled=true};
+  file.addEventListener('change',async()=>{
+   reset();if(!file.files?.[0])return;
+   try{
+    const f=file.files[0];if(f.size>15000000)throw Error('File exceeds the 15 MB recovery limit.');
+    const obj=JSON.parse(await f.text());
+    const candidate=obj?.format==='lifeos-recovery-v1'&&obj.atomicCheckpoint?.workspace?obj.atomicCheckpoint.workspace:
+      (obj?.format==='lifeos-recovery-v1'?obj.workspace:obj?.workspace?.version===1?obj.workspace:obj);
+    validateWorkspace(candidate);
+    const original=localStorage.getItem(ATOMIC_KEY),mirror=localStorage.getItem(KEY);
+    if(v71StaleTab||!v71CheckpointUnchanged(original))throw Error('Another LifeOS tab changed storage. Reload this tab before restoring.');
+    const existing=mirror?validateWorkspace(JSON.parse(mirror)):data;
+    const candidateMerged=merge(candidate,existing);
+    validateWorkspace(candidateMerged);
+    const stats=summary(candidateMerged);
+    const warnings=[];
+    for(const s of candidateMerged.sessions)if(s.status==='running')warnings.push(s.name);
+    reviewed={merged:candidateMerged,original,mirror,filename:f.name,warnings,
+      sourceCount:summary(candidate),mergedCount:stats};
+    output.textContent=previewText(candidate)+'\n\nAfter safe merge: '+stats.sessions+' sessions, '+stats.schedule+' plans and '+stats.todos+' tasks.\n'+
+      'The '+warnings.length+' running timer(s) will be paused at their last known start for duration review (no extra time added).\n'+
+      'Cloud records will not be uploaded or replaced.';
+    commit.disabled=false;
+   }catch(e){output.textContent='Cannot prepare restoration: '+String(e.message||e)}
+  });
+  $('lifeosV150Backup').addEventListener('click',()=>exportRecovery());
+  commit.addEventListener('click',()=>{
+   if(!reviewed)return;
+   if(!check.checked){output.textContent='Download and verify the current browser backup first. No changes made.';return}
+   if(v71StaleTab||!v71CheckpointUnchanged(localStorage.getItem(ATOMIC_KEY))||
+       localStorage.getItem(ATOMIC_KEY)!==reviewed.original||localStorage.getItem(KEY)!==reviewed.mirror){
+    output.textContent='The browser workspace changed since preview. Restoration cancelled; review your backup again.';reset();return;
+   }
+   if(syncBusy){output.textContent='A cloud operation is active; restoration cancelled.';return}
+   const target=clone(reviewed.merged),stale=target.sessions.filter(s=>s.status==='running');
+   for(const s of stale){
+    const last=s.segments[s.segments.length-1];
+    // The original open segment is kept in the user-downloaded source backup.
+    // Do not fabricate tracking during the outage.
+    if(last.end===null)last.end=last.start;
+    s.status='paused';s.needsDurationReview=true;s.recoveryNote='Paused at last known interval start during verified backup restore; review duration before treating as completed.';
+   }
+   try{validateWorkspace(target)}catch(e){output.textContent='Restoration blocked by invalid records: '+e.message;return}
+   const codec=window.LifeOSCompactRecovery;
+   if(!codec?.pack||!codec?.unpack){output.textContent='Recovery codec unavailable. No data changed.';return}
+   let packed;try{packed=codec.pack(target,[],{revision:null,dirty:true});if(!codec.equal(codec.unpack(packed).workspace,target))throw Error('Roundtrip mismatch')}catch(e){output.textContent='Validation failed: '+e.message;return}
+   if(!confirm('Restore '+target.sessions.length+' activities and '+target.schedule.length+' plans locally? You have saved the original backup. No cloud upload will occur.'))return;
+   if(!confirm('Final confirmation: replace the broken local recovery checkpoint with this verified merge? The original backup remains on your device.'))return;
+   const previous=reviewed.original;
+   const encoded=JSON.stringify(packed);
+   try{
+    // One atomic canonical write. On quota failure the existing checkpoint is preserved.
+    if(localStorage.getItem(ATOMIC_KEY)!==previous)throw Error('Checkpoint was changed by another tab');
+    stopSync();localStorage.setItem(ATOMIC_KEY,encoded);
+    const actual=localStorage.getItem(ATOMIC_KEY),readback=codec.unpack(JSON.parse(actual));
+    if(!codec.equal(readback.workspace,target))throw Error('Checkpoint readback mismatch. Do not refresh; export a backup.');
+    v71ObservedCheckpoint=actual;
+    data=target;ensureModules();outbox=[];syncMeta={revision:null,dirty:true};compactMode=true;atomicBlocked=false;outboxCorrupt=false;lifeosLastSaveFailure='';
+    try{localStorage.setItem(KEY,JSON.stringify(data));localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta))}catch(_){}
+    output.textContent='RESTORED AND VERIFIED LOCALLY: '+target.sessions.length+' sessions and '+target.schedule.length+' plans. '+stale.length+' timer(s) safely paused for review. Cloud was not changed. Reload the app now.';
+    file.disabled=true;commit.disabled=true;
+    syncStatus('Local restoration verified. Cloud disconnected. Compare with server before synchronizing.');
+    try{render()}catch(e){console.warn('Restore render needs reload',e)}
+   }catch(e){
+    output.textContent='Restore could not complete: '+e.message+'. The current backup is preserved. Avoid closing this tab until you inspect the result.';
+   }
+  });
+ }
+ setTimeout(loadPanel,0);
+})();
+
 function recoveryBundle(){
  // Include the canonical atomic checkpoint. Compatibility journal and metadata
  // keys can lag after storage failures, so they cannot be the only recovery copy.
