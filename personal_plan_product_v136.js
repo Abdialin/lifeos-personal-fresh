@@ -94,7 +94,7 @@ function makeAdvanced(){
  // Move the original V12 *outer* tools and development wrappers, not only their children.
  // Their linked inputs and listeners remain in place and accessible under More.
  const advanced=$('v136Old-more');
- for(const id of ['lo12CalendarTools','lo12DevDetails']){
+ for(const id of ['v4Plan','lo12CalendarTools','lo12DevDetails']){
   const outer=$(id);if(outer&&advanced&&!advanced.contains(outer))advanced.append(outer);
  }
  // These legacy schedule panels used to appear BEFORE the calendar, forcing long scrolling.
@@ -123,6 +123,8 @@ function init(){
  source.prepend(host);source.classList.add('v136-managed');
  const legacy=document.createElement('div');legacy.id='v136LegacyDock';legacy.hidden=true;source.append(legacy);
  makeAdvanced();
+ // V4's independent legacy month calendar is a duplicate of the new Plan. Move it, do not delete it.
+ const oldVisual=$('v4Plan'),advancedVisual=$('v136Old-more');if(oldVisual&&advancedVisual&&!advancedVisual.contains(oldVisual))advancedVisual.append(oldVisual);
  // Some older modules mount later than DOMContentLoaded. Rehome their panels as they appear.
  const lateModules=new MutationObserver(changes=>{
   for(const change of changes)for(const item of change.addedNodes){
