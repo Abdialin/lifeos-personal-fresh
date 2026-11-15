@@ -7,12 +7,14 @@ const VERSION=1, FORMAT='lifeos.personal.preferences.v88';
 const DEFINITIONS=[
  {name:'notifications',key:'lifeos.personal.notification-preferences.v87',label:'Notification choices'},
  {name:'durations',key:'lifeos.personal.duration-profiles.v80',label:'Expected activity durations'},
- {name:'workouts',key:'lifeos.personal.fitness-presets.v83',label:'Favorite workout presets'}
+ {name:'workouts',key:'lifeos.personal.fitness-presets.v83',label:'Favorite workout presets'},
+ {name:'exercisePlans',key:'lifeos.personal.exercise-plans.v95',label:'Exercise plan templates'}
 ];
 function sanitize(name,value){
  if(name==='notifications')return root.LifeOSNotificationControlsV87?.normalize?.(value)||{enabled:false,timerShortcut:false};
  if(name==='durations')return root.LifeOSDurationProfilesV80?.clean?.(value)||{};
  if(name==='workouts')return root.LifeOSProgressivePersonalizationV83?.cleanPresets?.(value)||[];
+ if(name==='exercisePlans')return Array.isArray(value)?value.filter(p=>p&&typeof p.id==='string'&&p.id.length>0&&p.id.length<=100&&root.LifeOSExercisePlansV95?.validate?.(p)?.ok).slice(0,20).map(p=>({id:p.id,...root.LifeOSExercisePlansV95.validate(p).plan})):[];
  return null;
 }
 function snapshot(store){
@@ -27,6 +29,11 @@ function snapshot(store){
 function packageExport(store,at=new Date().toISOString()){
  return {format:FORMAT,version:VERSION,createdAt:at,scope:'local-preferences-only',preferences:snapshot(store)};
 }
+function canonical(value){
+ if(Array.isArray(value))return '['+value.map(canonical).join(',')+']';
+ if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+canonical(value[k])).join(',')+'}';
+ return JSON.stringify(value);
+}
 function parseImport(raw){
  if(typeof raw!=='string'||raw.length>150000)return {ok:false,reason:'File exceeds the preferences-only size limit.'};
  let doc;try{doc=JSON.parse(raw)}catch{return {ok:false,reason:'This is not readable JSON.'}}
@@ -36,10 +43,10 @@ function parseImport(raw){
  const clean={};
  for(const key of keys){
   const value=doc.preferences[key];
-  if(value===null||typeof value!=='object'||(key==='workouts')!==Array.isArray(value))return {ok:false,reason:'Invalid settings structure.'};
+  if(value===null||typeof value!=='object'||(['workouts','exercisePlans'].includes(key))!==Array.isArray(value))return {ok:false,reason:'Invalid settings structure.'};
   const sanitized=sanitize(key,value);
   // Reject malformed data rather than silently converting it into valid but different preferences.
-  if(JSON.stringify(sanitized)!==JSON.stringify(value))return {ok:false,reason:'Some settings are invalid or from an incompatible version.'};
+  if(canonical(sanitized)!==canonical(value))return {ok:false,reason:'Some settings are invalid or from an incompatible version.'};
   clean[key]=sanitized;
  }
  return {ok:true,preferences:clean,createdAt:doc.createdAt||null};
@@ -48,7 +55,7 @@ function diff(current,imported){
  return DEFINITIONS.filter(d=>Object.prototype.hasOwnProperty.call(imported,d.name)).map(d=>{
   const before=Object.prototype.hasOwnProperty.call(current,d.name)?current[d.name]:null;
   const after=imported[d.name];
-  return {name:d.name,label:d.label,existing:before!==null,changed:JSON.stringify(before)!==JSON.stringify(after)};
+  return {name:d.name,label:d.label,existing:before!==null,changed:canonical(before)!==canonical(after)};
  });
 }
 function applySelected(store,proposal,names){
@@ -83,7 +90,7 @@ function mount(){
  #lo88-preferences p{line-height:1.5}
  `;document.head.append(style);
  const section=document.createElement('section');section.id='lo88-preferences';
- section.innerHTML='<h3>Personal preferences</h3><p>Review timer durations, notifications and favorite workouts from one place. These settings are currently saved on this browser. They are not automatically synced to your LifeOS account.</p><div class="lo88-grid" id="lo88-summary"></div><div><button type="button" id="lo88-jump-notifications">Notifications</button><button type="button" id="lo88-jump-duration">Timer durations</button><button type="button" id="lo88-jump-fitness">Fitness favorites</button><button type="button" id="lo88-jump-nutrition">Nutrition favorites</button><button type="button" id="lo88-jump-habits">Habits</button></div><h4>Move preferences to another device (manual)</h4><p>Export only these three preference groups. Never includes workouts logged, meals, plans, sessions, personal history, passwords, or calendar events. Review each imported group and choose whether it should replace settings on this device.</p><button type="button" id="lo88-export">Export preferences JSON</button><label for="lo88-file">Select a LifeOS preferences backup</label><input id="lo88-file" type="file" accept=".json,application/json"><div id="lo88-review" class="lo88-review" hidden></div><p id="lo88-message" role="status"></p>';
+ section.innerHTML='<h3>Personal preferences</h3><p>Review timer durations, notifications and favorite workouts from one place. These settings are currently saved on this browser. They are not automatically synced to your LifeOS account.</p><div class="lo88-grid" id="lo88-summary"></div><div><button type="button" id="lo88-jump-notifications">Notifications</button><button type="button" id="lo88-jump-duration">Timer durations</button><button type="button" id="lo88-jump-fitness">Fitness favorites</button><button type="button" id="lo88-jump-nutrition">Nutrition favorites</button><button type="button" id="lo88-jump-habits">Habits</button></div><h4>Move preferences to another device (manual)</h4><p>Export only these four preference groups. Never includes workouts logged, meals, plans, sessions, personal history, passwords, or calendar events. Review each imported group and choose whether it should replace settings on this device.</p><button type="button" id="lo88-export">Export preferences JSON</button><label for="lo88-file">Select a LifeOS preferences backup</label><input id="lo88-file" type="file" accept=".json,application/json"><div id="lo88-review" class="lo88-review" hidden></div><p id="lo88-message" role="status"></p>';
  host.prepend(section);
  const el=id=>section.querySelector('#'+id),message=el('lo88-message'),review=el('lo88-review');
  function render(){
@@ -91,6 +98,7 @@ function mount(){
    ['Notifications',values.notifications?.enabled?'Enabled in LifeOS':'Disabled in LifeOS'],
    ['Timer durations',Object.keys(values.durations||{}).length+' saved activity types'],
    ['Workout favorites',(values.workouts||[]).length+' presets'],
+   ['Exercise templates',(values.exercisePlans||[]).length+' plans'],
    ['Nutrition favorites','Stored with LifeOS meal templates'],
    ['Habits & routines','Configured in My Life']
   ];
