@@ -61,7 +61,8 @@ function shouldAutoFinish(session,at=Date.now()){
 }
 // Reuse the notification permission/service worker already established by LifeOS reminders.
 async function notifyOnce(id,target,title,body){
- if(typeof Notification==='undefined'||Notification.permission!=='granted')return false;
+ const prefs=root.LifeOSNotificationControlsV87?.read?.(localStorage);
+ if(!prefs?.enabled||typeof Notification==='undefined'||Notification.permission!=='granted')return false;
  const key='lifeos-v78-duration-notice-'+String(id)+'-'+String(target);
  try{if(sessionStorage.getItem(key))return false;sessionStorage.setItem(key,'1')}catch(_){}
  try{
