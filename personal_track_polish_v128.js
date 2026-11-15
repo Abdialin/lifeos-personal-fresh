@@ -18,6 +18,10 @@ function compactTimer(){
  const s=root.lifeosReadOnlyWorkspace?.()?.sessions;
  const n=Array.isArray(s)?s.filter(x=>['running','paused'].includes(x?.status)).length:0;
  d.hidden=n<1;
+ const message=$('lo77-status');
+ if(n>0&&message&&/timer finished and verified/i.test(message.textContent||'')){
+  message.textContent='';
+ }
  d.querySelector('summary').textContent='All active sessions'+(n?' · '+n:'')+' & detailed controls';
 }
 function distraction(){
@@ -106,6 +110,13 @@ function mount(){
  const r=$('lo127TrackSurface');if(!r)return;
  const marker=make('span','');marker.id='lo128Mounted';marker.hidden=true;r.append(marker);
  compactTimer();distraction();summary();quick();history();updateVisual();
+ // The original V77 Review action scrolls to #sessions. Because V128 folds
+ // that list, open its parent first so Review cannot land on hidden controls.
+ document.addEventListener('click',event=>{
+  if(event.target.closest('#lo77-timer-quick [data-v77-action="review"],#lo86-timer [data-lo86="review"]')){
+   const d=$('lo128SessionsDetails');if(d)d.open=true;
+  }
+ },true);
  const check=()=>{if(document.body.dataset.lifeosView==='tracking'){compactTimer();distraction();quick();updateVisual()}};
  root.setInterval(check,6000);root.addEventListener('focus',check);
 }
