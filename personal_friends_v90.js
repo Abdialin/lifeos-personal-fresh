@@ -18,7 +18,7 @@ function validateCard(raw,now=Date.now()){
  if(typeof raw.alias!=='string'||!raw.alias.trim()||raw.alias.length>40||typeof raw.nonce!=='string'||!/^[-a-zA-Z0-9]{8,90}$/.test(raw.nonce))return {ok:false,reason:'Invalid card label or identifier.'};
  const start=parseDay(raw.periodStart),end=parseDay(raw.periodEnd),expiry=parseDay(raw.expiresOn);
  const span=Math.round((end.getTime()-start.getTime())/DAY)+1;
- if(![7,14,30].includes(span)||end.getTime()>now+DAY||expiry.getTime()<start.getTime()||expiry.getTime()>end.getTime()+31*DAY)return {ok:false,reason:'Unsupported date range.'};
+ if(![7,14,30].includes(span)||raw.periodEnd>dateKey(now)||expiry.getTime()<start.getTime()||expiry.getTime()>end.getTime()+31*DAY)return {ok:false,reason:'Unsupported date range.'};
  if(dateKey(now)>raw.expiresOn)return {ok:false,reason:'This progress card has expired.'};
  if(!raw.metrics||typeof raw.metrics!=='object'||Array.isArray(raw.metrics))return {ok:false,reason:'No shared metrics.'};
  const keys=Object.keys(raw.metrics);
@@ -57,7 +57,7 @@ function mount(){
  while(host.firstChild)older.append(host.firstChild);
  host.append(older);
  const section=document.createElement('section');section.id='lo90-friends';host.prepend(section);
- const style=document.createElement('style');style.textContent=`
+ const style=document.getElementById('lo90-styles')||document.createElement('style');style.id='lo90-styles';style.textContent=`
  #lo90-friends{padding:15px;background:#17243b;border:1px solid #4a6587;border-radius:14px;color:#ebf2ff}
  #lo90-friends fieldset{border:1px solid #3f5e7b;border-radius:10px;margin:10px 0;padding:12px}
  #lo90-friends label{display:block;margin:10px 0}
@@ -66,7 +66,7 @@ function mount(){
  #lo90-friends button:focus-visible,#lo90-friends input:focus-visible{outline:3px solid #7de2cd}
  #lo90-friends .lo90-person{border-top:1px solid #3b526b;padding:10px 0}
  #lo90-friends .lo90-muted{color:#bfd0e4;font-size:13px}
- `;document.head.append(style);
+ `;if(!style.isConnected)document.head.append(style);
  section.innerHTML='<h3>Friends · private progress sharing</h3><p class="lo90-muted">Nothing is shared automatically. These are local, manually exchanged progress cards—not connected friend accounts or independently verified performance.</p><fieldset><legend>My sharing consent</legend><label><input type="checkbox" id="lo90-enabled"> Enable manual sharing</label><label>Public nickname for cards<input type="text" maxlength="40" id="lo90-alias" placeholder="Nickname (not your real name)"></label><label><input type="checkbox" id="lo90-workouts"> Share workout days</label><label><input type="checkbox" id="lo90-habits"> Share habit completion days (may reveal sensitive interests indirectly)</label><label>Reporting period<select id="lo90-period"><option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30">Last 30 days</option></select></label><button id="lo90-save" type="button">Save sharing choices</button><button id="lo90-export" type="button">Create share card</button><button id="lo90-revoke" type="button">Stop sharing</button></fieldset><p class="lo90-muted">Card expires after 7 days. Stopping sharing prevents new cards; previously exported files cannot be remotely revoked. No prayers, notes, locations or individual activities are included, but even aggregate habit counts can be personal.</p><fieldset><legend>Add a card received from a friend</legend><label>Friend label<input id="lo90-friend-name" type="text" maxlength="40" placeholder="Friend nickname"></label><label>Paste their V90 card JSON<textarea id="lo90-card" maxlength="3000" rows="4"></textarea></label><button id="lo90-import" type="button">Review and add card</button></fieldset><fieldset><legend>Local leaderboard</legend><label>Metric<select id="lo90-metric"><option value="workoutDays">Workout days</option><option value="habitDays">Habit days</option></select></label><p class="lo90-muted">Only cards for the same complete period ending today and sharing this metric are comparable. Old, expired, or differently scoped cards are excluded.</p><div id="lo90-board"></div></fieldset><p id="lo90-message" role="status"></p>';
  const el=id=>section.querySelector('#'+id),store=root.localStorage,message=el('lo90-message');
  let saved=config(read(store,KEY,{})),peers=read(store,PEERS,[]);
@@ -107,6 +107,9 @@ function mount(){
  el('lo90-period').addEventListener('change',()=>{message.textContent='Save reporting period to apply it to the leaderboard.'});
  loadFields();render();
 }
-if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount()}
+if(typeof document!=='undefined'){
+ const start=()=>{mount();const host=document.getElementById('lo32FriendHub');if(host&&!host.__lifeosV90Observed){host.__lifeosV90Observed=true;let queued=false;new MutationObserver(()=>{if(queued||document.getElementById('lo90-friends'))return;queued=true;setTimeout(()=>{queued=false;mount()},0)}).observe(host,{childList:true})}};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+}
 return {KEY,PEERS,TYPE,METRICS,config,parseDay,summary,createCard,validateCard,leaderboard};
 });
