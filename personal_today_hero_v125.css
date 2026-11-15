@@ -41,6 +41,7 @@ body[data-lifeos-view="dashboard"] #todayOverview .today-actions{
  gap:8px;margin:13px 0;
 }
 body[data-lifeos-view="dashboard"] #todayOverview .today-actions button{
+ grid-column:auto;
  border-radius:12px;min-width:0;min-height:49px;
  padding:10px 12px;font-size:12px;white-space:normal;
  text-align:center;display:flex;align-items:center;justify-content:center;gap:7px;
