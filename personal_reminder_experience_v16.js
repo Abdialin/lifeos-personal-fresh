@@ -20,11 +20,11 @@ function entries(w,time){
   if(!t||t.done)continue;const when=taskDate(t);if(when===null)continue;
   result.push({key:'task:'+t.id,id:t.id,kind:'To-do',name:t.name||'Task',start:when,end:when,created:Number(t.createdAt)||0,remind:validTime(t.startTime)||validTime(t.dueTime),past:when<time,anytime:!validTime(t.startTime)&&!validTime(t.dueTime)});
  }
- const upcoming=result.filter(x=>x.end>=time-60*MIN&&x.start<=time+7*DAY).sort((a,b)=>a.start-b.start);
- // Include a freshly added historical plan, so saving is immediately visible.
- // Recently created past plans stay in Plan history, not in the upcoming
- // feed: showing them here confused finished and overdue activity.
- return upcoming.slice(0,4);
+ // Keep upcoming commitments distinct from overdue plans.
+ // Date-only todos use their due date and 23:59 as the review deadline;
+ // they are not presented as appointments with a fixed start time.
+ return result.filter(x=>x.start<=time+7*DAY&&x.start>=time-7*DAY)
+  .sort((a,b)=>a.start-b.start).slice(0,150);
 }
 function status(x,t){
  // A plan that started long ago must never remain labelled "Due now" because
@@ -76,43 +76,86 @@ function init(){
  // The former standalone Reminders panel is intentionally merged into this card.
  const oldPanel=$('lo16ReminderPanel');if(oldPanel)oldPanel.remove();
  let expandedMore=false;
+ let expandedReview=false;
  let lastPresentation='';
  function render(){
   const w=ws();if(!w)return;const current=Date.now(),items=entries(w,current);
   const capable='Notification'in window&&window.isSecureContext;
   const permission=capable?Notification.permission:'unavailable';
-  const presentation=JSON.stringify(items.map(x=>[x.key,x.start,x.name,status(x,current).level]))+'|'+permission;
-  // Avoid rebuilding focusable buttons every five seconds. Keep expanded state.
+  const future=items.filter(x=>status(x,current).level!=='past');
+  const past=items.filter(x=>status(x,current).level==='past').sort((a,b)=>b.start-a.start);
+  const presentation=JSON.stringify(items.map(x=>[x.key,x.start,x.end,x.name,x.kind,status(x,current).level]))
+    +'|'+permission;
   if(presentation===lastPresentation)return;
   lastPresentation=presentation;
   list.replaceChildren();
-  // Today's primary dashboard shows the two most relevant commitments.
-  // Other reminders stay reachable without requiring a long vertical scroll.
-  const primary=el('div','lo121-next-grid');
-  const extra=el('details','lo121-more');
-  const extraLabel=el('summary','',items.length>2?'More plans · '+(items.length-2):'');
-  if(items.length>2)extra.append(extraLabel);
-  const moreList=el('div','lo121-more-list');
-  if(!items.length)list.append(el('p','lo15-muted','No upcoming commitments. Add or review activities in Plan.'));
-  for(const [index,x] of items.entries()){
-   const st=status(x,current),row=el('button','lo15-upcoming-row lo121-upcoming-item');row.type='button';
-   row.dataset.kind=x.kind.toLowerCase();row.dataset.reminderStatus=st.level;
-   row.classList.add(index===0?'lo121-featured':'lo121-secondary');
-   const date=el('span','lo15-upcoming-date',new Date(x.start).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}));
-   const body=el('span','lo15-upcoming-content');
-   const name=el('strong','',x.name);
-   const timeLabel=new Date(x.start).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
-   body.append(name,el('small','',x.kind+' · '+(x.anytime?'Any time':timeLabel)));
-   const badge=el('span','lo16-combined-badge '+st.level,st.label);
-   row.append(date,body,badge);row.addEventListener('click',()=>go(x));
-   if(index<2)primary.append(row);else moreList.append(row);
-   if(x.remind&&!x.past&&x.start-current<=10*MIN&&x.start-current>=-MIN)void showNotice(x);
+
+  const subtitle=el('p','lo124-upcoming-intro',
+    'Next commitments first · past items needing attention are kept separate.');
+  list.append(subtitle);
+
+  const nextGroup=el('div','lo124-next');
+  if(!future.length){
+   nextGroup.append(el('div','lo124-no-next','Nothing scheduled in the next seven days.'));
   }
-  if(primary.childElementCount)list.append(primary);
-  if(items.length>2){
-   extra.open=expandedMore;
-   extra.addEventListener('toggle',()=>{expandedMore=extra.open});
-   extra.append(moreList);list.append(extra);
+  const makeRow=(x,featured=false)=>{
+   const state=status(x,current);
+   const row=el('button',featured?'lo124-featured':'lo124-ladder-item');
+   row.type='button';
+   row.dataset.kind=x.kind.toLowerCase();
+   row.dataset.reminderStatus=state.level;
+   const date=new Date(x.start);
+   const weekday=date.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
+   const clock=x.anytime?'By end of day':date.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+   const name=el('strong','lo124-name',x.name);
+   if(featured){
+    row.append(el('span','lo124-eyebrow','NEXT UP'),name);
+    const meta=el('span','lo124-meta');
+    meta.append(el('span','lo124-date',weekday+' · '+clock),el('span','lo124-status '+state.level,state.label));
+    row.append(meta);
+   }else{
+    const rail=el('span','lo124-rail');
+    rail.append(el('span','lo124-clock',clock),el('i','lo124-node'));
+    const body=el('span','lo124-row-body');
+    body.append(name,el('small','',weekday+' · '+x.kind),el('span','lo124-status '+state.level,state.label));
+    row.append(rail,body);
+   }
+   row.addEventListener('click',()=>go(x));
+   return row;
+  };
+
+  // Never allow an old past-due item to occupy the featured Next Up card.
+  if(future.length)nextGroup.append(makeRow(future[0],true));
+  const later=future.slice(1);
+  if(later.length){
+   const ladder=el('div','lo124-ladder');
+   for(const x of later.slice(0,2))ladder.append(makeRow(x));
+   nextGroup.append(ladder);
+   if(later.length>2){
+    const extra=el('details','lo124-more');
+    extra.open=expandedMore;
+    extra.addEventListener('toggle',()=>{expandedMore=extra.open});
+    extra.append(el('summary','', 'Show '+(later.length-2)+' more upcoming'));
+    const inner=el('div','lo124-ladder');
+    for(const x of later.slice(2))inner.append(makeRow(x));
+    extra.append(inner);nextGroup.append(extra);
+   }
+  }
+  list.append(nextGroup);
+
+  if(past.length){
+   const review=el('details','lo124-review');
+   review.open=expandedReview;
+   review.addEventListener('toggle',()=>{expandedReview=review.open});
+   review.append(el('summary','',past.length+' earlier item'+(past.length===1?'':'s')+' to review'));
+   const inner=el('div','lo124-review-items');
+   for(const x of past.slice(0,12))inner.append(makeRow(x));
+   if(past.length>12)inner.append(el('p','lo124-hint','More historical plans are available in Plan.'));
+   review.append(inner);list.append(review);
+  }
+
+  for(const x of future){
+   if(x.remind&&x.start-current<=10*MIN&&x.start-current>=-MIN)void showNotice(x);
   }
   // A disabled "Notifications enabled" button occupied an entire row on
   // mobile. Only show the button when the user can actually enable alerts.
