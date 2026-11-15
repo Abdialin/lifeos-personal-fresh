@@ -1,0 +1,122 @@
+/* LifeOS V127: Track becomes a focused app, not a scrolling document.
+ * No tracking/plan/record mutations. Panels retain native event handlers. */
+body[data-lifeos-view="tracking"] .layout{display:none!important}
+body[data-lifeos-view="tracking"] main.wrap>section.panel,
+body[data-lifeos-view="tracking"] main.wrap>div.panel{display:none!important}
+body:not([data-lifeos-view="tracking"]) #lo127TrackSurface{display:none!important}
+body[data-lifeos-view="tracking"] #lo127TrackSurface{display:block;min-width:0;margin:10px 0 24px}
+body[data-lifeos-view="tracking"] #lo127TrackSurface .lo127-pane[hidden]{display:none!important}
+body[data-lifeos-view="tracking"] #lo127TrackSurface .lo127-segments{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:5px;padding:5px;border-radius:15px;border:1px solid var(--lo-border);
+ background:var(--lo-surface-2);margin:0 0 13px;
+ position:sticky;top:0;z-index:5;
+}
+#lo127TrackSurface .lo127-tab{
+ border:1px solid transparent;border-radius:11px;display:flex;
+ justify-content:center;align-items:center;gap:6px;
+ min-height:49px;padding:10px 6px;
+ background:transparent;color:var(--lo-muted);font-size:13px;font-weight:750;
+}
+#lo127TrackSurface .lo127-tab[aria-selected="true"]{
+ background:var(--lo-accent);color:var(--lo-bg);
+ box-shadow:0 3px 12px #0002;
+}
+#lo127TrackSurface .lo127-tab:focus-visible{
+ outline:3px solid var(--lo121-learning);outline-offset:2px;
+}
+#lo127TrackSurface .lo127-icon{font-size:17px;line-height:1}
+body[data-lifeos-view="tracking"] #lo126TrackGuide{
+ padding:12px 13px;margin:0 0 12px;box-shadow:none;border-radius:15px;
+}
+body[data-lifeos-view="tracking"] #lo126TrackGuide .lo126-guide-heading{margin:0 0 9px}
+body[data-lifeos-view="tracking"] #lo126TrackGuide .lo126-guide-heading h2,
+body[data-lifeos-view="tracking"] #lo126TrackGuide .lo126-guide-heading p,
+body[data-lifeos-view="tracking"] #lo126TrackGuide .lo126-actions{display:none!important}
+body[data-lifeos-view="tracking"] #lo126TrackGuide .lo126-metric{min-height:66px;padding:9px;gap:4px}
+body[data-lifeos-view="tracking"] #lo126TrackGuide .lo126-metric strong{font-size:clamp(17px,4vw,23px)}
+body[data-lifeos-view="tracking"] #lo126TrackGuide .lo126-metric small{font-size:11px}
+#lo127TrackSurface .lo127-live-intro,
+#lo127TrackSurface .lo127-pane-intro{
+ display:grid;gap:3px;margin:5px 3px 12px;
+}
+#lo127TrackSurface .lo127-live-intro strong,
+#lo127TrackSurface .lo127-pane-intro strong{
+ color:var(--lo-text);font-size:17px;font-weight:790;letter-spacing:-.025em
+}
+#lo127TrackSurface .lo127-live-intro small,
+#lo127TrackSurface .lo127-pane-intro small{
+ font-size:12px;color:var(--lo-muted);line-height:1.45
+}
+body[data-lifeos-view="tracking"] #lo127-live #trackQuickPanel,
+body[data-lifeos-view="tracking"] #lo127-live #trackActivePanel,
+body[data-lifeos-view="tracking"] #lo127-live #trackDistractionPanel,
+body[data-lifeos-view="tracking"] #lo127-history #trackHistoryPanel{
+ margin:10px 0!important;padding:15px!important;border-radius:16px!important;
+}
+body[data-lifeos-view="tracking"] #lo127-live #trackQuickPanel #quick>*{min-height:78px;padding:9px!important}
+body[data-lifeos-view="tracking"] #lo127-live #trackQuickPanel #quick>button span:first-child{font-size:20px;margin-bottom:3px}
+body[data-lifeos-view="tracking"] #lo127-live #trackQuickPanel .head{margin-bottom:12px}
+body[data-lifeos-view="tracking"] #lo127-live #trackQuickPanel h2,
+body[data-lifeos-view="tracking"] #lo127-live #trackActivePanel h2{font-size:19px}
+body[data-lifeos-view="tracking"] #lo127-live #trackDistractionPanel .note{font-size:11px}
+body[data-lifeos-view="tracking"] #lo127-history #trackHistoryPanel .lo-history-toolbar{margin:11px 0}
+body[data-lifeos-view="tracking"] #lo127-history #trackHistoryPanel .lo126-history-head{display:none}
+body[data-lifeos-view="tracking"] #lo127-history #trackHistoryPanel #lo126WeekChart{
+ margin:12px 0;border-radius:13px;
+}
+body[data-lifeos-view="tracking"] #lo127-history #trackHistoryPanel .head .sub{
+ font-size:11px;
+}
+#lo127TrackSurface .lo127-review-links{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px;
+}
+#lo127TrackSurface .lo127-link{
+ border-radius:12px;min-height:49px;background:var(--lo-surface-2);
+ border:1px solid var(--lo-border);color:var(--lo-text);
+ font-size:12px;font-weight:750;padding:10px;
+}
+#lo127TrackSurface .lo127-link:focus-visible{outline:3px solid var(--lo-accent);outline-offset:2px}
+#lo127TrackSurface .lo127-legacy-details{
+ border:1px solid var(--lo-border);border-radius:14px;
+ padding:0;background:var(--lo-surface);margin:12px 0;
+}
+#lo127TrackSurface .lo127-legacy-details>summary{
+ padding:14px;min-height:50px;font-size:13px;font-weight:780;color:var(--lo-text);cursor:pointer
+}
+#lo127TrackSurface .lo127-legacy-details[hidden]{display:none!important}
+#lo127TrackSurface .lo127-legacy-list{padding:0 12px 12px}
+#lo127TrackSurface .lo127-report{
+ margin:9px 0;border:1px solid var(--lo-border);
+ background:var(--lo-surface-2);border-radius:12px;
+}
+#lo127TrackSurface .lo127-report>summary{cursor:pointer;padding:12px;font-size:12px;font-weight:750;min-height:44px}
+#lo127TrackSurface .lo127-report>.panel{
+ margin:8px!important;padding:10px!important;
+ border:1px solid var(--lo-border);box-shadow:none!important
+}
+body[data-lifeos-view="tracking"] #lo127-review #lo126TrackExtras{
+ margin:0 0 12px;
+}
+body[data-lifeos-view="tracking"] #lo127-history .lo126-detail{
+ margin:10px 0;
+}
+body[data-lifeos-view="tracking"] #lo127-history .lo126-detail>summary{
+ background:var(--lo-surface-2);border-radius:12px;
+}
+body[data-lifeos-view="tracking"] #lo86-timer:not([hidden]){
+ bottom:calc(77px + env(safe-area-inset-bottom,0px));
+ padding:7px 9px;border-radius:13px;
+}
+body[data-lifeos-view="tracking"] #lo86-summary{gap:6px}
+body[data-lifeos-view="tracking"] #lo86-summary #lo86-name{font-size:12px}
+body[data-lifeos-view="tracking"] #lo86-summary #lo86-clock{font-size:13px;font-weight:780}
+body[data-lifeos-view="tracking"] #lo86-toggle{min-width:37px;min-height:36px}
+@media(max-width:410px){
+ #lo127TrackSurface .lo127-tab{font-size:11px;padding:9px 4px;min-height:46px}
+ #lo127TrackSurface .lo127-icon{font-size:14px}
+ body[data-lifeos-view="tracking"] #lo126TrackGuide .lo126-metric strong{font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ #lo127TrackSurface .lo127-tab{transition:none}
+}
