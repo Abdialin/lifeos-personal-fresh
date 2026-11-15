@@ -1,0 +1,194 @@
+/* LifeOS Personal Track V126 — screenshot-driven mobile command center.
+ * The same visual semantics as Today V121–V125; no activity edits. */
+body:not([data-lifeos-view="tracking"]) #lo126TrackGuide,
+body:not([data-lifeos-view="tracking"]) #lo126TrackExtras,
+body:not([data-lifeos-view="tracking"]) #lo126PastDetails,
+body:not([data-lifeos-view="tracking"]) #lo126TotalsDetails{display:none!important}
+body[data-lifeos-view="tracking"] #lo126TrackGuide{
+ padding:clamp(15px,2.5vw,21px);margin:0 0 14px;
+ border:1px solid var(--lo-border);border-radius:20px;
+ background:linear-gradient(125deg,color-mix(in srgb,var(--lo-surface) 93%,var(--lo-accent)),var(--lo-surface));
+ color:var(--lo-text);box-shadow:var(--lo-shadow);
+}
+#lo126TrackGuide .lo126-guide-heading{display:grid;gap:5px;margin-bottom:13px}
+#lo126TrackGuide .lo126-eyebrow,
+#trackHistoryPanel .lo126-eyebrow{
+ font-size:10px;letter-spacing:.11em;color:var(--lo-accent);font-weight:800
+}
+#lo126TrackGuide h2{font-size:clamp(21px,3.5vw,26px);letter-spacing:-.035em;margin:0;line-height:1.25}
+#lo126TrackGuide p{font-size:12px;line-height:1.45;color:var(--lo-muted);margin:0}
+#lo126TrackGuide .lo126-metrics{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px
+}
+#lo126TrackGuide .lo126-metric{
+ border-radius:12px;background:var(--lo-surface-2);border:1px solid var(--lo-border);
+ padding:11px;display:grid;gap:8px;min-width:0;min-height:84px;
+}
+#lo126TrackGuide .lo126-metric[data-tone="mint"]{border-top:3px solid var(--lo121-fitness)}
+#lo126TrackGuide .lo126-metric[data-tone="purple"]{border-top:3px solid var(--lo121-prayer)}
+#lo126TrackGuide .lo126-metric[data-tone="blue"]{border-top:3px solid var(--lo121-learning)}
+#lo126TrackGuide .lo126-metric small{color:var(--lo-muted);font-size:10px;line-height:1.3}
+#lo126TrackGuide .lo126-metric strong{
+ font-size:clamp(16px,2.8vw,23px);letter-spacing:-.04em;line-height:1.2;
+ font-variant-numeric:tabular-nums;white-space:nowrap
+}
+#lo126TrackGuide .lo126-actions{
+ display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,.7fr);
+ gap:8px;margin-top:13px
+}
+#lo126TrackGuide .lo126-action{
+ min-width:0;border-radius:11px;font:inherit;font-weight:750;font-size:12px;
+ border:1px solid var(--lo-border);min-height:48px;
+ background:var(--lo-surface-2);color:var(--lo-text);padding:9px 6px;
+ white-space:normal
+}
+#lo126TrackGuide .lo126-action.primary{
+ background:var(--lo-accent);color:var(--lo-bg);border-color:transparent
+}
+body[data-lifeos-view="tracking"] #trackQuickPanel,
+body[data-lifeos-view="tracking"] #trackActivePanel,
+body[data-lifeos-view="tracking"] #trackDistractionPanel,
+body[data-lifeos-view="tracking"] #trackHistoryPanel{
+ border:1px solid var(--lo-border);border-radius:20px;
+ background:var(--lo-surface);box-shadow:var(--lo-shadow);
+ padding:clamp(15px,2.5vw,21px);margin-bottom:14px;
+}
+#trackQuickPanel h2,#trackActivePanel h2,#trackHistoryPanel h2{letter-spacing:-.025em}
+#trackQuickPanel .lo126-quick-context{
+ color:var(--lo-muted);font-size:12px;margin:0 0 12px;line-height:1.45;
+}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px
+}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick>:nth-child(n+7){display:none!important}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick.lo126-quick-expanded>*{display:flex!important}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*{
+ border-radius:14px;min-width:0;padding:11px!important;min-height:94px;
+ border:1px solid var(--lo-border);background:var(--lo-surface-2);
+ color:var(--lo-text);font-size:12px;overflow-wrap:anywhere;word-break:normal;
+ transition:background .12s ease
+}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*[data-lo126-category="spiritual"]{border-top:3px solid var(--lo121-prayer)}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*[data-lo126-category="learning"]{border-top:3px solid var(--lo121-learning)}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*[data-lo126-category="work"]{border-top:3px solid var(--lo121-work)}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*[data-lo126-category="fitness"]{border-top:3px solid var(--lo121-fitness)}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*[data-lo126-category="food"]{border-top:3px solid var(--lo121-alert)}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*[data-lo126-category="distraction"]{border-top:3px solid var(--lo-danger)}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*:focus-visible,
+body[data-lifeos-view="tracking"] #lo126TrackGuide button:focus-visible,
+body[data-lifeos-view="tracking"] #lo126QuickMore:focus-visible,
+body[data-lifeos-view="tracking"] .lo126-detail>summary:focus-visible,
+body[data-lifeos-view="tracking"] .lo126-extras>summary:focus-visible{
+ outline:3px solid var(--lo-accent);outline-offset:3px
+}
+body[data-lifeos-view="tracking"] #lo126QuickMore{
+ display:block;width:100%;margin-top:10px;
+ min-height:45px;border:1px solid var(--lo-border);
+ background:var(--lo-surface-2);color:var(--lo-text);
+ border-radius:12px;font-size:13px;font-weight:750;
+}
+body[data-lifeos-view="tracking"] #lo126QuickMore[hidden]{display:none!important}
+body[data-lifeos-view="tracking"] #trackQuickPanel .note{font-size:11px;line-height:1.45}
+body[data-lifeos-view="tracking"] #trackDistractionPanel{
+ border-left:3px solid var(--lo121-alert)
+}
+body[data-lifeos-view="tracking"] #trackDistractionPanel .head{margin-bottom:7px}
+body[data-lifeos-view="tracking"] #trackDistractionPanel h2{font-size:17px}
+body[data-lifeos-view="tracking"] #trackDistractionPanel .note{font-size:11px}
+body[data-lifeos-view="tracking"] #trackActivePanel #sessions{margin:0 0 9px}
+body[data-lifeos-view="tracking"] #trackActivePanel #lo77-timer-quick{
+ margin-bottom:12px;border:1px solid var(--lo-border);
+ border-radius:13px;background:var(--lo-surface-2)
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo126-timer-settings{
+ margin-top:12px;border-radius:12px;
+ border:1px solid var(--lo-border);background:var(--lo-surface-2)
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo126-timer-settings>summary{
+ font-size:13px;font-weight:750;cursor:pointer;padding:13px;min-height:44px;color:var(--lo-text)
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo126-timer-settings>:not(summary){
+ margin:10px 12px;max-width:calc(100% - 24px)
+}
+body[data-lifeos-view="tracking"] #trackActivePanel .lo126-help{color:var(--lo-muted);font-size:12px;line-height:1.45}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo126-history-head{margin-bottom:13px}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo126-history-head p{
+ font-size:12px;color:var(--lo-muted);line-height:1.4;margin:6px 0
+}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar{
+ display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr);
+ gap:7px 10px;align-items:end;margin:12px 0
+}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar label{font-size:11px}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar #loHistorySearch,
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar #loHistoryPeriod{
+ width:100%;min-width:0;font-size:13px;min-height:46px;
+}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar label[for="loHistorySearch"]{grid-column:1;grid-row:1}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar label[for="loHistoryPeriod"]{grid-column:2;grid-row:1}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar #loHistorySearch{grid-column:1;grid-row:2}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar #loHistoryPeriod{grid-column:2;grid-row:2}
+#lo126WeekChart{
+ border:1px solid var(--lo-border);border-radius:14px;
+ background:var(--lo-surface-2);padding:12px;margin:12px 0
+}
+#lo126WeekChart .lo126-chart-head{display:grid;gap:3px;margin-bottom:12px}
+#lo126WeekChart .lo126-chart-head strong{font-size:14px}
+#lo126WeekChart .lo126-chart-head small{font-size:11px;color:var(--lo-muted)}
+#lo126WeekChart .lo126-chart-rows{display:grid;gap:7px}
+#lo126WeekChart .lo126-chart-row{display:grid;grid-template-columns:35px minmax(0,1fr) 54px;gap:8px;align-items:center}
+#lo126WeekChart .lo126-day,#lo126WeekChart .lo126-day-count{
+ color:var(--lo-muted);font-size:11px;font-variant-numeric:tabular-nums
+}
+#lo126WeekChart .lo126-day-count{text-align:right}
+#lo126WeekChart .lo126-chart-track{height:13px;border-radius:9px;background:var(--lo-surface-3);overflow:hidden}
+#lo126WeekChart .lo126-chart-fill{
+ display:block;height:100%;border-radius:9px;
+ background:linear-gradient(90deg,var(--lo121-learning),var(--lo121-fitness));min-width:0
+}
+#lo126WeekChart .lo126-chart-note{
+ color:var(--lo-muted);font-size:11px;line-height:1.45;margin:10px 0 0
+}
+body[data-lifeos-view="tracking"] .lo126-detail,
+body[data-lifeos-view="tracking"] .lo126-extras{
+ border:1px solid var(--lo-border);border-radius:15px;
+ background:var(--lo-surface);margin:12px 0;color:var(--lo-text)
+}
+body[data-lifeos-view="tracking"] .lo126-detail>summary,
+body[data-lifeos-view="tracking"] .lo126-extras>summary{
+ cursor:pointer;padding:14px;min-height:49px;font-weight:770;font-size:14px
+}
+body[data-lifeos-view="tracking"] .lo126-detail[open]>summary,
+body[data-lifeos-view="tracking"] .lo126-extras[open]>summary{
+ border-bottom:1px solid var(--lo-border)
+}
+body[data-lifeos-view="tracking"] .lo126-detail>section.panel,
+body[data-lifeos-view="tracking"] .lo126-extras section.panel{
+ margin:10px!important;border:1px solid var(--lo-border)!important;
+ box-shadow:none!important;padding:13px!important
+}
+body[data-lifeos-view="tracking"] .lo126-extras .lo126-extra-intro{
+ padding:12px 14px 0;font-size:12px;line-height:1.45;color:var(--lo-muted)
+}
+body[data-lifeos-view="tracking"] .lo126-extras .lo126-extra-intro p{margin:0 0 7px}
+body[data-lifeos-view="tracking"] .lo126-extras .lo126-extra-list{padding-bottom:5px}
+body[data-lifeos-view="tracking"] #lo14TrackTools{display:none!important}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .history details{border-radius:12px}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .history details summary{min-height:44px}
+@media(max-width:520px){
+ #lo126TrackGuide .lo126-metrics{gap:6px}
+ #lo126TrackGuide .lo126-metric{padding:10px 8px;min-height:82px}
+ #lo126TrackGuide .lo126-metric strong{font-size:17px}
+ #lo126TrackGuide .lo126-actions{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+ #lo126TrackGuide .lo126-action:last-child{grid-column:1/-1;min-height:43px}
+ body[data-lifeos-view="tracking"] #trackHistoryPanel .head{align-items:flex-start;gap:8px}
+ body[data-lifeos-view="tracking"] #trackHistoryPanel #exportCsv{font-size:11px;padding:10px 8px}
+}
+@media(max-width:375px){
+ body[data-lifeos-view="tracking"] #trackQuickPanel #quick{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #lo126TrackGuide .lo126-metric strong{font-size:15px}
+ #lo126TrackGuide .lo126-metric small{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-lifeos-view="tracking"] #trackQuickPanel #quick>*{transition:none}
+}
