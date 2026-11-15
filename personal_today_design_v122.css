@@ -1,0 +1,66 @@
+/* LifeOS V122 Today: reusable compact/detailed agenda + interactive evidence.
+   Display controls are scoped to Today; read-only charts preserve data. */
+#lo122-agenda{
+ background:var(--lo-surface);border:1px solid var(--lo-border);
+ border-radius:20px;padding:clamp(14px,2vw,20px);margin:14px 0 18px;
+ color:var(--lo-text);box-shadow:var(--lo-shadow);
+}
+#lo122-agenda .lo122-head{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:15px;flex-wrap:wrap}
+#lo122-agenda .lo122-eyebrow{font-size:10px;letter-spacing:.1em;font-weight:750;color:var(--lo-accent)}
+#lo122-agenda h2{margin:4px 0 0;font-size:clamp(18px,2.5vw,22px);letter-spacing:-.025em}
+#lo122-agenda .lo122-mode{display:inline-flex;padding:3px;gap:3px;border-radius:11px;background:var(--lo-surface-2);border:1px solid var(--lo-border)}
+#lo122-agenda .lo122-mode-button{border:0;border-radius:8px;padding:9px 11px;min-height:38px;background:transparent;color:var(--lo-muted);font-size:12px;font-weight:750}
+#lo122-agenda .lo122-mode-button[aria-pressed="true"]{background:var(--lo-surface-3);color:var(--lo-text)}
+#lo122-agenda .lo122-periods{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#lo122-agenda .lo122-period{
+ display:grid;justify-items:center;align-content:center;gap:5px;min-width:0;
+ min-height:98px;border:1px solid var(--lo-border);border-radius:13px;
+ padding:10px 5px;background:var(--lo-surface-2);color:var(--lo-text)
+}
+#lo122-agenda .lo122-period.is-selected{border-color:var(--lo-blue);background:color-mix(in srgb,var(--lo-surface-2) 85%,var(--lo-blue))}
+#lo122-agenda .lo122-period-icon{font-size:18px;line-height:1}
+#lo122-agenda .lo122-period-label{font-size:11px;color:var(--lo-muted);font-weight:650}
+#lo122-agenda .lo122-period-count{font-size:16px;line-height:1.2}
+#lo122-agenda .lo122-agenda-detail{margin-top:11px;background:var(--lo-surface-2);padding:12px;border:1px solid var(--lo-border);border-radius:13px}
+#lo122-agenda .lo122-detail-header,.lo122-timeline-detail .lo122-detail-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#lo122-agenda .lo122-detail-header strong{font-size:13px}
+#lo122-agenda .lo122-view-plan,#lo122-agenda .lo122-expand,.lo122-detail-close{border:0;background:transparent;color:var(--lo-blue);font-size:12px;font-weight:750;padding:8px 6px}
+#lo122-agenda .lo122-item{width:100%;min-width:0;display:grid;grid-template-columns:70px minmax(0,1fr);gap:9px;align-items:center;text-align:left;margin-top:7px;padding:10px;border-radius:10px;border:1px solid var(--lo-border);background:var(--lo-surface);color:var(--lo-text)}
+#lo122-agenda .lo122-item[data-kind="to-do"]{border-left:3px solid var(--lo121-alert)}
+#lo122-agenda .lo122-item[data-kind="activity"]{border-left:3px solid var(--lo121-work)}
+#lo122-agenda .lo122-item-time{font-size:12px;font-variant-numeric:tabular-nums;color:var(--lo-muted)}
+#lo122-agenda .lo122-item-name{font-size:13px;font-weight:650;overflow-wrap:anywhere}
+#lo122-agenda .lo122-empty{font-size:12px;color:var(--lo-muted);margin:8px 0 0}
+.v4-section[data-v4-view="dashboard"] .lo122-timeline-button{
+ cursor:pointer;min-width:0;width:100%;padding:0;border:1px solid transparent;
+ border-radius:7px;appearance:none;
+}
+.v4-section[data-v4-view="dashboard"] .lo122-timeline-button:focus-visible,
+#lo122-agenda button:focus-visible{
+ outline:3px solid var(--lo-accent);outline-offset:3px;
+}
+.lo122-timeline-detail{
+ margin:10px 0 17px;padding:14px;background:var(--lo-surface-2);
+ color:var(--lo-text);border:1px solid var(--lo-border);border-radius:15px;
+}
+.lo122-timeline-detail[hidden]{display:none!important}
+.lo122-timeline-detail .lo122-detail-header strong{font-size:15px}
+.lo122-timeline-detail .lo122-interval-time{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;margin:9px 0}
+.lo122-timeline-detail .lo122-interval-label{font-size:12px;color:var(--lo-muted);margin:0}
+body[data-lo122-mode="compact"][data-lifeos-view="dashboard"] #todayOverview .today-clarity{font-size:11px}
+body[data-lo122-mode="compact"][data-lifeos-view="dashboard"] .v4-section[data-v4-view="dashboard"] .v4-card:nth-child(2) .v4-muted{display:none}
+body[data-lo122-mode="compact"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activity:nth-child(n+3){display:none}
+body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activity:nth-child(-n+6){display:flex}
+body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities:not(.lo-today-expanded)>.lo-today-activity:nth-child(n+7){display:none}
+body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities:not(.lo-today-expanded)>.lo-today-activity:nth-child(-n+6){display:flex}
+body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities.lo-today-expanded>.lo-today-activity{display:flex}
+@media(max-width:550px){
+ #lo122-agenda .lo122-periods{gap:5px}
+ #lo122-agenda .lo122-period{padding:8px 3px;min-height:82px}
+ #lo122-agenda .lo122-period-label{font-size:10px}
+ #lo122-agenda .lo122-head{gap:8px}
+ #lo122-agenda .lo122-mode{width:100%;justify-content:space-between}
+ #lo122-agenda .lo122-mode-button{flex:1}
+ body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activity:nth-child(-n+6){display:grid}
+ body[data-lo122-mode="detailed"][data-lifeos-view="dashboard"] #todayActivityHistoryPanel .lo-today-activities.lo-today-expanded>.lo-today-activity{display:grid}
+}
