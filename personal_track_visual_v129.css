@@ -1,0 +1,200 @@
+/* LifeOS V129 • editorial Track system: illustrated, progressive, restrained.
+ * Distinctive charts, meaningful spacing and meaningful category palette. */
+body[data-lifeos-view="tracking"] #lo127TrackSurface{--lo129-purple:#BEA0F5;--lo129-rose:#F18CA8;--lo129-blue:#73A9FF;--lo129-green:#52C9A7;--lo129-gold:#F2BA77}
+body[data-lifeos-view="tracking"] #lo127-live>section.panel,
+body[data-lifeos-view="tracking"] #lo127-history>section.panel{background:linear-gradient(160deg,color-mix(in srgb,var(--lo-surface) 98%,#526da1),var(--lo-surface))}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile{
+ border-top-color:var(--lo129-icon)!important;position:relative;
+ background:linear-gradient(155deg,color-mix(in srgb,var(--lo-surface-2) 90%,var(--lo129-icon)),var(--lo-surface-2))!important;
+ box-shadow:0 6px 12px #0000000c,inset 0 1px 0 #ffffff08!important;
+ transition:transform .15s ease,background .15s ease;
+}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile:active{transform:scale(.97)}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile .lo-quick-glyph{
+ color:var(--lo129-icon)!important;background:color-mix(in srgb,var(--lo129-icon) 15%,transparent)!important;
+ border:1px solid color-mix(in srgb,var(--lo129-icon) 23%,transparent);width:38px;height:38px;
+}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile .lo-quick-glyph svg,
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile .lo-quick-glyph svg *{
+ color:var(--lo129-icon)!important;stroke:var(--lo129-icon)!important;
+}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile .lo-quick-copy{
+ line-height:1.3;font-size:12px;letter-spacing:-.015em;
+}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile[data-lo129-category="spiritual"]{border-top-color:#BEA0F5!important}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile[data-lo129-category="learning"]{border-top-color:#73A9FF!important}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile[data-lo129-category="work"]{border-top-color:#F2BA77!important}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile[data-lo129-category="fitness"]{border-top-color:#52C9A7!important}
+body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile[data-lo129-category="sleep"]{border-top-color:#8DA4F8!important}
+body[data-lifeos-view="tracking"] #trackDistractionPanel{
+ padding:15px!important;
+}
+body[data-lifeos-view="tracking"] #trackDistractionPanel #lo128DistractionDetails{
+ background:var(--lo-surface)!important;overflow:hidden;margin:12px 0 0;border-radius:15px;
+}
+body[data-lifeos-view="tracking"] #trackDistractionPanel #lo128DistractionDetails>summary{
+ font-size:14px!important;font-weight:800!important;padding:15px!important;
+ background:linear-gradient(90deg,color-mix(in srgb,#E88EAD 10%,var(--lo-surface-2)),var(--lo-surface-2));
+}
+body[data-lifeos-view="tracking"] #trackDistractionPanel #lo128DistractionDetails>.lo128-context{display:none!important}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard{
+ margin:0!important;max-width:100%!important;padding:17px 15px!important;
+ border-top:1px solid var(--lo-border);
+ background:linear-gradient(155deg,color-mix(in srgb,var(--lo-surface) 96%,#F18CA8),var(--lo-surface));
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-kicker{
+ color:var(--lo129-rose);letter-spacing:.12em;font-size:10px;font-weight:850;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-section-heading h3{
+ font-size:21px;letter-spacing:-.045em;margin:6px 0 2px;line-height:1.2;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-section-heading p{
+ color:var(--lo-muted);font-size:12px;line-height:1.45;margin:5px 0 15px;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-range{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:0 0 16px;
+ border-radius:13px;border:1px solid var(--lo-border);padding:5px;
+ background:var(--lo-surface-2);
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-range-btn{
+ font-size:13px;font-weight:800;color:var(--lo-muted);
+ border:1px solid transparent;background:transparent;min-height:40px;border-radius:9px;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-range-btn[aria-pressed="true"]{
+ background:#693B58;color:#FFE7EE;border-color:#995A7A;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0 0 16px!important;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat{
+ min-width:0;margin:0!important;padding:13px!important;
+ background:var(--lo-surface-2);border:1px solid var(--lo-border);border-radius:14px;
+ border-top:3px solid var(--lo129-stat-accent);
+ display:grid;gap:8px;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat[data-tone="rose"]{--lo129-stat-accent:#F18CA8}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat[data-tone="blue"]{--lo129-stat-accent:#73A9FF}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat[data-tone="purple"]{--lo129-stat-accent:#BEA0F5}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat[data-tone="amber"]{--lo129-stat-accent:#F2BA77}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat-caption{
+ font-size:11px;color:var(--lo-muted);line-height:1.25;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat-value{
+ font-size:clamp(19px,4.2vw,26px);line-height:1.15;
+ font-weight:800;letter-spacing:-.035em;overflow-wrap:anywhere;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat-note{
+ color:var(--lo-muted);font-size:10px;line-height:1.35;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-chart-card{
+ margin:0 0 13px!important;max-width:100%!important;
+ background:var(--lo-surface-2);border:1px solid var(--lo-border);
+ border-radius:15px;padding:14px!important;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-chart-title{
+ font-size:14px;font-weight:800;color:var(--lo-text);
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-chart-sub{
+ color:var(--lo-muted);font-size:11px;margin:5px 0 14px;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-mini-bars{display:grid;gap:11px}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-bar{
+ display:grid;grid-template-columns:32px minmax(0,1fr) 53px;gap:9px;align-items:center;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-bar-caption,
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-bar-value{
+ font-size:11px;color:var(--lo-muted);font-variant-numeric:tabular-nums;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-bar-value{text-align:right}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-bar-track{
+ display:block;background:color-mix(in srgb,var(--lo-surface) 65%,#53617d);
+ border-radius:100px;height:10px;overflow:hidden;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-bar-fill{
+ display:block;height:100%;border-radius:100px;
+ background:linear-gradient(90deg,#F093AD,#9973EC);
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-takeaway{
+ background:color-mix(in srgb,#AF73DE 10%,var(--lo-surface));
+ border:1px solid color-mix(in srgb,#AF73DE 34%,var(--lo-border));
+ border-radius:12px;padding:12px!important;
+ display:grid;gap:4px;color:var(--lo-text);font-size:12px;line-height:1.5;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-takeaway strong{color:var(--lo129-purple)}
+body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-evidence-note{
+ color:var(--lo-muted);font-size:10px;line-height:1.45;margin:12px 0 0;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep{
+ display:block;margin:12px!important;max-width:calc(100% - 24px)!important;
+ border:1px solid var(--lo-border);border-radius:12px;background:var(--lo-surface-2);
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep>summary{
+ cursor:pointer;min-height:48px;padding:14px!important;
+ font-weight:770;font-size:12px;color:var(--lo-text);
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite{
+ margin:0!important;max-width:100%;padding:12px!important;background:transparent!important;
+ border:0!important;border-top:1px solid var(--lo-border)!important;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite h3{
+ font-size:16px;line-height:1.25;letter-spacing:-.025em;margin:0 0 12px;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite label{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+ font-size:11px;color:var(--lo-muted);margin:0 0 12px;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite #lo94-period{
+ border-radius:10px;min-height:38px;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite .lo94-grid{
+ grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite .lo94-grid article{
+ min-width:0;border:1px solid var(--lo-border);background:var(--lo-surface)!important;
+ border-radius:11px;padding:10px!important;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite .lo94-grid article span{
+ font-size:10px;display:block;color:var(--lo-muted);
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite .lo94-grid article strong{
+ font-size:15px;line-height:1.3;margin:7px 0;overflow-wrap:anywhere;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite .lo94-grid article small{
+ font-size:10px;line-height:1.4;color:var(--lo-muted);
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite .lo94-grid article[data-lo129-domain="distraction"]{border-top:3px solid #F093AD}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite .lo94-grid article[data-lo129-domain="recovery"]{border-top:3px solid #F2BA77}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite .lo94-grid article[data-lo129-domain="lifestyle"]{border-top:3px solid #52C9A7}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite .lo94-grid article[data-lo129-domain="planning"]{border-top:3px solid #73A9FF}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite #lo94-content>p{
+ font-size:11px;line-height:1.5;color:var(--lo-muted);padding:10px;
+ border-radius:10px;background:var(--lo-surface);margin:11px 0;
+}
+body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite #lo94-refresh{
+ min-height:42px;font-size:12px;border-radius:10px;
+}
+body[data-lifeos-view="tracking"] #lo126TotalsDetails #todayLegacyOverviewPanel.lo129-evidence-panel .stat{
+ border-top:3px solid var(--lo129-card-accent);
+}
+body[data-lifeos-view="tracking"] #lo126TotalsDetails .stat[data-lo129-tone="blue"]{--lo129-card-accent:#73A9FF}
+body[data-lifeos-view="tracking"] #lo126TotalsDetails .stat[data-lo129-tone="mint"]{--lo129-card-accent:#52C9A7}
+body[data-lifeos-view="tracking"] #lo126TotalsDetails .stat[data-lo129-tone="green"]{--lo129-card-accent:#F2BA77}
+body[data-lifeos-view="tracking"] #lo126TotalsDetails .stat[data-lo129-tone="violet"]{--lo129-card-accent:#BEA0F5}
+body[data-lifeos-view="tracking"] #trackActivePanel.lo129-active #lo77-timer-quick{
+ background:linear-gradient(130deg,color-mix(in srgb,var(--lo-surface-2) 91%,#52C9A7),var(--lo-surface-2));
+ border-radius:17px;
+}
+body[data-lifeos-view="tracking"] #lo127-history .lo129-archive details{
+ border:1px solid var(--lo-border);border-radius:12px;margin:8px 0;
+ background:var(--lo-surface-2);
+}
+body[data-lifeos-view="tracking"] #lo127-history .lo129-archive details>summary{
+ font-size:13px;font-weight:720;min-height:47px;padding:10px;
+}
+@media(max-width:400px){
+ body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat{padding:10px!important}
+ body[data-lifeos-view="tracking"] #lo129DistractionDashboard .lo129-stat-value{font-size:19px}
+ body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile .lo-quick-copy{font-size:11px}
+ body[data-lifeos-view="tracking"] #lo129DistractionDeep #lo94-suite .lo94-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){body[data-lifeos-view="tracking"] #trackQuickPanel #quick .lo128-tile{transition:none}}
