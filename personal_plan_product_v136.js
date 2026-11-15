@@ -117,6 +117,15 @@ function init(){
  source.prepend(host);source.classList.add('v136-managed');
  const legacy=document.createElement('div');legacy.id='v136LegacyDock';legacy.hidden=true;source.append(legacy);
  makeAdvanced();
+ // Some older modules mount later than DOMContentLoaded. Rehome their panels as they appear.
+ const lateModules=new MutationObserver(changes=>{
+  for(const change of changes)for(const item of change.addedNodes){
+   if(item.nodeType!==1||item===host||item.id==='v136LegacyDock'||item.parentNode!==source)continue;
+   const area=categorize(item),slot=$('v136Old-'+area)||$('v136Old-more');
+   if(slot&&item!==slot)slot.append(item);
+  }
+ });
+ lateModules.observe(source,{childList:true});
  host.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.v136Tab){screen(b.dataset.v136Tab);return}
