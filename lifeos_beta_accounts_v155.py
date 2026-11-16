@@ -300,7 +300,7 @@ def workspace_post(handler, path, database_url, secret):
                     start=_datetime(_field(form,'start'));end=_datetime(_field(form,'end'))
                     if (kind not in ('plan','activity','task') or not 1<=len(title)<=140 or
                         (_field(form,'start') and start is None) or (_field(form,'end') and end is None) or
-                        (start and end and end<start) or (kind=='activity' and (not start or not end))):
+                        (start and end and end<start) or (kind=='activity' and (not start or not end or end <= start or end.timestamp() > time.time())) ):
                         _response(handler,400,_shell('Invalid entry','<h1>Check the entry</h1><p>Activities need both actual start and end times. End must not precede start.</p><a class="button" href="/account/workspace">Back</a>'));return
                     c.execute("""INSERT INTO lifeos_beta_accounts.workspace_items
                         (user_id,kind,title,starts_at,ends_at) VALUES (%s,%s,%s,%s,%s)""",
