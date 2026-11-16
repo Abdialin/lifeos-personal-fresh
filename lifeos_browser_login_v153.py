@@ -128,7 +128,7 @@ button{margin-top:24px;width:100%;border:0;border-radius:13px;background:#087c65
 <label for="username">Username</label><input id="username" name="username" autocomplete="username" required maxlength="200">
 <label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required>
 <button type="submit">Sign in securely</button></form>
-<small>Use your existing LifeOS browser username and password. The cloud sync token is separate.</small>
+<small>Use your existing LifeOS browser username and password. The cloud sync token is separate.</small><p style="margin-top:20px;padding-top:16px;border-top:1px solid #345166">New to LifeOS? <a href="/account/register" style="color:#7de2c9;font-weight:700">Create an account</a></p><p><a href="/account/login" style="color:#7de2c9">Sign in with a new account</a></p>
 </main></body></html>"""
 
 
