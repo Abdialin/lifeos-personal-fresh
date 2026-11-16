@@ -1,0 +1,29 @@
+/* LifeOS Goals V160: compact five-screen app experience */
+.g160-app{max-width:1080px;margin:0 auto 20px;color:#eff6ff;scroll-margin-top:12px}
+.g160-app[hidden],.g160-app [hidden]{display:none!important}
+body[data-lifeos-view="goals"] #loGoalsVisual{display:none!important}
+.g160-tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:8;background:#060e20;padding:8px 0 12px;margin-bottom:16px;border-bottom:1px solid #243b50}
+.g160-tabs button{border:0;border-radius:13px;background:transparent;color:#8ea5b9;padding:13px 14px;font-weight:750;flex:1;min-width:max-content}
+.g160-tabs button[aria-selected="true"]{background:#075846;color:#f0fff9}
+.g160-app h2{margin:0 0 8px;font-size:clamp(22px,4vw,29px)}.g160-app h3{margin:0}
+.g160-app p{line-height:1.45}
+.g160-hero{padding:20px;border:1px solid #19584f;background:linear-gradient(120deg,#072a2c,#091428);border-radius:23px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.g160-hero p{font-size:14px;color:#a4bdc4;margin:8px 0 0}.g160-kicker{color:#58c4aa;letter-spacing:2px;font-size:11px;font-weight:800}
+.g160-primary{border:1px solid #20836d;color:white;background:#006951;font-weight:800;border-radius:14px;padding:13px 17px;white-space:nowrap}
+.g160-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:15px 0}
+.g160-stats>div{background:#101d32;border:1px solid #2d4560;border-radius:16px;padding:14px 11px;min-width:0}
+.g160-stats b{display:block;font-size:26px}.g160-stats span{font-size:12px;color:#93aabc}
+.g160-sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 0 12px}.g160-sectionhead p{color:#90aabb;font-size:13px;margin:3px 0}
+.g160-sectionhead button,.g160-tip button,.g160-card button{background:transparent;color:#71dec4;border:0;font-weight:750;padding:6px 0}
+.g160-card{padding:17px;margin:10px 0;border:1px solid #2e4662;border-radius:19px;background:#0b192c}
+.g160-cardtop{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.g160-cardtop strong{display:block;font-size:16px}.g160-cardtop span:not(.g160-state){display:block;color:#90aabb;font-size:12px;margin-top:5px}
+.g160-state{color:#77d4b5;border-radius:20px;background:#0f3131;padding:6px 8px;font-size:11px;text-align:right;max-width:120px}
+.g160-value{margin:15px 0 8px}.g160-value b{font-size:27px}.g160-value span{color:#a6b9c9;font-size:13px}
+.g160-meter{height:8px;background:#14263a;border-radius:30px;overflow:hidden}.g160-meter i{display:block;height:100%;background:linear-gradient(90deg,#00a786,#6ed3c3);border-radius:30px}
+.g160-note,.g160-lead{font-size:13px;color:#a4b7c9;margin:11px 0 3px}.g160-caution{display:block;margin:9px 0;color:#e1ae66}
+.g160-tip,.g160-empty{border:1px solid #1e6159;background:#061f27;border-radius:17px;padding:17px;margin:16px 0;color:#d6efee}.g160-tip p{margin:7px 0 5px;font-size:13px;color:#b0c6c6}
+.g160-simple{padding:13px 4px;border-bottom:1px solid #293d53}.g160-simple>div:first-child,.g160-historyline{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:8px 0}.g160-simple span,.g160-historyline span{color:#95acbc;font-size:13px}.g160-simple .g160-meter{margin:12px 0}
+.g160-historyline{margin:18px 0 7px}
+.g160-native{margin-top:20px}.g160-native>section.panel{padding:15px;border-radius:18px}.g160-native #goalForm{max-width:640px}
+.g160-native #lifeosGoalSuggestions{margin-bottom:15px}.g160-native #goalList .item{gap:12px}
+@media(max-width:600px){.g160-hero{display:block}.g160-hero .g160-primary{margin-top:14px;width:100%}.g160-tabs button{padding:12px 10px;font-size:13px}.g160-app{padding:0 2px}.g160-card{padding:14px}.g160-stats b{font-size:23px}.g160-stats span{font-size:11px}.g160-sectionhead h2{font-size:23px}}
