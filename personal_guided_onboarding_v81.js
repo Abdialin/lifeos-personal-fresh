@@ -152,15 +152,12 @@ function mount(){
   message(detail.result?.message||'Setup could not be saved.');
   if(detail.result?.ok){try{localStorage.setItem('lifeos.personal.onboarded.v81','1')}catch{}resume?.clear?.(localStorage);root.__lifeosV85OnboardingSaved=true;close();document.querySelector('#lifeosNavigation button[data-view="dashboard"]')?.click()}
  };
- // For genuinely empty accounts only. Do not interrupt an existing populated workspace.
+ // V151: Never auto-open onboarding. Cloud recovery and account login can hydrate
+ // an existing workspace after this UI mounts, so an early empty snapshot is unsafe.
+ // The Guided setup button remains available for deliberate user action.
  root.setTimeout(()=>{
-  if(localStorage.getItem('lifeos.personal.onboarded.v81'))return;
-  if(resume?.read?.(localStorage)?.ok){trigger.classList.add('lo81-new');return}
-  const w=ws();if((w.sessions||[]).length||(w.schedule||[]).length||(w.todos||[]).length||(w.habitDefinitions||[]).length)return;
-  // User chooses to open; never surprise-show during a running activity.
-  trigger.classList.add('lo81-new');
-  // Offer once per browser tab on an entirely empty workspace; never overwrite data.
-  try{if(!sessionStorage.getItem('lifeos.personal.onboarding.offered.v81')){sessionStorage.setItem('lifeos.personal.onboarding.offered.v81','1');open()}}catch{}
+  const w=ws();const hasRecords=['sessions','schedule','todos','goals','workouts','meals','habitDefinitions','idealRoutines'].some(k=>Array.isArray(w[k])&&w[k].length>0);
+  if(!hasRecords)trigger.classList.add('lo81-new');
  },200);
 }
 const api={times,nextWeek,conflicts,prepare};
