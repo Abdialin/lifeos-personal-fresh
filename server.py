@@ -17,6 +17,7 @@ import calendar_audit_store as audit_store
 import atomic_calendar
 import personal_preferences_store_v89 as preference_store
 import personal_account_http_v117 as account_http
+import lifeos_browser_login_v153 as browser_login
 
 ROOT = Path(__file__).resolve().parent
 DB = Path(os.environ.get('LIFEOS_DB', str(ROOT / 'data' / 'lifeos.sqlite3')))
@@ -173,6 +174,8 @@ class Handler(BaseHTTPRequestHandler):
         if not USERNAME or not PASSWORD or not TOKEN:
             self.reply(503, {'error': 'Configure LIFEOS_USERNAME, LIFEOS_PASSWORD and LIFEOS_TOKEN'})
             return False
+        if browser_login.is_signed_in(self.headers, PASSWORD, TOKEN):
+            return True
         auth = self.headers.get('Authorization', '')
         if auth.startswith('Basic '):
             try:
@@ -182,11 +185,7 @@ class Handler(BaseHTTPRequestHandler):
                     return True
             except (ValueError, UnicodeError):
                 pass
-        self.send_response(401)
-        self.send_header('WWW-Authenticate', 'Basic realm="Private LifeOS"')
-        self.send_header('Cache-Control', 'no-store')
-        self.send_header('Content-Length', '0')
-        self.end_headers()
+        browser_login.unauthenticated(self, urlparse(self.path).path, self.command)
         return False
 
     def auth(self):
@@ -259,6 +258,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
+        if path == '/login':
+            browser_login.show_login(self)
+            return
         if path == '/healthz':
             self.reply(200, {'status': 'ok'})
             return
@@ -400,6 +402,9 @@ class Handler(BaseHTTPRequestHandler):
         self.reply(404, {'error': 'Not found'})
 
     def do_POST(self):
+        if urlparse(self.path).path == '/login':
+            browser_login.login(self, USERNAME, PASSWORD, TOKEN)
+            return
         if not self.private_access(): return
         if self.handle_account_request('POST',urlparse(self.path).path):return
         if urlparse(self.path).path == '/api/calendar/document-preview':
