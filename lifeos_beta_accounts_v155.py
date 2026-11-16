@@ -184,12 +184,141 @@ def _home(user, secret):
     return _shell('Your account','<h1>Welcome, '+_safe(name)+'</h1><div class="notice">Your private beta account is active.</div>'+
         '<p><b>Email:</b> '+_safe(email)+' — '+('Verified' if ev else 'Verification pending')+'</p>'+
         '<p><b>Phone:</b> '+(_safe(phone) if phone else 'Not added')+' — '+('Verified' if pv else 'Not verified')+'</p>'+
-        '<p>No activity history has been imported. Your account cannot see the existing single-user workspace. Personal multi-user dashboards, email verification, password recovery and SMS verification are not enabled yet.</p>'+
+        '<p>Your beta account has its own private starter workspace. Your original single-user history has not been imported. Full tracking, email verification, password recovery and SMS verification are not enabled yet.</p>'+        '<a class="button" href="/account/workspace">Open my private workspace</a>'+
         '<form action="/account/logout" method="post"><input type="hidden" name="csrf" value="'+_csrf_token(secret, 'account-logout')+'"><button class="primary">Log out</button></form>'+
         '<div class="links"><a href="/account/login">Return to account sign in</a></div>')
 
 
+
+def _workspace_init(db):
+    # Separate schema and owner-bound rows; legacy tables are never referenced.
+    with db.cursor() as c:
+        c.execute("""CREATE TABLE IF NOT EXISTS lifeos_beta_accounts.workspace_items(
+            id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            user_id bigint NOT NULL REFERENCES lifeos_beta_accounts.users(id) ON DELETE CASCADE,
+            kind text NOT NULL CHECK (kind IN ('plan','activity','task')),
+            title text NOT NULL,
+            starts_at timestamptz,
+            ends_at timestamptz,
+            completed boolean NOT NULL DEFAULT false,
+            created_at timestamptz NOT NULL DEFAULT now(),
+            CONSTRAINT valid_workspace_interval CHECK (ends_at IS NULL OR starts_at IS NULL OR ends_at >= starts_at))""")
+        c.execute("""CREATE INDEX IF NOT EXISTS beta_workspace_owner_idx
+            ON lifeos_beta_accounts.workspace_items(user_id,created_at DESC)""")
+
+
+def _workspace_home(user, rows, secret, msg=''):
+    import datetime
+    uid,name,mail,phone,ev,pv = user
+    counts = {kind:sum(1 for x in rows if x[1]==kind) for kind in ('plan','activity','task')}
+    def date_text(v):
+        return _safe(v.strftime('%d %b %Y, %H:%M')) if v else ''
+    tabs=[]
+    for kind,heading in [('plan','Upcoming plans'),('activity','Recorded activities'),('task','Tasks')]:
+        items=[r for r in rows if r[1]==kind]
+        cards=''
+        for r in items[:25]:
+            item_id,k,title,start,end,done=r
+            when=(' · '+date_text(start)) if start else ''
+            span=(' – '+date_text(end)) if end else ''
+            action=''
+            if kind=='task' and not done:
+                action='<form method="post" action="/account/workspace/finish"><input type="hidden" name="csrf" value="'+_csrf_token(secret,'workspace-finish')+'"><input type="hidden" name="item_id" value="'+str(item_id)+'"><button type="submit">Mark complete</button></form>'
+            cards+='<article style="border:1px solid #31556a;border-radius:12px;padding:12px;margin:10px 0"><strong>'+_safe(title)+'</strong><br><small>'+when+span+(' · Completed' if done else '')+'</small>'+action+'</article>'
+        tabs.append('<section style="margin-top:24px"><h2>'+heading+' <small>('+str(counts[kind])+')</small></h2>'+(cards or '<p>No '+heading.lower()+' yet.</p>')+'</section>')
+    notice='<div class="notice">'+_safe(msg)+'</div>' if msg else ''
+    return _shell('My workspace','''<div class="brand">PRIVATE BETA WORKSPACE</div><h1>Your personal space</h1><p>Signed in as '''+_safe(name)+'''</p>'''+notice+'''
+<p>Only this account can see these records. Planned time is not tracked time.</p>
+<div class="notice"><b>'''+str(counts['plan'])+''' plans · '''+str(counts['activity'])+''' activities · '''+str(counts['task'])+''' tasks</b></div>
+<h2>Add an item</h2>
+<form method="post" action="/account/workspace/add">
+<input type="hidden" name="csrf" value="'''+_csrf_token(secret,'workspace-add')+'''">
+<label for="kind">Type</label><select id="kind" name="kind" required><option value="plan">Plan</option><option value="activity">Activity completed (manual entry)</option><option value="task">Task</option></select>
+<label for="title">Title</label><input id="title" name="title" maxlength="140" required placeholder="e.g. Study, gym, read">
+<label for="start">Start (optional)</label><input id="start" name="start" type="datetime-local">
+<label for="end">End (optional)</label><input id="end" name="end" type="datetime-local">
+<p><small>For activities, supply both actual start and end times. This is a manually entered record, not an automatically measured timer.</small></p>
+<button class="primary" type="submit">Save to my workspace</button></form>
+'''+''.join(tabs)+'''
+<div class="links"><a href="/account/home">Account & security</a> · <a href="/account/logout" onclick="event.preventDefault();document.getElementById('betaSignout').submit()">Log out</a></div>
+<form id="betaSignout" method="post" action="/account/logout"><input type="hidden" name="csrf" value="'''+_csrf_token(secret,'account-logout')+'''"></form>''').replace('</style>', 'select{width:100%;border:1px solid #42647a;border-radius:11px;background:#122b40;color:#fff;padding:13px;min-height:50px;font:inherit}</style>')
+
+
+def _datetime(value):
+    from datetime import datetime, timezone
+    if not value:
+        return None
+    try:
+        # Explicit Stockholm-local wall time input, converted to UTC in DB.
+        from zoneinfo import ZoneInfo
+        dt=datetime.strptime(value, '%Y-%m-%dT%H:%M').replace(tzinfo=ZoneInfo('Europe/Stockholm'))
+        return dt.astimezone(timezone.utc)
+    except (ValueError,OverflowError):
+        return None
+
+
+def workspace_get(handler, database_url, secret):
+    if not database_url:
+        _response(handler,503,_shell('Unavailable','<h1>Workspace storage is unavailable</h1>'))
+        return
+    try:
+        with _db(database_url) as db:
+            _init(db)
+            user=_session_user(db,handler)
+            if not user:
+                _response(handler,303,'',location='/account/login');return
+            _workspace_init(db)
+            with db.cursor() as c:
+                c.execute("""SELECT id,kind,title,starts_at,ends_at,completed
+                    FROM lifeos_beta_accounts.workspace_items WHERE user_id=%s
+                    ORDER BY created_at DESC LIMIT 150""",(user[0],))
+                rows=c.fetchall()
+        _response(handler,200,_workspace_home(user,rows,secret))
+    except Exception:
+        _response(handler,503,_shell('Unavailable','<h1>Workspace temporarily unavailable</h1><p>No data were changed.</p>'))
+
+
+def workspace_post(handler, path, database_url, secret):
+    form=_body(handler)
+    purpose='workspace-add' if path.endswith('/add') else 'workspace-finish'
+    if form is None or not _csrf_valid(secret,purpose,_field(form,'csrf')):
+        _response(handler,403,_shell('Rejected','<h1>Invalid workspace request</h1>'));return
+    if not _throttle(handler,path):
+        _response(handler,429,_shell('Try later','<h1>Too many requests</h1>'));return
+    if not database_url:
+        _response(handler,503,_shell('Unavailable','<h1>Workspace storage unavailable</h1>'));return
+    try:
+        with _db(database_url) as db:
+            _init(db)
+            user=_session_user(db,handler)
+            if not user:
+                _response(handler,303,'',location='/account/login');return
+            _workspace_init(db)
+            with db.cursor() as c:
+                if path.endswith('/add'):
+                    kind=_field(form,'kind');title=_field(form,'title')
+                    start=_datetime(_field(form,'start'));end=_datetime(_field(form,'end'))
+                    if (kind not in ('plan','activity','task') or not 1<=len(title)<=140 or
+                        (_field(form,'start') and start is None) or (_field(form,'end') and end is None) or
+                        (start and end and end<start) or (kind=='activity' and (not start or not end))):
+                        _response(handler,400,_shell('Invalid entry','<h1>Check the entry</h1><p>Activities need both actual start and end times. End must not precede start.</p><a class="button" href="/account/workspace">Back</a>'));return
+                    c.execute("""INSERT INTO lifeos_beta_accounts.workspace_items
+                        (user_id,kind,title,starts_at,ends_at) VALUES (%s,%s,%s,%s,%s)""",
+                        (user[0],kind,title,start,end))
+                else:
+                    item=_field(form,'item_id')
+                    if not item.isdecimal() or len(item)>18:
+                        _response(handler,400,_shell('Invalid entry','<h1>Invalid task</h1>'));return
+                    c.execute("""UPDATE lifeos_beta_accounts.workspace_items SET completed=true
+                        WHERE user_id=%s AND id=%s AND kind='task'""",(user[0],int(item)))
+        _response(handler,303,'',location='/account/workspace')
+    except Exception:
+        _response(handler,503,_shell('Unavailable','<h1>Could not save</h1><p>Your original LifeOS data were not modified.</p>'))
+
 def handle_get(handler, path, database_url, secret):
+    if path == '/account/workspace':
+        workspace_get(handler,database_url,secret)
+        return
     if path == '/account/register':
         _response(handler,200,_page_signup(secret=secret))
         return
@@ -214,6 +343,9 @@ def handle_get(handler, path, database_url, secret):
 
 
 def handle_post(handler, path, database_url, secret):
+    if path in ('/account/workspace/add','/account/workspace/finish'):
+        workspace_post(handler,path,database_url,secret)
+        return
     if not _throttle(handler, path):
         _response(handler,429,_shell('Try later','<h1>Too many attempts</h1><p>Please try again later.</p>'))
         return

@@ -262,7 +262,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
-        if path.startswith('/account/') and path in ('/account/register','/account/login','/account/home'):
+        if path.startswith('/account/') and path in ('/account/register','/account/login','/account/home','/account/workspace'):
             beta_accounts.handle_get(self,path,DATABASE_URL,TOKEN)
             return
         if path == '/login':
@@ -412,7 +412,7 @@ class Handler(BaseHTTPRequestHandler):
         self.reply(404, {'error': 'Not found'})
 
     def do_POST(self):
-        if urlparse(self.path).path in ('/account/register','/account/login','/account/logout'):
+        if urlparse(self.path).path in ('/account/register','/account/login','/account/logout','/account/workspace/add','/account/workspace/finish'):
             beta_accounts.handle_post(self,urlparse(self.path).path,DATABASE_URL,TOKEN)
             return
         if urlparse(self.path).path == '/logout':
