@@ -1482,12 +1482,12 @@ function exportRecovery(){
 // Stage 16: read-only, revision-bound conflict inspection. No merge or overwrite.
 let conflictPreview=null;
 function workspaceSummary(w){
- const keys=['sessions','events','todos','workouts','meals','goals','schedule'];
+ const keys=['sessions','events','todos','workouts','meals','goals','schedule','personalLogs','bodyMetrics','waterIntake','habitDefinitions','habitChecks','friendShares','idealRoutines','mealTemplates'];
  const summary={};for(const k of keys)summary[k]=Array.isArray(w&&w[k])?w[k].length:0;
  return summary;
 }
 function workspaceDifferences(local,remote){
- const keys=['sessions','events','todos','workouts','meals','goals','schedule'];
+ const keys=['sessions','events','todos','workouts','meals','goals','schedule','personalLogs','bodyMetrics','waterIntake','habitDefinitions','habitChecks','friendShares','idealRoutines','mealTemplates'];
  const result={};
  for(const key of keys){
   const a=new Map((Array.isArray(local[key])?local[key]:[]).map(x=>[String(x.id),x]));
@@ -1504,6 +1504,7 @@ async function compareServer(){
  const token=$('syncToken').value.trim();if(!token){el.textContent='Enter your server token first.';return}
  const epoch=syncEpoch;
  el.textContent='Reading server state without modifying either copy…';
+ const previousDetail=$('lo152FullComparison');if(previousDetail)previousDetail.remove();
  try{
   const res=await fetch('/api/state',{headers:{'X-LifeOS-Token':token},cache:'no-store'});
   const remote=await res.json();if(!res.ok)throw new Error(remote.error||'HTTP '+res.status);
@@ -1513,7 +1514,23 @@ async function compareServer(){
   const serverCopy=remote.data===null?null:JSON.parse(JSON.stringify(remote.data));
   conflictPreview={revision:remote.revision,local:localCopy,server:serverCopy,comparedAt:new Date().toISOString(),journal:journalDiagnostic()};
   const report={serverRevision:remote.revision,localBaseRevision:syncMeta.revision,unsentOperations:outbox.length,local:workspaceSummary(localCopy),server:workspaceSummary(serverCopy),differences:workspaceDifferences(localCopy,serverCopy||{}),identical:serverCopy!==null&&sameSnapshot(localCopy,serverCopy)};
-  el.textContent=JSON.stringify(report,null,2)+'\nRead-only comparison. No changes applied. Export both versions before resolving conflicts.';
+  const groups=Object.entries(report.differences);
+  const changed=groups.filter(([,v])=>v.localOnly||v.serverOnly||v.modified);
+  const detail=changed.map(([key,v])=>key+': '+v.localOnly+' only on this device, '+v.serverOnly+' only on server, '+v.modified+' different').join('\n');
+  const header=serverCopy===null?'SERVER EMPTY — no workspace returned':
+    report.identical?'MATCH — entire loaded workspace matches the saved server copy':
+    changed.length?'DIFFERENCES DETECTED — review before syncing':'OTHER DIFFERENCES — workspace metadata or settings differ';
+  const revisionMatch=report.localBaseRevision===report.serverRevision;
+  el.textContent=header+'\nServer revision '+report.serverRevision+' · Browser base '+String(report.localBaseRevision)+
+    ' · '+report.unsentOperations+' queued operation(s)\n'+
+    (revisionMatch?'Revisions agree.':'WARNING: revisions do not agree.')+
+    (changed.length?'\n\n'+detail:'\nNo differences in compared record groups.')+
+    '\n\nRead-only. Export both copies before resolving differences.';
+  let expand=$('lo152FullComparison');if(!expand){expand=document.createElement('details');expand.id='lo152FullComparison';
+    const label=document.createElement('summary');label.textContent='Show detailed comparison';expand.append(label);
+    const raw=document.createElement('pre');raw.id='lo152FullComparisonText';raw.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;font-size:12px';
+    expand.append(raw);el.after(expand);}
+  $('lo152FullComparisonText').textContent=JSON.stringify(report,null,2);
  }catch(e){el.textContent='Comparison failed: '+e.message}
 }
 function exportConflict(){
