@@ -144,10 +144,19 @@ def _same_origin(handler):
     # Reject cross-site requests. Modern browsers send Origin on form POST.
     origin = handler.headers.get("Origin", "")
     host = handler.headers.get("Host", "")
-    if not origin or not host:
+    if not host:
         return False
-    parsed = urlparse(origin)
-    return parsed.scheme in ("https", "http") and parsed.netloc == host
+    # Explicit Origin takes priority; reject cross-origin posts.
+    if origin:
+        parsed = urlparse(origin)
+        return parsed.scheme in ("https", "http") and parsed.netloc == host
+    # Mobile browsers sometimes omit Origin for same-origin form submissions.
+    # Require independently supplied same-origin Referer or Fetch Metadata.
+    referer = handler.headers.get("Referer", "")
+    if referer:
+        parsed = urlparse(referer)
+        return parsed.scheme in ("https", "http") and parsed.netloc == host
+    return handler.headers.get("Sec-Fetch-Site", "") == "same-origin"
 
 
 def login(handler, username, password, token):
