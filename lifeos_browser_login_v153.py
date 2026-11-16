@@ -40,6 +40,56 @@ def is_signed_in(headers, password, token):
         return False
 
 
+
+def is_logged_out(headers, password, token):
+    """Signed logout marker prevents cached HTTP Basic credentials from silently reauthenticating."""
+    try:
+        jar = SimpleCookie()
+        jar.load(headers.get("Cookie", ""))
+        value = jar[COOKIE_NAME].value
+        payload, signature = value.rsplit(".", 1)
+        version, issued, nonce = payload.split(":", 2)
+        age = time.time() - int(issued)
+        return (version == "0" and 0 <= age <= MAX_AGE and
+                len(nonce) >= 12 and
+                hmac.compare_digest(_sign(payload, password, token), signature))
+    except (KeyError, ValueError, TypeError):
+        return False
+
+
+def _cookie(handler, value):
+    secure = handler.headers.get("X-Forwarded-Proto", "").split(",")[0].strip() == "https"
+    result = COOKIE_NAME + "=" + value + "; Path=/; HttpOnly; SameSite=Strict; Max-Age=" + str(MAX_AGE)
+    if secure:
+        result += "; Secure"
+    return result
+
+
+def show_logout(handler):
+    body = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign out · LifeOS Personal</title><style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:22px;background:#020b1d;color:#f2f8fc;font:16px system-ui,sans-serif}
+main{width:min(100%,420px);padding:28px;background:#07172b;border:1px solid #315166;border-radius:24px}
+h1{font-size:28px}p{line-height:1.5;color:#b2c6d4}button,a{font:inherit;display:block;text-align:center;padding:15px;border-radius:13px;margin-top:14px;width:100%;text-decoration:none}
+button{border:0;background:#087c65;color:white;font-weight:700}a{border:1px solid #3a566b;color:white}
+</style></head><body><main><h1>Sign out of LifeOS?</h1>
+<p>This ends this browser's LifeOS session. Your saved activities, plans, and cloud records are not deleted.</p>
+<p>Before signing out, make sure any unsent activity changes are backed up or synced.</p>
+<form action="/logout" method="post"><button type="submit">Log out</button></form><a href="/">Stay signed in</a>
+</main></body></html>"""
+    _response(handler, 200, body)
+
+
+def logout(handler, password, token):
+    # A same-origin form POST is required to prevent cross-site forced sign-out.
+    if not _same_origin(handler):
+        _response(handler, 403, "Forbidden")
+        return
+    payload = "0:" + str(int(time.time())) + ":" + secrets.token_urlsafe(18)
+    marker = payload + "." + _sign(payload, password, token)
+    _response(handler, 303, "", cookie=_cookie(handler, marker), redirect="/login?logged_out=1")
+
+
 def _response(handler, status, body, cookie=None, redirect=None):
     blob = body.encode("utf-8")
     handler.send_response(status)
@@ -83,7 +133,11 @@ button{margin-top:24px;width:100%;border:0;border-radius:13px;background:#087c65
 
 
 def show_login(handler):
-    _response(handler, 200, _page())
+    signed_out = "logged_out=1" in handler.path
+    page = _page()
+    if signed_out:
+        page = page.replace("<h1>Welcome back</h1>", "<h1>You are signed out</h1><p>Your saved records were not removed.</p>")
+    _response(handler, 200, page)
 
 
 def _same_origin(handler):

@@ -174,6 +174,9 @@ class Handler(BaseHTTPRequestHandler):
         if not USERNAME or not PASSWORD or not TOKEN:
             self.reply(503, {'error': 'Configure LIFEOS_USERNAME, LIFEOS_PASSWORD and LIFEOS_TOKEN'})
             return False
+        if browser_login.is_logged_out(self.headers, PASSWORD, TOKEN):
+            browser_login.unauthenticated(self, urlparse(self.path).path, self.command)
+            return False
         if browser_login.is_signed_in(self.headers, PASSWORD, TOKEN):
             return True
         auth = self.headers.get('Authorization', '')
@@ -260,6 +263,9 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == '/login':
             browser_login.show_login(self)
+            return
+        if path == '/logout':
+            browser_login.show_logout(self)
             return
         if path == '/healthz':
             self.reply(200, {'status': 'ok'})
@@ -402,6 +408,9 @@ class Handler(BaseHTTPRequestHandler):
         self.reply(404, {'error': 'Not found'})
 
     def do_POST(self):
+        if urlparse(self.path).path == '/logout':
+            browser_login.logout(self, PASSWORD, TOKEN)
+            return
         if urlparse(self.path).path == '/login':
             browser_login.login(self, USERNAME, PASSWORD, TOKEN)
             return
