@@ -184,7 +184,7 @@ def _home(user, secret):
     return _shell('Your account','<h1>Welcome, '+_safe(name)+'</h1><div class="notice">Your private beta account is active.</div>'+
         '<p><b>Email:</b> '+_safe(email)+' — '+('Verified' if ev else 'Verification pending')+'</p>'+
         '<p><b>Phone:</b> '+(_safe(phone) if phone else 'Not added')+' — '+('Verified' if pv else 'Not verified')+'</p>'+
-        '<p>Your beta account has its own private starter workspace. Your original single-user history has not been imported. Full tracking, email verification, password recovery and SMS verification are not enabled yet.</p>'+        '<a class="button" href="/account/workspace">Open my private workspace</a>'+
+        '<p>Your beta account has its own private starter workspace. Your original single-user history has not been imported. Full tracking, email verification, password recovery and SMS verification are not enabled yet.</p>'+        '<a class="button" href="/account/app">Open LifeOS Personal</a><a class="button" href="/account/workspace">Legacy starter workspace</a>'+
         '<form action="/account/logout" method="post"><input type="hidden" name="csrf" value="'+_csrf_token(secret, 'account-logout')+'"><button class="primary">Log out</button></form>'+
         '<div class="links"><a href="/account/login">Return to account sign in</a></div>')
 

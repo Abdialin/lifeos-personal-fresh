@@ -19,6 +19,7 @@ import personal_preferences_store_v89 as preference_store
 import personal_account_http_v117 as account_http
 import lifeos_browser_login_v153 as browser_login
 import lifeos_beta_accounts_v155 as beta_accounts
+import lifeos_beta_dashboard_v159 as beta_dashboard
 
 ROOT = Path(__file__).resolve().parent
 DB = Path(os.environ.get('LIFEOS_DB', str(ROOT / 'data' / 'lifeos.sqlite3')))
@@ -262,6 +263,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
+        if path == '/account/app':
+            beta_dashboard.get(self,DATABASE_URL,TOKEN)
+            return
         if path.startswith('/account/') and path in ('/account/register','/account/login','/account/home','/account/workspace'):
             beta_accounts.handle_get(self,path,DATABASE_URL,TOKEN)
             return
@@ -412,6 +416,9 @@ class Handler(BaseHTTPRequestHandler):
         self.reply(404, {'error': 'Not found'})
 
     def do_POST(self):
+        if urlparse(self.path).path == '/account/app/action':
+            beta_dashboard.post(self,DATABASE_URL,TOKEN)
+            return
         if urlparse(self.path).path in ('/account/register','/account/login','/account/logout','/account/workspace/add','/account/workspace/finish'):
             beta_accounts.handle_post(self,urlparse(self.path).path,DATABASE_URL,TOKEN)
             return
