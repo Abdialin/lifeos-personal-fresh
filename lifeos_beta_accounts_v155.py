@@ -24,6 +24,26 @@ _EMAIL = re.compile(r'^[A-Za-z0-9.!#$%&\'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-
 _PHONE = re.compile(r'^\+?[0-9][0-9 .()\-]{6,23}$')
 
 
+def _csrf_token(secret, purpose):
+    payload = str(int(time.time())) + ":" + secrets.token_urlsafe(18)
+    mac = hmac.new(hashlib.sha256(("lifeos-csrf-v157:" + secret).encode()).digest(),
+                   (purpose + ":" + payload).encode(), hashlib.sha256).hexdigest()
+    return payload + "." + mac
+
+
+def _csrf_valid(secret, purpose, submitted):
+    try:
+        payload, mac = submitted.rsplit(".", 1)
+        timestamp, nonce = payload.split(":", 1)
+        if len(nonce) < 12 or not (0 <= time.time() - int(timestamp) < 1800):
+            return False
+        expected = hmac.new(hashlib.sha256(("lifeos-csrf-v157:" + secret).encode()).digest(),
+                            (purpose + ":" + payload).encode(), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(mac, expected)
+    except (AttributeError, ValueError, TypeError):
+        return False
+
+
 def _safe(value):
     return html.escape(str(value), quote=True)
 
@@ -82,8 +102,6 @@ main{width:min(100%,460px);border:1px solid #31556a;background:#07192d;border-ra
 
 
 def _body(handler):
-    if not _origin_ok(handler):
-        return None
     try:
         n = int(handler.headers.get('Content-Length','0'))
         if n <= 0 or n > 4096:
@@ -118,11 +136,11 @@ def _db(database_url):
     return psycopg.connect(database_url, connect_timeout=5)
 
 
-def _page_signup(error=''):
+def _page_signup(error='', secret=''):
     notice = '<div class="alert" role="alert">'+_safe(error)+'</div>' if error else ''
     return _shell('Create account','''<h1>Create your LifeOS account</h1>
 <p>Register your own identity. This beta registration is separate from the existing private LifeOS workspace.</p>''' + notice + '''
-<form action="/account/register" method="post">
+<form action="/account/register" method="post"><input type="hidden" name="csrf" value="''' + _csrf_token(secret, 'register') + '''">
 <label for="name">Your name</label><input id="name" name="name" autocomplete="name" required maxlength="100">
 <label for="email">Email address</label><input id="email" type="email" name="email" autocomplete="email" required maxlength="254">
 <label for="phone">Phone number (optional)</label><input id="phone" name="phone" autocomplete="tel" inputmode="tel" maxlength="24" placeholder="+46 ...">
@@ -133,11 +151,11 @@ def _page_signup(error=''):
 <div class="links"><a href="/account/login">Already registered? Sign in</a><br><a href="/login">Back to existing LifeOS sign in</a></div>''')
 
 
-def _page_login(error=''):
+def _page_login(error='', secret=''):
     notice = '<div class="alert" role="alert">'+_safe(error)+'</div>' if error else ''
     return _shell('Account sign in','''<h1>Sign in to your account</h1>
 <p>For newly registered beta accounts. Existing LifeOS users can use the original sign-in page.</p>''' + notice + '''
-<form method="post" action="/account/login"><label for="email">Email address</label>
+<form method="post" action="/account/login"><input type="hidden" name="csrf" value="''' + _csrf_token(secret, 'account-login') + '''"><label for="email">Email address</label>
 <input id="email" type="email" name="email" autocomplete="email" required>
 <label for="password">Password</label><input id="password" type="password" name="password" autocomplete="current-password" required>
 <button class="primary" type="submit">Sign in</button></form>
@@ -161,22 +179,22 @@ def _session_user(db, handler):
         return c.fetchone()
 
 
-def _home(user):
+def _home(user, secret):
     ident, name, email, phone, ev, pv = user
     return _shell('Your account','<h1>Welcome, '+_safe(name)+'</h1><div class="notice">Your private beta account is active.</div>'+
         '<p><b>Email:</b> '+_safe(email)+' — '+('Verified' if ev else 'Verification pending')+'</p>'+
         '<p><b>Phone:</b> '+(_safe(phone) if phone else 'Not added')+' — '+('Verified' if pv else 'Not verified')+'</p>'+
         '<p>No activity history has been imported. Your account cannot see the existing single-user workspace. Personal multi-user dashboards, email verification, password recovery and SMS verification are not enabled yet.</p>'+
-        '<form action="/account/logout" method="post"><button class="primary">Log out</button></form>'+
+        '<form action="/account/logout" method="post"><input type="hidden" name="csrf" value="'+_csrf_token(secret, 'account-logout')+'"><button class="primary">Log out</button></form>'+
         '<div class="links"><a href="/account/login">Return to account sign in</a></div>')
 
 
-def handle_get(handler, path, database_url):
+def handle_get(handler, path, database_url, secret):
     if path == '/account/register':
-        _response(handler,200,_page_signup())
+        _response(handler,200,_page_signup(secret=secret))
         return
     if path == '/account/login':
-        _response(handler,200,_page_login())
+        _response(handler,200,_page_login(secret=secret))
         return
     if path == '/account/home':
         if not database_url:
@@ -189,24 +207,25 @@ def handle_get(handler, path, database_url):
             if not user:
                 _response(handler,303,'',location='/account/login')
             else:
-                _response(handler,200,_home(user))
+                _response(handler,200,_home(user,secret))
         except Exception:
             _response(handler,503,_shell('Unavailable','<h1>Account storage temporarily unavailable</h1><p>No records were changed.</p>'))
         return
 
 
-def handle_post(handler, path, database_url):
+def handle_post(handler, path, database_url, secret):
     if not _throttle(handler, path):
         _response(handler,429,_shell('Try later','<h1>Too many attempts</h1><p>Please try again later.</p>'))
         return
     # HTML forms without inputs send an empty POST body; accept only for logout
     # after verifying same-origin. All account creation/login requests still
     # require a valid form body.
-    if path == '/account/logout' and _origin_ok(handler) and handler.headers.get('Content-Length','0') in ('0',''):
-        form = {}
-    else:
-        form = _body(handler)
-    if form is None:
+    form = _body(handler)
+    purpose = {'/account/register':'register', '/account/login':'account-login',
+               '/account/logout':'account-logout'}.get(path, '')
+    signed = bool(form is not None and purpose and
+                  _csrf_valid(secret, purpose, _field(form, 'csrf')))
+    if form is None or not (_origin_ok(handler) or signed):
         _response(handler,403,_shell('Invalid request','<h1>Request rejected</h1><p>Use the form on this website.</p>'))
         return
     if path == '/account/logout':
@@ -231,7 +250,7 @@ def handle_post(handler, path, database_url):
     email = _field(form,'email').lower()
     password = _field(form,'password')
     if not _EMAIL.fullmatch(email) or len(email)>254 or not password:
-        _response(handler,400,_page_signup('Enter a valid email and password.') if path.endswith('register') else _page_login('Enter a valid email and password.'))
+        _response(handler,400,_page_signup('Enter a valid email and password.', secret) if path.endswith('register') else _page_login('Enter a valid email and password.', secret))
         return
     try:
         with _db(database_url) as db:
@@ -242,13 +261,13 @@ def handle_post(handler, path, database_url):
                     phone = _field(form,'phone')
                     confirm = _field(form,'confirmation')
                     if not (2<=len(name)<=100) or len(password)<12 or len(password)>128 or password!=confirm or (phone and not _PHONE.fullmatch(phone)):
-                        _response(handler,400,_page_signup('Check your name, password confirmation and optional phone number.'))
+                        _response(handler,400,_page_signup('Check your name, password confirmation and optional phone number.', secret))
                         return
                     salt = os.urandom(16)
                     hashed = hashlib.pbkdf2_hmac('sha256',password.encode(),salt,450000)
                     c.execute('SELECT id FROM lifeos_beta_accounts.users WHERE email=%s',(email,))
                     if c.fetchone():
-                        _response(handler,409,_page_signup('This email is already registered. Sign in instead.'))
+                        _response(handler,409,_page_signup('This email is already registered. Sign in instead.', secret))
                         return
                     c.execute('INSERT INTO lifeos_beta_accounts.users(display_name,email,phone,password_hash,salt) VALUES (%s,%s,%s,%s,%s) RETURNING id',(name,email,phone,hashed,salt))
                     user_id = c.fetchone()[0]
@@ -260,7 +279,7 @@ def handle_post(handler, path, database_url):
                     expected=bytes(existing[1]) if existing else bytes(32)
                     trial=hashlib.pbkdf2_hmac('sha256',password.encode(),salt,450000)
                     if not hmac.compare_digest(trial,expected) or existing is None:
-                        _response(handler,401,_page_login('Invalid email or password.'))
+                        _response(handler,401,_page_login('Invalid email or password.', secret))
                         return
                     user_id=existing[0]
                 token=secrets.token_urlsafe(32)

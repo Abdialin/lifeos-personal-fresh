@@ -65,7 +65,27 @@ def _cookie(handler, value):
     return result
 
 
-def show_logout(handler):
+def _csrf_token(secret, purpose):
+    payload = str(int(time.time())) + ":" + secrets.token_urlsafe(18)
+    mac = hmac.new(hashlib.sha256(("lifeos-csrf-v157:" + secret).encode()).digest(),
+                   (purpose + ":" + payload).encode(), hashlib.sha256).hexdigest()
+    return payload + "." + mac
+
+
+def _csrf_valid(secret, purpose, submitted):
+    try:
+        payload, mac = submitted.rsplit(".", 1)
+        timestamp, nonce = payload.split(":", 1)
+        if len(nonce) < 12 or not (0 <= time.time() - int(timestamp) < 1800):
+            return False
+        expected = hmac.new(hashlib.sha256(("lifeos-csrf-v157:" + secret).encode()).digest(),
+                            (purpose + ":" + payload).encode(), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(mac, expected)
+    except (AttributeError, ValueError, TypeError):
+        return False
+
+
+def show_logout(handler, token):
     body = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign out · LifeOS Personal</title><style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:22px;background:#020b1d;color:#f2f8fc;font:16px system-ui,sans-serif}
@@ -77,12 +97,14 @@ button{border:0;background:#087c65;color:white;font-weight:700}a{border:1px soli
 <p>Before signing out, make sure any unsent activity changes are backed up or synced.</p>
 <form action="/logout" method="post"><button type="submit">Log out</button></form><a href="/">Stay signed in</a>
 </main></body></html>"""
+    body = body.replace('<form action="/logout" method="post">', '<form action="/logout" method="post"><input type="hidden" name="csrf" value="' + _csrf_token(token, "logout") + '">')
     _response(handler, 200, body)
 
 
 def logout(handler, password, token):
     # A same-origin form POST is required to prevent cross-site forced sign-out.
-    if not _same_origin(handler):
+    fields = _read_fields(handler)
+    if fields is None or not (_same_origin(handler) or _csrf_valid(token, "logout", fields.get("csrf", [""])[0])):
         _response(handler, 403, "Forbidden")
         return
     payload = "0:" + str(int(time.time())) + ":" + secrets.token_urlsafe(18)
@@ -108,9 +130,9 @@ def _response(handler, status, body, cookie=None, redirect=None):
     handler.wfile.write(blob)
 
 
-def _page(error=False):
+def _page(error=False, token=''):
     message = '<p role="alert" class="error">Credentials not accepted. Please try again.</p>' if error else ""
-    return """<!doctype html><html lang="en"><head><meta charset="utf-8">
+    page = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign in · LifeOS Personal</title>
 <style>
@@ -130,11 +152,13 @@ button{margin-top:24px;width:100%;border:0;border-radius:13px;background:#087c65
 <button type="submit">Sign in securely</button></form>
 <small>Use your existing LifeOS browser username and password. The cloud sync token is separate.</small><p style="margin-top:20px;padding-top:16px;border-top:1px solid #345166">New to LifeOS? <a href="/account/register" style="color:#7de2c9;font-weight:700">Create an account</a></p><p><a href="/account/login" style="color:#7de2c9">Sign in with a new account</a></p>
 </main></body></html>"""
+    return page.replace('<form method="post" action="/login" autocomplete="on">',
+                        '<form method="post" action="/login" autocomplete="on"><input type="hidden" name="csrf" value="' + _csrf_token(token, "login") + '">')
 
 
-def show_login(handler):
+def show_login(handler, token):
     signed_out = "logged_out=1" in handler.path
-    page = _page()
+    page = _page(token=token)
     if signed_out:
         page = page.replace("<h1>Welcome back</h1>", "<h1>You are signed out</h1><p>Your saved records were not removed.</p>")
     _response(handler, 200, page)
@@ -159,18 +183,24 @@ def _same_origin(handler):
     return handler.headers.get("Sec-Fetch-Site", "") == "same-origin"
 
 
-def login(handler, username, password, token):
-    if not _same_origin(handler):
-        _response(handler, 403, "Forbidden")
-        return
+def _read_fields(handler):
     try:
         length = int(handler.headers.get("Content-Length", "0"))
-    except ValueError:
-        length = 0
-    if length <= 0 or length > 4096:
+        if length < 0 or length > 4096:
+            return None
+        return parse_qs(handler.rfile.read(length).decode("utf-8"), keep_blank_values=True)
+    except (ValueError, UnicodeError):
+        return None
+
+
+def login(handler, username, password, token):
+    fields = _read_fields(handler)
+    if fields is None:
         _response(handler, 413, "Invalid form")
         return
-    fields = parse_qs(handler.rfile.read(length).decode("utf-8"), keep_blank_values=True)
+    if not (_same_origin(handler) or _csrf_valid(token, "login", fields.get("csrf", [""])[0])):
+        _response(handler, 403, "Forbidden")
+        return
     typed_user = fields.get("username", [""])[0]
     typed_password = fields.get("password", [""])[0]
     remote = handler.client_address[0]
@@ -186,7 +216,7 @@ def login(handler, username, password, token):
     if not valid:
         with _lock:
             _attempts[remote] = recent + [now]
-        _response(handler, 401, _page(error=True))
+        _response(handler, 401, _page(error=True, token=token))
         return
     with _lock:
         _attempts.pop(remote, None)

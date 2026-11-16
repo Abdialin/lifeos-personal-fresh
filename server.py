@@ -263,13 +263,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         if path.startswith('/account/') and path in ('/account/register','/account/login','/account/home'):
-            beta_accounts.handle_get(self,path,DATABASE_URL)
+            beta_accounts.handle_get(self,path,DATABASE_URL,TOKEN)
             return
         if path == '/login':
-            browser_login.show_login(self)
+            browser_login.show_login(self, TOKEN)
             return
         if path == '/logout':
-            browser_login.show_logout(self)
+            browser_login.show_logout(self, TOKEN)
             return
         if path == '/healthz':
             self.reply(200, {'status': 'ok'})
@@ -413,7 +413,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if urlparse(self.path).path in ('/account/register','/account/login','/account/logout'):
-            beta_accounts.handle_post(self,urlparse(self.path).path,DATABASE_URL)
+            beta_accounts.handle_post(self,urlparse(self.path).path,DATABASE_URL,TOKEN)
             return
         if urlparse(self.path).path == '/logout':
             browser_login.logout(self, PASSWORD, TOKEN)
