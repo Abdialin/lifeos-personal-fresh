@@ -199,7 +199,13 @@ def handle_post(handler, path, database_url):
     if not _throttle(handler, path):
         _response(handler,429,_shell('Try later','<h1>Too many attempts</h1><p>Please try again later.</p>'))
         return
-    form = _body(handler)
+    # HTML forms without inputs send an empty POST body; accept only for logout
+    # after verifying same-origin. All account creation/login requests still
+    # require a valid form body.
+    if path == '/account/logout' and _origin_ok(handler) and handler.headers.get('Content-Length','0') in ('0',''):
+        form = {}
+    else:
+        form = _body(handler)
     if form is None:
         _response(handler,403,_shell('Invalid request','<h1>Request rejected</h1><p>Use the form on this website.</p>'))
         return
