@@ -160,11 +160,33 @@ def get(handler,db_url,secret):
     except Exception:
         beta._response(handler,503,beta._shell('Unavailable','<h1>Dashboard temporarily unavailable</h1><p>No records were changed.</p>'))
 
+def _trusted_origin(handler):
+    """Same-origin check behind Render's reverse proxy; never trust arbitrary forwarded hosts."""
+    from urllib.parse import urlsplit
+    origin=handler.headers.get('Origin','')
+    if not origin:
+        return True  # Modern same-site browsers usually send Origin for POST.
+    try:
+        parsed=urlsplit(origin)
+        if parsed.scheme!='https' or not parsed.hostname or parsed.username or parsed.password:
+            return False
+        if parsed.port not in (None,443):
+            return False
+        # The public staging hostname is an allowed origin even when Render uses
+        # an internal upstream Host header. Other origins must match Host.
+        public='lifeos-personal-test.onrender.com'
+        host=(handler.headers.get('Host','').split(':',1)[0]).lower()
+        return parsed.hostname.lower() in (public,host)
+    except (ValueError,TypeError):
+        return False
+
+
 def post(handler,db_url,secret):
     form=beta._body(handler)
-    if (not form or not beta._csrf_valid(secret,'app-action',beta._field(form,'csrf'))
-        or (handler.headers.get('Origin') and not beta._origin_ok(handler))):
-        beta._response(handler,403,beta._shell('Rejected','<h1>Invalid request</h1>'));return
+    if not form or not beta._csrf_valid(secret,'app-action',beta._field(form,'csrf')):
+        beta._response(handler,403,beta._shell('Rejected','<h1>Form expired or invalid</h1><p>Return to the tracker, reload the page and retry. No activity was created.</p><a href="/account/app?tab=track">Open tracker</a>'));return
+    if not _trusted_origin(handler):
+        beta._response(handler,403,beta._shell('Rejected','<h1>Request origin not accepted</h1><p>Open LifeOS at its normal address and retry. No activity was created.</p><a href="/account/app?tab=track">Open tracker</a>'));return
     if not beta._throttle(handler,'app-action'):
         beta._response(handler,429,beta._shell('Busy','<h1>Too many requests</h1>'));return
     action=beta._field(form,'action')
