@@ -43,37 +43,50 @@ function timedTasks(){const duplicate=$('lo11TimedTasks');if(duplicate)duplicate
 function history(finished){
  const root=$('history'),status=$('loHistoryCount');if(!root)return;
  const term=($('loHistorySearch')?.value||'').trim().toLocaleLowerCase(),period=$('loHistoryPeriod')?.value||'7',cutoff=period==='all'?-Infinity:Date.now()-Number(period)*86400000;
- const visible=finished.filter(s=>s.endAt>=cutoff&&(s.name+' '+(s.notes||'')+' '+ymd(new Date(s.endAt))).toLocaleLowerCase().includes(term));
- const months=new Map();
- for(const s of visible){
-  const date=ymd(new Date(s.endAt)),m=date.slice(0,7),w=mondayWeek(date),weekKey=w.year+'-'+String(w.week).padStart(2,'0');
-  if(!months.has(m))months.set(m,new Map());const month=months.get(m);
-  if(!month.has(weekKey))month.set(weekKey,{year:w.year,week:w.week,days:new Map()});
-  const week=month.get(weekKey);if(!week.days.has(date))week.days.set(date,[]);week.days.get(date).push(s);
+ // Retain one underlying session and its ID, but display its active seconds on the local dates where they occurred.
+ const portions=[];
+ for(const s of finished){
+  if(!(s.name+' '+(s.notes||'')).toLocaleLowerCase().includes(term))continue;
+  const raw=Array.isArray(s.segments)&&s.segments.length?s.segments:[{start:s.startAt,end:s.endAt}];
+  for(const seg of raw){
+   const from=Number(seg.start),until=Number(seg.end);
+   if(!Number.isFinite(from)||!Number.isFinite(until)||until<=from)continue;
+   let cursor=from,guard=0;
+   while(cursor<until&&guard++<10000){
+    const d=new Date(cursor),next=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime();
+    const end=Math.min(until,next);
+    if(end>cutoff)portions.push({s,start:Math.max(cursor,cutoff),end});
+    cursor=end;
+   }
+  }
  }
- const dayHTML=(day,sessions,open)=>{
-  const sum=sessions.reduce((n,s)=>n+elapsed(s),0),large=sessions.filter(s=>elapsed(s)>12*3600000).length,examples=sessions.filter(s=>s.seedBatch||s.source==='development-starter').length;
-  return '<details class="lo11-history-day" '+(open?'open':'')+'><summary><strong>'+esc(byDay(day).toLocaleDateString(undefined,{weekday:'long',day:'numeric'}))+'</strong><small>'+sessions.length+' sessions · '+short(sum)+(large?' · '+large+' long':'')+'</small></summary>'+
-  (examples?'<p class="lo11-muted">'+examples+' generated example(s).</p>':'')+
-  sessions.map(s=>{
-   const duration=elapsed(s),start=new Date(s.startAt),end=new Date(s.endAt);
-   const provenance=s.seedBatch||s.source==='development-starter'?'Development example':s.precision==='measured'?'Measured':'Recorded';
-   return '<article class="lo-history-item"><div class="lo-history-entry"><strong>'+esc(s.name)+'</strong><span>'+short(duration)+'</span></div><div class="lo-history-foot"><small>'+esc(start.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}))+'–'+esc(end.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}))+' · '+provenance+(duration>12*3600000?' · Review long session':'')+'</small><span class="lo-history-actions"><button class="btn outline tiny" data-act="details" data-id="'+esc(s.id)+'">Details</button><button class="btn outline tiny" data-act="edit" data-id="'+esc(s.id)+'">Edit</button></span></div></article>';
-  }).join('')+'</details>';
+ portions.sort((a,b)=>b.start-a.start);
+ const months=new Map();
+ for(const item of portions){
+  if(item.end<=item.start)continue;
+  const date=ymd(new Date(item.start)),monthKey=date.slice(0,7),w=mondayWeek(date),weekKey=w.year+'-'+String(w.week).padStart(2,'0');
+  if(!months.has(monthKey))months.set(monthKey,new Map());
+  const month=months.get(monthKey);
+  if(!month.has(weekKey))month.set(weekKey,{year:w.year,week:w.week,days:new Map()});
+  const week=month.get(weekKey);if(!week.days.has(date))week.days.set(date,[]);week.days.get(date).push(item);
+ }
+ const dayHTML=(day,items)=>{
+  const sum=items.reduce((n,x)=>n+x.end-x.start,0);
+  return '<details class="lo11-history-day"><summary><strong>'+esc(byDay(day).toLocaleDateString(undefined,{weekday:'long',day:'numeric'}))+'</strong><small>'+items.length+' active periods · '+short(sum)+'</small></summary>'+
+   items.map(({s,start,end})=>{
+    const duration=end-start,provenance=s.seedBatch||s.source==='development-starter'?'Development example':s.precision==='retrospective-approximate'?'Estimated':'Recorded';
+    const clock=x=>new Date(x).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+    return '<article class="lo-history-item"><div class="lo-history-entry"><strong>'+esc(s.name)+'</strong><span>'+short(duration)+'</span></div><div class="lo-history-foot"><small>'+esc(clock(start))+'–'+esc(clock(end))+' · '+provenance+' · Day portion</small><span class="lo-history-actions"><button class="btn outline tiny" data-act="details" data-id="'+esc(s.id)+'">Details</button><button class="btn outline tiny" data-act="edit" data-id="'+esc(s.id)+'">Edit full session</button></span></div></article>';
+   }).join('')+'</details>';
  };
  let idx=0;
  root.innerHTML=[...months].map(([month,weeks])=>{
-  const openMonth=idx===0;idx++;
-  const name=new Date(month+'-01T12:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'});
-  const monthCount=[...weeks.values()].reduce((n,w)=>n+[...w.days.values()].reduce((a,v)=>a+v.length,0),0);
-  return '<details class="lo11-history-month" '+(openMonth?'open':'')+'><summary><strong>'+esc(name)+'</strong><small>'+monthCount+' sessions · '+weeks.size+' weeks</small></summary>'+
-  [...weeks].map(([_,w],weekIndex)=>{
-   const count=[...w.days.values()].reduce((n,x)=>n+x.length,0);
-   return '<details class="lo11-history-week" '+(openMonth&&weekIndex===0?'open':'')+'><summary><strong>Week '+w.week+' · '+w.year+'</strong><small>'+count+' sessions</small></summary>'+
-   [...w.days].map(([d,s],dayIndex)=>dayHTML(d,s,false)).join('')+'</details>';
-  }).join('')+'</details>';
- }).join('')||'<div class="empty">No sessions match this period and search.</div>';
- if(status)status.textContent=visible.length+' of '+finished.length+' completed sessions · month / week / day';
+  const opened=idx++===0,name=new Date(month+'-01T12:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  return '<details class="lo11-history-month" '+(opened?'open':'')+'><summary><strong>'+esc(name)+'</strong><small>'+[...weeks.values()].reduce((n,w)=>n+[...w.days.values()].reduce((a,v)=>a+v.length,0),0)+' active periods · '+weeks.size+' weeks</small></summary>'+
+   [...weeks].map(([_,w],i)=>'<details class="lo11-history-week" '+(opened&&i===0?'open':'')+'><summary><strong>Week '+w.week+' · '+w.year+'</strong><small>'+[...w.days.values()].reduce((n,v)=>n+v.length,0)+' periods</small></summary>'+
+   [...w.days].map(([day,items])=>dayHTML(day,items)).join('')+'</details>').join('')+'</details>';
+ }).join('')||'<div class="empty">No active periods match this filter.</div>';
+ if(status)status.textContent=portions.length+' active day portions from '+new Set(portions.map(x=>x.s.id)).size+' underlying sessions. Paused time excluded.';
 }
 function elapsed(s){return (s.segments||[]).reduce((sum,x)=>sum+Math.max(0,(x.end??Date.now())-x.start),0)}
 function short(ms){const n=Math.round(ms/60000),hours=Math.floor(n/60);return hours?hours+'h '+String(n%60).padStart(2,'0')+'m':n+'m'}
