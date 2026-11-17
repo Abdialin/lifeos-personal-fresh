@@ -24,7 +24,14 @@ function foldForm(id,groupId,label){
  const box=document.createElement('details');box.className='lo190-group lo192-editor';box.id=groupId;
  const heading=document.createElement('summary');heading.textContent=label;box.append(heading);
  form.before(box);box.append(form);
- box.addEventListener('toggle',()=>{if(box.open){const first=form.querySelector('input:not([type=hidden]),select,textarea');if(first)first.scrollIntoView({block:'nearest'})}});
+ // Let the original form keep its submission listeners and values.
+ const footer=document.createElement('div');footer.className='lo193-editor-footer';
+ const close=document.createElement('button');close.type='button';close.className='lo193-editor-close';
+ close.textContent='Close editor';close.setAttribute('aria-label','Close '+label.split(' · ')[0].toLowerCase());
+ close.addEventListener('click',()=>{box.open=false;heading.focus({preventScroll:true});box.scrollIntoView({block:'nearest',behavior:'smooth'})});
+ footer.append(close);box.append(footer);
+ heading.tabIndex=0;
+ box.addEventListener('keydown',event=>{if(event.key==='Escape'&&box.open){box.open=false;heading.focus({preventScroll:true});}});
 }
 function collapse(){
  const fitness=section('fitness'),nutrition=section('nutrition');
@@ -54,6 +61,9 @@ function collapse(){
 }
 function openTarget(id){
  const node=$(id);if(!node)return false;
+ // Open its disclosure parents first, including the compact V192 editor wrapper.
+ // If a target is a button that opens a form, activate it instead of jumping to a hidden form.
+ if(node.matches('button[data-lo-form-toggle]')){node.click();return true}
  // If the target was generated after the toolbar, the next route refresh can still find it.
  if(node.tagName==='DETAILS')node.open=true;
  const parents=[];let a=node.parentElement;
