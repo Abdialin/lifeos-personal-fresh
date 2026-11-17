@@ -1,0 +1,17 @@
+/* LifeOS V169: mobile layout and bounded legacy editing */
+#gv161-app .gv169-nologs{display:flex!important;flex-direction:column!important;gap:5px!important;border:1px dashed #376476;border-radius:12px;padding:12px;background:#0b2335;margin:8px 0}
+#gv161-app .gv169-nologs strong{font-size:13px;color:#def6ed}
+#gv161-app .gv169-nologs span{font-size:11px;color:#9ab8c7}
+body[data-lifeos-view="goals"] #gv161-app .gv161-grid .gv161-card{contain:layout style}
+body[data-lifeos-view="goals"] #gv161-app .gv165-chart:has(.gv168-emptystate){padding:0!important}
+body[data-lifeos-view="goals"] #gv161-app .gv168-emptystate{padding:15px!important;background:#0a2135;border-radius:13px}
+body[data-lifeos-view="goals"] #gv161-app .gv168-emptystate .gv168-emptyicon{display:none}
+body[data-lifeos-view="goals"] #gv161-app #gv161-legacy{display:none!important}
+body[data-lifeos-view="goals"] #gv161-app.gv163-editing #gv161-legacy{display:block!important;position:fixed!important;z-index:10002!important;inset:8px 7px calc(8px + env(safe-area-inset-bottom,0px))!important;overflow-y:auto!important;overscroll-behavior:contain!important;border:1px solid #3e7880;border-radius:18px;background:#061629;box-shadow:0 10px 60px #000c;padding:10px;max-width:650px;margin:0 auto!important}
+body[data-lifeos-view="goals"] #gv161-app.gv163-editing .gv163-close{position:sticky;top:0;z-index:2;background:#075747!important;color:#fff!important;border:1px solid #49a58a!important;font-size:14px!important;font-weight:800!important;min-height:44px}
+body[data-lifeos-view="goals"] #gv161-app.gv163-editing #gv161-legacy>.panel{margin:0!important;padding:12px!important;background:#07192b!important;min-width:0}
+body[data-lifeos-view="goals"] #gv161-app.gv163-editing #gv161-legacy #goalList{max-height:230px;overflow-y:auto;overscroll-behavior:contain}
+body[data-lifeos-view="goals"] #gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #goalReview{display:none!important}
+body[data-lifeos-view="goals"] #gv161-app.gv163-editing #gv161-legacy #goalReview>div{max-width:100%;overflow-wrap:anywhere}
+body[data-lifeos-view="goals"] #gv161-app #gv161-history .gv167-historydetail{margin:8px 0}
+@media(max-width:420px){body[data-lifeos-view="goals"] #gv161-app .gv165-reviewgrid .gv162-reviewcard{padding:9px!important}}
