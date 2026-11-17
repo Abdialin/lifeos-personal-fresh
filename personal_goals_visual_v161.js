@@ -17,7 +17,7 @@ if(cat==='fitness'){
  const workouts=(w.workouts||[]).filter(x=>interval(linked.get(String(x.sessionId))||x,a,b));
  const countedIds=new Set();
  all=workouts.slice();
- good=workouts.filter(x=>!sample(x)&&(!x.sessionId||linked.has(String(x.sessionId)))&&!sample(linked.get(String(x.sessionId))));
+ good=workouts.filter(x=>!sample(x)&&(!x.sessionId||linked.has(String(x.sessionId)))&&!sample(linked.get(String(x.sessionId)))).filter((x,i,list)=>!x.sessionId||list.findIndex(y=>String(y.sessionId)===String(x.sessionId))===i);
  for(const x of good)if(x.sessionId)countedIds.add(String(x.sessionId));
  minutes=good.reduce((v,x)=>v+(linked.has(String(x.sessionId))?dur(linked.get(String(x.sessionId))):Math.max(0,Number(x.durationMinutes)||Number(x.minutes)||0)),0);
  for(const x of sessions.filter(x=>workoutNames.test(String(x.name||''))&&!countedIds.has(String(x.id)))){
