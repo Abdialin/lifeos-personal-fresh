@@ -29,6 +29,26 @@ if(cat==='fitness'){
 }
 else if(cat==='meals'){src='meal records';all=(w.meals||[]).filter(x=>interval(x,a,b));good=all.filter(x=>!sample(x));value=good.length}
 else if(cat==='personal'){src='personal logs';all=(w.personalLogs||[]).filter(x=>interval(x,a,b)&&norm(x.category)===norm(g.match));good=all.filter(x=>!sample(x));value=g.unit==='quantity'?good.filter(x=>!g.quantityUnit||norm(x.unit)===norm(g.quantityUnit)).reduce((v,x)=>v+Math.max(0,Number(x.quantity)||0),0):good.length}
+else if(cat==='habit'){
+ src='finished timers + explicit personal logs';
+ const keyword=norm(g.match||'');
+ const timers=(w.sessions||[]).filter(x=>x?.status==='finished'&&interval(x,a,b)&&keyword&&norm(x.name).includes(keyword));
+ const logs=(w.personalLogs||[]).filter(x=>interval(x,a,b)&&keyword&&(norm(x.category).includes(keyword)||norm(x.notes||'').includes(keyword)));
+ const validTimers=timers.filter(x=>!sample(x)),validLogs=logs.filter(x=>!sample(x));
+ const timerIds=new Set(validTimers.map(x=>String(x.id)));
+ const uniqueLogs=validLogs.filter(x=>!x.sessionId||!timerIds.has(String(x.sessionId)));
+ all=[...timers,...logs];
+ if(g.unit==='quantity'){
+  const qtyLogs=validLogs.filter(x=>norm(x.unit)===norm(g.quantityUnit)&&Number(x.quantity)>0);
+  good=qtyLogs;value=qtyLogs.reduce((n,x)=>n+Number(x.quantity),0);
+ }else if(g.unit==='hours'){
+  good=[...validTimers,...uniqueLogs.filter(x=>Number(x.minutes)>0)];
+  minutes=validTimers.reduce((n,x)=>n+dur(x),0)+uniqueLogs.reduce((n,x)=>n+Math.max(0,Number(x.minutes)||0),0);
+  value=minutes/60;
+ }else{
+  good=[...validTimers,...uniqueLogs];value=good.length;
+ }
+}
 else {all=(w.sessions||[]).filter(x=>x.status==='finished'&&interval(x,a,b)&&norm(g.match||g.name).length>0&&norm(x.name).includes(norm(g.match||g.name)));good=all.filter(x=>!sample(x));minutes=good.reduce((v,x)=>v+dur(x),0);value=g.unit==='hours'?minutes/60:good.length}
 return {value,records:good.length,minutes,excluded:all.length-good.length,src}};
 const weekday=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
