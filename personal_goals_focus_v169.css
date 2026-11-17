@@ -76,3 +76,18 @@ body[data-lifeos-view="goals"] #gv161-app.gv163-editing #gv161-legacy>.panel{
 @media(max-width:410px){
  #gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #goalForm{grid-template-columns:minmax(0,1fr)}
 }
+
+/* V174: only one evidence source for completed-week reviews. */
+#gv161-app #gv174-consistent-review{display:none}
+#gv161-app.gv163-editing.gv169-reviewing #gv174-consistent-review{
+ display:block;margin:12px;padding:12px;border:1px solid #31566a;border-radius:13px;background:#091e32
+}
+#gv161-app #gv174-consistent-review h3{font-size:16px;margin:0 0 8px}
+#gv161-app #gv174-consistent-review .gv174-explainer{font-size:12px;color:#a9c3cf;line-height:1.5;margin:6px 0 15px}
+#gv161-app #gv174-consistent-review .gv174-row{padding:13px 0;border-top:1px solid #25445a}
+#gv161-app #gv174-consistent-review .gv174-row>strong{font-size:14px;display:block;margin-bottom:8px}
+#gv161-app #gv174-consistent-review .gv174-row>div:not(.gv161-bar){display:flex;justify-content:space-between;gap:8px;margin:8px 0 4px;font-size:12px}
+#gv161-app #gv174-consistent-review .gv174-row>div span{color:#a6becc}
+#gv161-app #gv174-consistent-review .gv174-row>div b{text-align:right}
+#gv161-app #gv174-consistent-review .gv174-row small{display:block;color:#9ab7c1;font-size:11px;margin-top:9px}
+body[data-lifeos-view="goals"] #gv161-app.gv163-editing.gv169-reviewing #gv161-legacy>.panel{display:none!important}
