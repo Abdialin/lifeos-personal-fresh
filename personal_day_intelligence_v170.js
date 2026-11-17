@@ -4,6 +4,7 @@ const esc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const load=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}};
 const store=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 const fmt=m=>{m=Math.max(0,Math.round(m));return m>=60?Math.floor(m/60)+'h '+m%60+'m':m+'m'};
+const exact=ms=>{const n=Math.max(0,Math.round(ms/1000)),h=Math.floor(n/3600),m=Math.floor(n/60)%60,sec=n%60;return (h?h+'h ':'')+(h?String(m).padStart(2,'0'):m)+'m '+String(sec).padStart(2,'0')+'s'};
 const clock=t=>new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 const start=t=>new Date(new Date(t).setHours(0,0,0,0)).getTime();
 const next=t=>new Date(new Date(t).setHours(24,0,0,0)).getTime();
