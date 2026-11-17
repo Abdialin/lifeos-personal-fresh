@@ -17,9 +17,19 @@ function wrap(id,items,label,open=false){
  const summary=document.createElement('summary');summary.textContent=label;first.before(box);box.append(summary,...items);
  return box;
 }
+function foldForm(id,groupId,label){
+ const form=$(id);if(!form||$(groupId))return;
+ // Preserve the existing form, its input state and submit handlers.
+ const panel=form.closest('section.panel');if(!panel)return;
+ const box=document.createElement('details');box.className='lo190-group lo192-editor';box.id=groupId;
+ const heading=document.createElement('summary');heading.textContent=label;box.append(heading);
+ form.before(box);box.append(form);
+ box.addEventListener('toggle',()=>{if(box.open){const first=form.querySelector('input:not([type=hidden]),select,textarea');if(first)first.scrollIntoView({block:'nearest'})}});
+}
 function collapse(){
  const fitness=section('fitness'),nutrition=section('nutrition');
  if(fitness){
+  foldForm('fitnessForm','lo192-workout-editor','Record a workout · tap to open');
   const body=$('loBodyProgress');
   if(body&&!$('lo190-body'))wrap('lo190-body',[body],'Body measurements & progress');
   const list=$('fitnessList');if(list&&!$('lo190-fitness-history'))wrap('lo190-fitness-history',[list],'Workout records & history');
@@ -30,6 +40,7 @@ function collapse(){
   }
  }
  if(nutrition){
+  foldForm('mealForm','lo192-meal-editor','Record a meal · tap to open');
   const list=$('mealList');const summary=$('nutritionSummary');
   if(list&&!$('lo190-meal-history'))wrap('lo190-meal-history',summary&&summary.parentElement===list.parentElement?[summary,list]:[list],'Meal records & history');
   const dashboard=$('lifeosNutritionDashboard'),title=nutrition.querySelector('h2');
@@ -37,11 +48,13 @@ function collapse(){
    const mount=document.createElement('div');mount.id='lo190-nutrition-intro';title.after(mount);mount.append(dashboard);
   }
  }
+ foldForm('personalLogForm','lo192-routine-editor','Record a personal routine · tap to open');
  const routineHistory=document.querySelector('.lo189-routine-history');if(routineHistory)routineHistory.id='lo189-routine-history';
  const editor=document.querySelector('.lo188-habit-editor');if(editor&&!editor.id)editor.id='lo188-habit-editor';
 }
 function openTarget(id){
  const node=$(id);if(!node)return false;
+ // If the target was generated after the toolbar, the next route refresh can still find it.
  if(node.tagName==='DETAILS')node.open=true;
  const parents=[];let a=node.parentElement;
  while(a){if(a.tagName==='DETAILS')parents.unshift(a);a=a.parentElement}
@@ -58,10 +71,7 @@ function installNav(){
  const key=document.body.dataset.loLifeSection||'routines',panel=section(key);
  if(!panel||!config[key])return;
  const existing=panel.querySelector('.lo190-toolbar');
- if(existing){
-  if(existing.dataset.section===key)return;
-  existing.remove();
- }
+ if(existing)existing.remove();
  const cfg=config[key],toolbar=document.createElement('div');
  toolbar.className='lo190-toolbar';toolbar.dataset.section=key;
  const title=document.createElement('div');title.className='lo190-heading';
@@ -79,6 +89,7 @@ function installNav(){
  const heading=panel.querySelector('h2');if(heading&&heading.parentElement===panel){heading.after(toolbar);heading.classList.add('lo190-old-heading')}else panel.prepend(toolbar);
  // Earlier quick-link list duplicates the same routes.
  const old=panel.querySelector('.lo187-jump');if(old)old.hidden=true;
+ if(row.childElementCount===0)toolbar.classList.add('lo190-actions-empty');
 }
 function removeRepeatedOverview(){
  // The universal progress card repeated on every My Life tab. Local dashboards are more useful.
@@ -99,6 +110,9 @@ function init(){
  root.addEventListener('lifeos-v76-route-check',()=>setTimeout(run,30));
  // Reconcile UI after optional modules mount without observing constantly regenerating chart markup.
  [120,700,1800].forEach(t=>setTimeout(run,t));
+ document.addEventListener('submit',event=>{
+  if(event.target.matches('#fitnessForm,#mealForm,#personalLogForm'))setTimeout(run,200);
+ });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 root.LifeOSMyLifeV190={refresh:run,openTarget};
