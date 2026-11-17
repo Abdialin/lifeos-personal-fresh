@@ -110,7 +110,7 @@ function renderBody(rows,goal){
  goalBox(goal,ordered)+
  '<label class="sub" for="loBodyMonth">View month</label><select id="loBodyMonth" class="field">'+options+'</select>'+
  '<div class="lo10-chart-wrap"><h4>Weight trend · '+esc(selectedMonth)+'</h4>'+svgTrend(monthly)+'</div>'+
- '<div class="lo10-table-wrap"><table class="lo10-table"><caption>All '+monthly.length+' measurements in selected month</caption><thead><tr><th>Date</th><th>Weight (kg)</th><th>Body fat (%)</th><th>Waist (cm)</th></tr></thead><tbody>'+(rowsHTML||'<tr><td colspan="4">No measurements for this month.</td></tr>')+'</tbody></table></div>';
+ '<details class="lo189-body-records"><summary>View measurement table · '+monthly.length+' records</summary><div class="lo10-table-wrap"><table class="lo10-table"><caption>All '+monthly.length+' measurements in selected month</caption><thead><tr><th>Date</th><th>Weight (kg)</th><th>Body fat (%)</th><th>Waist (cm)</th></tr></thead><tbody>'+(rowsHTML||'<tr><td colspan="4">No measurements for this month.</td></tr>')+'</tbody></table></div></details>';
  const picker=$('loBodyMonth');if(picker)picker.addEventListener('change',()=>{selectedMonth=picker.value;renderBody(rows,goal)});
  const gd=$('loGoalStartDate'),gw=$('loGoalStartWeight'),td=$('loGoalTargetWeight'),ed=$('loGoalEndDate');
  if(gd&&goal&&!gd.value){gd.value=goal.startDate;gw.value=goal.startWeightKg;td.value=goal.targetWeightKg;ed.value=goal.targetDate}
