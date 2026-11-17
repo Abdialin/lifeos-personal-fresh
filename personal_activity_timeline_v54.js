@@ -14,13 +14,18 @@ function build(workspace,day,now=Date.now()){
  const [start,end]=b,cutoff=Math.max(start,Math.min(end,now));
  const records=[],plans=[];
  const sessions=Array.isArray(workspace?.sessions)?workspace.sessions:[];
- for(const s of sessions){if(!s||!Array.isArray(s.segments))continue;const origin=classify(s);for(let i=0;i<s.segments.length;i++){const seg=s.segments[i];if(!seg||!safeNum(seg.start))continue;const interval=clip(seg.start,safeNum(seg.end)?seg.end:Math.max(seg.start,now),start,end);if(!interval)continue;records.push({key:String(s.id||'activity')+':'+i,name:String(s.name||'Activity'),start:interval[0],end:interval[1],origin,status:String(s.status||'finished')});}}
+ for(const s of sessions){if(!s||!Array.isArray(s.segments))continue;const origin=classify(s);for(let i=0;i<s.segments.length;i++){const seg=s.segments[i];if(!seg||!safeNum(seg.start))continue;const segmentEnd=safeNum(seg.end)?seg.end:(s.status==='running'?now:NaN);const interval=clip(seg.start,segmentEnd,start,Math.min(end,now));if(!interval)continue;records.push({key:String(s.id||'activity')+':'+i,name:String(s.name||'Activity'),start:interval[0],end:interval[1],origin,status:String(s.status||'finished')});}}
  for(const p of Array.isArray(workspace?.schedule)?workspace.schedule:[]){if(!p||p.status==='skipped')continue;const interval=clip(p.startAt,p.endAt,start,end);if(!interval)continue;plans.push({key:String(p.id||'plan'),name:String(p.name||'Planned activity'),start:interval[0],end:interval[1],linkedSessionId:p.sessionId||null});}
  const verified=records.filter(r=>r.origin!=='sample'&&r.start<cutoff).map(r=>[r.start,Math.min(r.end,cutoff)]).filter(x=>x[1]>x[0]);
  const occupied=merge(verified);
  const gapsFound=gaps(occupied,start,cutoff);
+ const gapDetails=gapsFound.map(([a,b])=>{
+  const previous=records.filter(r=>r.origin!=='sample'&&r.end<=a).sort((x,y)=>y.end-x.end)[0]||null;
+  const next=records.filter(r=>r.origin!=='sample'&&r.start>=b).sort((x,y)=>x.start-y.start)[0]||null;
+  return {start:a,end:b,durationMs:b-a,previous,next};
+ });
  const overlaps=[];for(let i=0;i<records.length;i++)for(let j=i+1;j<records.length;j++){const a=records[i],c=records[j];if(a.origin==='sample'||c.origin==='sample')continue;const o=clip(a.start,a.end,c.start,c.end);if(o)overlaps.push({left:a.key,right:c.key,minutes:Math.ceil((o[1]-o[0])/60000)});}
- return {error:null,start,end,cutoff,records,plans,gaps:gapsFound,overlaps,stats:{observedMs:length(occupied),plannedMs:length(plans.map(p=>[p.start,p.end])),unloggedMs:length(gapsFound),dayMs:end-start,recordCount:new Set(records.filter(r=>r.origin!=='sample').map(r=>r.key.split(':')[0])).size,exampleCount:records.filter(r=>r.origin==='sample').length}};
+ return {error:null,start,end,cutoff,records,plans,gaps:gapsFound,gapDetails,overlaps,stats:{observedMs:length(occupied),plannedMs:length(plans.map(p=>[p.start,p.end])),unloggedMs:length(gapsFound),dayMs:end-start,recordCount:new Set(records.filter(r=>r.origin!=='sample').map(r=>r.key.split(':')[0])).size,exampleCount:records.filter(r=>r.origin==='sample').length}};
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmt(ms){const n=Math.floor(ms/60000);return Math.floor(n/60)+'h '+String(n%60).padStart(2,'0')+'m'}
@@ -32,6 +37,9 @@ function render(host,workspace,day,now){
  const row=(title,entries,kind)=>'<div class="lo54-track"><strong>'+title+'</strong><div class="lo54-lane" role="list" aria-label="'+title+'">'+entries.map(e=>{const left=(e.start-x.start)/horizon*100,width=(e.end-e.start)/horizon*100;return '<span class="lo54-block lo54-'+kind+(e.origin==='historical'?' lo54-historical':e.origin==='sample'?' lo54-sample':'')+'" style="left:'+left.toFixed(4)+'%;width:'+width.toFixed(4)+'%" role="listitem" title="'+esc(e.name||'Unlogged · unknown')+'"></span>'}).join('')+'</div></div>';
  const parts=[row('Actual records',x.records.filter(e=>e.origin!=='sample'),'actual'),row('Plans',x.plans,'plan'),row('Unlogged ≥45m',x.gaps.map(([a,b])=>({start:a,end:b,name:'No activity recorded (unknown)'})),'gap')];
  tracks.innerHTML='<div class="lo54-clock"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00*</span></div>'+parts.join('')+'<p class="lo54-legend"><span>■ Actual</span><span>▧ Historical</span><span>■ Planned</span><span>░ Unlogged</span></p>';
+ const describeTime=t=>new Date(t).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+ const detailHtml=(x.gapDetails||[]).map(g=>'<li><strong>'+esc(describeTime(g.start))+'–'+esc(describeTime(g.end))+' ('+fmt(g.durationMs)+')</strong><br><small>After '+esc(g.previous?.name||'start of day')+' · Before '+esc(g.next?.name||'next recorded activity unknown')+'</small></li>').join('');
+ tracks.insertAdjacentHTML('beforeend','<details class="lo54-gap-context"><summary>Unlogged gaps with neighboring activities ('+(x.gapDetails||[]).length+')</summary><ul>'+ (detailHtml||'<li>No unlogged gaps of 45 minutes or longer in this period.</li>') +'</ul></details>');
  message.textContent='Unlogged means no verified activity record; it does not mean free time or inactivity. Development examples are excluded. Overlapping activities count once in recorded totals. For the current day, gaps are measured only up to the present time. *On daylight-saving transition dates, the day may contain 23 or 25 hours; the axis represents the full local calendar day.';
 }
 function mount(){
