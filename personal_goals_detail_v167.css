@@ -1,0 +1,11 @@
+/* LifeOS Goals V167: compact interactive evidence and weekly day-level inspection. */
+.gv167-days{margin:12px 0;padding:12px;border:1px solid #27515d;border-radius:14px;background:linear-gradient(140deg,#0b2633,#071529)}
+.gv167-dayshead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.gv167-dayshead b{font-size:13px;color:#e1f9f2}.gv167-dayshead small,.gv167-note{font-size:11px;color:#94b6c4}
+.gv167-weekstrip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;align-items:end;height:84px}
+.gv167-day{display:flex;flex-direction:column;align-items:center;justify-content:end;min-width:0;gap:5px;height:100%;font-size:10px;color:#c1d8df}
+.gv167-day span{font-size:10px}.gv167-day i{min-height:3px;width:65%;max-width:18px;border-radius:5px 5px 0 0;background:linear-gradient(#66e2b5,#178f8b);margin-top:auto}
+.gv167-day strong{font-size:10px;white-space:nowrap}.gv167-note{display:block;margin-top:10px;line-height:1.4}
+.gv167-historydetail{margin:14px 0}.gv167-historydetail .gv167-days{margin:0}
+.gv161-app .gv161-plot{max-width:100%;overflow:hidden}.gv161-app .gv161-col small{font-size:10px}
+@media(max-width:420px){.gv167-days{padding:9px}.gv167-weekstrip{gap:3px}}
