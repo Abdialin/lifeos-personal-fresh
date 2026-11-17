@@ -122,3 +122,48 @@
 .l182-note{margin-top:14px}
 #personalActivityPanel{scroll-margin-top:28px}
 @media(max-width:450px){.l182-hub{padding:13px}.l182-actions{grid-template-columns:1fr 1fr}.l182-actions button:last-child{grid-column:1/-1}.l182-recent{grid-template-columns:62px minmax(0,1fr)}.l182-recent time{grid-column:2}.l182-card strong{font-size:20px}}
+
+/* V184 — Insights is interpretation first, detailed evidence on demand. */
+#lo182-life-hub{display:none!important}
+body[data-lifeos-view="life"] #lo182-life-hub{display:block!important}
+#lo184-insights-digest{display:none}
+body[data-lifeos-view="analytics"] #lo184-insights-digest{display:block}
+.l184-digest{color:#e5f6f2;background:linear-gradient(155deg,#092837,#071728);border:1px solid #286577;border-radius:18px;padding:20px;margin:13px 0 26px}
+.l184-kicker{font-size:11px;letter-spacing:1.4px;font-weight:800;color:#57d0aa}
+.l184-digest h2{font-size:23px;line-height:1.22;margin:12px 0 7px}
+.l184-lead,.l184-disclaimer{font-size:12px;line-height:1.55;color:#a1bdc9}
+.l184-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:19px 0}
+.l184-metric{background:#0b2033;border:1px solid #345569;border-radius:13px;padding:12px;min-width:0}
+.l184-metric>*{display:block}
+.l184-metric span{font-size:11px;color:#9ec2d0;line-height:1.45}
+.l184-metric strong{font-size:18px;overflow-wrap:anywhere;margin:9px 0}
+.l184-metric small{font-size:10px;color:#91b0bf;line-height:1.5}
+.l184-findings{display:grid;gap:10px}
+.l184-finding{border:1px solid #294a57;border-left:3px solid #16ac85;background:#0b2333;border-radius:10px;padding:13px}
+.l184-finding b{font-size:13px;color:#e6f8f3}
+.l184-finding p{font-size:12px;color:#b4cbd2;line-height:1.55;margin:7px 0 0}
+.l184-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.l184-actions button{flex:1 1 150px;min-height:44px;padding:9px 13px;font-size:12px;font-weight:750;border-radius:11px;background:#0b4a44;color:#ecfff8;border:1px solid #309783}
+.l184-actions button+button{background:#102b3a;border-color:#3d6271}
+.l184-disclaimer{margin:14px 0 0}
+body[data-lifeos-view="analytics"] #analyticsPanel,
+body[data-lifeos-view="analytics"] #weeklyDashboardPanel,
+body[data-lifeos-view="analytics"] #qualityPanel,
+body[data-lifeos-view="analytics"] #intelligencePanel,
+body[data-lifeos-view="analytics"] #lo33HabitInsights,
+body[data-lifeos-view="analytics"] #lo34Recommendations,
+body[data-lifeos-view="analytics"] #lo35PlanReview,
+body[data-lifeos-view="analytics"] #lo36HabitFeedback,
+body[data-lifeos-view="analytics"] #lo37PredictiveHabits,
+body[data-lifeos-view="analytics"] #lo31Lifestyle {display:none!important}
+body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #analyticsPanel,
+body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #weeklyDashboardPanel,
+body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #qualityPanel,
+body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #intelligencePanel,
+body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #lo33HabitInsights,
+body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #lo34Recommendations,
+body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #lo35PlanReview,
+body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #lo36HabitFeedback,
+body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #lo37PredictiveHabits,
+body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #lo31Lifestyle {display:block!important}
+@media(max-width:500px){.l184-digest{padding:14px}.l184-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.l184-metric:last-child{grid-column:1/-1}.l184-metric strong{font-size:17px}}
