@@ -67,3 +67,18 @@
 .l180-report-gap small{color:#a8c0cb;margin-top:4px;line-height:1.5}
 .l180-short summary{cursor:pointer;color:#a6d8d1;font-size:11px;padding:10px 0}
 @media(max-width:520px){.l180-report{padding:12px}.l180-report-filters{grid-template-columns:minmax(0,1fr) minmax(110px,1fr)}.l180-report-filters button{grid-column:1/-1}.l180-stat strong{font-size:16px}#lo170-day .l180-activity{grid-template-columns:minmax(0,1fr) auto}#lo170-day .l180-activity button{grid-column:2;justify-self:end}}
+
+/* V181 – planned/actual evidence: compact, non-judgmental comparison */
+.l181-plan-summary{margin:12px 0;padding:14px;border:1px solid #277a72;border-radius:13px;background:#0a3038}
+.l181-plan-summary strong{font-size:14px;color:#dcf5eb}
+.l181-plan-summary p{font-size:13px;line-height:1.6;color:#d2e5e6;margin:8px 0}
+.l181-plan-summary small{font-size:11px;line-height:1.5;color:#a1bec8}
+.l181-plan{padding:12px;margin:9px 0;border:1px solid #315466;border-radius:12px;background:#0a2638}
+.l181-plan-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.l181-plan-head strong{font-size:12px;overflow-wrap:anywhere}
+.l181-plan-head small{font-size:11px;color:#a9c6d2;white-space:nowrap}
+.l181-plan-bars{height:8px;border-radius:6px;background:#304b59;margin:12px 0 10px;overflow:hidden}
+.l181-plan-bars span{display:block;width:var(--share,0%);height:100%;background:#15ae91}
+.l181-plan-metrics{display:flex;flex-wrap:wrap;gap:5px 12px;font-size:11px;color:#bfd6dc}
+.l181-plan>small{display:block;color:#8eaebc;font-size:10px;line-height:1.5;margin-top:9px}
+@media(max-width:430px){.l181-plan-head{align-items:start;flex-direction:column;gap:4px}}
