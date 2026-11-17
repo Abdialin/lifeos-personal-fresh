@@ -82,3 +82,17 @@
 .l181-plan-metrics{display:flex;flex-wrap:wrap;gap:5px 12px;font-size:11px;color:#bfd6dc}
 .l181-plan>small{display:block;color:#8eaebc;font-size:10px;line-height:1.5;margin-top:9px}
 @media(max-width:430px){.l181-plan-head{align-items:start;flex-direction:column;gap:4px}}
+
+/* V181: compact persistent timer footprint. Content remains scrollable past the overlay. */
+@media(max-width:600px){
+ body[data-lifeos-view="dashboard"] #lo32ActiveTimer,
+ body[data-lifeos-view="analytics"] #lo32ActiveTimer{
+  right:8px!important;left:auto!important;max-width:min(210px,55vw)!important;
+  width:min(210px,55vw)!important;min-width:0!important;
+  border-radius:13px!important;box-sizing:border-box!important;
+ }
+ body[data-lifeos-view="dashboard"] #lo86-timer,
+ body[data-lifeos-view="analytics"] #lo86-timer{right:8px!important;width:min(210px,55vw)!important;max-width:210px!important}
+ #lo170-day .l180-section:last-child{margin-bottom:24px}
+ .l180-report{padding-bottom:110px}
+}
