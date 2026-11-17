@@ -10,6 +10,15 @@ function mount(){
  const style=document.createElement('style');style.textContent=`
  #lo86-timer{position:fixed;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:min(350px,calc(100vw - 24px));z-index:750;background:#152138;color:#edf4ff;border:1px solid #537296;box-shadow:0 7px 28px #0008;border-radius:15px;padding:10px;font:14px system-ui;box-sizing:border-box}
  #lo86-timer[hidden],#lo86-details[hidden]{display:none!important}
+ /* Only one floating timer: preserve the original control as fallback when V86 is hidden. */
+ body:has(#lo86-timer:not([hidden])) #lo32ActiveTimer{display:none!important}
+ body:has(#lo86-timer:not([hidden])) #todayTimerSignal{display:none!important}
+ #lo86-timer{max-width:min(260px,calc(100vw - 24px))!important;padding:7px 9px!important}
+ #lo86-summary strong{max-width:88px;font-size:11px}
+ #lo86-summary{gap:6px}
+ #lo86-clock{font-size:12px;font-weight:800}
+ #lo86-toggle{min-width:30px!important;min-height:30px!important;padding:4px!important}
+
  #lo86-summary{display:flex;align-items:center;gap:9px;min-width:0}
  #lo86-summary strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
  #lo86-clock{font-variant-numeric:tabular-nums;white-space:nowrap}
