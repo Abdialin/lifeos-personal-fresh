@@ -96,3 +96,29 @@
  #lo170-day .l180-section:last-child{margin-bottom:24px}
  .l180-report{padding-bottom:110px}
 }
+
+/* V182 My Life: connected, responsive overview above existing feature sections */
+.l182-hub{background:linear-gradient(155deg,#0a2538,#08182b);border:1px solid #356274;border-radius:20px;padding:18px;margin:15px 0 20px;color:#eaf7f7;min-width:0}
+.l182-hub *{box-sizing:border-box}
+.l182-heading small{display:block;font-size:10px;letter-spacing:1.4px;font-weight:850;color:#58d4af}
+.l182-heading h2{margin:9px 0 7px;font-size:22px;line-height:1.25}
+.l182-heading p,.l182-note{font-size:12px;line-height:1.5;color:#a1bccb;margin:0}
+.l182-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:17px 0}
+.l182-card{border:1px solid #315268;background:#0a1b30;border-radius:13px;padding:13px;min-width:0}
+.l182-card span,.l182-card strong,.l182-card small{display:block}
+.l182-card span{font-size:11px;color:#9dbacc}
+.l182-card strong{font-size:23px;color:#f0fbf8;font-weight:850;margin:9px 0 7px}
+.l182-card small{color:#8eacbd;font-size:10px;line-height:1.45}
+.l182-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.l182-actions button{min-width:0;padding:11px 6px;border:1px solid #2e8275;border-radius:11px;background:#0e4144;color:#e0fff4;font:700 12px system-ui;cursor:pointer}
+.l182-actions button:focus-visible{outline:3px solid #7cd4c2;outline-offset:2px}
+.l182-recents{border-top:1px solid #2b5160;margin-top:18px;padding-top:5px}
+.l182-recents h3{font-size:15px;margin:12px 0}
+.l182-recent{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:8px;align-items:center;border-top:1px solid #254456;padding:10px 0}
+.l182-recent span{font-size:10px;color:#78d5bb}
+.l182-recent strong{font-size:12px;overflow-wrap:anywhere}
+.l182-recent time{font-size:10px;color:#9db7c6;white-space:nowrap}
+.l182-empty{font-size:12px;color:#a0b9c9;line-height:1.5}
+.l182-note{margin-top:14px}
+#personalActivityPanel{scroll-margin-top:28px}
+@media(max-width:450px){.l182-hub{padding:13px}.l182-actions{grid-template-columns:1fr 1fr}.l182-actions button:last-child{grid-column:1/-1}.l182-recent{grid-template-columns:62px minmax(0,1fr)}.l182-recent time{grid-column:2}.l182-card strong{font-size:20px}}
