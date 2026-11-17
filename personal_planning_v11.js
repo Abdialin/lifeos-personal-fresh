@@ -14,7 +14,22 @@ function calendar(){
  const w=get();if(!w)return;const selected=picker.value||ymd(new Date());
  if(!displayMonth)displayMonth=selected.slice(0,7);
  const [year,month]=displayMonth.split('-').map(Number),first=new Date(year,month-1,1),monthLength=new Date(year,month,0).getDate(),offset=(first.getDay()+6)%7;
- const sessions=new Set((w.sessions||[]).filter(s=>s.status==='finished').map(s=>ymd(new Date(s.endAt))));
+ // A recorded day is any local date touched by an active segment, not just the final end date.
+ const sessions=new Set();
+ for(const session of w.sessions||[]){
+  if(!session||!['finished','running','paused'].includes(session.status))continue;
+  const segments=Array.isArray(session.segments)?session.segments:[];
+  for(const segment of segments){
+   const from=Number(segment?.start),until=segment?.end==null?(session.status==='running'?Date.now():NaN):Number(segment.end);
+   if(!Number.isFinite(from)||!Number.isFinite(until)||until<=from)continue;
+   let p=from,guard=0;
+   while(p<until&&guard++<3700){
+    const d=new Date(p);
+    sessions.add(ymd(d));
+    p=Math.min(until,new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime());
+   }
+  }
+ }
  const plans=new Set((w.schedule||[]).map(p=>ymd(new Date(p.startAt))));
  const tasks=new Set((w.todos||[]).filter(t=>t.due).map(t=>t.due));
  const header='<div class="lo11-calendar-top"><div><strong>Jump to a date</strong><small>Select any day to open its schedule and daily review</small></div><div class="lo11-calendar-controls"><button type="button" data-lo11-month="-1" aria-label="Previous month">‹</button><strong>'+esc(first.toLocaleDateString(undefined,{month:'long',year:'numeric'}))+'</strong><button type="button" data-lo11-month="1" aria-label="Next month">›</button><button type="button" data-lo11-today>Today</button></div></div>';
