@@ -2578,7 +2578,7 @@ function mount(){
   links.append(invite,remove);card.append(links);panel.append(card);
  }
  const note=document.createElement('p');note.className='lo197-quiet';note.textContent='Progress uses completed tracked sessions or recorded quantities. Historical records before joining are excluded. Other people’s live progress, friend notifications and cross-device challenge sync require a separate secure account backend.';panel.append(note);
- panel.addEventListener('submit',function submit(event){
+ panel.onsubmit=function submit(event){
   if(!event.target.matches('#lo197-form,#lo197-import'))return;
   event.preventDefault();
   let item;
@@ -2588,7 +2588,7 @@ function mount(){
   const rows=state();if(rows.length>=MAX){status.textContent='Up to '+MAX+' local challenges are supported.';return}
   if(rows.some(x=>x.title.toLowerCase()===item.title.toLowerCase()&&x.match.toLowerCase()===item.match.toLowerCase())){status.textContent='This challenge is already joined.';return}
   if(save([...rows,item]))mount();
- },{once:true});
+ };
 }
 function init(){
  const host=$('lo32FriendHub');if(!host)return false;
