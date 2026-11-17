@@ -74,6 +74,23 @@ function dailyReport(day,at=Date.now(),workspace=read()){
  let recordedAgainstPlanMs=0;for(const [x,y] of occupied)for(const [p,q] of planUnion)recordedAgainstPlanMs+=Math.max(0,Math.min(y,q)-Math.max(x,p));
  return {a,b,end,records,occupied,gaps,gapDetails,planned,summedMs,uniqueMs,overlapMs:Math.max(0,summedMs-uniqueMs),unloggedMs:end-a-uniqueMs,plannedMs,recordedAgainstPlanMs};
 }
+function planComparison(report,workspace){
+ const plans=(workspace.schedule||[]).filter(p=>p&&p.status!=='cancelled'&&p.status!=='skipped').flatMap(p=>{
+  const from=Math.max(report.a,Number(p.startAt)),to=Math.min(report.end,Number(p.endAt));
+  return Number.isFinite(from)&&Number.isFinite(to)&&to>from?[{id:String(p.id||''),name:String(p.name||'Planned activity'),linkedId:String(p.sessionId||''),start:from,end:to}]:[];
+ });
+ const intersect=(left,right)=>{let total=0;for(const [a,b] of left)for(const [x,y] of right)total+=Math.max(0,Math.min(b,y)-Math.max(a,x));return total};
+ const rows=plans.map(p=>{
+  const normalize=t=>String(t||'').toLowerCase().replace(/[^a-z0-9\p{L}]+/gu,' ').trim();
+  const target=normalize(p.name);
+  const matches=report.records.filter(r=>(p.linkedId&&String(r.id)===p.linkedId)||(target.length>=3&&normalize(r.name)===target));
+  const match=merge(matches.map(r=>[Math.max(p.start,r.start),Math.min(p.end,r.end)]).filter(([a,b])=>b>a));
+  const all=merge(report.records.map(r=>[Math.max(p.start,r.start),Math.min(p.end,r.end)]).filter(([a,b])=>b>a));
+  const scheduled=p.end-p.start,matchedMs=intersect(match,[[p.start,p.end]]),occupiedMs=intersect(all,[[p.start,p.end]]);
+  return {...p,scheduledMs:scheduled,matchedMs,otherRecordedMs:Math.max(0,occupiedMs-matchedMs),noRecordMs:Math.max(0,scheduled-occupiedMs),confidence:p.linkedId?'linked session':target.length>=3?'exact activity name':'unmatched'};
+ });
+ return {rows,scheduledMs:rows.reduce((n,x)=>n+x.scheduledMs,0),matchedMs:rows.reduce((n,x)=>n+x.matchedMs,0),otherRecordedMs:rows.reduce((n,x)=>n+x.otherRecordedMs,0),noRecordMs:rows.reduce((n,x)=>n+x.noRecordMs,0)};
+}
 function mountReports(){
  const panel=$('analyticsPanel');if(!panel||$('lo180-report'))return;
  const section=document.createElement('section');section.id='lo180-report';section.className='l180-report';
@@ -87,10 +104,14 @@ function mountReports(){
   for(let i=n-1;i>=0;i--){const d=new Date(selected);d.setDate(d.getDate()-i);if(start(d.getTime())>now)continue;days.push(dailyReport(d.getTime(),now,workspace))}
   const sum=field=>days.reduce((x,d)=>x+d[field],0);
   const unique=sum('uniqueMs'),summed=sum('summedMs'),overlap=sum('overlapMs'),unlogged=sum('unloggedMs'),planned=sum('plannedMs'),against=sum('recordedAgainstPlanMs');
+  const comparisons=days.map(d=>planComparison(d,workspace));const matchedPlans=comparisons.reduce((n,x)=>n+x.matchedMs,0);
   const dayRow=d=>{
    const label=new Date(d.a).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
    const gaps=d.gapDetails.filter(g=>g.ms>=15*M);
-   return '<details class="l180-report-day"><summary><span><b>'+esc(label)+'</b><small>'+d.records.length+' active periods · '+d.gapDetails.length+' gaps</small></span><strong>'+exact(d.uniqueMs)+' recorded</strong></summary><div class="l180-report-day-body"><div class="l180-reality"><span>Recorded '+exact(d.uniqueMs)+'</span><span>Unlogged '+exact(d.unloggedMs)+'</span><span>Overlap '+exact(d.overlapMs)+'</span></div><h4>Recorded periods</h4>'+
+   const comparisons=planComparison(d,workspace);
+   return '<details class="l180-report-day"><summary><span><b>'+esc(label)+'</b><small>'+d.records.length+' active periods · '+d.gapDetails.length+' gaps</small></span><strong>'+exact(d.uniqueMs)+' recorded</strong></summary><div class="l180-report-day-body"><div class="l180-reality"><span>Recorded '+exact(d.uniqueMs)+'</span><span>Unlogged '+exact(d.unloggedMs)+'</span><span>Overlap '+exact(d.overlapMs)+'</span></div><h4>Planned vs recorded</h4>'+
+   (comparisons.rows.map(p=>'<article class="l181-plan"><div class="l181-plan-head"><strong>'+esc(p.name)+'</strong><small>'+clock(p.start)+'–'+clock(p.end)+'</small></div><div class="l181-plan-bars"><span style="--share:'+Math.round(p.scheduledMs?100*p.matchedMs/p.scheduledMs:0)+'%"></span></div><div class="l181-plan-metrics"><span>Matching activity: '+exact(p.matchedMs)+'</span><span>Other recorded: '+exact(p.otherRecordedMs)+'</span><span>No record: '+exact(p.noRecordMs)+'</span></div><small>Matched by '+esc(p.confidence)+'. No record does not prove the activity was missed.</small></article>').join('')||'<p class="l170-hint">No plans in this observed period.</p>')+
+   '<h4>Recorded periods</h4>'+
    (d.records.map(r=>'<div class="l180-report-line"><span>'+esc(r.name)+'<small>'+clock(r.start)+'–'+clock(r.end)+'</small></span><b>'+exact(r.ms)+'</b></div>').join('')||'<p class="l170-hint">No recorded activity for this date.</p>')+
    '<h4>Unlogged between activities</h4>'+
    (gaps.map(g=>'<div class="l180-report-gap"><b>'+clock(g.start)+'–'+clock(g.end)+' · '+exact(g.ms)+'</b><small>'+esc(g.before?.name||'Start of day')+' → Unlogged → '+esc(g.after?.name||'No later recorded activity')+'</small></div>').join('')||'<p class="l170-hint">No unlogged gaps of 15 minutes or longer.</p>')+
@@ -98,6 +119,7 @@ function mountReports(){
    '</div></details>';
   };
   result.innerHTML='<div class="l180-stat-grid">'+card('Unique recorded',unique,'Time occupied by at least one activity')+card('Unlogged',unlogged,'Unknown time up to the observed cutoff')+card('Overlapping',overlap,'Extra summed time from parallel activity')+card('Planned',planned,'Scheduled time in the observed period')+'</div>'+
+   '<div class="l181-plan-summary"><strong>Plan alignment</strong><p>'+exact(matchedPlans)+' recorded during the matching planned activity, out of '+exact(comparisons.reduce((n,x)=>n+x.scheduledMs,0))+' scheduled across individual plan intervals. Overlapping plans may count twice here.</p><small>Matching uses a linked session or exact activity name. This is evidence of matching tracked time, not a confirmed task completion.</small></div>'+ 
    '<div class="l180-report-note"><strong>Time accounting</strong><p>'+exact(summed)+' summed activity − '+exact(overlap)+' overlapping = '+exact(unique)+' uniquely recorded.</p><p>'+exact(against)+' of uniquely recorded time overlaps planned intervals. This is not proof that a specific plan was completed.</p><p>Days are divided at local midnight. Pauses are excluded. Today is measured only up to the current time; future hours are not counted as unlogged.</p></div>'+
    '<div class="l180-report-days"><h3>Breakdown by day</h3>'+days.map(dayRow).join('')+'</div>';
  };
@@ -108,5 +130,5 @@ function mountReports(){
 }
 function init(){mountReports();if($('lo170-day'))return;let today=$('todayOverview');if(today){let el=document.createElement('section');el.id='lo170-day';el.className='l170-panel';today.prepend(el);day()}let tracking=$('trackPastPanel');if(tracking){let el=document.createElement('section');el.id='lo170-review';el.className='l170-panel';(document.getElementById('trackActivePanel')||tracking).prepend(el);review()}let life=$('personalActivityPanel');if(life){let el=document.createElement('section');el.id='lo170-notes';el.className='l170-panel';life.prepend(el);notes();let group=document.createElement('section');group.id='lo170-groups';group.className='l170-panel';el.after(group);groups()}document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();if(document.body.dataset.lifeosView==='dashboard')day()}});window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='dashboard')day();review()});setInterval(tick,30000)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,1800),{once:true});else setTimeout(init,1800);
-window.LifeOSDayIntelligenceV170={snapshot,spans,merge,mins,daySegments,dailyReport};
+window.LifeOSDayIntelligenceV170={snapshot,spans,merge,mins,daySegments,dailyReport,planComparison};
 })();
