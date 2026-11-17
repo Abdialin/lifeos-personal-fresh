@@ -15,10 +15,8 @@ function fitness(w){
  const entries=w.workouts||[],dates=week(day=>entries.filter(x=>x.date===day).length),cut=dates[0].day,active=entries.filter(x=>x.date>=cut);
  const durations=active.filter(x=>num(x.minutes)!==null),minutes=durations.reduce((n,x)=>n+num(x.minutes),0);
  const types=new Map();for(const x of active)types.set(x.type||'Workout',(types.get(x.type||'Workout')||0)+1);
- const measurements=(w.bodyMetrics||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)),last=measurements.at(-1);
  const stats=stat('Workouts / 7 days',active.length)+stat('Minutes logged',durations.length?fmt(minutes,' min'):'Unknown')+stat('Activity types',types.size);
- const body=last?stat('Weight',fmt(num(last.weightKg),' kg'))+stat('Body fat',fmt(num(last.bodyFatPct),'%'))+stat('Waist',fmt(num(last.waistCm),' cm')):'<p class="lo9-muted">No body measurements logged. These are optional self-reported values.</p>';
- const x=$('lifeosFitnessDashboard');if(x)x.innerHTML='<h3>Fitness overview</h3><div class="lo9-grid">'+stats+'</div>'+trend(dates)+'<div class="lo9-chiprow">'+[...types].map(([name,n])=>'<span>'+esc(name)+' · '+n+'</span>').join('')+'</div><h4>Body progress</h4><div class="lo9-grid">'+body+'</div>';
+ const x=$('lifeosFitnessDashboard');if(x)x.innerHTML='<h3>Fitness overview</h3><div class="lo9-grid">'+stats+'</div>'+trend(dates)+'<div class="lo9-chiprow">'+[...types].map(([name,n])=>'<span>'+esc(name)+' · '+n+'</span>').join('')+'</div>';
  history('fitnessList','Workout history · expand to view or delete');
 }
 function nutrition(w){
