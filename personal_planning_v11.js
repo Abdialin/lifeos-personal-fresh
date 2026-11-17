@@ -90,6 +90,7 @@ function history(finished){
 }
 function elapsed(s){return (s.segments||[]).reduce((sum,x)=>sum+Math.max(0,(x.end??Date.now())-x.start),0)}
 function short(ms){const n=Math.round(ms/60000),hours=Math.floor(n/60);return hours?hours+'h '+String(n%60).padStart(2,'0')+'m':n+'m'}
+function precise(ms){const n=Math.max(0,Math.round(ms/1000)),hrs=Math.floor(n/3600),mins=Math.floor(n/60)%60,secs=n%60;return (hrs?hrs+'h ':'')+(hrs?String(mins).padStart(2,'0'):mins)+'m '+String(secs).padStart(2,'0')+'s'}
 const seen=new Set();
 function reminders(){
  const ws=get(),list=$('lo11TaskReminder');if(!ws)return;
