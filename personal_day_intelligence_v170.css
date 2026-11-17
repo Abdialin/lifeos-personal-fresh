@@ -167,3 +167,20 @@ body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #lo36HabitFeedback
 body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #lo37PredictiveHabits,
 body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #lo31Lifestyle {display:block!important}
 @media(max-width:500px){.l184-digest{padding:14px}.l184-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.l184-metric:last-child{grid-column:1/-1}.l184-metric strong{font-size:17px}}
+
+/* V185 – evidence-oriented recommendations without dashboard duplication */
+.l185-recommendations{border-top:1px solid #285563;margin-top:17px;padding-top:14px}
+.l185-title{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 11px}
+.l185-title h3{font-size:16px;margin:0;color:#e6f8f4}
+.l185-title>span{font-size:10px;color:#93ddcb;border:1px solid #2b8b78;padding:5px 9px;border-radius:18px;white-space:nowrap}
+.l185-suggestion{background:#0b2535;border:1px solid #315666;border-radius:12px;padding:13px;margin:8px 0}
+.l185-suggestion-head{display:flex;gap:10px;justify-content:space-between;align-items:baseline}
+.l185-suggestion-head strong{font-size:13px}
+.l185-suggestion-head small{font-size:10px;color:#a0cbbd;white-space:nowrap}
+.l185-suggestion p{font-size:12px;color:#b8d0d5;line-height:1.55;margin:8px 0}
+.l185-suggestion details{border-top:1px solid #345160;margin-top:10px;padding-top:9px}
+.l185-suggestion summary{cursor:pointer;font-size:11px;color:#91d7cb;font-weight:700}
+.l185-suggestion details p{font-size:11px}
+.l185-suggestion button{border:1px solid #2f8672;background:#0c4e48;color:#e6fff6;border-radius:9px;padding:9px 12px;min-height:37px;font-size:11px;font-weight:800;margin-top:10px;cursor:pointer}
+.l185-note{font-size:10px;color:#94b6bd;line-height:1.5;margin:13px 0}
+@media(max-width:400px){.l185-title,.l185-suggestion-head{flex-wrap:wrap}}
