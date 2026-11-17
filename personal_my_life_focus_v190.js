@@ -159,13 +159,37 @@ function renderEvidence(){
  const parts=linkedEvidence(w),linked=new Set((w.workouts||[]).map(x=>String(x.sessionId||'')).filter(Boolean));
  const create=(kind,list)=>{
   const panel=evidencePanel(kind);if(!panel)return;
+  const wasOpen=panel.querySelector('.lo194-periods')?.open??false;
   panel.replaceChildren();
   panel.append(textNode('h3',kind==='fitness'?'Training from Track':'Eating & preparation from Track'));
   const minutes=list.reduce((a,x)=>a+x.ms,0)/60000,sessionCount=new Set(list.map(x=>x.id)).size;
   panel.append(textNode('p',sessionCount+' tracked sessions · '+Math.round(minutes)+' active minutes over the past 7 calendar days','lo194-evidence-summary'));
   if(kind==='nutrition')panel.append(textNode('p','These records show eating or food-preparation time, not calories or nutrients. Add meal details only when known.','lo194-evidence-note'));
   else panel.append(textNode('p','Tracked exercise contributes duration evidence. Sets, repetitions and weights require a workout record.','lo194-evidence-note'));
-  const details=document.createElement('details');details.className='lo194-periods';
+  const summaries=Array.from({length:7},(_,i)=>{
+    const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-6+i);
+    const day=dateKey(d.getTime()),onDay=list.filter(p=>p.day===day);
+    const eat=onDay.filter(p=>kind==='fitness'||kindOf(p.name)==='eating').reduce((sum,p)=>sum+p.ms,0)/60000;
+    const prep=kind==='nutrition'?onDay.filter(p=>kindOf(p.name)==='preparing').reduce((sum,p)=>sum+p.ms,0)/60000:0;
+    return {day,label:d.toLocaleDateString(undefined,{weekday:'short'}),eat,prep};
+  });
+  const max=Math.max(1,...summaries.map(x=>x.eat+x.prep));
+  const chart=document.createElement('div');chart.className='lo195-mini-chart';
+  chart.setAttribute('role','img');
+  chart.setAttribute('aria-label',kind==='fitness'?'Tracked training duration by day':'Eating and food preparation time by day');
+  for(const item of summaries){
+    const column=document.createElement('div');column.className='lo195-mini-day';
+    const total=item.eat+item.prep;
+    column.append(textNode('b',total?Math.round(total)+'m':'—'));
+    const track=document.createElement('div');track.className='lo195-mini-track';
+    const primary=document.createElement('span');primary.className='lo195-mini-primary';primary.style.height=(item.eat/max*100).toFixed(1)+'%';
+    const secondary=document.createElement('span');secondary.className='lo195-mini-secondary';secondary.style.height=(item.prep/max*100).toFixed(1)+'%';
+    track.append(primary,secondary);column.append(track,textNode('small',item.label));
+    chart.append(column);
+  }
+  panel.append(chart);
+  if(kind==='nutrition')panel.append(textNode('p','Green = eating time · Blue = preparing food. This chart is not a count of meals.','lo194-evidence-note'));
+  const details=document.createElement('details');details.className='lo194-periods';details.open=wasOpen;
   const title=textNode('summary','View tracked periods ('+list.length+')');details.append(title);
   if(!list.length)details.append(textNode('p','No matching tracked activity in the last seven days.'));
   for(const p of list.slice(0,28)){
