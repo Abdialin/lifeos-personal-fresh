@@ -9,3 +9,20 @@
 .gv162-reviewbottom{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:16px;border-top:1px solid #273b51;padding-top:12px}.gv162-reviewbottom span{font-size:12px;color:#a8bfcb}.gv162-reviewbottom button,.gv162-advice button,.gv162-preset button{border:0;background:transparent;color:#64dbc0;font-weight:800;cursor:pointer;font-size:13px}
 .gv162-advice,.gv162-preset{background:linear-gradient(110deg,#062a2c,#07182d);border:1px solid #225a57;border-radius:18px;padding:16px;margin:16px 0}.gv162-advice p,.gv162-preset p,.gv162-disclaimer{font-size:13px;line-height:1.5;color:#a7bec9}.gv162-preset{display:flex;gap:14px;align-items:center;justify-content:space-between}.gv162-preset strong{font-size:15px}.gv162-preset button{white-space:nowrap}
 @media(max-width:700px){.gv162-reviewgrid{grid-template-columns:1fr}.gv162-reviewcard{padding:13px}.gv162-preset{display:block}.gv162-preset button{margin-top:8px}}
+
+/* V163 compact mobile Goals, disclosure-first native editor */
+#gv161-app:not(.gv163-editing) #gv161-legacy{display:none!important}
+#gv161-app .gv163-close{display:block;width:100%;padding:10px;margin:7px 0 12px;border:1px solid #4c7188;border-radius:12px;background:#102d43;color:#dffaf4}
+.gv161-app{padding-bottom:100px}.gv161-app .gv161-hero{padding:13px;border-radius:15px}.gv161-app .gv161-hero h2{font-size:20px}
+.gv161-app .gv161-hero p{margin:5px 0}.gv161-app .gv161-kpis{margin:8px 0}.gv161-app .gv161-kpis div{padding:8px}.gv161-app .gv161-kpis b{font-size:20px}
+.gv161-app .gv161-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gv161-app .gv161-card{padding:10px;border-radius:13px}
+.gv161-app .gv161-ring{width:43px;height:43px}.gv161-app .gv161-ring b{width:34px;height:34px;font-size:10px}
+.gv161-app .gv161-top{gap:4px;align-items:start}.gv161-app .gv161-top h3{font-size:13px;line-height:1.24;margin:3px 0}
+.gv161-app .gv161-top small{font-size:10px}.gv161-app .gv161-metrics{gap:3px;margin:8px 0}
+.gv161-app .gv161-metrics b{font-size:12px;white-space:normal}.gv161-app .gv161-metrics small{font-size:9px;line-height:1.15}
+.gv161-app .gv161-foot{font-size:10px;gap:3px}.gv161-app .gv161-foot button{font-size:11px}
+.gv161-app .gv162-reviewgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gv161-app .gv162-reviewcard{padding:10px;border-radius:13px}
+.gv161-app .gv162-reviewhead b{font-size:12px;line-height:1.3;overflow-wrap:anywhere}.gv161-app .gv162-reviewhead span{font-size:10px}
+.gv161-app .gv162-compare{gap:7px}.gv161-app .gv162-compare small{font-size:10px}
+.gv161-app .gv162-compare strong{font-size:17px}.gv161-app .gv162-reviewbottom{font-size:10px}
+@media(max-width:390px){.gv161-app .gv161-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.gv161-app .gv161-metrics>div:last-child{display:none}}
