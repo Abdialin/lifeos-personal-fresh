@@ -105,7 +105,7 @@ function installNav(){
 }
 /* V194: read-only evidence connection, never invent meals or workout sets. */
 const dateKey=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const clock=t=>new Date(t).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+const clock=t=>new Date(t).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit',hour12:false});
 const sample=s=>!!(s.seedBatch||s.assumed||s.isExample||s.developmentExample||['development-starter','development-seed','assumed-demo'].includes(s.source));
 const kindOf=name=>{
  const n=String(name||'').toLowerCase();
@@ -210,7 +210,7 @@ function renderEvidence(){
      if(select)select.value=p.id;
      const type=$('fitnessType');if(type){const n=p.name.toLowerCase();const found=[...type.options].find(x=>n.includes(x.value.toLowerCase()));if(found)type.value=found.value}
      if($('fitnessDate'))$('fitnessDate').value=p.day;
-     if($('fitnessMinutes'))$('fitnessMinutes').value=Math.round(parts.fitness.filter(x=>x.id===p.id).reduce((a,x)=>a+x.ms,0)/60000);
+     if($('fitnessMinutes')){const full=(w.sessions||[]).find(x=>String(x.id)===p.id);$('fitnessMinutes').value=full?Math.round(evidenceParts(full).reduce((a,x)=>a+x.ms,0)/60000):Math.round(parts.fitness.filter(x=>x.id===p.id).reduce((a,x)=>a+x.ms,0)/60000)}
     }else{
      if(!openTarget('mealForm'))return;
      if($('mealDate'))$('mealDate').value=p.day;
