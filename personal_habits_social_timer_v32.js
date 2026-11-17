@@ -69,7 +69,7 @@ function habitProgress(def,checks,days=28){
 
 /* V196: consent-based habit completion from real finished sessions only. */
 function automaticHabitCandidates(def,day,workspace,at=Date.now()){
- if(!def.autoComplete||!def.matchText||def.targetMode==='quantity'||!habitDue(def,day))return[];
+ if(!def.autoComplete||!def.matchText||def.targetMode==='quantity'||/quit|avoid/i.test(String(def.category||''))||!habitDue(def,day))return[];
  const term=normal(def.matchText).toLowerCase();
  const threshold=Number(def.targetAmount)||0;
  const since=Number(def.autoSince)||0;
@@ -90,7 +90,7 @@ function syncAutomaticHabits(){
  try{
   const today=local(Date.now()),checks=b.habitChecks||[];
   for(const def of b.habitDefinitions){
-   if(!def.autoComplete||!def.matchText||def.targetMode==='quantity')continue;
+   if(!def.autoComplete||!def.matchText||def.targetMode==='quantity'||/quit|avoid/i.test(String(def.category||'')))continue;
    const since=Number(def.autoSince)||Date.now();
    // Process only days after the user enabled automation; no historical backfill.
    const earliest=local(since);
@@ -167,9 +167,10 @@ function habitUI(){
   const delta=Math.round((dateTime(habitSelectedDate)-dateTime(def.startDate||local(def.createdAt)))/86400000);
   const due=delta>=0&&delta%(Number(def.everyDays)||1)===0&&habitSelectedDate<=local(Date.now());
   const action=existing?.done?'✓ Completed · Undo':due?'Mark completed':'Not scheduled';
+  const completionSource=existing?.done?(existing.checkSource==='auto-linked-evidence'?' · Auto-confirmed from finished activity':existing.checkSource==='linked-evidence'?' · Confirmed from linked evidence':' · Manually confirmed'):(existing?.checkSource==='auto-dismissed'?' · Auto-result dismissed':'');
   const goal=Number(def.targetAmount)>0?' · Target '+esc(def.targetAmount)+' '+esc(def.targetMode==='minutes'?'minutes':def.targetUnit||'units'):'';
   return '<article class="lo32-habit"><div class="lo33-habit-copy"><strong>'+esc(def.title)+'</strong>'+
-   '<small>'+esc(def.category)+' · Every '+esc(def.everyDays)+' day(s)'+goal+(def.autoComplete?' · Automatic (verified sessions)':'')+'</small>'+
+   '<small>'+esc(def.category)+' · Every '+esc(def.everyDays)+' day(s)'+goal+(def.autoComplete?' · Automatic (finished sessions)':'')+completionSource+'</small>'+
    '<p>'+progress.completed+'/'+progress.due+' scheduled opportunities in 28 days · '+progress.streak+' consecutive completions'+
     (progress.rate===null?' · Insufficient past evidence':' · '+progress.rate+'% of past opportunities completed')+'</p>'+
    '<div class="lo33-meter"><i style="width:'+((progress.due?progress.completed/progress.due:0)*100).toFixed(1)+'%"></i></div>'+
@@ -188,7 +189,7 @@ function habitUI(){
  '<label>Progress target (optional)<select name="targetMode"><option value="completion">Completion only</option><option value="minutes">Minutes per scheduled day</option><option value="quantity">Quantity per scheduled day</option></select></label>'+
  '<label>Target amount (optional)<input name="targetAmount" type="number" min="0" max="10000" step="0.1" placeholder="e.g. 30"></label>'+
  '<label>Quantity unit (if needed)<input name="targetUnit" maxlength="30" placeholder="pages, repetitions"></label>'+
- '<label class="lo196-auto-setting"><input name="autoComplete" type="checkbox"> Automatically confirm eligible finished activities (optional)</label>'+
+ '<label class="lo196-auto-setting"><input name="autoComplete" type="checkbox"> Automatically confirm eligible finished activities (optional)<small>Requires a matching phrase and completed session; available for attendance or minutes targets only. No previous activity is backfilled. For pages or quitting a habit, confirm manually.</small></label>'+
  '<button class="btn primary" type="submit">'+(habitEditingId?'Save habit changes':'+ Add habit')+'</button>'+
  (habitEditingId?'<button class="btn outline" type="button" id="lo33CancelHabitEdit">Cancel editing</button>':'')+'</form></details>'+
  '<h4 class="lo188-habits-today">Your habit progress</h4><label class="lo32-habit-date">Review habit day<input type="date" id="lo32HabitDate" value="'+esc(habitSelectedDate)+'"></label>'+
@@ -207,7 +208,7 @@ function saveHabit(form){
  const autoComplete=!!form.elements.namedItem('autoComplete')?.checked;
  if(!title||title.length>80||!Number.isInteger(everyDays)||everyDays<1||everyDays>30||!/^\d{4}-\d{2}-\d{2}$/.test(startDate)||startDate>local(Date.now())||
   !['completion','minutes','quantity'].includes(targetMode)||targetAmount!==null&&(!Number.isFinite(targetAmount)||targetAmount<=0||targetAmount>10000)||
-  targetMode!=='completion'&&targetAmount===null||targetMode==='quantity'&&!targetUnit||autoComplete&&(!matchText||targetMode==='quantity'))
+  targetMode!=='completion'&&targetAmount===null||targetMode==='quantity'&&!targetUnit||autoComplete&&(!matchText||targetMode==='quantity'||/quit|avoid/i.test(category)))
   return alert('Check the habit name, interval and optional progress target.');
  const prior=habitEditingId?(bridge()?.read().habitDefinitions||[]).find(x=>x.id===habitEditingId):null;
  const item={id:prior?.id||id(),title,category,everyDays,matchText,
