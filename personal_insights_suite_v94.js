@@ -117,6 +117,13 @@ function mount(){
    ['Meals recorded',String(life.meals),'No assumptions about unlogged meals'],
    ['Upcoming plan conflicts',String(plan.conflicts),'Review plans before changing']
   ];
+  const goalEvidence=root.LifeOSGoalEvidenceV175;
+  const goalRows=goalEvidence?.rows?.(w)||[];
+  for(const r of goalRows.slice(0,5)){
+   const target=Number(r.t)||0,value=Number(r.cur?.value)||0;
+   cards.push([String(r.g.name||'Goal'),Number(value.toFixed(1))+' / '+target+' '+goalEvidence.unit(r.g),
+    r.cur.records+' qualifying records this week · '+(r.cur.excluded||0)+' examples excluded']);
+  }
   const box=el('lo94-content');box.replaceChildren();
   const grid=document.createElement('div');grid.className='lo94-grid';
   for(const [title,value,note] of cards){const art=document.createElement('article');const h=document.createElement('span');h.textContent=title;const strong=document.createElement('strong');strong.textContent=value;const small=document.createElement('small');small.textContent=note;art.append(h,strong,small);grid.append(art)}box.append(grid);
@@ -124,7 +131,7 @@ function mount(){
   const frequent=d.frequent[0],peak=d.hours.map(x=>x.ms);
   text.textContent=d.count?('Review: '+(frequent?.name||'')+' appeared '+(frequent?.count||0)+' times. Your records suggest checking its triggers before deciding whether to change a routine. '+(d.triggers[0]?'Most recorded trigger: '+d.triggers[0][0]+'. ':'')+'These are observations, not proof of cause.'):'No recorded distractions in this period. Unlogged time is not categorized as distraction.';
   box.append(text);
-  const note=document.createElement('p');note.className='sub';note.textContent='Plan evidence: '+plan.confidence+' · '+plan.confirmed+' completed linked sessions out of '+plan.plans+' relevant plans. Debt unverified: '+(debtData.ok?debtData.unverified:'unknown')+'.';box.append(note);
+  const note=document.createElement('p');note.className='sub';note.textContent='Goal figures use the same saved-record rules as Goals; timed fitness and linked workouts count once. Plan evidence: '+plan.confidence+' · '+plan.confirmed+' completed linked sessions out of '+plan.plans+' relevant plans. Debt unverified: '+(debtData.ok?debtData.unverified:'unknown')+'.';box.append(note);
  }
  el('lo94-period').onchange=render;el('lo94-refresh').onclick=render;
  root.addEventListener('lifeos-v77-tracking-changed',render);
