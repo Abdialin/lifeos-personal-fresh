@@ -32,8 +32,8 @@ else if(cat==='personal'){src='personal logs';all=(w.personalLogs||[]).filter(x=
 else if(cat==='habit'){
  src='finished timers + explicit personal logs';
  const keyword=norm(g.match||'');
- const timers=(w.sessions||[]).filter(x=>x?.status==='finished'&&interval(x,a,b)&&keyword&&norm(x.name).includes(keyword));
- const logs=(w.personalLogs||[]).filter(x=>interval(x,a,b)&&keyword&&(norm(x.category).includes(keyword)||norm(x.notes||'').includes(keyword)));
+ const timers=(w.sessions||[]).filter(x=>{const name=norm(x?.name);return x?.status==='finished'&&interval(x,a,b)&&keyword&&name.includes(keyword)&&!(keyword==='reading'&&/quran|qur’an|qur'an|koran/.test(name))});
+ const logs=(w.personalLogs||[]).filter(x=>interval(x,a,b)&&keyword&&norm(x.category).includes(keyword));
  const validTimers=timers.filter(x=>!sample(x)),validLogs=logs.filter(x=>!sample(x));
  const timerIds=new Set(validTimers.map(x=>String(x.id)));
  const uniqueLogs=validLogs.filter(x=>!x.sessionId||!timerIds.has(String(x.sessionId)));
@@ -50,7 +50,7 @@ else if(cat==='habit'){
  }
 }
 else {all=(w.sessions||[]).filter(x=>x.status==='finished'&&interval(x,a,b)&&norm(g.match||g.name).length>0&&norm(x.name).includes(norm(g.match||g.name)));good=all.filter(x=>!sample(x));minutes=good.reduce((v,x)=>v+dur(x),0);value=g.unit==='hours'?minutes/60:good.length}
-return {value,records:good.length,minutes,excluded:all.length-good.length,src}};
+return {value,records:good.length,minutes,excluded:cat==='habit'?all.filter(sample).length:all.length-good.length,src}};
 const weekday=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const dayBreakdown=(g,w,from)=>weekday.map((day,i)=>{const a=new Date(from);a.setDate(a.getDate()+i);const b=new Date(a);b.setDate(b.getDate()+1);return {day,date:a.toLocaleDateString(undefined,{month:'short',day:'numeric'}),...measure(g,w,a.getTime(),b.getTime())}});
 const dayStrip=(r,w)=>{const days=dayBreakdown(r.g,w,monday(0));if(!days.some(d=>d.records>0))return '<div class="gv169-nologs"><strong>No activity recorded this week</strong><span>No chart yet. Missing logs do not mean a missed goal.</span></div>';const max=Math.max(1,...days.map(x=>x.value),r.t/7),filled=days.filter(x=>x.records>0).length;return '<div class="gv167-days gv168-days"><div class="gv167-dayshead"><b>Daily activity</b><small>'+filled+'/7 days with qualifying logs</small></div><div class="gv167-weekstrip">'+days.map(x=>'<div class="gv167-day gv168-day" title="'+H(x.day+' '+x.date+': '+Number(x.value.toFixed(1))+' '+unit(r.g))+'"><span>'+x.day+'</span><i style="height:'+Math.round(Math.max(3,x.value/max*100))+'%;opacity:'+(x.records?1:.25)+'"></i><strong>'+(x.records?fmt(x.value):'—')+'</strong></div>').join('')+'</div><small class="gv167-note">An empty day means no qualifying saved record, not that the activity was missed.</small></div>'};
