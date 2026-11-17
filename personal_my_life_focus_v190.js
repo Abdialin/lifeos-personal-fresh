@@ -5,7 +5,7 @@ const section=key=>({routines:$('personalActivityPanel'),fitness:$('fitnessForm'
 const config={
  routines:{title:'Routines',subtitle:'Your recorded routines, separate from tracked time.',actions:[['Log routine','personalLogForm'],['History','lo189-routine-history']]},
  fitness:{title:'Fitness',subtitle:'Your training, strength and body progress.',actions:[['Log workout','fitnessForm'],['Body progress','lo190-body'],['History','lo190-fitness-history']]},
- nutrition:{title:'Nutrition',subtitle:'Meals and hydration, without extra tracking screens.',actions:[['Log meal','mealForm'],['Trends','lo28TrendDetails'],['Meal history','lo190-meal-history']]},
+ nutrition:{title:'Nutrition',subtitle:'Meals and hydration, without extra tracking screens.',actions:[['Log meal','mealForm'],['Log water','lo25WaterForm'],['Goals','lo25GoalDetails'],['Trends','lo28TrendDetails'],['History','lo190-meal-history']]},
  habits:{title:'Habits',subtitle:'Your commitments and completion progress.',actions:[['Create habit','lo188-habit-editor']]},
  friends:{title:'Friends',subtitle:'Your friends, challenges and optional private sharing.',actions:[['Sharing settings','lo90-friends'],['Legacy cards','lo90-legacy']]}
 };
