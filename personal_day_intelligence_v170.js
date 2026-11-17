@@ -128,7 +128,54 @@ function mountReports(){
  $('lifeosNavigation')?.addEventListener('click',()=>setTimeout(()=>{if(document.body.dataset.lifeosView==='analytics')render()},100));
  render();
 }
-function init(){mountReports();if($('lo170-day'))return;let today=$('todayOverview');if(today){let el=document.createElement('section');el.id='lo170-day';el.className='l170-panel';today.prepend(el);day()}let tracking=$('trackPastPanel');if(tracking){let el=document.createElement('section');el.id='lo170-review';el.className='l170-panel';(document.getElementById('trackActivePanel')||tracking).prepend(el);review()}let life=$('personalActivityPanel');if(life){let el=document.createElement('section');el.id='lo170-notes';el.className='l170-panel';life.prepend(el);notes();let group=document.createElement('section');group.id='lo170-groups';group.className='l170-panel';el.after(group);groups()}document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();if(document.body.dataset.lifeosView==='dashboard')day()}});window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='dashboard')day();review()});setInterval(tick,30000)}
+
+function mountLifeHub(){
+ const personal=$('personalActivityPanel'),fitness=$('lifeosFitnessDashboard'),nutrition=$('lifeosNutritionDashboard');
+ if(!personal||!fitness||!nutrition||$('lo182-life-hub'))return;
+ const fitnessPanel=fitness.closest('section.panel'),nutritionPanel=nutrition.closest('section.panel');
+ if(!fitnessPanel||!nutritionPanel)return;
+ const hub=document.createElement('section');hub.id='lo182-life-hub';hub.className='l182-hub';
+ hub.innerHTML='<div class="l182-heading"><div><small>MY LIFE · PERSONAL WELLBEING</small><h2>Progress across your life</h2><p>Your existing fitness, nutrition and personal routine records in one place.</p></div></div><div class="l182-cards" id="lo182-cards"></div><div class="l182-actions"><button data-l182-target="fitness">Fitness & body</button><button data-l182-target="nutrition">Nutrition & meals</button><button data-l182-target="routines">Personal routines</button></div><div class="l182-recents"><h3>Recent activity</h3><div id="lo182-recent"></div></div><p class="l182-note">Completed records are not created by this overview. Time recorded in a timer and the same activity logged elsewhere are not added together.</p>';
+ fitnessPanel.before(hub);
+ const targets={fitness:fitnessPanel,nutrition:nutritionPanel,routines:personal};
+ hub.querySelectorAll('[data-l182-target]').forEach(b=>b.addEventListener('click',()=>{const el=targets[b.dataset.l182Target];el?.scrollIntoView({behavior:'smooth',block:'start'})}));
+ const sample=x=>!!(x?.assumed||x?.isExample||x?.developmentExample||x?.seedBatch||['development-starter','development-seed','assumed-demo'].includes(x?.source));
+ const dateOf=x=>{
+  if(typeof x?.date==='string'&&/^\d{4}-\d{2}-\d{2}/.test(x.date))return x.date.slice(0,10);
+  const raw=x?.completedAt??x?.endAt??x?.createdAt;
+  const d=typeof raw==='number'?new Date(raw):new Date(raw||'');
+  return Number.isFinite(d.getTime())?d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'):'';
+ };
+ const render=()=>{
+  const w=read(),today=new Date(),first=new Date(today);first.setHours(0,0,0,0);first.setDate(first.getDate()-6);
+  const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const since=ymd(first);
+  const workouts=(w.workouts||[]).filter(x=>!sample(x)&&dateOf(x)>=since);
+  const meals=(w.meals||[]).filter(x=>!sample(x)&&dateOf(x)>=since);
+  const logs=(w.personalLogs||[]).filter(x=>!sample(x)&&dateOf(x)>=since);
+  const measures=(w.bodyMetrics||[]).filter(x=>!sample(x)).sort((a,b)=>dateOf(b).localeCompare(dateOf(a)));
+  const weight=measures.find(x=>Number.isFinite(Number(x.weightKg))&&x.weightKg!=null);
+  const categories=new Set(logs.map(x=>String(x.category||'Other').trim()).filter(Boolean));
+  const card=(label,value,detail)=>'<article class="l182-card"><span>'+label+'</span><strong>'+value+'</strong><small>'+detail+'</small></article>';
+  $('lo182-cards').innerHTML=card('Workout logs',workouts.length,'Past seven calendar days')+
+   card('Meal entries',meals.length,'Past seven calendar days')+
+   card('Personal routine logs',logs.length,categories.size+' categories this week')+
+   card('Latest weight',weight?esc(Number(weight.weightKg).toLocaleString(undefined,{maximumFractionDigits:1})+' kg'):'—',weight?esc(dateOf(weight)):'No measurements recorded');
+  const recent=[
+   ...workouts.map(x=>({label:'Fitness',title:String(x.type||x.activity||'Workout'),date:dateOf(x)})),
+   ...meals.map(x=>({label:'Nutrition',title:String(x.name||'Meal'),date:dateOf(x)})),
+   ...logs.map(x=>({label:'Routine',title:String(x.category||'Personal log')+(Number(x.quantity)>0&&x.unit?' · '+x.quantity+' '+x.unit:''),date:dateOf(x)}))
+  ].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+  $('lo182-recent').innerHTML=recent.length?recent.map(x=>'<div class="l182-recent"><span>'+esc(x.label)+'</span><strong>'+esc(x.title)+'</strong><time>'+esc(x.date)+'</time></div>').join(''):'<p class="l182-empty">No qualifying records in the past seven days. Add a workout, meal or personal routine below.</p>';
+ };
+ render();
+ $('lifeosNavigation')?.addEventListener('click',e=>{if(e.target.closest('[data-view="life"]'))setTimeout(render,100)});
+ window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='life')render()});
+ window.addEventListener('focus',()=>{if(document.body.dataset.lifeosView==='life')render()});
+ hub.addEventListener('click',e=>{if(e.target.closest('[data-l182-target]'))render()});
+ window.LifeOSLifeHubV182={refresh:render};
+}
+function init(){mountReports();mountLifeHub();if($('lo170-day'))return;let today=$('todayOverview');if(today){let el=document.createElement('section');el.id='lo170-day';el.className='l170-panel';today.prepend(el);day()}let tracking=$('trackPastPanel');if(tracking){let el=document.createElement('section');el.id='lo170-review';el.className='l170-panel';(document.getElementById('trackActivePanel')||tracking).prepend(el);review()}let life=$('personalActivityPanel');if(life){let el=document.createElement('section');el.id='lo170-notes';el.className='l170-panel';life.prepend(el);notes();let group=document.createElement('section');group.id='lo170-groups';group.className='l170-panel';el.after(group);groups()}document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();if(document.body.dataset.lifeosView==='dashboard')day()}});window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='dashboard')day();review()});setInterval(tick,30000)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,1800),{once:true});else setTimeout(init,1800);
 window.LifeOSDayIntelligenceV170={snapshot,spans,merge,mins,daySegments,dailyReport,planComparison};
 })();
