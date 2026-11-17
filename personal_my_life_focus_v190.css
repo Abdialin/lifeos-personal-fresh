@@ -51,3 +51,17 @@ body[data-lifeos-view="life"] .lo190-actions button:active{transform:translateY(
  body[data-lifeos-view="life"] .lo192-editor{border-radius:12px}
  body[data-lifeos-view="life"] .lo190-group summary{font-size:14px}
 }
+
+/* V193 — non-obstructive form interaction on mobile */
+body[data-lifeos-view="life"] .lo193-editor-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+body[data-lifeos-view="life"] .lo193-editor-close{min-height:42px;padding:9px 14px;background:transparent;border:1px solid #426a7a;border-radius:10px;color:#cce7ea;font:650 13px system-ui}
+body[data-lifeos-view="life"] .lo193-editor-close:focus-visible{outline:2px solid #80dec4;outline-offset:2px}
+body[data-lifeos-view="life"] .lo192-editor>summary{scroll-margin-top:95px}
+body[data-lifeos-view="life"] :is(#fitnessForm,#mealForm,#personalLogForm){scroll-margin-top:110px}
+@media(max-width:600px){
+ body[data-lifeos-view="life"]:has(input:focus, textarea:focus, select:focus) #lo86-timer{max-width:150px!important;padding:4px 7px!important;opacity:.77;pointer-events:none;transition:opacity .15s}
+ body[data-lifeos-view="life"]:has(input:focus, textarea:focus, select:focus) #lo86-timer #lo86-summary strong{display:none}
+ body[data-lifeos-view="life"]:has(input:focus, textarea:focus, select:focus) #lo86-timer #lo86-toggle{display:none}
+ body[data-lifeos-view="life"]:has(input:focus, textarea:focus, select:focus) #lo86-timer #lo86-details{display:none!important}
+ body[data-lifeos-view="life"] .lo193-editor-close{width:100%}
+}
