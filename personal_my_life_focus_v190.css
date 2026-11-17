@@ -1,0 +1,31 @@
+/* LifeOS My Life V190 — low-scroll responsive layout */
+body[data-lifeos-view="life"] .lo190-toolbar{padding:13px 0 15px;margin:3px 0 10px;border-bottom:1px solid #254758}
+body[data-lifeos-view="life"] .lo190-heading{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin:0 0 11px}
+body[data-lifeos-view="life"] .lo190-heading strong{font-size:19px;letter-spacing:-.025em;color:#f0f7ff}
+body[data-lifeos-view="life"] .lo190-heading span{color:#a0b8c9;font-size:12px;line-height:1.45}
+body[data-lifeos-view="life"] .lo190-actions{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 1px}
+body[data-lifeos-view="life"] .lo190-actions button{flex:0 0 auto;min-height:42px;padding:9px 13px;border:1px solid #355d70;border-radius:12px;background:#10283a;color:#e7f5f8;font:650 13px system-ui;cursor:pointer}
+body[data-lifeos-view="life"] .lo190-actions button.lo190-primary{background:#006b54;border-color:#17826c;color:#fff}
+body[data-lifeos-view="life"] .lo190-actions button:focus-visible{outline:2px solid #90dfcd;outline-offset:2px}
+body[data-lifeos-view="life"] .lo190-old-heading{margin-bottom:0}
+body[data-lifeos-view="life"] #lo190-fitness-intro,body[data-lifeos-view="life"] #lo190-nutrition-intro{margin:8px 0 16px}
+body[data-lifeos-view="life"] #lo190-fitness-intro .lo-health-dashboard,body[data-lifeos-view="life"] #lo190-nutrition-intro .lo-health-dashboard{padding:13px!important;max-width:100%;box-sizing:border-box}
+body[data-lifeos-view="life"] .lo190-group{margin:12px 0;border:1px solid #365c6d;border-radius:14px;padding:13px;background:#07182a;min-width:0}
+body[data-lifeos-view="life"] .lo190-group>summary{cursor:pointer;color:#bce8e0;font:700 14px system-ui;line-height:1.5}
+body[data-lifeos-view="life"] .lo190-group[open]>summary{margin-bottom:15px}
+body[data-lifeos-view="life"] .lo190-group .history{max-width:100%;overflow-wrap:anywhere}
+body[data-lifeos-view="life"] .lo190-group .lo10-table-wrap{max-width:100%;overflow-x:auto}
+body[data-lifeos-view="life"] .lo187-jump[hidden]{display:none!important}
+body[data-lifeos-view="life"] .lo190-repeated-card{display:none!important}
+body[data-lifeos-view="life"] #loLifeSectionTabs{position:sticky;top:0;z-index:20;background:#020d1c;padding-block:7px;border-bottom:1px solid #19394c}
+body[data-lifeos-view="life"] .lo190-toolbar button{white-space:nowrap}
+@media(max-width:480px){
+ body[data-lifeos-view="life"] .lo190-heading{display:block}
+ body[data-lifeos-view="life"] .lo190-heading span{display:block;margin-top:3px}
+ body[data-lifeos-view="life"] .lo190-actions{margin-right:-10px;padding-right:12px}
+ body[data-lifeos-view="life"] .lo190-group{padding:11px;margin:11px 0}
+ body[data-lifeos-view="life"] .lo9-grid{gap:8px!important}
+ body[data-lifeos-view="life"] #lifeosFitnessDashboard .lo9-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-lifeos-view="life"] #lifeosFitnessDashboard .lo9-grid>*{min-width:0}
+ body[data-lifeos-view="life"] .lo10-chart-wrap svg{max-width:100%}
+}
