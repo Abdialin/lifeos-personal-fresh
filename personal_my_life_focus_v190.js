@@ -156,7 +156,8 @@ function textNode(tag,value,cls=''){const el=document.createElement(tag);el.text
 function renderEvidence(){
  if(document.body.dataset.lifeosView!=='life')return;
  const w=root.lifeosReadOnlyWorkspace?.();if(!w)return;
- const parts=linkedEvidence(w),linked=new Set((w.workouts||[]).map(x=>String(x.sessionId||'')).filter(Boolean));
+ const parts=linkedEvidence(w),linked=new Set((w.workouts||[]).map(x=>String(x.sessionId||'')).filter(Boolean)),
+       linkedMeals=new Set((w.meals||[]).map(x=>String(x.sessionId||'')).filter(Boolean));
  const create=(kind,list)=>{
   const panel=evidencePanel(kind);if(!panel)return;
   const wasOpen=panel.querySelector('.lo194-periods')?.open??false;
@@ -198,8 +199,9 @@ function renderEvidence(){
    info.append(textNode('small',p.day+' · '+clock(p.start)+'–'+clock(p.end)+' · '+Math.round(p.ms/60000)+' min'));
    row.append(info);
    const action=document.createElement('button');action.type='button';
-   action.textContent=kind==='fitness'?(linked.has(p.id)?'Linked':'Add details'):'Add meal details';
-   action.disabled=kind==='fitness'&&linked.has(p.id);
+   const connected=kind==='fitness'?linked.has(p.id):linkedMeals.has(p.id);
+   action.textContent=connected?'Linked':kind==='fitness'?'Add workout details':'Add meal details';
+   action.disabled=connected;
    action.addEventListener('click',()=>{
     if(kind==='fitness'){
      if(!openTarget('fitnessForm'))return;
@@ -213,6 +215,9 @@ function renderEvidence(){
      if(!openTarget('mealForm'))return;
      if($('mealDate'))$('mealDate').value=p.day;
      if($('mealTime'))$('mealTime').value=clock(p.start);
+     const select=$('mealSession');
+     if(select&&!Array.from(select.options).some(x=>x.value===p.id))select.add(new Option(p.name+' · tracked timer',p.id));
+     if(select)select.value=p.id;
      // Do not prefill foods, quantity, calories or create a meal automatically.
     }
    });
