@@ -13,10 +13,34 @@ function trend(rows){const max=Math.max(1,...rows.map(x=>x.value));return '<div 
 function history(id,label){const el=$(id);if(!el||el.closest('.lo9-log-details'))return;const d=document.createElement('details');d.className='lo9-log-details';d.innerHTML='<summary>'+esc(label)+'</summary>';el.before(d);d.append(el)}
 function fitness(w){
  const entries=w.workouts||[],dates=week(day=>entries.filter(x=>x.date===day).length),cut=dates[0].day,active=entries.filter(x=>x.date>=cut);
- const durations=active.filter(x=>num(x.minutes)!==null),minutes=durations.reduce((n,x)=>n+num(x.minutes),0);
- const types=new Map();for(const x of active)types.set(x.type||'Workout',(types.get(x.type||'Workout')||0)+1);
- const stats=stat('Workouts / 7 days',active.length)+stat('Minutes logged',durations.length?fmt(minutes,' min'):'Unknown')+stat('Activity types',types.size);
- const x=$('lifeosFitnessDashboard');if(x)x.innerHTML='<h3>Fitness overview</h3><div class="lo9-grid">'+stats+'</div>'+trend(dates)+'<div class="lo9-chiprow">'+[...types].map(([name,n])=>'<span>'+esc(name)+' · '+n+'</span>').join('')+'</div>';
+ const allEvidence=window.LifeOSMyLifeV190?.linkedEvidence?.(w,7)||{fitness:[]};
+ const byId=new Map();
+ for(const part of allEvidence.fitness){
+  if(!byId.has(part.id))byId.set(part.id,[]);
+  byId.get(part.id).push(part);
+ }
+ // A linked workout and its timer are ONE activity; an unlinked workout remains a separate record.
+ const linked=new Set(active.map(x=>String(x.sessionId||'')).filter(Boolean));
+ const standalone=active.filter(x=>!x.sessionId);
+ const unlinkedTimer=[...byId].filter(([id])=>!linked.has(id));
+ const combined=standalone.length+linked.size+unlinkedTimer.length;
+ const workouts7=active.length;
+ const minutesFromLogs=active.filter(x=>!x.sessionId&&num(x.minutes)!==null).reduce((n,x)=>n+num(x.minutes),0);
+ const timerMinutes=[...byId.values()].reduce((n,parts)=>n+parts.reduce((sum,p)=>sum+p.ms,0)/60000,0);
+ const unknown=standalone.filter(x=>num(x.minutes)===null).length;
+ const totalMinutes=minutesFromLogs+timerMinutes;
+ const types=new Map();
+ for(const x of active)types.set(x.type||'Workout',(types.get(x.type||'Workout')||0)+1);
+ const chart=week(day=>{
+  const ids=new Set((allEvidence.fitness||[]).filter(p=>p.day===day).map(p=>p.id));
+  const independent=standalone.filter(x=>x.date===day).length;
+  return ids.size+independent;
+ });
+ const stats=stat('Activity records · 7 days',combined)+stat('Duration evidence',totalMinutes>0?fmt(totalMinutes,' min'):'Unknown')+stat('Workout details saved',workouts7);
+ const x=$('lifeosFitnessDashboard');
+ if(x)x.innerHTML='<h3>Fitness overview</h3><div class="lo9-grid">'+stats+'</div><h4>Activity evidence by day</h4>'+trend(chart)+
+ '<p class="lo9-muted">Each tracked timer is counted once, including when a workout record is linked. Independent workout entries count separately. Durations are summed only when known'+(unknown?', with '+unknown+' standalone workout(s) missing a duration':'')+'.</p>'+
+ (types.size?'<div class="lo9-chiprow">'+[...types].map(([name,n])=>'<span>'+esc(name)+' · '+n+'</span>').join('')+'</div>':'');
  history('fitnessList','Workout history · expand to view or delete');
 }
 function nutrition(w){
