@@ -87,6 +87,38 @@ function planQuality(workspace,now=Date.now(),days=7){
  caution:'Planning confidence depends on linked completed records; time overlap alone does not establish completion. Suggestions require approval.'};
 }
 function mount(){
+
+ function mountGoalsSummary(){
+  const target=document.getElementById('analyticsPanel');
+  if(!target||document.getElementById('lo175-goal-insights'))return;
+  const panel=document.createElement('div');panel.id='lo175-goal-insights';
+  panel.style.cssText='padding:15px;margin:16px 0;border-radius:15px;border:1px solid #315c64;background:#0a2231;color:#e6f4f1';
+  target.prepend(panel);
+  const paint=()=>{
+   const metrics=root.LifeOSGoalEvidenceV175;
+   if(!metrics){panel.textContent='Goal progress is unavailable.';return}
+   const w=root.lifeosReadOnlyWorkspace?.()||{},rows=metrics.rows(w);
+   panel.replaceChildren();
+   const h=document.createElement('h3');h.textContent='Goals · this week';h.style.cssText='margin:0 0 8px;font-size:17px';panel.append(h);
+   const intro=document.createElement('p');intro.textContent='Completed activities update these figures automatically when their recorded names and sources match your goal rules. Linked workout logs and gym timers are counted once.';intro.style.cssText='color:#9cbfc4;font-size:12px;line-height:1.5';panel.append(intro);
+   for(const item of rows){
+    const card=document.createElement('div');card.style.cssText='padding:10px 0;border-top:1px solid #284b59';
+    const name=document.createElement('strong');name.textContent=item.g.name||'Goal';name.style.cssText='display:block;font-size:13px';
+    const value=document.createElement('div');value.textContent=Number(item.cur.value.toFixed(1))+' / '+item.t+' '+metrics.unit(item.g);value.style.cssText='font-size:16px;font-weight:800;margin:5px 0';
+    const line=document.createElement('div');line.style.cssText='height:5px;border-radius:5px;background:#193e50;overflow:hidden';
+    const fill=document.createElement('i');fill.style.cssText='display:block;height:100%;border-radius:5px;background:#18ae88;width:'+Math.min(100,item.t?100*item.cur.value/item.t:0)+'%';line.append(fill);
+    const source=document.createElement('small');source.textContent=item.cur.records+' qualifying records · '+item.cur.excluded+' example records excluded';source.style.cssText='display:block;margin-top:5px;color:#98b9c0';
+    card.append(name,value,line,source);panel.append(card);
+   }
+   if(!rows.length){const p=document.createElement('p');p.textContent='No goals configured yet.';panel.append(p)}
+  };
+  const update=()=>{if(document.body.dataset.lifeosView==='analytics')paint()};
+  document.getElementById('lifeosNavigation')?.addEventListener('click',()=>setTimeout(update,90));
+  root.addEventListener('lifeos-v77-tracking-changed',update);
+  root.addEventListener('focus',update);
+  paint();
+ }
+ mountGoalsSummary();
  if(document.getElementById('lo94-suite'))return;
  const target=document.getElementById('lo74-distraction')||document.getElementById('trackDistractionPanel');
  if(!target)return;
