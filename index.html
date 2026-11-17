@@ -816,7 +816,35 @@ function saveActivityDetails(e){
  if(!persist()){s.activityDetails=old;return}
  loCloseDetails();render();
 }
-function switchSession(id){const old=data.sessions.find(s=>s.id===id);if(!old||old.status==='finished')return;const name=prompt('Switch from '+old.name+' to which activity?');if(name===null)return;const clean=name.trim();if(!clean||clean.length>80)return alert('Enter an activity name (1–80 characters).');try{LifeOSLiveTrackingV2.switchActivity(data,id,clean,now(),uid());persist();render()}catch(e){alert('Could not switch activity: '+e.message)}}function toInput(t){let d=new Date(t);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`};function openEdit(id){let s=data.sessions.find(x=>x.id===id);if(!s)return;editId=id;$('editTitle').textContent=s.name;$('editStart').value=toInput(s.startAt);$('editName').value=s.name;$('editEnd').value=s.endAt?toInput(s.endAt):'';$('editEnd').disabled=s.status!=='finished';$('editNote').value=s.notes||'';$('editModal').hidden=false}function saveEdit(){let s=data.sessions.find(x=>x.id===editId);if(!s)return;let newName=$('editName').value.trim(),newStart=new Date($('editStart').value).getTime(),newEnd=s.status==='finished'?new Date($('editEnd').value).getTime():s.endAt;if(!newName||newName.length>80){alert('Enter a valid activity name.');return}if(!Number.isFinite(newStart)||newStart>now()||(s.status==='finished'&&(!Number.isFinite(newEnd)||newEnd>now()||newEnd<=newStart))){alert('Check start and end times.');return}let first=s.segments[0],last=s.segments[s.segments.length-1];if(!first){alert('Missing segment.');return}if(first.end!==null&&newStart>first.end){alert('Start cannot be later than the first pause or finish.');return}if(s.status==='finished'&&last&&newEnd<last.start){alert('End cannot be before the last active segment.');return}let before={name:s.name,startAt:s.startAt,endAt:s.endAt,notes:s.notes};s.name=newName;s.startAt=newStart;first.start=newStart;if(s.status==='finished'){s.endAt=newEnd;if(last)last.end=newEnd}s.precision='manually-corrected';s.notes=$('editNote').value;event(s,'EDIT',now(),{before,after:{name:s.name,startAt:s.startAt,endAt:s.endAt,notes:s.notes}});persist();$('editModal').hidden=true;editId=null;render()}
+function switchSession(id){const old=data.sessions.find(s=>s.id===id);if(!old||old.status==='finished')return;const name=prompt('Switch from '+old.name+' to which activity?');if(name===null)return;const clean=name.trim();if(!clean||clean.length>80)return alert('Enter an activity name (1–80 characters).');try{LifeOSLiveTrackingV2.switchActivity(data,id,clean,now(),uid());persist();render()}catch(e){alert('Could not switch activity: '+e.message)}}function toInput(t){let d=new Date(t);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`};function openEdit(id){let s=data.sessions.find(x=>x.id===id);if(!s)return;editId=id;$('editTitle').textContent=s.name;$('editStart').value=toInput(s.startAt);$('editName').value=s.name;$('editEnd').value=s.endAt?toInput(s.endAt):'';$('editEnd').disabled=s.status!=='finished';$('editNote').value=s.notes||'';$('editModal').hidden=false}function saveEdit(){
+ const s=data.sessions.find(x=>x.id===editId);if(!s)return;
+ const newName=$('editName').value.trim(),newStart=new Date($('editStart').value).getTime(),
+  newEnd=s.status==='finished'?new Date($('editEnd').value).getTime():s.endAt;
+ if(!newName||newName.length>80){alert('Enter a valid activity name.');return}
+ if(!Number.isFinite(newStart)||newStart>now()||(s.status==='finished'&&(!Number.isFinite(newEnd)||newEnd>now()||newEnd<=newStart))){alert('Check start and end times.');return}
+ const original=structuredClone(s),segments=s.segments||[],first=segments[0],last=segments[segments.length-1];
+ if(!first){alert('Missing activity segment.');return}
+ const finished=s.status==='finished',single=segments.length===1;
+ const invalidMiddle=!single&&(newStart>Number(first.end)||finished&&newEnd<Number(last.start));
+ if(invalidMiddle){
+  if(!finished){alert('This running timer has pauses. Its start cannot be after the first pause.');return}
+  if(!confirm('The corrected times exclude one or more saved pause/resume segments. Replace the old segment timeline with one continuous interval? The previous timeline will be kept in the edit audit history.'))return;
+ }
+ // A finished activity with one segment can be shortened or moved freely.
+ // Do not reject its corrected end using the old segment start.
+ s.name=newName;s.startAt=newStart;
+ if(finished){s.endAt=newEnd;
+  if(single||invalidMiddle)s.segments=[{start:newStart,end:newEnd}];
+  else{first.start=newStart;last.end=newEnd}
+ }else{first.start=newStart}
+ s.precision='manually-corrected';s.notes=$('editNote').value;
+ event(s,'EDIT',now(),{before:{name:original.name,startAt:original.startAt,endAt:original.endAt,notes:original.notes,segments:original.segments},after:{name:s.name,startAt:s.startAt,endAt:s.endAt,notes:s.notes,segments:structuredClone(s.segments)},replacedSegments:!!invalidMiddle});
+ if(!persist()){
+  const index=data.sessions.findIndex(x=>x.id===s.id);if(index>=0)data.sessions[index]=original;
+  alert('Changes were not saved. Your original activity remains unchanged.');return;
+ }
+ $('editModal').hidden=true;editId=null;render();
+}
 function deleteSession(){let s=data.sessions.find(x=>x.id===editId);if(!s)return;if(!confirm('Delete '+s.name+'? This removes it from your dashboard and totals. Export a backup first if needed.'))return;event(s,'DELETE',now(),{snapshot:structuredClone(s)});data.sessions=data.sessions.filter(x=>x.id!==s.id);for(const child of data.sessions.filter(x=>x.parentId===s.id)){child.parentId=null;event(child,'ACTIVITY_PARENT_REMOVED',now(),{deletedParentId:s.id});}for(const w of data.workouts||[])if(w.sessionId===s.id){w.sessionId=null;w.unlinkedFromDeletedSession=s.id}persist();$('editModal').hidden=true;editId=null;render()}
 function savePast(e){e.preventDefault();let name=$('pastName').value.trim(),start=new Date($('pastStart').value).getTime(),end=new Date($('pastEnd').value).getTime();if(!name||!Number.isFinite(start)||!Number.isFinite(end)||start>=end||end>now()){alert('Please enter an activity with a start before the end, and an end no later than now.');return}let s={id:uid(),name,status:'finished',createdAt:now(),startAt:start,endAt:end,segments:[{start,end}],notes:$('pastNotes').value,precision:'retrospective-approximate',source:'manual-past-entry'};data.sessions.push(s);event(s,'RETROSPECTIVE_ADD',now(),{start,end});persist();$('pastForm').reset();render()}
 
