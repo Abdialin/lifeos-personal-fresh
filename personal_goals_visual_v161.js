@@ -9,7 +9,24 @@ const interval=(x,a,b)=>{const t=time(x);return Number.isFinite(t)&&t>=a&&t<b};
 const dur=x=>(x?.segments||[]).reduce((sum,z)=>{const a=Number(z.start),b=Number(z.end);return sum+(Number.isFinite(a)&&Number.isFinite(b)&&b>a?(b-a)/60000:0)},0);
 const norm=x=>String(x||'').toLowerCase().trim(),unit=g=>g.unit==='quantity'?g.quantityUnit||'units':g.unit==='hours'?'hours':'sessions';
 function measure(g,w,a,b){let all=[],good=[],minutes=0,value=0,src='finished timers';const cat=norm(g.category);
-if(cat==='fitness'){src='workout records';const linked=new Map((w.sessions||[]).map(s=>[s.id,s]));all=(w.workouts||[]).filter(x=>interval(linked.get(x.sessionId)||x,a,b));good=all.filter(x=>!sample(x)&&(!x.sessionId||linked.has(x.sessionId))&&!sample(linked.get(x.sessionId)));minutes=good.reduce((v,x)=>v+(linked.has(x.sessionId)?dur(linked.get(x.sessionId)):Math.max(0,Number(x.durationMinutes)||Number(x.minutes)||0)),0);value=good.length}
+if(cat==='fitness'){
+ src='workout records + qualifying finished timers';
+ const sessions=(w.sessions||[]).filter(x=>x?.status==='finished'&&interval(x,a,b));
+ const workoutNames=/\b(gym|workout|fitness|strength|weightlifting|exercise|running|run|boxing|cardio|cycling|swimming|pilates|yoga)\b/i;
+ const linked=new Map(sessions.map(x=>[String(x.id),x]));
+ const workouts=(w.workouts||[]).filter(x=>interval(linked.get(String(x.sessionId))||x,a,b));
+ const countedIds=new Set();
+ all=workouts.slice();
+ good=workouts.filter(x=>!sample(x)&&(!x.sessionId||linked.has(String(x.sessionId)))&&!sample(linked.get(String(x.sessionId))));
+ for(const x of good)if(x.sessionId)countedIds.add(String(x.sessionId));
+ minutes=good.reduce((v,x)=>v+(linked.has(String(x.sessionId))?dur(linked.get(String(x.sessionId))):Math.max(0,Number(x.durationMinutes)||Number(x.minutes)||0)),0);
+ for(const x of sessions.filter(x=>workoutNames.test(String(x.name||''))&&!countedIds.has(String(x.id)))){
+  all.push(x);
+  if(sample(x))continue;
+  good.push(x);countedIds.add(String(x.id));minutes+=dur(x);
+ }
+ value=good.length;
+}
 else if(cat==='meals'){src='meal records';all=(w.meals||[]).filter(x=>interval(x,a,b));good=all.filter(x=>!sample(x));value=good.length}
 else if(cat==='personal'){src='personal logs';all=(w.personalLogs||[]).filter(x=>interval(x,a,b)&&norm(x.category)===norm(g.match));good=all.filter(x=>!sample(x));value=g.unit==='quantity'?good.filter(x=>!g.quantityUnit||norm(x.unit)===norm(g.quantityUnit)).reduce((v,x)=>v+Math.max(0,Number(x.quantity)||0),0):good.length}
 else {all=(w.sessions||[]).filter(x=>x.status==='finished'&&interval(x,a,b)&&norm(g.match||g.name).length>0&&norm(x.name).includes(norm(g.match||g.name)));good=all.filter(x=>!sample(x));minutes=good.reduce((v,x)=>v+dur(x),0);value=g.unit==='hours'?minutes/60:good.length}
@@ -22,6 +39,7 @@ const tone=g=>({fitness:'gym',personal:'personal',meals:'nutrition'})[norm(g.cat
 const progress=(v,t)=>Math.max(0,Math.min(100,t?v/t*100:0));
 const bar=(v,t)=>'<div class="gv161-bar"><i style="width:'+progress(v,t)+'%"></i></div>';
 const rows=w=>(w.goals||[]).map(g=>({g,t:Number(g.target)||0,cur:measure(g,w,monday(0),monday(1)),prev:measure(g,w,monday(-1),monday(0)),old:measure(g,w,monday(-2),monday(-1))}));
+window.LifeOSGoalEvidenceV175=Object.freeze({measure,rows,sample,unit,monday});
 let root,legacy,tab='overview',expanded='',selected='',weeks=4;
 function dailyReading(r,w){const name=norm(r.g.name||''),match=norm(r.g.match||'');if(!(name.includes('quran')&&name.includes('read'))&&!(match.includes('quran')&&match.includes('read')))return '';const start=monday(0),days=weekday;let reached=0;const cells=days.map((day,i)=>{const from=start+i*86400000,to=from+86400000;const entries=(w.sessions||[]).filter(s=>s?.status==='finished'&&!sample(s)&&interval(s,from,to)&&norm(s.name).includes(match||'quran reading'));const mins=entries.reduce((a,s)=>a+dur(s),0);if(mins>=90)reached++;const fraction=Math.min(100,mins/90*100);return '<div class="gv164-day" title="'+day+' '+Math.round(mins)+' of 90 minutes"><small>'+day+'</small><i style="--fill:'+fraction+'%"></i><b>'+Math.round(mins)+'</b></div>'}).join('');return '<div class="gv164-reading"><strong>Daily reading · 90 min goal</strong><div class="gv164-weekdays">'+cells+'</div><small>'+reached+'/7 days have 90 recorded minutes. Minutes are based on saved finished timers; missing days are unlogged, not missed.</small></div>'}
 function card(r,w){const id=String(r.g.id??r.g.name),p=progress(r.cur.value,r.t);return '<article class="gv161-card gv161-'+tone(r.g)+'"><div class="gv161-top"><div><small>'+H(r.g.category||'Goal')+'</small><h3>'+H(r.g.name)+'</h3></div><div class="gv161-ring" style="--progress:'+p+'"><b>'+Math.round(p)+'%</b></div></div><div class="gv161-metrics"><div><b>'+fmt(r.cur.value)+' / '+fmt(r.t)+'</b><small>'+H(unit(r.g))+'</small></div><div><b>'+r.cur.records+'</b><small>saved entries</small></div><div><b>'+(r.cur.minutes?Math.round(r.cur.minutes)+' min':'—')+'</b><small>recorded time</small></div></div>'+bar(r.cur.value,r.t)+dailyReading(r,w)+'<div class="gv161-foot"><span>'+(r.cur.records?'Recorded progress':'Awaiting evidence')+'</span><button data-v161-detail="'+H(id)+'">'+(expanded===id?'Less −':'Details ↗')+'</button></div>'+(expanded===id?'<div class="gv161-expand">'+dayStrip(r,w)+'<div><span>Previous week<b>'+fmt(r.prev.value)+' '+H(unit(r.g))+'</b></span><span>Average duration<b>'+(r.cur.records&&r.cur.minutes?Math.round(r.cur.minutes/r.cur.records)+' min':'Unavailable')+'</b></span><span>Counted from<b>'+H(r.cur.src)+'</b></span><span>Excluded examples<b>'+r.cur.excluded+'</b></span></div><p>Only qualifying records count; development examples and plans are not verified completions.</p><button data-v161-edit="1">Edit goal and counting rule →</button></div>':'')+'</article>'}
