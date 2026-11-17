@@ -139,7 +139,7 @@ function habitUI(){
  }).join('');
  host.innerHTML='<div class="lo32-heading"><h3>Habits & personal development</h3>'+
  '<p>A tracked session is evidence of time spent, but a habit is a commitment. You review matching activities before linking them to habit completion. No automatic checkmarks or duplicate timer entries.</p></div>'+
- '<form id="lo32HabitForm" class="lo32-habit-form"><label>Habit name<input name="title" required maxlength="80" placeholder="Read a book, Quran revision, memorize a page"></label>'+
+ '<details class="lo188-habit-editor" '+(habitEditingId?'open':'')+'><summary>'+(habitEditingId?'Edit habit':'Create a new habit')+'</summary><form id="lo32HabitForm" class="lo32-habit-form"><label>Habit name<input name="title" required maxlength="80" placeholder="Read a book, Quran revision, memorize a page"></label>'+
  '<label>Type<select name="category"><option>Reading</option><option>Quran & memorization</option><option>Prayer</option><option>Learning</option><option>Wellbeing</option><option>Quit or avoid a habit</option><option>Other</option></select></label>'+
  '<label>Repeat every (days)<input name="everyDays" type="number" min="1" max="30" value="1" required></label>'+
  '<label>Habit start date<input name="startDate" type="date" required value="'+esc(local(Date.now()))+'"></label>'+
@@ -148,8 +148,8 @@ function habitUI(){
  '<label>Target amount (optional)<input name="targetAmount" type="number" min="0" max="10000" step="0.1" placeholder="e.g. 30"></label>'+
  '<label>Quantity unit (if needed)<input name="targetUnit" maxlength="30" placeholder="pages, repetitions"></label>'+
  '<button class="btn primary" type="submit">'+(habitEditingId?'Save habit changes':'+ Add habit')+'</button>'+
- (habitEditingId?'<button class="btn outline" type="button" id="lo33CancelHabitEdit">Cancel editing</button>':'')+'</form>'+
- '<label class="lo32-habit-date">Review habit day<input type="date" id="lo32HabitDate" value="'+esc(habitSelectedDate)+'"></label>'+
+ (habitEditingId?'<button class="btn outline" type="button" id="lo33CancelHabitEdit">Cancel editing</button>':'')+'</form></details>'+
+ '<h4 class="lo188-habits-today">Your habit progress</h4><label class="lo32-habit-date">Review habit day<input type="date" id="lo32HabitDate" value="'+esc(habitSelectedDate)+'"></label>'+
  (options.length?'<div class="lo32-habit-list">'+cards+'</div>':'<p class="lo32-muted">No habits created yet. Examples: read 10 pages daily, Quran revision every 3 days, or a personal wellbeing habit.</p>')+
  '<p class="lo32-muted">Habit checks can be manual or explicitly linked to a completed activity. Linked activity evidence never changes recorded session time. For habits about avoiding behavior, a completion check reflects your own report, not automatic detection.</p>';
 }
