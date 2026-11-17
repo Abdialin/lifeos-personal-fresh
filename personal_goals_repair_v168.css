@@ -1,0 +1,25 @@
+/* V168 · isolated chart layout, compact zero-data state and less intrusive timer */
+#gv161-app .gv168-days{display:block!important;min-width:0;width:100%;box-sizing:border-box;overflow:hidden;padding:12px;margin:10px 0;background:linear-gradient(145deg,#092735,#08172c);border:1px solid #28636a;border-radius:14px}
+#gv161-app .gv168-days .gv167-dayshead{display:flex!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important;gap:8px!important;margin:0 0 12px!important}
+#gv161-app .gv168-days .gv167-dayshead b{font-size:13px!important}
+#gv161-app .gv168-days .gv167-dayshead small{font-size:10px!important}
+#gv161-app .gv168-days .gv167-weekstrip{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;grid-auto-flow:column!important;align-items:end!important;gap:4px!important;width:100%!important;min-width:0!important;height:88px!important;margin:0!important}
+#gv161-app .gv168-days .gv167-weekstrip>.gv168-day{display:flex!important;flex-direction:column!important;justify-content:flex-end!important;align-items:center!important;gap:4px!important;width:auto!important;min-width:0!important;max-width:none!important;height:88px!important;margin:0!important;padding:0!important;overflow:hidden}
+#gv161-app .gv168-days .gv168-day span{display:block!important;font-size:10px!important;color:#afcbd1}
+#gv161-app .gv168-days .gv168-day i{display:block!important;flex:none!important;min-height:3px!important;width:55%!important;max-width:17px!important;margin-top:auto!important;background:linear-gradient(#5df0c1,#188f9c)!important;border-radius:5px 5px 2px 2px}
+#gv161-app .gv168-days .gv168-day strong{display:block!important;font-size:10px!important;white-space:nowrap}
+#gv161-app .gv168-days .gv167-note{display:block!important;font-size:10px!important;line-height:1.45!important;margin:12px 0 0!important}
+#gv161-app .gv161-expand>.gv168-days{grid-template-columns:none!important}
+#gv161-app .gv161-expand .gv168-days .gv167-weekstrip{grid-template-columns:repeat(7,minmax(0,1fr))!important}
+#gv161-app .gv168-emptystate{min-height:0!important;padding:14px 12px;text-align:center;display:grid;justify-items:center;gap:5px;color:#a8c3cd}
+#gv161-app .gv168-emptyicon{font-size:22px;color:#4dbb9e;line-height:1}
+#gv161-app .gv168-emptystate strong{font-size:13px;color:#e0f7ef}
+#gv161-app .gv168-emptystate p{font-size:11px;line-height:1.45;margin:0;max-width:310px}
+#gv161-app .gv168-emptystate small{font-size:10px;color:#77bfae}
+#gv161-app .gv165-chart:has(.gv168-emptystate){padding:7px!important}
+#gv161-app .gv165-reviewgrid .gv162-reviewcard{overflow-wrap:anywhere}
+body[data-lifeos-view="goals"] #lo86-timer:not(:has(#lo86-details:not([hidden]))){width:auto!important;max-width:145px!important;min-width:0!important;right:8px!important;bottom:calc(83px + env(safe-area-inset-bottom,0px))!important;opacity:.94!important;box-shadow:0 5px 15px #0006!important}
+body[data-lifeos-view="goals"] #lo86-timer #lo86-clock{font-size:11px!important}
+body[data-lifeos-view="goals"] #lo86-timer #lo86-toggle{min-width:26px!important;min-height:26px!important}
+#gv161-app [data-gv161-panel]{padding-bottom:22px}
+@media(max-width:390px){#gv161-app .gv168-days{padding:9px}#gv161-app .gv168-days .gv167-weekstrip{gap:2px!important}}
