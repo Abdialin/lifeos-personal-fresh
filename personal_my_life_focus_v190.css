@@ -65,3 +65,21 @@ body[data-lifeos-view="life"] :is(#fitnessForm,#mealForm,#personalLogForm){scrol
  body[data-lifeos-view="life"]:has(input:focus, textarea:focus, select:focus) #lo86-timer #lo86-details{display:none!important}
  body[data-lifeos-view="life"] .lo193-editor-close{width:100%}
 }
+
+/* V194 — timer evidence integrated into My Life, not duplicated as meal or workout records */
+body[data-lifeos-view="life"] .lo194-evidence{padding:15px;margin:12px 0 17px;border-radius:14px;background:linear-gradient(150deg,#0b2b35,#0b1e31);border:1px solid #315e68;min-width:0}
+body[data-lifeos-view="life"] .lo194-evidence h3{font-size:16px;margin:0 0 7px;color:#effbf7}
+body[data-lifeos-view="life"] .lo194-evidence-summary{font-weight:800;font-size:14px;color:#77d6b9;margin:7px 0}
+body[data-lifeos-view="life"] .lo194-evidence-note{font-size:12px;line-height:1.5;color:#a5bdc8}
+body[data-lifeos-view="life"] .lo194-periods{margin-top:10px;border-top:1px solid #345863;padding-top:10px}
+body[data-lifeos-view="life"] .lo194-periods>summary{cursor:pointer;font-size:13px;font-weight:750;color:#b8e7d8;padding:4px 0}
+body[data-lifeos-view="life"] .lo194-period{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0;border-bottom:1px solid #23485a}
+body[data-lifeos-view="life"] .lo194-period div{min-width:0}
+body[data-lifeos-view="life"] .lo194-period strong,body[data-lifeos-view="life"] .lo194-period small{display:block;overflow-wrap:anywhere}
+body[data-lifeos-view="life"] .lo194-period strong{font-size:12px}
+body[data-lifeos-view="life"] .lo194-period small{margin-top:5px;font-size:11px;color:#a7c1cf;line-height:1.4}
+body[data-lifeos-view="life"] .lo194-period button{flex:0 0 auto;font-size:11px;font-weight:750;min-height:39px;border-radius:9px;padding:8px 10px;border:1px solid #358a78;background:#0b574e;color:#eefcf8}
+body[data-lifeos-view="life"] .lo194-period button:disabled{background:#253b42;color:#98b8bd;border-color:#3a5a60}
+body[data-lifeos-view="life"] .lo194-highlight{outline:2px solid #77d8ba;outline-offset:5px;border-radius:8px;scroll-margin-top:120px}
+body[data-lifeos-view="life"] .lo194-nav-note{font-size:11px;color:#edc993;margin:8px 0 0}
+@media(max-width:430px){body[data-lifeos-view="life"] .lo194-period{align-items:flex-start;flex-direction:column}body[data-lifeos-view="life"] .lo194-period button{align-self:flex-start}}
