@@ -69,3 +69,18 @@ body[data-lifeos-view="tracking"] #lo129DistractionDeep .lo132-original-report{
  body[data-lifeos-view="tracking"] #history .lo-history-entry>strong{font-size:12px!important}
 }
 @media(prefers-reduced-motion:reduce){body[data-lifeos-view="tracking"] #history .lo132-more{transition:none}}
+
+/* V172: compact actions, no duplicate status piles, clear primary time editing. */
+body[data-lifeos-view="tracking"] #history .lo-history-entry .lo132-type {flex:0 0 auto;white-space:nowrap}
+body[data-lifeos-view="tracking"] #history .lo-history-foot {flex-wrap:wrap;gap:8px!important}
+body[data-lifeos-view="tracking"] #history .lo-history-foot>small {flex:1 1 100%;overflow-wrap:anywhere;font-size:12px!important;line-height:1.45}
+body[data-lifeos-view="tracking"] #history .lo132-quick-edit {display:inline-flex;align-items:center;justify-content:center;min-height:38px;border-radius:9px;border:1px solid #1d806b;background:#075c4e;color:#fff;font-size:12px;font-weight:800;padding:7px 13px;cursor:pointer}
+body[data-lifeos-view="tracking"] #history .lo132-more {min-height:38px;font-size:12px!important}
+body[data-lifeos-view="tracking"] #history .lo-history-actions {flex:1 1 100%;flex-wrap:wrap}
+body[data-lifeos-view="tracking"] #history .lo-history-actions button {flex:1 1 100px}
+@media(max-width:450px) {
+ body[data-lifeos-view="tracking"] #history .lo-history-entry {display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center}
+ body[data-lifeos-view="tracking"] #history .lo-history-entry .lo132-type {grid-column:1 / -1;justify-self:start}
+ body[data-lifeos-view="tracking"] #history .lo-history-foot .lo132-more,
+ body[data-lifeos-view="tracking"] #history .lo-history-foot .lo132-quick-edit {flex:1 1 calc(50% - 6px)}
+}
