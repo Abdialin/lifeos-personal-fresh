@@ -60,23 +60,25 @@ function collapse(){
  const editor=document.querySelector('.lo188-habit-editor');if(editor&&!editor.id)editor.id='lo188-habit-editor';
 }
 function openTarget(id){
- const node=$(id);if(!node)return false;
- // Open its disclosure parents first, including the compact V192 editor wrapper.
- // If a target is a button that opens a form, activate it instead of jumping to a hidden form.
- if(node.matches('button[data-lo-form-toggle]')){node.click();return true}
- // If the target was generated after the toolbar, the next route refresh can still find it.
- if(node.tagName==='DETAILS')node.open=true;
- const parents=[];let a=node.parentElement;
- while(a){if(a.tagName==='DETAILS')parents.unshift(a);a=a.parentElement}
- parents.forEach(d=>d.open=true);
- if(node.tagName==='FORM'&&node.hidden){
-  const toggle=document.querySelector('[data-lo-form-toggle="'+id+'"]');
-  if(toggle)toggle.click();
-  else node.hidden=false;
+ let node=$(id);
+ if(!node){
+  // Other modules may mount after the navigation bar was created.
+  collapse();node=$(id);
  }
- node.scrollIntoView({block:'start',behavior:'smooth'});
+ if(!node){console.warn('LifeOS My Life: unavailable destination',id);return false}
+ if(node.matches('button[data-lo-form-toggle]')){node.click();return true}
+ const ancestors=[];for(let a=node;a;a=a.parentElement)if(a.tagName==='DETAILS')ancestors.unshift(a);
+ for(const disclosure of ancestors)disclosure.open=true;
+ if(node.matches('form')&&node.hidden)node.hidden=false;
+ if(node.matches('details'))node.open=true;
+ if(node.matches('input,textarea,select'))node.focus({preventScroll:true});
+ node.scrollIntoView({block:'center',behavior:'smooth'});
+ // Explicit focus/active state makes shortcut navigation visible on a small phone.
+ node.classList.add('lo194-highlight');
+ setTimeout(()=>node.classList.remove('lo194-highlight'),1800);
  return true;
 }
+
 function installNav(){
  const key=document.body.dataset.loLifeSection||'routines',panel=section(key);
  if(!panel||!config[key])return;
@@ -93,13 +95,108 @@ function installNav(){
   if(!$(id))return;
   const b=document.createElement('button');b.type='button';b.textContent=label;
   if(index===0)b.className='lo190-primary';
-  b.addEventListener('click',()=>openTarget(id));row.append(b);
+  b.addEventListener('click',()=>{if(!openTarget(id)){const note=toolbar.querySelector('.lo194-nav-note')||document.createElement('p');note.className='lo194-nav-note';note.textContent='This feature is not available on this screen yet.';toolbar.append(note)}});row.append(b);
  });
  toolbar.append(row);
  const heading=panel.querySelector('h2');if(heading&&heading.parentElement===panel){heading.after(toolbar);heading.classList.add('lo190-old-heading')}else panel.prepend(toolbar);
  // Earlier quick-link list duplicates the same routes.
  const old=panel.querySelector('.lo187-jump');if(old)old.hidden=true;
  if(row.childElementCount===0)toolbar.classList.add('lo190-actions-empty');
+}
+/* V194: read-only evidence connection, never invent meals or workout sets. */
+const dateKey=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const clock=t=>new Date(t).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+const sample=s=>!!(s.seedBatch||s.assumed||s.isExample||s.developmentExample||['development-starter','development-seed','assumed-demo'].includes(s.source));
+const kindOf=name=>{
+ const n=String(name||'').toLowerCase();
+ if(/\\b(cooking|cook|meal prep|food prep|matlagning|laga mat)\\b/.test(n))return 'preparing';
+ if(/\\b(eating|meal|breakfast|lunch|dinner|snack|eat|äta|måltid|frukost|middag|lunch)\\b/.test(n))return 'eating';
+ if(/\\b(gym|workout|training|strength|fitness|exercise|running|run|jogging|walking|walk|boxing|boxning|cycling|swimming|yoga|träning|träna|promenad|löpning|styrketräning)\\b/.test(n))return 'fitness';
+ return null;
+};
+function evidenceParts(s,now=Date.now()){
+ const segments=Array.isArray(s.segments)&&s.segments.length?s.segments:[{start:s.startAt,end:s.endAt}];
+ const result=[];
+ for(const z of segments){
+  const a=Number(z.start),b=z.end==null?(s.status==='running'?now:NaN):Number(z.end);
+  if(!Number.isFinite(a)||!Number.isFinite(b)||b<=a)continue;
+  let p=a,limit=0;while(p<b&&limit++<90){
+   const d=new Date(p),next=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime(),end=Math.min(next,b);
+   result.push({day:dateKey(p),start:p,end,ms:end-p});p=end;
+  }
+ }
+ return result;
+}
+function linkedEvidence(workspace,days=7,now=Date.now()){
+ const start=new Date(now);start.setHours(0,0,0,0);start.setDate(start.getDate()-days+1);const cutoff=start.getTime();
+ const groups={fitness:[],eating:[],preparing:[]};
+ for(const s of workspace.sessions||[]){
+  if(!s||sample(s)||!['finished','running','paused'].includes(s.status))continue;
+  const kind=kindOf(s.name);if(!kind)continue;
+  for(const part of evidenceParts(s,now)){
+   if(part.end<=cutoff)continue;
+   if(part.start<cutoff){part.ms=part.end-cutoff;part.start=cutoff}
+   groups[kind].push({...part,id:String(s.id),name:String(s.name||'Activity'),status:s.status,source:'timer'});
+  }
+ }
+ for(const items of Object.values(groups))items.sort((a,b)=>b.start-a.start);
+ return groups;
+}
+function evidencePanel(kind){
+ const anchor=kind==='fitness'?$('lo190-fitness-intro')||$('lifeosFitnessDashboard'):$('lo190-nutrition-intro')||$('lifeosNutritionDashboard');
+ if(!anchor)return null;
+ const id=kind==='fitness'?'lo194-fitness-evidence':'lo194-nutrition-evidence';
+ let element=$(id);if(!element){
+  element=document.createElement('section');element.id=id;element.className='lo194-evidence';
+  anchor.after(element);
+ }
+ return element;
+}
+function textNode(tag,value,cls=''){const el=document.createElement(tag);el.textContent=value;if(cls)el.className=cls;return el}
+function renderEvidence(){
+ if(document.body.dataset.lifeosView!=='life')return;
+ const w=root.lifeosReadOnlyWorkspace?.();if(!w)return;
+ const parts=linkedEvidence(w),linked=new Set((w.workouts||[]).map(x=>String(x.sessionId||'')).filter(Boolean));
+ const create=(kind,list)=>{
+  const panel=evidencePanel(kind);if(!panel)return;
+  panel.replaceChildren();
+  panel.append(textNode('h3',kind==='fitness'?'Training from Track':'Eating & preparation from Track'));
+  const minutes=list.reduce((a,x)=>a+x.ms,0)/60000,sessionCount=new Set(list.map(x=>x.id)).size;
+  panel.append(textNode('p',sessionCount+' tracked sessions · '+Math.round(minutes)+' active minutes over the past 7 calendar days','lo194-evidence-summary'));
+  if(kind==='nutrition')panel.append(textNode('p','These records show eating or food-preparation time, not calories or nutrients. Add meal details only when known.','lo194-evidence-note'));
+  else panel.append(textNode('p','Tracked exercise contributes duration evidence. Sets, repetitions and weights require a workout record.','lo194-evidence-note'));
+  const details=document.createElement('details');details.className='lo194-periods';
+  const title=textNode('summary','View tracked periods ('+list.length+')');details.append(title);
+  if(!list.length)details.append(textNode('p','No matching tracked activity in the last seven days.'));
+  for(const p of list.slice(0,28)){
+   const row=document.createElement('article');row.className='lo194-period';
+   const info=document.createElement('div');info.append(textNode('strong',p.name));
+   info.append(textNode('small',p.day+' · '+clock(p.start)+'–'+clock(p.end)+' · '+Math.round(p.ms/60000)+' min'));
+   row.append(info);
+   const action=document.createElement('button');action.type='button';
+   action.textContent=kind==='fitness'?(linked.has(p.id)?'Linked':'Add details'):'Add meal details';
+   action.disabled=kind==='fitness'&&linked.has(p.id);
+   action.addEventListener('click',()=>{
+    if(kind==='fitness'){
+     if(!openTarget('fitnessForm'))return;
+     const select=$('fitnessSession');
+     if(select&&!Array.from(select.options).some(x=>x.value===p.id))select.add(new Option(p.name+' · linked timer',p.id));
+     if(select)select.value=p.id;
+     const type=$('fitnessType');if(type){const n=p.name.toLowerCase();const found=[...type.options].find(x=>n.includes(x.value.toLowerCase()));if(found)type.value=found.value}
+     if($('fitnessDate'))$('fitnessDate').value=p.day;
+     if($('fitnessMinutes'))$('fitnessMinutes').value=Math.round(parts.fitness.filter(x=>x.id===p.id).reduce((a,x)=>a+x.ms,0)/60000);
+    }else{
+     if(!openTarget('mealForm'))return;
+     if($('mealDate'))$('mealDate').value=p.day;
+     if($('mealTime'))$('mealTime').value=clock(p.start);
+     // Do not prefill foods, quantity, calories or create a meal automatically.
+    }
+   });
+   row.append(action);details.append(row);
+  }
+  panel.append(details);
+ };
+ create('fitness',parts.fitness);create('nutrition',[...parts.eating,...parts.preparing].sort((a,b)=>b.start-a.start));
 }
 function removeRepeatedOverview(){
  // The universal progress card repeated on every My Life tab. Local dashboards are more useful.
@@ -111,13 +208,15 @@ function removeRepeatedOverview(){
   }
  }
 }
-function run(){if(document.body.dataset.lifeosView!=='life')return;collapse();installNav();removeRepeatedOverview()}
+function run(){if(document.body.dataset.lifeosView!=='life')return;collapse();installNav();removeRepeatedOverview();renderEvidence()}
 function init(){
  run();
  $('loLifeSectionTabs')?.addEventListener('click',()=>setTimeout(run,40));
  $('lifeosNavigation')?.addEventListener('click',()=>setTimeout(run,60));
  root.addEventListener('hashchange',()=>setTimeout(run,60));
  root.addEventListener('lifeos-v76-route-check',()=>setTimeout(run,30));
+ root.addEventListener('lifeos-v77-tracking-changed',()=>setTimeout(renderEvidence,80));
+ root.addEventListener('focus',()=>{if(document.body.dataset.lifeosView==='life')renderEvidence()});
  // Reconcile UI after optional modules mount without observing constantly regenerating chart markup.
  [120,700,1800].forEach(t=>setTimeout(run,t));
  document.addEventListener('submit',event=>{
@@ -125,5 +224,5 @@ function init(){
  });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-root.LifeOSMyLifeV190={refresh:run,openTarget};
+root.LifeOSMyLifeV190={refresh:run,openTarget,linkedEvidence,evidenceParts,kindOf};
 })(window);
