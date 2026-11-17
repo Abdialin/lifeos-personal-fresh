@@ -307,10 +307,10 @@ function mountInsightsDigest(){
    '<p class="l185-note">Suggestions are explanatory only. No timers, goals or schedule items are changed.</p>';
   const tailored=newInsights186(read()),responses=feedback186();
   $('lo186-recommendations').innerHTML='<div class="l185-title"><h3>Personalized patterns</h3><span>Based on completed records</span></div>'+
-   tailored.suggestions.filter(x=>responses[x.id]?.status!=='not-relevant').map(x=>{
+   tailored.suggestions.filter(x=>responses[x.id]?.status!=='not-relevant'&&!(responses[x.id]?.status==='later'&&Date.now()-Number(responses[x.id].updatedAt)<24*3600000)).sort((a,b)=>Number(responses[b.id]?.status==='useful')-Number(responses[a.id]?.status==='useful')).map(x=>{
     const state=responses[x.id]?.status;
     return '<article class="l185-suggestion l186-card"><div class="l185-suggestion-head"><strong>'+esc(x.title)+'</strong><small>'+esc(x.confidence)+' confidence</small></div><p>'+esc(x.detail)+'</p><details><summary>Evidence & suggested next step</summary><p>'+esc(x.why)+'</p><p>'+esc(x.action)+'</p></details><div class="l186-feedback"><button data-l186-feedback="useful" data-l186-id="'+esc(x.id)+'">Useful</button><button data-l186-feedback="not-relevant" data-l186-id="'+esc(x.id)+'">Not relevant</button><button data-l186-feedback="later" data-l186-id="'+esc(x.id)+'">Later</button></div>'+(state?'<small class="l186-saved">Your feedback: '+esc(state)+'</small>':'')+'</article>';
-   }).join('')+'<p class="l185-note">Feedback is stored on this device only and changes which suggestions are shown; it does not change goals, activity records, or plans.</p>';
+   }).join('')+'<p class="l185-note">Feedback is stored on this device only. Not relevant hides that suggestion; Later hides it for 24 hours. Useful prioritizes it. No goals, activity records, or plans are changed.</p>';
 
  };
  hub.addEventListener('click',e=>{const button=e.target.closest('[data-l186-feedback]');if(!button)return;const id=button.dataset.l186Id,status=button.dataset.l186Feedback;if(updateFeedback186(id,status))render()});
