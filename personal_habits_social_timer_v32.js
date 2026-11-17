@@ -225,7 +225,7 @@ function toggleHabit(idValue,evidence){
  }else if(current?.done){
   if(!bridge()?.mutate('habitChecks','remove',current))return alert('Could not undo habit check.');
  }else{
-  const next={id:id(),habitId:idValue,date:habitSelectedDate,done:true,createdAt:Date.now(),checkSource:evidence?'linked-evidence':'manual',
+  const next={id:current?.id||id(),habitId:idValue,date:habitSelectedDate,done:true,createdAt:current?.createdAt||Date.now(),checkSource:evidence?'linked-evidence':'manual',
    evidenceType:evidence?.sourceType||null,evidenceSourceId:evidence?.sourceId||null};
   if(!bridge()?.mutate('habitChecks','upsert',next))return alert('Check could not be saved.');
  }
