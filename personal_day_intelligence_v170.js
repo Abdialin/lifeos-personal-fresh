@@ -188,10 +188,39 @@ function insightsDigestData(workspace,now=Date.now()){
  const activities=[...byActivity].sort((a,b)=>b[1]-a[1]);
  return {unique,olderUnique,loggedDays,previousDays,overlaps:total(recent,'overlapMs'),missing:total(recent,'unloggedMs'),activities,days:recent};
 }
+function insightRecommendations(workspace,now=Date.now()){
+ const d=insightsDigestData(workspace,now),confidence=d.loggedDays>=6&&d.previousDays>=6?'High':d.loggedDays>=4&&d.previousDays>=4?'Moderate':'Limited';
+ const evidence=[];
+ // Compare like with like: only days with recorded activity, never interpret empty days as failure.
+ const sufficientlyLogged=d.loggedDays>=4&&d.previousDays>=4;
+ if(sufficientlyLogged){
+  const recentAverage=d.unique/d.loggedDays,previousAverage=d.olderUnique/d.previousDays;
+  const difference=recentAverage-previousAverage;
+  if(Math.abs(difference)>=45*60000){
+   evidence.push({title:'Recorded time changed',confidence,kind:'trend',detail:'Average recorded coverage on days with logs '+(difference>0?'increased':'decreased')+' by '+(Math.abs(difference)/3600000).toFixed(1)+' hours per recorded day.',basis:d.loggedDays+' recent and '+d.previousDays+' earlier days with activity records.',suggestion:'Review whether tracking habits or your routine changed before adjusting plans.'});
+  }
+ }
+ // Frequent parallel records are a signal for review, never proof of multitasking or error.
+ const activeDays=d.days.filter(x=>x.uniqueMs>0);
+ const overlapDays=activeDays.filter(x=>x.overlapMs>=30*60000);
+ if(overlapDays.length>=3){
+  evidence.push({title:'Parallel tracking is frequent',confidence:activeDays.length>=6?'Moderate':'Limited',kind:'overlap',detail:'Overlaps of at least 30 minutes occurred on '+overlapDays.length+' of '+activeDays.length+' recorded days.',basis:'Active segments are compared in local calendar time, with parallel durations counted separately.',suggestion:'Review these overlapping sessions in Track; some may be legitimate simultaneous activities.'});
+ }
+ // Recurring time gaps only where records exist on both sides.
+ const gaps=d.days.flatMap(day=>day.gapDetails.filter(g=>g.ms>=45*60000&&g.before&&g.after).map(g=>({day:day.a,hour:new Date(g.start).getHours(),ms:g.ms})));
+ const byPeriod=new Map();for(const gap of gaps){const period=Math.floor(gap.hour/3)*3;const key=String(period);if(!byPeriod.has(key))byPeriod.set(key,new Set());byPeriod.get(key).add(start(gap.day))}
+ const frequent=[...byPeriod].map(([h,dates])=>({hour:Number(h),count:dates.size})).sort((a,b)=>b.count-a.count)[0];
+ if(frequent?.count>=3){
+  const from=String(frequent.hour).padStart(2,'0'),to=String((frequent.hour+3)%24).padStart(2,'0');
+  evidence.push({title:'Recurring unlogged window',confidence:frequent.count>=5?'Moderate':'Limited',kind:'gap',detail:'A gap of 45 minutes or more started between '+from+':00 and '+to+':00 on '+frequent.count+' separate days.',basis:'Only gaps bounded by two recorded activities qualify; the gap itself remains unknown.',suggestion:'Consider whether a reminder to log this period would be useful. Do not assume it is free time.'});
+ }
+ if(!evidence.length)evidence.push({title:'Build a stronger evidence baseline',confidence:'Limited',kind:'baseline',detail:'There is not yet a repeated pattern strong enough to justify a schedule suggestion.',basis:d.loggedDays+' of the last seven complete days have recorded activity.',suggestion:'Continue tracking normally; LifeOS will compare completed days without treating missing records as missed commitments.'});
+ return {confidence,evidence:evidence.slice(0,3),sampleDays:d.loggedDays,previousDays:d.previousDays};
+}
 function mountInsightsDigest(){
  if($('lo184-insights-digest')||!$('lifeosViewTitle'))return;
  const hub=document.createElement('section');hub.id='lo184-insights-digest';hub.className='l184-digest';
- hub.innerHTML='<div class="l184-kicker">YOUR WEEK · INTERPRETED</div><h2>What your tracking reveals</h2><p class="l184-lead">Patterns and changes from completed days—not another activity history.</p><div class="l184-grid" id="lo184-metrics"></div><div class="l184-findings" id="lo184-findings"></div><div class="l184-actions"><button type="button" id="lo184-detail-toggle" aria-expanded="false">Explore advanced reports ↓</button><button type="button" id="lo184-track-link">Open activity history ↗</button></div><p class="l184-disclaimer">Based on recorded evidence. Missing time remains unknown; no schedule changes are made automatically.</p>';
+ hub.innerHTML='<div class="l184-kicker">YOUR WEEK · INTERPRETED</div><h2>What your tracking reveals</h2><p class="l184-lead">Patterns and changes from completed days—not another activity history.</p><div class="l184-grid" id="lo184-metrics"></div><div class="l184-findings" id="lo184-findings"></div><div class="l185-recommendations" id="lo185-recommendations"></div><div class="l184-actions"><button type="button" id="lo184-detail-toggle" aria-expanded="false">Explore advanced reports ↓</button><button type="button" id="lo184-track-link">Open activity history ↗</button></div><p class="l184-disclaimer">Based on recorded evidence. Missing time remains unknown; no schedule changes are made automatically.</p>';
  $('lifeosViewTitle').after(hub);
  const advanced=$('lo184-detail-toggle');
  const showAdvanced=value=>{document.body.dataset.lo184Advanced=value?'yes':'no';advanced.setAttribute('aria-expanded',String(value));advanced.textContent=value?'Hide advanced reports ↑':'Explore advanced reports ↓'};
@@ -218,15 +247,20 @@ function mountInsightsDigest(){
    const most=d.days.slice().sort((a,b)=>b.uniqueMs-a.uniqueMs)[0];
    findings.push(finding('Day with most recorded coverage',esc(new Date(most.a).toLocaleDateString(undefined,{weekday:'long'}))+' had '+hrs(most.uniqueMs)+' of uniquely recorded activity. Check whether long sessions or overlaps need review.'));
   }
-  $('lo184-findings').innerHTML=findings.join('');
+  $('lo184-findings').innerHTML=findings.slice(0,2).join('');
+  const suggestions=insightRecommendations(read());
+  $('lo185-recommendations').innerHTML='<div class="l185-title"><h3>Patterns worth reviewing</h3><span>'+esc(suggestions.confidence)+' evidence</span></div>'+
+   suggestions.evidence.map((x,i)=>'<article class="l185-suggestion"><div class="l185-suggestion-head"><strong>'+esc(x.title)+'</strong><small>'+esc(x.confidence)+' confidence</small></div><p>'+esc(x.detail)+'</p><details><summary>Why this finding?</summary><p>'+esc(x.basis)+'</p><p><b>Suggested next step:</b> '+esc(x.suggestion)+'</p></details><button type="button" data-l185-review="'+i+'">Review in '+(x.kind==='overlap'?'Track':'Plan')+' ↗</button></article>').join('')+
+   '<p class="l185-note">Suggestions are explanatory only. No timers, goals or schedule items are changed.</p>';
  };
  advanced.addEventListener('click',()=>{showAdvanced(document.body.dataset.lo184Advanced!=='yes');if(document.body.dataset.lo184Advanced==='yes')setTimeout(()=>$('analyticsPanel')?.scrollIntoView({block:'start',behavior:'smooth'}),50)});
+ hub.addEventListener('click',e=>{const b=e.target.closest('[data-l185-review]');if(!b)return;const index=Number(b.dataset.l185Review),item=insightRecommendations(read()).evidence[index];const destination=item?.kind==='overlap'?'tracking':'schedule';$('lifeosNavigation')?.querySelector('[data-view="'+destination+'"]')?.click();});
  $('lo184-track-link').addEventListener('click',()=>$('lifeosNavigation')?.querySelector('[data-view="tracking"]')?.click());
  $('lifeosNavigation')?.addEventListener('click',e=>{if(e.target.closest('[data-view="analytics"]')){showAdvanced(false);setTimeout(render,120)}});
  window.addEventListener('focus',()=>{if(document.body.dataset.lifeosView==='analytics')render()});
  window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='analytics')render()});
  showAdvanced(false);render();
- window.LifeOSInsightsDigestV184={getData:insightsDigestData,refresh:render};
+ window.LifeOSInsightsDigestV184={getData:insightsDigestData,getRecommendations:insightRecommendations,refresh:render};
 }
 function init(){mountReports();mountLifeHub();mountInsightsDigest();if($('lo170-day'))return;let today=$('todayOverview');if(today){let el=document.createElement('section');el.id='lo170-day';el.className='l170-panel';today.prepend(el);day()}let tracking=$('trackPastPanel');if(tracking){let el=document.createElement('section');el.id='lo170-review';el.className='l170-panel';(document.getElementById('trackActivePanel')||tracking).prepend(el);review()}let life=$('personalActivityPanel');if(life){let el=document.createElement('section');el.id='lo170-notes';el.className='l170-panel';life.prepend(el);notes();let group=document.createElement('section');group.id='lo170-groups';group.className='l170-panel';el.after(group);groups()}document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();if(document.body.dataset.lifeosView==='dashboard')day()}});window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='dashboard')day();review()});setInterval(tick,30000)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,1800),{once:true});else setTimeout(init,1800);
