@@ -66,6 +66,46 @@ function habitProgress(def,checks,days=28){
  return {due:dueDates.length,completed,streak,pastDue:past.length,pastCompleted,
   rate:past.length?Math.round(pastCompleted/past.length*100):null};
 }
+
+/* V196: consent-based habit completion from real finished sessions only. */
+function automaticHabitCandidates(def,day,workspace,at=Date.now()){
+ if(!def.autoComplete||!def.matchText||def.targetMode==='quantity'||!habitDue(def,day))return[];
+ const term=normal(def.matchText).toLowerCase();
+ const threshold=Number(def.targetAmount)||0;
+ const since=Number(def.autoSince)||0;
+ return (workspace.sessions||[]).filter(session=>{
+  if(session.status!=='finished'||!Number.isFinite(session.endAt)||session.endAt<since||session.endAt>at||local(session.endAt)!==day)return false;
+  if(session.seedBatch||session.assumed||session.isExample||session.source==='assumed-demo'||session.source==='development-starter')return false;
+  if(!String(session.name||'').toLowerCase().includes(term))return false;
+  const duration=timespan(session,session.endAt);
+  return duration>0&&(def.targetMode!=='minutes'||duration/60000>=threshold);
+ }).sort((a,b)=>b.endAt-a.endAt);
+}
+let autoSyncBusy=false;
+function syncAutomaticHabits(){
+ if(autoSyncBusy)return 0;
+ const b=bridge()?.read(),w=read();
+ if(!b||!Array.isArray(b.habitDefinitions)||!Array.isArray(w.sessions))return 0;
+ autoSyncBusy=true;let count=0;
+ try{
+  const today=local(Date.now()),checks=b.habitChecks||[];
+  for(const def of b.habitDefinitions){
+   if(!def.autoComplete||!def.matchText||def.targetMode==='quantity')continue;
+   const since=Number(def.autoSince)||Date.now();
+   // Process only days after the user enabled automation; no historical backfill.
+   const earliest=local(since);
+   const recent=[...new Set(w.sessions.filter(s=>s.status==='finished'&&Number(s.endAt)>=since&&s.endAt<=Date.now()).map(s=>local(s.endAt)))].filter(d=>d>=earliest&&d<=today).sort().slice(-7);
+   for(const day of recent){
+    if(checks.some(c=>c.habitId===def.id&&c.date===day))continue; // include dismissed / manual checks
+    const candidate=automaticHabitCandidates(def,day,w)[0];if(!candidate)continue;
+    const next={id:id(),habitId:def.id,date:day,done:true,createdAt:Date.now(),checkSource:'auto-linked-evidence',evidenceType:'session',evidenceSourceId:candidate.id,evidenceSimulated:false};
+    if(bridge()?.mutate('habitChecks','upsert',next)){checks.push(next);count++}
+   }
+  }
+ }catch(e){console.warn('LifeOS optional habit completion not available',e)}
+ finally{autoSyncBusy=false}
+ return count;
+}
 function evidenceSources(def,day){
  const term=normal(def.matchText).toLowerCase();
  if(!term)return[];
@@ -119,6 +159,7 @@ function evidenceMarkup(def,check,day){
 }
 function habitUI(){
  const host=$('lo32HabitHub');if(!host)return;
+ syncAutomaticHabits();
  const b=bridge()?.read()||{},defs=b.habitDefinitions||[],checks=b.habitChecks||[];
  const options=defs.slice().sort((a,b)=>Number(a.createdAt)-Number(b.createdAt));
  const cards=options.map(def=>{
@@ -128,7 +169,7 @@ function habitUI(){
   const action=existing?.done?'✓ Completed · Undo':due?'Mark completed':'Not scheduled';
   const goal=Number(def.targetAmount)>0?' · Target '+esc(def.targetAmount)+' '+esc(def.targetMode==='minutes'?'minutes':def.targetUnit||'units'):'';
   return '<article class="lo32-habit"><div class="lo33-habit-copy"><strong>'+esc(def.title)+'</strong>'+
-   '<small>'+esc(def.category)+' · Every '+esc(def.everyDays)+' day(s)'+goal+'</small>'+
+   '<small>'+esc(def.category)+' · Every '+esc(def.everyDays)+' day(s)'+goal+(def.autoComplete?' · Automatic (verified sessions)':'')+'</small>'+
    '<p>'+progress.completed+'/'+progress.due+' scheduled opportunities in 28 days · '+progress.streak+' consecutive completions'+
     (progress.rate===null?' · Insufficient past evidence':' · '+progress.rate+'% of past opportunities completed')+'</p>'+
    '<div class="lo33-meter"><i style="width:'+((progress.due?progress.completed/progress.due:0)*100).toFixed(1)+'%"></i></div>'+
@@ -147,6 +188,7 @@ function habitUI(){
  '<label>Progress target (optional)<select name="targetMode"><option value="completion">Completion only</option><option value="minutes">Minutes per scheduled day</option><option value="quantity">Quantity per scheduled day</option></select></label>'+
  '<label>Target amount (optional)<input name="targetAmount" type="number" min="0" max="10000" step="0.1" placeholder="e.g. 30"></label>'+
  '<label>Quantity unit (if needed)<input name="targetUnit" maxlength="30" placeholder="pages, repetitions"></label>'+
+ '<label class="lo196-auto-setting"><input name="autoComplete" type="checkbox"> Automatically confirm eligible finished activities (optional)</label>'+
  '<button class="btn primary" type="submit">'+(habitEditingId?'Save habit changes':'+ Add habit')+'</button>'+
  (habitEditingId?'<button class="btn outline" type="button" id="lo33CancelHabitEdit">Cancel editing</button>':'')+'</form></details>'+
  '<h4 class="lo188-habits-today">Your habit progress</h4><label class="lo32-habit-date">Review habit day<input type="date" id="lo32HabitDate" value="'+esc(habitSelectedDate)+'"></label>'+
@@ -162,20 +204,25 @@ function saveHabit(form){
  const rawAmount=form.elements.namedItem('targetAmount').value;
  const targetAmount=rawAmount===''?null:Number(rawAmount);
  const targetUnit=normal(form.elements.namedItem('targetUnit').value).slice(0,30);
+ const autoComplete=!!form.elements.namedItem('autoComplete')?.checked;
  if(!title||title.length>80||!Number.isInteger(everyDays)||everyDays<1||everyDays>30||!/^\d{4}-\d{2}-\d{2}$/.test(startDate)||startDate>local(Date.now())||
   !['completion','minutes','quantity'].includes(targetMode)||targetAmount!==null&&(!Number.isFinite(targetAmount)||targetAmount<=0||targetAmount>10000)||
-  targetMode!=='completion'&&targetAmount===null||targetMode==='quantity'&&!targetUnit)
+  targetMode!=='completion'&&targetAmount===null||targetMode==='quantity'&&!targetUnit||autoComplete&&(!matchText||targetMode==='quantity'))
   return alert('Check the habit name, interval and optional progress target.');
  const prior=habitEditingId?(bridge()?.read().habitDefinitions||[]).find(x=>x.id===habitEditingId):null;
  const item={id:prior?.id||id(),title,category,everyDays,matchText,
-  targetMode,targetAmount,targetUnit,startDate,createdAt:prior?.createdAt||Date.now()};
+  targetMode,targetAmount,targetUnit,startDate,createdAt:prior?.createdAt||Date.now(),autoComplete,
+  autoSince:autoComplete?(prior?.autoComplete&&prior.autoSince||Date.now()):null};
  if(!bridge()?.mutate('habitDefinitions','upsert',item))return alert('Habit could not be saved.');
  habitEditingId=null;habitUI();
 }
 function toggleHabit(idValue,evidence){
  const b=bridge()?.read()||{},def=b.habitDefinitions?.find(x=>x.id===idValue);if(!def)return;
  const current=b.habitChecks.find(c=>c.habitId===idValue&&c.date===habitSelectedDate);
- if(current){
+ if(current?.done&&current.checkSource==='auto-linked-evidence'){
+  const dismissed={...current,done:false,checkSource:'auto-dismissed',updatedAt:Date.now()};
+  if(!bridge()?.mutate('habitChecks','upsert',dismissed))return alert('Could not undo automatic habit check.');
+ }else if(current?.done){
   if(!bridge()?.mutate('habitChecks','remove',current))return alert('Could not undo habit check.');
  }else{
   const next={id:id(),habitId:idValue,date:habitSelectedDate,done:true,createdAt:Date.now(),checkSource:evidence?'linked-evidence':'manual',
@@ -259,6 +306,7 @@ function setup(){
     set('title',def.title);set('category',def.category);set('everyDays',def.everyDays);
     set('matchText',def.matchText);set('targetMode',def.targetMode||'completion');
     set('targetAmount',def.targetAmount);set('targetUnit',def.targetUnit);set('startDate',def.startDate||local(def.createdAt));
+    const auto=form?.elements.namedItem('autoComplete');if(auto)auto.checked=!!def.autoComplete;
     form?.scrollIntoView({behavior:'smooth',block:'start'});return
    }
    if(button.dataset.lo32Check)toggleHabit(button.dataset.lo32Check);
@@ -325,6 +373,8 @@ function setup(){
   if(e.target.closest('#lifeosNavigation'))setTimeout(()=>{timer();habitUI();friendsUI()},100);
  });
  document.addEventListener('visibilitychange',()=>{timer();if(!document.hidden){habitUI();friendsUI()}});
+ window.addEventListener('lifeos-v77-tracking-changed',()=>{const updated=syncAutomaticHabits();if(updated)habitUI()});
+ window.addEventListener('focus',()=>{if(syncAutomaticHabits())habitUI()});
  window.setInterval(timer,1000);
  window.setInterval(()=>{
   if(document.hidden)return;
