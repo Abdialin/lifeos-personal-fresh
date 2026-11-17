@@ -109,9 +109,9 @@ const clock=t=>new Date(t).toLocaleTimeString(undefined,{hour:'2-digit',minute:'
 const sample=s=>!!(s.seedBatch||s.assumed||s.isExample||s.developmentExample||['development-starter','development-seed','assumed-demo'].includes(s.source));
 const kindOf=name=>{
  const n=String(name||'').toLowerCase();
- if(/\\b(cooking|cook|meal prep|food prep|matlagning|laga mat)\\b/.test(n))return 'preparing';
- if(/\\b(eating|meal|breakfast|lunch|dinner|snack|eat|äta|måltid|frukost|middag|lunch)\\b/.test(n))return 'eating';
- if(/\\b(gym|workout|training|strength|fitness|exercise|running|run|jogging|walking|walk|boxing|boxning|cycling|swimming|yoga|träning|träna|promenad|löpning|styrketräning)\\b/.test(n))return 'fitness';
+ if(/\b(cooking|cook|meal prep|food prep|matlagning|laga mat)\b/.test(n))return 'preparing';
+ if(/\b(eating|meal|breakfast|lunch|dinner|snack|eat|äta|måltid|frukost|middag|lunch)\b/.test(n))return 'eating';
+ if(/\b(gym|workout|training|strength|fitness|exercise|running|run|jogging|walking|walk|boxing|boxning|cycling|swimming|yoga|träning|träna|promenad|löpning|styrketräning)\b/.test(n))return 'fitness';
  return null;
 };
 function evidenceParts(s,now=Date.now()){
