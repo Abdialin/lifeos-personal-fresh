@@ -217,10 +217,63 @@ function insightRecommendations(workspace,now=Date.now()){
  if(!evidence.length)evidence.push({title:'Build a stronger evidence baseline',confidence:'Limited',kind:'baseline',detail:'There is not yet a repeated pattern strong enough to justify a schedule suggestion.',basis:d.loggedDays+' of the last seven complete days have recorded activity.',suggestion:'Continue tracking normally; LifeOS will compare completed days without treating missing records as missed commitments.'});
  return {confidence,evidence:evidence.slice(0,3),sampleDays:d.loggedDays,previousDays:d.previousDays};
 }
+
+const FB186='lifeos.personal.insight-feedback.v186';
+function median186(xs){const a=xs.slice().sort((a,b)=>a-b),k=Math.floor(a.length/2);return a.length?(a.length%2?a[k]:(a[k-1]+a[k])/2):NaN}
+function dayType186(day,workspace){
+ const work=/\b(work|shift|security|job|väktare|arbete)\b/i;
+ const intervals=(workspace.schedule||[]).filter(x=>work.test(String(x.name||''))&&x.status!=='cancelled').map(x=>[Math.max(day.a,Number(x.startAt)),Math.min(day.b,Number(x.endAt))]).filter(([a,b])=>Number.isFinite(a)&&Number.isFinite(b)&&b>a);
+ const planned=merge(intervals).reduce((n,[a,b])=>n+b-a,0);
+ const recorded=merge(day.records.filter(r=>work.test(r.name)).map(r=>[r.start,r.end])).reduce((n,[a,b])=>n+b-a,0);
+ if(Math.max(recorded,planned)>=4*3600000)return 'Workday evidence';
+ const dow=new Date(day.a).getDay();return dow===0||dow===6?'Weekend, no shift evidence':'Weekday, no shift evidence';
+}
+function newInsights186(workspace,now=Date.now()){
+ const d=insightsDigestData(workspace,now),complete=d.days,types=new Map();
+ for(const day of complete){if(!day.uniqueMs)continue;const name=dayType186(day,workspace);if(!types.has(name))types.set(name,[]);types.get(name).push(day.uniqueMs)}
+ const dayTypes=[...types].map(([name,ms])=>({name,count:ms.length,medianMs:median186(ms)}));
+ const predictionRows=[];
+ const candidates=(workspace.sessions||[]).filter(s=>real(s)&&s.status==='finished');
+ const byName=new Map();
+ for(const item of candidates){
+  const name=String(item.name||'').trim(),duration=spans(item,now).reduce((n,[a,b])=>n+b-a,0);
+  if(!name||duration<5*60000||duration>12*3600000||!Number.isFinite(duration))continue;
+  if(!byName.has(name.toLowerCase()))byName.set(name.toLowerCase(),[]);
+  byName.get(name.toLowerCase()).push({name,duration,end:Number(item.endAt)||Math.max(...spans(item,now).map(x=>x[1]))});
+ }
+ for(const group of byName.values()){
+  const selected=group.sort((a,b)=>b.end-a.end).slice(0,14);
+  if(selected.length<4)continue;
+  const values=selected.map(x=>x.duration),med=median186(values),p25=median186(values.filter(x=>x<=med)),p75=median186(values.filter(x=>x>=med));
+  if(!Number.isFinite(med)||med<5*60000)continue;
+  const spread=(p75-p25)/med;
+  const confidence=selected.length>=8&&spread<=0.35?'Moderate':'Limited';
+  predictionRows.push({name:selected[0].name,medianMs:med,lowMs:p25,highMs:p75,count:selected.length,confidence,spread});
+ }
+ predictionRows.sort((a,b)=>b.count-a.count);
+ const typeSummaries=dayTypes.filter(x=>x.count>=3);
+ const suggestions=[];
+ if(predictionRows.length){
+  const x=predictionRows[0];
+  suggestions.push({id:'duration:'+x.name.toLowerCase(),kind:'duration',confidence:x.confidence,title:'Typical activity duration: '+x.name,detail:'The median of '+x.count+' completed sessions is '+fmt(x.medianMs/M)+'. Observed central range: '+fmt(x.lowMs/M)+'–'+fmt(x.highMs/M)+'.',why:'Calculated from completed, non-example active timer segments (last 14 sessions). Paused periods do not count. Wide variation lowers confidence.',action:'Compare this range with your next planned duration; only change your plan if it fits your circumstances.'});
+ }
+ if(typeSummaries.length>=2){
+  typeSummaries.sort((a,b)=>b.count-a.count);
+  const a=typeSummaries[0],b=typeSummaries[1];
+  suggestions.push({id:'daytypes:'+a.name+':'+b.name,kind:'daytype',confidence:a.count>=4&&b.count>=4?'Moderate':'Limited',title:'Different day types show different tracking patterns',detail:a.name+': '+fmt(a.medianMs/M)+' typical unique time ('+a.count+' days). '+b.name+': '+fmt(b.medianMs/M)+' ('+b.count+' days).',why:'Day types are inferred from work plans/recorded shifts (four hours or more) or calendar weekdays. They are not verified roster labels; only days with records are compared.',action:'Review workdays separately from other days before adjusting goals or schedules.'});
+ }
+ if(!suggestions.length)suggestions.push({id:'baseline',kind:'baseline',confidence:'Limited',title:'More evidence is needed for personalized predictions',detail:'No activity yet has four qualifying completed sessions, or day types lack three recorded days each.',why:'Predictions require repeated comparable records; estimated or unlogged time cannot substitute for completed sessions.',action:'Continue tracking normally. Your schedule will not change automatically.'});
+ return {suggestions:suggestions.slice(0,2),dayTypes,predictions:predictionRows};
+}
+function feedback186(){const data=load(FB186,{});return data&&typeof data==='object'&&!Array.isArray(data)?data:{}}
+function updateFeedback186(id,status){
+ const valid=['useful','not-relevant','later'];if(!valid.includes(status)||typeof id!=='string'||id.length>180)return false;
+ try{const current=feedback186();current[id]={status,updatedAt:Date.now()};store(FB186,current);return true}catch{return false}
+}
 function mountInsightsDigest(){
  if($('lo184-insights-digest')||!$('lifeosViewTitle'))return;
  const hub=document.createElement('section');hub.id='lo184-insights-digest';hub.className='l184-digest';
- hub.innerHTML='<div class="l184-kicker">YOUR WEEK · INTERPRETED</div><h2>What your tracking reveals</h2><p class="l184-lead">Patterns and changes from completed days—not another activity history.</p><div class="l184-grid" id="lo184-metrics"></div><div class="l184-findings" id="lo184-findings"></div><div class="l185-recommendations" id="lo185-recommendations"></div><div class="l184-actions"><button type="button" id="lo184-detail-toggle" aria-expanded="false">Explore advanced reports ↓</button><button type="button" id="lo184-track-link">Open activity history ↗</button></div><p class="l184-disclaimer">Based on recorded evidence. Missing time remains unknown; no schedule changes are made automatically.</p>';
+ hub.innerHTML='<div class="l184-kicker">YOUR WEEK · INTERPRETED</div><h2>What your tracking reveals</h2><p class="l184-lead">Patterns and changes from completed days—not another activity history.</p><div class="l184-grid" id="lo184-metrics"></div><div class="l184-findings" id="lo184-findings"></div><div class="l185-recommendations" id="lo185-recommendations"></div><div class="l186-recommendations" id="lo186-recommendations"></div><div class="l184-actions"><button type="button" id="lo184-detail-toggle" aria-expanded="false">Explore advanced reports ↓</button><button type="button" id="lo184-track-link">Open activity history ↗</button></div><p class="l184-disclaimer">Based on recorded evidence. Missing time remains unknown; no schedule changes are made automatically.</p>';
  $('lifeosViewTitle').after(hub);
  const advanced=$('lo184-detail-toggle');
  const showAdvanced=value=>{document.body.dataset.lo184Advanced=value?'yes':'no';advanced.setAttribute('aria-expanded',String(value));advanced.textContent=value?'Hide advanced reports ↑':'Explore advanced reports ↓'};
@@ -252,7 +305,15 @@ function mountInsightsDigest(){
   $('lo185-recommendations').innerHTML='<div class="l185-title"><h3>Patterns worth reviewing</h3><span>'+esc(suggestions.confidence)+' evidence</span></div>'+
    suggestions.evidence.map((x,i)=>'<article class="l185-suggestion"><div class="l185-suggestion-head"><strong>'+esc(x.title)+'</strong><small>'+esc(x.confidence)+' confidence</small></div><p>'+esc(x.detail)+'</p><details><summary>Why this finding?</summary><p>'+esc(x.basis)+'</p><p><b>Suggested next step:</b> '+esc(x.suggestion)+'</p></details><button type="button" data-l185-review="'+i+'">Review in '+(x.kind==='overlap'?'Track':'Plan')+' ↗</button></article>').join('')+
    '<p class="l185-note">Suggestions are explanatory only. No timers, goals or schedule items are changed.</p>';
+  const tailored=newInsights186(read()),responses=feedback186();
+  $('lo186-recommendations').innerHTML='<div class="l185-title"><h3>Personalized patterns</h3><span>Based on completed records</span></div>'+
+   tailored.suggestions.filter(x=>responses[x.id]?.status!=='not-relevant').map(x=>{
+    const state=responses[x.id]?.status;
+    return '<article class="l185-suggestion l186-card"><div class="l185-suggestion-head"><strong>'+esc(x.title)+'</strong><small>'+esc(x.confidence)+' confidence</small></div><p>'+esc(x.detail)+'</p><details><summary>Evidence & suggested next step</summary><p>'+esc(x.why)+'</p><p>'+esc(x.action)+'</p></details><div class="l186-feedback"><button data-l186-feedback="useful" data-l186-id="'+esc(x.id)+'">Useful</button><button data-l186-feedback="not-relevant" data-l186-id="'+esc(x.id)+'">Not relevant</button><button data-l186-feedback="later" data-l186-id="'+esc(x.id)+'">Later</button></div>'+(state?'<small class="l186-saved">Your feedback: '+esc(state)+'</small>':'')+'</article>';
+   }).join('')+'<p class="l185-note">Feedback is stored on this device only and changes which suggestions are shown; it does not change goals, activity records, or plans.</p>';
+
  };
+ hub.addEventListener('click',e=>{const button=e.target.closest('[data-l186-feedback]');if(!button)return;const id=button.dataset.l186Id,status=button.dataset.l186Feedback;if(updateFeedback186(id,status))render()});
  advanced.addEventListener('click',()=>{showAdvanced(document.body.dataset.lo184Advanced!=='yes');if(document.body.dataset.lo184Advanced==='yes')setTimeout(()=>$('analyticsPanel')?.scrollIntoView({block:'start',behavior:'smooth'}),50)});
  hub.addEventListener('click',e=>{const b=e.target.closest('[data-l185-review]');if(!b)return;const index=Number(b.dataset.l185Review),item=insightRecommendations(read()).evidence[index];const destination=item?.kind==='overlap'?'tracking':'schedule';$('lifeosNavigation')?.querySelector('[data-view="'+destination+'"]')?.click();});
  $('lo184-track-link').addEventListener('click',()=>$('lifeosNavigation')?.querySelector('[data-view="tracking"]')?.click());
@@ -260,7 +321,7 @@ function mountInsightsDigest(){
  window.addEventListener('focus',()=>{if(document.body.dataset.lifeosView==='analytics')render()});
  window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='analytics')render()});
  showAdvanced(false);render();
- window.LifeOSInsightsDigestV184={getData:insightsDigestData,getRecommendations:insightRecommendations,refresh:render};
+ window.LifeOSInsightsDigestV184={getData:insightsDigestData,getRecommendations:insightRecommendations,getPersonalized:newInsights186,getFeedback:feedback186,refresh:render};
 }
 function init(){mountReports();mountLifeHub();mountInsightsDigest();if($('lo170-day'))return;let today=$('todayOverview');if(today){let el=document.createElement('section');el.id='lo170-day';el.className='l170-panel';today.prepend(el);day()}let tracking=$('trackPastPanel');if(tracking){let el=document.createElement('section');el.id='lo170-review';el.className='l170-panel';(document.getElementById('trackActivePanel')||tracking).prepend(el);review()}let life=$('personalActivityPanel');if(life){let el=document.createElement('section');el.id='lo170-notes';el.className='l170-panel';life.prepend(el);notes();let group=document.createElement('section');group.id='lo170-groups';group.className='l170-panel';el.after(group);groups()}document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();if(document.body.dataset.lifeosView==='dashboard')day()}});window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='dashboard')day();review()});setInterval(tick,30000)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,1800),{once:true});else setTimeout(init,1800);
