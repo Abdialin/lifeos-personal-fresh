@@ -184,3 +184,13 @@ body[data-lifeos-view="analytics"][data-lo184-advanced="yes"] #lo31Lifestyle {di
 .l185-suggestion button{border:1px solid #2f8672;background:#0c4e48;color:#e6fff6;border-radius:9px;padding:9px 12px;min-height:37px;font-size:11px;font-weight:800;margin-top:10px;cursor:pointer}
 .l185-note{font-size:10px;color:#94b6bd;line-height:1.5;margin:13px 0}
 @media(max-width:400px){.l185-title,.l185-suggestion-head{flex-wrap:wrap}}
+
+/* V186: concise predictions, evidence and non-mutating feedback. */
+.l186-recommendations{border-top:1px solid #294e5d;margin-top:18px;padding-top:14px}
+.l186-card{margin:9px 0 12px}
+.l186-card .l185-suggestion-head{flex-wrap:wrap}
+.l186-card .l185-suggestion-head small{border:1px solid #347766;padding:4px 8px;border-radius:99px}
+.l186-feedback{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+.l186-feedback button{background:#102c3a!important;color:#e4f6f2!important;border:1px solid #47747b!important;padding:8px 10px!important;margin:0!important;min-height:38px}
+.l186-feedback button:focus-visible{outline:2px solid #70d7bd;outline-offset:2px}
+.l186-saved{display:block;color:#9bd0bf;font-size:10px;margin-top:8px}
