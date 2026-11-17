@@ -62,7 +62,7 @@ function show(){
  const meals=model.meals||[],waterEntries=model.waterIntake||[],goals=cleanSetting(model.nutritionSettings);
  const day=state.day||today(),selected=meals.filter(m=>m.date===day),water=waterEntries.filter(w=>w.date===day);
  const daily=daysOfWeek(),max=Math.max(1,...daily.map(d=>meals.filter(x=>x.date===d.day).length));
- const goalWasOpen=$('lo25GoalDetails')?.open ?? true,reminderWasOpen=$('lo25RemindersForm')?.closest('details')?.open ?? false;
+ const goalWasOpen=$('lo25GoalDetails')?.open ?? false,reminderWasOpen=$('lo25RemindersForm')?.closest('details')?.open ?? false;
  const todayMeals=meals.filter(m=>m.date===today()),todayWater=waterEntries.filter(w=>w.date===today());
  const bars=daily.map(d=>{const amount=meals.filter(m=>m.date===d.day).length;return '<button type="button" class="lo25-day '+(day===d.day?'selected':'')+'" data-lo25-day="'+d.day+'" aria-pressed="'+(day===d.day?'true':'false')+'" aria-label="'+esc(pretty(d.day)+': '+amount+' meals')+'"><b>'+amount+'</b><span class="lo25-bar"><i style="height:'+Math.round(100*amount/max)+'%"></i></span><small>'+esc(d.short)+'</small></button>'}).join('');
  const knownToday=known(todayMeals,'calories').length;
