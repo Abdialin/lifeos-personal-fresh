@@ -15,3 +15,64 @@ body[data-lifeos-view="goals"] #gv161-app.gv163-editing:not(.gv169-reviewing) #g
 body[data-lifeos-view="goals"] #gv161-app.gv163-editing #gv161-legacy #goalReview>div{max-width:100%;overflow-wrap:anywhere}
 body[data-lifeos-view="goals"] #gv161-app #gv161-history .gv167-historydetail{margin:8px 0}
 @media(max-width:420px){body[data-lifeos-view="goals"] #gv161-app .gv165-reviewgrid .gv162-reviewcard{padding:9px!important}}
+
+/* V172 — focused Goals editor: a compact two-mode sheet, no long duplicate dashboard. */
+body[data-lifeos-view="goals"] #gv161-app.gv163-editing #gv161-legacy{
+ padding:0!important;inset:8px 7px calc(8px + env(safe-area-inset-bottom,0px))!important;
+ max-width:650px!important;overflow-y:auto!important;scroll-padding-top:115px;
+}
+#gv161-app #gv161-legacy .gv172-toolbar{
+ position:sticky;top:0;z-index:8;display:flex;align-items:center;gap:10px;
+ background:#061629;padding:11px 12px 5px;
+}
+body[data-lifeos-view="goals"] #gv161-app.gv163-editing .gv172-toolbar .gv163-close{
+ position:static!important;flex:0 0 auto;min-height:38px!important;
+ padding:7px 13px!important;font-size:13px!important;border-radius:10px!important;
+}
+#gv161-app .gv172-toolbar>span{font-size:15px;font-weight:800;color:#f2faf8}
+#gv161-app .gv172-switch{position:sticky;top:54px;z-index:8;display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:6px 12px 12px;
+ background:#061629;border-bottom:1px solid #254c5b}
+#gv161-app .gv172-switch button{min-height:39px;padding:8px;border:1px solid #335a6b;
+ background:#0b2637;color:#b7ced6;border-radius:11px;font-weight:750;font-size:12px}
+#gv161-app.gv163-editing:not(.gv169-reviewing) .gv172-switch [data-gv172-mode="edit"],
+#gv161-app.gv169-reviewing .gv172-switch [data-gv172-mode="review"]{background:#075c4d;color:#fff;border-color:#208872}
+body[data-lifeos-view="goals"] #gv161-app.gv163-editing #gv161-legacy>.panel{
+ padding:14px!important;border:0!important;margin:0!important;box-shadow:none!important
+}
+#gv161-app.gv163-editing #gv161-legacy>.panel>h2,
+#gv161-app.gv163-editing #gv161-legacy>.panel>p.sub:first-of-type,
+#gv161-app.gv163-editing #gv161-legacy>.panel>.divider,
+#gv161-app.gv163-editing #gv161-legacy>.panel>h3{display:none!important}
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #lifeosGoalSuggestions{margin:0 0 12px;padding:10px!important}
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #lifeosGoalSuggestions>.note{display:none}
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #goalList{
+ max-height:220px!important;overflow:auto!important;margin:14px 0!important;
+ border-top:1px solid #315469;padding-top:9px
+}
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #goalForm{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:7px 10px;align-items:end;
+}
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #goalForm>label,
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #goalForm>.note,
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #goalForm>button{
+ grid-column:1/-1;
+}
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #goalForm .field{
+ min-width:0;width:100%;box-sizing:border-box;max-width:100%;margin:0!important
+}
+#gv161-app.gv163-editing.gv169-reviewing #gv161-legacy #goalForm,
+#gv161-app.gv163-editing.gv169-reviewing #gv161-legacy #lifeosGoalSuggestions,
+#gv161-app.gv163-editing.gv169-reviewing #gv161-legacy #goalList{display:none!important}
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #weeklyCapacity,
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #reviewRecovery,
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy label[for="weeklyCapacity"],
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy label[for="reviewRecovery"],
+#gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #goalReview{display:none!important}
+#gv161-app.gv163-editing.gv169-reviewing #gv161-legacy #goalReview{display:block!important}
+#gv161-app.gv163-editing.gv169-reviewing #gv161-legacy #goalReview>div{max-width:100%!important}
+#gv161-app.gv163-editing #gv161-legacy .field{min-height:43px!important;font-size:14px!important}
+@media(max-width:410px){
+ #gv161-app.gv163-editing:not(.gv169-reviewing) #gv161-legacy #goalForm{grid-template-columns:minmax(0,1fr)}
+}
