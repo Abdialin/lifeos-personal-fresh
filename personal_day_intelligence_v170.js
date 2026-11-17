@@ -175,7 +175,60 @@ function mountLifeHub(){
  hub.addEventListener('click',e=>{if(e.target.closest('[data-l182-target]'))render()});
  window.LifeOSLifeHubV182={refresh:render};
 }
-function init(){mountReports();mountLifeHub();if($('lo170-day'))return;let today=$('todayOverview');if(today){let el=document.createElement('section');el.id='lo170-day';el.className='l170-panel';today.prepend(el);day()}let tracking=$('trackPastPanel');if(tracking){let el=document.createElement('section');el.id='lo170-review';el.className='l170-panel';(document.getElementById('trackActivePanel')||tracking).prepend(el);review()}let life=$('personalActivityPanel');if(life){let el=document.createElement('section');el.id='lo170-notes';el.className='l170-panel';life.prepend(el);notes();let group=document.createElement('section');group.id='lo170-groups';group.className='l170-panel';el.after(group);groups()}document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();if(document.body.dataset.lifeosView==='dashboard')day()}});window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='dashboard')day();review()});setInterval(tick,30000)}
+
+function insightsDigestData(workspace,now=Date.now()){
+ const today=start(now),days=[];
+ for(let i=14;i>=1;i--){const date=new Date(today);date.setDate(date.getDate()-i);days.push(dailyReport(date.getTime(),now,workspace))}
+ const older=days.slice(0,7),recent=days.slice(7);
+ const total=(items,key)=>items.reduce((n,x)=>n+x[key],0);
+ const unique=total(recent,'uniqueMs'),olderUnique=total(older,'uniqueMs');
+ const loggedDays=recent.filter(x=>x.uniqueMs>0).length,previousDays=older.filter(x=>x.uniqueMs>0).length;
+ const byActivity=new Map();
+ for(const d of recent)for(const r of d.records)byActivity.set(r.name,(byActivity.get(r.name)||0)+r.ms);
+ const activities=[...byActivity].sort((a,b)=>b[1]-a[1]);
+ return {unique,olderUnique,loggedDays,previousDays,overlaps:total(recent,'overlapMs'),missing:total(recent,'unloggedMs'),activities,days:recent};
+}
+function mountInsightsDigest(){
+ if($('lo184-insights-digest')||!$('lifeosViewTitle'))return;
+ const hub=document.createElement('section');hub.id='lo184-insights-digest';hub.className='l184-digest';
+ hub.innerHTML='<div class="l184-kicker">YOUR WEEK · INTERPRETED</div><h2>What your tracking reveals</h2><p class="l184-lead">Patterns and changes from completed days—not another activity history.</p><div class="l184-grid" id="lo184-metrics"></div><div class="l184-findings" id="lo184-findings"></div><div class="l184-actions"><button type="button" id="lo184-detail-toggle" aria-expanded="false">Explore advanced reports ↓</button><button type="button" id="lo184-track-link">Open activity history ↗</button></div><p class="l184-disclaimer">Based on recorded evidence. Missing time remains unknown; no schedule changes are made automatically.</p>';
+ $('lifeosViewTitle').after(hub);
+ const advanced=$('lo184-detail-toggle');
+ const showAdvanced=value=>{document.body.dataset.lo184Advanced=value?'yes':'no';advanced.setAttribute('aria-expanded',String(value));advanced.textContent=value?'Hide advanced reports ↑':'Explore advanced reports ↓'};
+ const metric=(label,value,sub)=>'<article class="l184-metric"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></article>';
+ const finding=(label,body)=>'<article class="l184-finding"><b>'+label+'</b><p>'+body+'</p></article>';
+ const hrs=ms=>(ms/3600000).toFixed(1)+'h';
+ const render=()=>{
+  const d=insightsDigestData(read());
+  const delta=d.unique-d.olderUnique;
+  const meaningful=d.loggedDays>=4&&d.previousDays>=4;
+  const trend=meaningful?(Math.abs(delta)<900000?'About the same':delta>0?'More tracked':'Less tracked'):'Not enough consistent days';
+  $('lo184-metrics').innerHTML=metric('Weekly tracking change',meaningful?(delta>0?'+':'')+hrs(delta):'—',meaningful?trend:'Requires 4 recorded days in each week')+
+  metric('Days with records',d.loggedDays+' / 7','Previous seven days: '+d.previousDays+' / 7')+
+  metric('Overlapping activity',hrs(d.overlaps),'Additional summed time, not extra hours in a day');
+  const findings=[];
+  if(d.activities.length) {
+   const [name,ms]=d.activities[0];
+   findings.push(finding('Largest recorded commitment',esc(name)+' accounts for '+hrs(ms)+' of summed activity during the last seven complete days. Parallel activities may also be recorded.'));
+  } else findings.push(finding('No recent tracking evidence','No qualifying finished or active periods were recorded during the last seven complete days.'));
+  if(meaningful)findings.push(finding('Change from the previous week',
+   (delta>=0?'Your uniquely recorded time increased by ':'Your uniquely recorded time decreased by ')+hrs(Math.abs(delta))+'. This measures tracking coverage, not productivity or wellbeing.'));
+  else findings.push(finding('Trend confidence is limited','A weekly comparison needs at least four days with records in each week. Missing days are unknown, not unsuccessful.'));
+  if(d.loggedDays>=4) {
+   const most=d.days.slice().sort((a,b)=>b.uniqueMs-a.uniqueMs)[0];
+   findings.push(finding('Day with most recorded coverage',esc(new Date(most.a).toLocaleDateString(undefined,{weekday:'long'}))+' had '+hrs(most.uniqueMs)+' of uniquely recorded activity. Check whether long sessions or overlaps need review.'));
+  }
+  $('lo184-findings').innerHTML=findings.join('');
+ };
+ advanced.addEventListener('click',()=>{showAdvanced(document.body.dataset.lo184Advanced!=='yes');if(document.body.dataset.lo184Advanced==='yes')setTimeout(()=>$('analyticsPanel')?.scrollIntoView({block:'start',behavior:'smooth'}),50)});
+ $('lo184-track-link').addEventListener('click',()=>$('lifeosNavigation')?.querySelector('[data-view="tracking"]')?.click());
+ $('lifeosNavigation')?.addEventListener('click',e=>{if(e.target.closest('[data-view="analytics"]')){showAdvanced(false);setTimeout(render,120)}});
+ window.addEventListener('focus',()=>{if(document.body.dataset.lifeosView==='analytics')render()});
+ window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='analytics')render()});
+ showAdvanced(false);render();
+ window.LifeOSInsightsDigestV184={getData:insightsDigestData,refresh:render};
+}
+function init(){mountReports();mountLifeHub();mountInsightsDigest();if($('lo170-day'))return;let today=$('todayOverview');if(today){let el=document.createElement('section');el.id='lo170-day';el.className='l170-panel';today.prepend(el);day()}let tracking=$('trackPastPanel');if(tracking){let el=document.createElement('section');el.id='lo170-review';el.className='l170-panel';(document.getElementById('trackActivePanel')||tracking).prepend(el);review()}let life=$('personalActivityPanel');if(life){let el=document.createElement('section');el.id='lo170-notes';el.className='l170-panel';life.prepend(el);notes();let group=document.createElement('section');group.id='lo170-groups';group.className='l170-panel';el.after(group);groups()}document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();if(document.body.dataset.lifeosView==='dashboard')day()}});window.addEventListener('lifeos-v77-tracking-changed',()=>{if(document.body.dataset.lifeosView==='dashboard')day();review()});setInterval(tick,30000)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,1800),{once:true});else setTimeout(init,1800);
 window.LifeOSDayIntelligenceV170={snapshot,spans,merge,mins,daySegments,dailyReport,planComparison};
 })();
