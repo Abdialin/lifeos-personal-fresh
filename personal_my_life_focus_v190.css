@@ -29,3 +29,25 @@ body[data-lifeos-view="life"] .lo190-toolbar button{white-space:nowrap}
  body[data-lifeos-view="life"] #lifeosFitnessDashboard .lo9-grid>*{min-width:0}
  body[data-lifeos-view="life"] .lo10-chart-wrap svg{max-width:100%}
 }
+
+/* V192: progressive disclosure and accessible one-screen actions */
+body[data-lifeos-view="life"] .lo190-old-heading{display:none!important}
+body[data-lifeos-view="life"] .lo190-toolbar{margin-top:0;padding-top:4px}
+body[data-lifeos-view="life"] .lo190-actions-empty .lo190-actions{display:none}
+body[data-lifeos-view="life"] .lo192-editor{margin:12px 0;background:linear-gradient(145deg,#0a2233,#081728);border-color:#315f67}
+body[data-lifeos-view="life"] .lo192-editor>summary{min-height:35px;display:list-item;align-content:center}
+body[data-lifeos-view="life"] .lo192-editor[open]{padding-bottom:18px}
+body[data-lifeos-view="life"] .lo192-editor form{margin-top:12px}
+body[data-lifeos-view="life"] .lo192-editor .field,
+body[data-lifeos-view="life"] .lo192-editor input,
+body[data-lifeos-view="life"] .lo192-editor select,
+body[data-lifeos-view="life"] .lo192-editor textarea{max-width:100%;box-sizing:border-box}
+body[data-lifeos-view="life"] .lo190-group:not([open]){padding-block:11px}
+body[data-lifeos-view="life"] .lo190-group:focus-within{border-color:#66b6a5}
+body[data-lifeos-view="life"] .lo190-actions button:active{transform:translateY(1px)}
+@media(max-width:520px){
+ body[data-lifeos-view="life"] .lo190-toolbar{padding-bottom:8px}
+ body[data-lifeos-view="life"] .lo190-actions button{min-height:44px}
+ body[data-lifeos-view="life"] .lo192-editor{border-radius:12px}
+ body[data-lifeos-view="life"] .lo190-group summary{font-size:14px}
+}
