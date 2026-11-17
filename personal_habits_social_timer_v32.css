@@ -94,3 +94,14 @@ body:has(.modal:not([hidden])) #lo32ActiveTimer{display:none!important}
 body{scroll-padding-bottom:180px}
 #sessions details.lo17-session{scroll-margin-bottom:190px}
 @media(max-width:600px){#lo32ActiveTimer{gap:7px}#lo32ActiveTimer .lo32-timer-count{font-size:14px}#lo32ActiveTimer .lo32-timer-info strong{font-size:12px}#lo32ActiveTimer .lo32-open-tracker{font-size:11px;padding:7px}}
+
+/* V196 — explicit habit automation, no duplicate dashboard cards */
+body[data-lifeos-view="life"] .lo196-auto-setting{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;padding:13px 12px;border:1px solid #2d7566;border-radius:13px;background:#092c31;color:#d9f6e9;font-size:13px;font-weight:700;line-height:1.4}
+body[data-lifeos-view="life"] .lo196-auto-setting input{width:19px;height:19px;flex:0 0 auto;accent-color:#40bd96}
+body[data-lifeos-view="life"] .lo196-auto-setting small{flex-basis:100%;font-size:11px;font-weight:400;line-height:1.5;color:#9fc7bb;padding-left:29px}
+body[data-lifeos-view="life"] .lo32-habit-list{display:grid;gap:10px}
+body[data-lifeos-view="life"] .lo32-habit{padding:14px;border-radius:14px}
+body[data-lifeos-view="life"] .lo32-habit-actions button{min-height:40px}
+body[data-lifeos-view="life"] .lo33-evidence-panel summary{font-size:12px;line-height:1.4}
+body[data-lifeos-view="life"] .lo32-habit-date input{min-height:40px}
+@media(max-width:490px){body[data-lifeos-view="life"] .lo196-auto-setting{padding:11px}body[data-lifeos-view="life"] .lo32-habit-actions{gap:7px}}
