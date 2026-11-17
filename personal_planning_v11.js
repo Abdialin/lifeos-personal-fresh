@@ -9,27 +9,30 @@ const get=()=>{try{return window.lifeosReadOnlyWorkspace?.()||null}catch(_){retu
 let displayMonth=null,rendering=false;
 const byDay=s=>new Date(s+'T12:00:00');
 function mondayWeek(date){const d=byDay(date);d.setDate(d.getDate()+3-(d.getDay()+6)%7);const year=d.getFullYear(),four=new Date(year,0,4,12);return {year,week:1+Math.round(((d-four)/86400000-3+(four.getDay()+6)%7)/7)}}
+function recordedCalendarDays(workspace,now=Date.now()){
+ const days=new Set();
+ for(const session of workspace?.sessions||[]){
+  if(!session||!['finished','running','paused'].includes(session.status))continue;
+  const segments=Array.isArray(session.segments)&&session.segments.length?session.segments:[{start:session.startAt,end:session.endAt}];
+  for(const segment of segments){
+   const from=Number(segment?.start),until=segment?.end==null?(session.status==='running'?now:NaN):Number(segment.end);
+   if(!Number.isFinite(from)||!Number.isFinite(until)||until<=from)continue;
+   let p=from,guard=0;
+   while(p<until&&guard++<3700){
+    const d=new Date(p);
+    days.add(ymd(d));
+    p=Math.min(until,new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime());
+   }
+  }
+ }
+ return days;
+}
 function calendar(){
  const host=$('lo11ScheduleCalendar'),picker=$('scheduleDay');if(!host||!picker||rendering)return;
  const w=get();if(!w)return;const selected=picker.value||ymd(new Date());
  if(!displayMonth)displayMonth=selected.slice(0,7);
  const [year,month]=displayMonth.split('-').map(Number),first=new Date(year,month-1,1),monthLength=new Date(year,month,0).getDate(),offset=(first.getDay()+6)%7;
- // A recorded day is any local date touched by an active segment, not just the final end date.
- const sessions=new Set();
- for(const session of w.sessions||[]){
-  if(!session||!['finished','running','paused'].includes(session.status))continue;
-  const segments=Array.isArray(session.segments)?session.segments:[];
-  for(const segment of segments){
-   const from=Number(segment?.start),until=segment?.end==null?(session.status==='running'?Date.now():NaN):Number(segment.end);
-   if(!Number.isFinite(from)||!Number.isFinite(until)||until<=from)continue;
-   let p=from,guard=0;
-   while(p<until&&guard++<3700){
-    const d=new Date(p);
-    sessions.add(ymd(d));
-    p=Math.min(until,new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime());
-   }
-  }
- }
+ const sessions=recordedCalendarDays(w);
  const plans=new Set((w.schedule||[]).map(p=>ymd(new Date(p.startAt))));
  const tasks=new Set((w.todos||[]).filter(t=>t.due).map(t=>t.due));
  const header='<div class="lo11-calendar-top"><div><strong>Jump to a date</strong><small>Select any day to open its schedule and daily review</small></div><div class="lo11-calendar-controls"><button type="button" data-lo11-month="-1" aria-label="Previous month">‹</button><strong>'+esc(first.toLocaleDateString(undefined,{month:'long',year:'numeric'}))+'</strong><button type="button" data-lo11-month="1" aria-label="Next month">›</button><button type="button" data-lo11-today>Today</button></div></div>';
@@ -134,6 +137,6 @@ function init(){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();reminders()}});
  render();reminders();setInterval(()=>{if(!document.hidden)reminders()},30000);
 }
-window.lifeosPlanningV11={renderHistory:history,renderCalendar:calendar,renderTimedTasks:timedTasks};
+window.lifeosPlanningV11={renderHistory:history,renderCalendar:calendar,renderTimedTasks:timedTasks,recordedCalendarDays};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
