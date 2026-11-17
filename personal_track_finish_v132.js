@@ -22,7 +22,7 @@ function suspicious(name,minutes){
 function polishHistory(){
  const rootNode=$('history');if(!rootNode)return;
  for(const article of rootNode.querySelectorAll('.lo-history-item')){
-  if(article.dataset.lo132Ready)returnNext(article);
+  if(article.dataset.lo132Ready)continue;
   article.dataset.lo132Ready='1';
   const head=article.querySelector('.lo-history-entry'),foot=article.querySelector('.lo-history-foot'),actions=article.querySelector('.lo-history-actions');
   if(!head||!foot||!actions)continue;
@@ -30,18 +30,21 @@ function polishHistory(){
   const m=parseDuration(duration),warning=suspicious(title,m);
   const badge=el('span','lo132-type',/example|development/i.test(foot.querySelector('small')?.textContent||'')?'Example':/estimated/i.test(foot.querySelector('small')?.textContent||'')?'Estimated':'Recorded');
   head.append(badge);
-  const toggle=el('button','lo132-more','Details  +');toggle.type='button';toggle.setAttribute('aria-expanded','false');
+  const toggle=el('button','lo132-more','More actions');toggle.type='button';toggle.setAttribute('aria-expanded','false');
   toggle.setAttribute('aria-label','Show actions for '+title);
-  toggle.addEventListener('click',()=>{const open=article.classList.toggle('lo132-expanded');toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'Close  −':'Details  +'});
+  toggle.addEventListener('click',()=>{const open=article.classList.toggle('lo132-expanded');toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'Less actions':'More actions'});
   foot.append(toggle);
+  // Keep the timestamp correction action discoverable without expanding a long card.
+  const quickEdit=el('button','lo132-quick-edit','Edit time');quickEdit.type='button';quickEdit.dataset.act='edit';
+  quickEdit.dataset.id=actions.querySelector('[data-act="edit"]')?.dataset.id||'';
+  foot.append(quickEdit);
   if(warning){
    article.classList.add('lo132-review');
    const flag=el('button','lo132-flag','⚑ Review duration');flag.type='button';flag.title='Unusually long recorded session. No correction has been made.';
-   flag.addEventListener('click',()=>{article.classList.add('lo132-expanded');toggle.setAttribute('aria-expanded','true');toggle.textContent='Close  −';actions.querySelector('[data-act="details"]')?.click()});
+   flag.addEventListener('click',()=>{article.classList.add('lo132-expanded');toggle.setAttribute('aria-expanded','true');toggle.textContent='Less actions';actions.querySelector('[data-act="details"]')?.click()});
    head.append(flag);
   }
  }
- function returnNext(node){return node}
  for(const day of rootNode.querySelectorAll('.lo-history-day')){
   if(day.dataset.lo132Ready)continue;day.dataset.lo132Ready='1';
   const label=day.querySelector(':scope > summary > small');
