@@ -125,3 +125,32 @@ The GitHub Actions workflow under `.github/workflows/personal-android-build.yml`
 Device screenshots show Android companion opened and signed in, with an empty Today dashboard and header overlapping the Android status bar. A new WebView has a separate localStorage profile from Samsung Browser. Website HTTP authentication is not the same as connecting LifeOS Cloud sync (see Settings & data → Cloud sync). These observations **do not establish that original records have been deleted**. Do not upload the empty Android workspace to the server, delete Samsung Browser data, reset the database or overwrite the former workspace.
 
 V233 adds Android 11+ native WindowInsets padding to keep the WebView away from system bars, compact header CSS, and a read-only Android-only first-run explanatory banner when the local workspace is empty. The banner directs users to inspect sync/recovery tools, without initiating any sync or storage write. The Android app opens at Today. Test on the same device after building a new V233 APK; web-only changes can be refreshed without reinstalling. The V233 compiled APK and real device rendering still need verification.
+
+## V234 safe adoption of existing cloud history on a freshly installed Android device
+
+Observed November 18, 2026: PostgreSQL revision 92 held 384 sessions, 772 events, 122 scheduled activities, 11 to-dos, 54 workouts, 144 meals, 3 goals, 28 personal logs, 12 body measurements, plus other collections. New Android WebView had zero local records, one queued local operation and no trusted base revision. Existing guarded sync correctly refused to upload the empty workspace.
+
+V234 adds a narrowly limited **Settings & data → Cloud sync → Restore your existing server history** flow. It requires:
+- A valid authenticated read of current `/api/state`.
+- No local records, including unknown non-empty array collections.
+- Exactly one queued local operation whose complete saved snapshot equals the empty local workspace.
+- A `null` acknowledged revision with dirty local state.
+- A nonempty server workspace with a valid positive integer revision.
+- A JSON backup of the complete local recovery checkpoint/journal and a separate JSON backup of the complete server workspace.
+- Explicit backup completion checks and typed `RESTORE SERVER` confirmation.
+- A second server read and revalidation of the exact revision and local queue before any local change.
+- One atomic local-only checkpoint replacing the empty initialization journal with the server workspace and trusted revision.
+
+No API PUT, overwrite, or automatic replay occurs. Existing PostgreSQL records remain untouched. If the queue is not exactly the initialization snapshot, no restoration is offered and manual reconciliation is needed.
+
+**Android backup limitation addressed:** Ordinary browser Blob downloads cannot be assumed to work in WebView. V234 uses the Android Storage Access Framework (`ACTION_CREATE_DOCUMENT`) to let the user choose files and verifies saved bytes by reopening each document before the web screen receives success. This requires the updated **V234 APK**; the V233 APK deliberately cannot use the guarded adoption route. A failed or cancelled save leaves the restore button disabled. Both exported JSON files contain private activity history: store them securely and do not share them publicly.
+
+To test after an APK build is confirmed:
+1. Install **0.7-v234** by updating the existing debug-signed app. Do not uninstall or clear app data; preserve recovery data first if Android requests an uninstall.
+2. Open Settings & data → Cloud sync and supply the existing private sync token. Do not put the token into screenshots or share it in chat.
+3. Click **1 · Check eligibility & export both copies**. Choose secure locations for the local and server JSON files. Verify both documents exist under My Files.
+4. If and only if eligibility passes, click **2 · Restore existing server history locally**, confirm both backups and type `RESTORE SERVER`.
+5. Confirm the server history appears under Today, Track, Plan, Insights and My Life, and verify the current server revision by a read-only check.
+6. Reconnect Cloud sync to establish future synchronization only after checking the restored data and any remaining warnings.
+
+**Do not press Upload local data on the empty Android installation**. Never remove its recovery queue manually or reset the server database to work around this guard.
