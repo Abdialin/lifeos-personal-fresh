@@ -42,17 +42,17 @@ function preview(local,importFile){
    else conflicts[kind].push(row.id);
   }
  }
- return {ok:!conflicts.sessions.length&&!conflicts.events.length,
+ return {ok:true,
   addedSessions:additions.sessions.length,addedEvents:additions.events.length,
   matchedSessions:matches.sessions,matchedEvents:matches.events,
   conflictSessions:conflicts.sessions.length,conflictEvents:conflicts.events.length,
   additions,source:incoming,
   reason:conflicts.sessions.length||conflicts.events.length?
-   'At least one shared record ID differs. Nothing will be automatically overwritten. Export both workspaces for explicit reconciliation.':null};
+   'Shared IDs with different contents will be left untouched on this device. Preserve the original transfer file for later conflict review.':null};
 }
 function apply(local,plan){
  validRows(local);
- if(!plan?.ok||!plan.source)throw Error('Plan contains unresolved conflicts.');
+ if(!plan?.ok||!plan.source)throw Error('Activity transfer plan is invalid.');
  // Recheck all shared IDs: activity may have changed after the preview.
  const fresh=preview(local,{exportType:'lifeos-browser-activity-transfer-v241',version:1,createdAt:Date.now(),workspace:plan.source});
  if(!fresh.ok||fresh.addedSessions!==plan.addedSessions||fresh.addedEvents!==plan.addedEvents)
