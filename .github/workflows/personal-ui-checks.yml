@@ -35,6 +35,8 @@ jobs:
         run: node test_reconcile_guard_v213.cjs
       - name: Validate browser phone timer shortcut
         run: node test_timer_shortcut_v220.cjs
+      - name: Validate focus control states and alert engine
+        run: node test_focus_alert_v221.cjs
       - name: Validate new activity feedback features
         run: |
           node test_lifeos_feedback_v207.cjs

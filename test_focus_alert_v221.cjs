@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict'),alert=require('./personal_alert_engine_v221.js'),focus=require('./personal_focus_alarm_v207.js');
+assert.equal(focus.remaining(10000,9000),1000);
+assert.equal(focus.format(3661000),'01:01:01');
+assert.equal(focus.normalizeState({end:9000,label:'Study'}).mode,'running');
+assert.equal(focus.normalizeState({end:9000,mode:'break',breakMs:120000}).breakMs,120000);
+assert.equal(alert.normalize({volume:1000,repeatSeconds:1}).volume,100);
+assert.equal(alert.normalize({volume:-90,repeatSeconds:1}).volume,0);
+assert.equal(alert.normalize({repeatSeconds:60}).repeatSeconds,60);
+assert.equal(alert.normalize({repeatSeconds:19}).repeatSeconds,20);
+assert.equal(alert.normalize({sound:false,vibration:false}).sound,false);
+console.log('V221 focus settings and browser alert engine PASS');
