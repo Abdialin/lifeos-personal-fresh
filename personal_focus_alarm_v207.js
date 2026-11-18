@@ -17,7 +17,7 @@ function init(){
  '<label class="sub" for="lo207-focus-minutes">Focus duration (minutes)</label><input class="field" id="lo207-focus-minutes" type="number" min="1" max="240" value="45">'+
  '<div class="row"><button class="btn primary" id="lo207-start-focus" type="button">Start focus</button><button class="btn outline" id="lo207-notify-permission" type="button">Allow notifications</button></div>'+
  '<label class="sub" for="lo207-alarm-time">Alarm clock time</label><div class="row"><input class="field" id="lo207-alarm-time" type="time"><button class="btn outline" id="lo207-set-alarm" type="button">Set alarm</button></div>'+
- '<div class="row" id="lo224-native-settings" hidden><button class="btn outline" type="button" id="lo224-native-alarms">Android alarm settings</button><button class="btn outline" type="button" id="lo224-native-notifications">Android notification settings</button></div>'+
+ '<div class="row" id="lo224-native-settings" hidden><button class="btn outline" type="button" id="lo224-native-alarms">Android alarm settings</button><button class="btn outline" type="button" id="lo224-native-notifications">Android notification settings</button><button class="btn outline" type="button" id="lo227-native-test">Test Android alarm sound & vibration</button></div>'+
  '<div class="lo221-settings"><h4>Alert sound & vibration</h4>'+
  '<label><input type="checkbox" id="lo221-sound"> Play alarm sound</label>'+
  '<label><input type="checkbox" id="lo221-vibrate"> Vibrate on supported Android devices</label>'+
@@ -43,6 +43,10 @@ function init(){
  const native=root.LifeOSNative;
  if(native&&typeof native.postMessage==='function'){
   $('lo224-native-settings').hidden=false;
+  $('lo227-native-test').onclick=()=>{try{
+   native.postMessage(JSON.stringify({kind:'alarm-test'}));
+   status.textContent='Native test requested. If silent, check Android notification channel settings, phone volume and Do Not Disturb.';
+  }catch(_){status.textContent='Native alarm test unavailable.'}};
   for(const [id,target] of [['lo224-native-alarms','alarms'],['lo224-native-notifications','notifications']]){
    $(id).onclick=()=>{try{native.postMessage(JSON.stringify({kind:'settings-request',target}))}
     catch(_){status.textContent='Unable to open Android settings.'}};
