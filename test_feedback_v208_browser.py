@@ -47,6 +47,12 @@ class FeedbackBrowser(unittest.TestCase):
         self.assertEqual(final['status'],'finished')
         self.assertTrue(any(e.get('sessionId')==sid and e.get('type')=='BREAK_END' for e in state['events']))
         self.assertEqual(len(final['segments']),2)
+        p.reload(wait_until='load',timeout=45000)
+        stored=p.evaluate('JSON.parse(localStorage.getItem("lifeos-live-v1"))')
+        recovered=next((x for x in stored['sessions'] if x['id']==sid),None)
+        self.assertIsNotNone(recovered,'Finished timer should remain in local storage after reload')
+        self.assertEqual(recovered['status'],'finished')
+        self.assertEqual(len(recovered['segments']),2)
     def test_focus_and_gap_tools_mount(self):
         p=self.page
         p.locator('#lifeosNavigation button[data-view="tracking"]').click()
