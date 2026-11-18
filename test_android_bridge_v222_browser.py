@@ -43,6 +43,30 @@ class NativeBridgeBrowser(unittest.TestCase):
      page.locator('#lo221-layer-break').click()
      page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='alarm-status'&&x.status==='cancelled')",timeout=6000)
      page.locator('#lo207-cancel-focus').click()
+     # Native snooze must resume only an expired/ringing focus alarm.
+     result=page.evaluate("""() => {
+       const key='lifeos.personal.focus.v207',now=Date.now();
+       localStorage.setItem(key,JSON.stringify({
+         label:'Study',kind:'focus',mode:'ringing',end:now-2000,
+         remainingMs:0,modeAt:now-2000,breakMs:0
+       }));
+       const until=now+5*60000;
+       const ok=window.LifeOSNativeFocusSync.applyNativeSnooze(until);
+       const newState=JSON.parse(localStorage.getItem(key));
+       const ignored=window.LifeOSNativeFocusSync.applyNativeSnooze(until+1000);
+       return {ok,ignored,kind:newState.kind,mode:newState.mode,end:newState.end};
+     }""")
+     self.assertTrue(result['ok'])
+     self.assertFalse(result['ignored'])
+     self.assertEqual(result['mode'],'running')
+     self.assertEqual(result['kind'],'alarm')
+     page.evaluate("""() => {
+       localStorage.setItem('lifeos.personal.focus.v207',JSON.stringify({
+         label:'Study',kind:'alarm',mode:'ringing',end:Date.now()-1000
+       }));
+       window.dispatchEvent(new Event('lifeos-v221-focus-changed'));
+     }""")
+     page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='alarm-status'&&x.status==='ringing')",timeout=6000)
      self.assertEqual(errors,[])
      print('V222 minimal native bridge messages with tracking + focus changes PASS')
     finally:browser.close()
