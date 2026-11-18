@@ -1,4 +1,4 @@
-# LifeOS Android Companion — V226 experimental companion
+# LifeOS Android Companion — V227 experimental companion
 
 **Status:** Native Android source + isolated build checks; **not yet a published or installed Android app**.
 
@@ -66,3 +66,7 @@ security, privacy, battery and Play policy review.
 - Read-only cross-section checks also flag schedule entries linked to missing sessions and gracefully handle malformed collection types.
 - Android foreground notification still displays one selected timer but now indicates how many other timers remain open. This does **not** provide multi-timer background control.
 - Test coverage includes synthetic pause-duration accounting, orphan schedule links and browser-to-native active-timer count fields.
+
+## V227 native alert diagnostic
+
+The Focus panel now offers a **Test Android alarm sound & vibration** button only inside the trusted Android companion. It posts a one-time diagnostic notification on the native alarm channel, without cancelling or changing an existing scheduled alarm. The channel's current user-selected sound/vibration policy still applies; Android can silence it because of permission denial, system volume, Do Not Disturb, or OEM restrictions. The test has browser-side regression coverage but still needs a physical-device check.
