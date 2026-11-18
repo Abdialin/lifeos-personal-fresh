@@ -23,6 +23,10 @@ jobs:
         run: node test_goal_fitness_cross_section_v204.cjs
       - name: Validate cross-section record integrity
         run: node test_cross_section_integrity_v206.cjs
+      - name: Validate new activity feedback features
+        run: |
+          node test_lifeos_feedback_v207.cjs
+          node test_focus_alarm_v207.cjs
       - name: Validate visual integration
         run: node test_visual_intelligence_v4.cjs
       - name: Validate planner and reality comparisons

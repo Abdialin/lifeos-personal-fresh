@@ -16,15 +16,22 @@ function timespan(s,now){
   return total+Math.max(0,end-seg.start);
  },0)
 }
+function dayDuration(s,now){
+ const d=new Date(now);d.setHours(0,0,0,0);const midnight=d.getTime();
+ return (s?.segments||[]).reduce((ms,z)=>{
+  const a=Math.max(midnight,Number(z.start)),end=z.end==null?(s.status==='running'?now:z.start):Number(z.end),b=Math.min(now,end);
+  return ms+(Number.isFinite(a)&&Number.isFinite(b)&&b>a?b-a:0);
+ },0);
+}
 function timer(){
  const sessions=bridge()?.activeTimers?.()||(read().sessions||[]).filter(s=>s.status!=='finished');
  let bar=$('lo32ActiveTimer');
  if(!bar){bar=document.createElement('aside');bar.id='lo32ActiveTimer';bar.setAttribute('role','status');bar.setAttribute('aria-label','Background activity timer');document.body.append(bar)}
  const current=sessions.find(s=>s.status==='running')||sessions[0];
  if(!current){bar.hidden=true;document.title='LifeOS Personal — Your day, intelligently designed';return}
- bar.hidden=false;const now=Date.now(),elapsed=fmtMs(timespan(current,now));
+ bar.hidden=false;const now=Date.now(),elapsed=fmtMs(dayDuration(current,now));
  const suffix=sessions.length>1?' · +'+(sessions.length-1)+' other active':'';
- const label=current.status==='paused'?'Paused':'Running';
+ const label=(current.status==='paused'?'Paused':'Running')+' · Today (full '+fmtMs(timespan(current,now))+')';
  const title=normal(current.name)||'Activity';
  const identity=String(current.id);
  if(bar.dataset.currentId!==identity||bar.dataset.currentState!==current.status){

@@ -8,4 +8,6 @@ assert.match(html,/src="personal_focus_alarm_v207\.js\?/);
 assert.match(html,/data-act="break"/);
 assert.match(html,/lifeos-v207-backfill-gap/);
 assert.match(html,/sunnahMissed/);
+assert.match(fs.readFileSync('personal_habits_social_timer_v32.js','utf8'),/dayDuration\(current,now\)/);
+assert.match(fs.readFileSync('personal_ongoing_timer_v86.js','utf8'),/dayDuration\(s,Date\.now\(\)\)/);
 console.log('V207 focus, break, gap, prayer checks PASS');

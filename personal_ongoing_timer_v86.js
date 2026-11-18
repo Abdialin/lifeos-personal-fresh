@@ -38,13 +38,21 @@ function mount(){
  const sessions=()=>{try{return root.lifeosReadOnlyWorkspace?.()?.sessions||[]}catch{return []}};
  let current=null,previous='';
  function elapsed(s,now){return root.LifeOSTimerFocusV77?.duration?.(s,now)||0}
+ function dayDuration(s,now){
+ const d=new Date(now);d.setHours(0,0,0,0);const midnight=d.getTime();
+ return (s?.segments||[]).reduce((ms,z)=>{
+  const a=Math.max(midnight,Number(z.start)),end=z.end==null?(s.status==='running'?now:z.start):Number(z.end),b=Math.min(now,end);
+  return ms+(Number.isFinite(a)&&Number.isFinite(b)&&b>a?b-a:0);
+ },0);
+}
+
  function clock(ms){return root.LifeOSTimerFocusV77?.clock?.(ms)||'00:00:00'}
  function render(){
   const all=active(sessions()),s=choose(all,current);
   if(!s){current=null;box.hidden=true;return}
   box.hidden=false;current=String(s.id);
   get('lo86-name').textContent=(s.status==='paused'?'Paused: ':'')+String(s.name||'Activity');
-  get('lo86-clock').textContent=clock(elapsed(s,Date.now()));
+  get('lo86-clock').textContent=clock(dayDuration(s,Date.now()));
   const sig=all.map(x=>String(x.id)+'|'+x.status+'|'+x.name).join(';');
   if(sig!==previous){
    previous=sig;pick.replaceChildren();
