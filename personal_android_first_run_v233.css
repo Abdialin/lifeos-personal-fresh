@@ -1,0 +1,29 @@
+/* V233: app-safe mobile masthead. Visual only; no user-data writes. */
+@media(max-width:700px){
+  body .wrap>header.top{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    align-items:stretch!important;
+    gap:10px!important;
+    margin:0 0 14px!important;
+    padding:8px 0 3px!important;
+    min-width:0!important;
+  }
+  body .wrap>header.top .brand{min-width:0!important;display:flex!important;gap:11px!important;align-items:center!important}
+  body .wrap>header.top .brand>div:last-child{min-width:0!important;overflow:hidden!important}
+  body .wrap>header.top .brand b{display:block!important;font-size:clamp(16px,4vw,19px)!important;line-height:1.2!important;white-space:normal!important;overflow-wrap:anywhere!important}
+  body .wrap>header.top .brand .small{font-size:11px!important;line-height:1.35!important;white-space:normal!important}
+  body .wrap>header.top .lo154-access{display:flex!important;justify-content:flex-start!important;min-width:0!important;max-width:100%!important}
+  body .wrap>header.top .lo154-logout{min-height:36px!important;font-size:12px!important;white-space:nowrap!important}
+  body .wrap>header.top button,body .wrap>header.top a{max-width:100%!important;overflow-wrap:anywhere!important}
+  body .wrap>header.top .lo14-settings-button{max-width:100%!important}
+}
+@media(max-width:420px){
+ body .wrap>header.top .brand .logo{width:40px;height:40px;flex:0 0 40px}
+ body .wrap>header.top .lo154-access{gap:6px}
+}
+#lo233-first-run{border:1px solid #427e92;border-radius:16px;background:#0e2a38;color:#e6f5fc;padding:15px;margin:0 0 18px;line-height:1.55}
+#lo233-first-run strong{font-size:16px;display:block;margin-bottom:5px}
+#lo233-first-run p{font-size:13px;color:#bdd5e2;margin:5px 0 10px}
+#lo233-first-run button{min-height:43px;padding:10px 14px;border-radius:10px;border:1px solid #70daca;background:#16473f;color:#dffaf3;font-weight:750}
+#lo233-first-run[hidden]{display:none!important}
