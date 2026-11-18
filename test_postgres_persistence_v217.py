@@ -13,8 +13,11 @@ class PostgresCAS(unittest.TestCase):
         if os.getenv('LIFEOS_TEST_DISPOSABLE_POSTGRES') != '1':
             raise unittest.SkipTest('Explicit disposable PostgreSQL test flag required')
         url=os.getenv('LIFEOS_DATABASE_URL','')
-        if not url.startswith('postgresql://localhost:') and not url.startswith('postgresql://127.0.0.1:'):
-            raise RuntimeError('Refusing non-local PostgreSQL database URL')
+        from urllib.parse import urlparse
+        parsed=urlparse(url)
+        if (parsed.scheme!='postgresql' or parsed.hostname not in ('localhost','127.0.0.1')
+                or parsed.path!='/lifeos_test' or parsed.port!=5432):
+            raise RuntimeError('Refusing any PostgreSQL database except the disposable localhost test DB')
         import server
         cls.api=server
         if not server.DATABASE_URL or server.DATABASE_URL!=url:
