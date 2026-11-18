@@ -465,7 +465,7 @@ function trackingCommit(change){
   return false;
  }
 }
-window.addEventListener('lifeos-v207-backfill-gap',function(evt){
+document.addEventListener('lifeos-v207-backfill-gap',function(evt){
  const d=evt.detail||{},a=Number(d.startAt),b=Number(d.endAt),t=now();
  d.result={ok:false,message:'No record was added.'};
  if(!['Travel / Commuting','Getting Ready','Shopping','Other (reviewed)'].includes(d.name)||
