@@ -39,7 +39,7 @@ if(cat==='fitness'){
  // languages contributes to Goals exactly once (linked workout IDs are deduplicated below).
  const isWorkoutSession=x=>{
   const classify=window.LifeOSMyLifeV190?.kindOf;
-  if(typeof classify==='function')return classify(x.name)==='fitness';
+  if(typeof classify==='function'&&classify(x.name)==='fitness')return true;
   return /\b(gym|workout|fitness|strength|weightlifting|exercise|running|run|boxing|cardio|cycling|swimming|pilates|yoga|training|walking|walk|jogging|träning|träna|promenad|löpning|styrketräning|boxning)\b/i.test(String(x.name||''));
  };
  const linked=new Map(sessions.map(x=>[String(x.id),x]));
