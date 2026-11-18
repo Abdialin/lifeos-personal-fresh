@@ -29,6 +29,17 @@ class MainActivity : Activity() {
     private val lifeOsOrigin = "https://lifeos-personal-test.onrender.com"
     private lateinit var web: WebView
     private var pendingNativeAction: Pair<String,String>? = null
+    private var pendingNativeReceivedAt = 0L
+
+    private fun trustedPage(url: String?): Boolean {
+        if (url.isNullOrBlank()) return false
+        return try {
+            val parsed = Uri.parse(url)
+            parsed.scheme == "https" &&
+                parsed.host == "lifeos-personal-test.onrender.com" &&
+                parsed.port == -1
+        } catch (_: Exception) { false }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +66,7 @@ class MainActivity : Activity() {
                 view: WebView, handler: HttpAuthHandler, host: String, realm: String
             ) {
                 // Display the challenge only for the expected HTTPS staging host.
-                if (host != "lifeos-personal-test.onrender.com" || view.url?.startsWith(lifeOsOrigin) != true) {
+                if (host != "lifeos-personal-test.onrender.com" || !trustedPage(view.url)) {
                     handler.cancel()
                     return
                 }
@@ -215,7 +226,7 @@ class MainActivity : Activity() {
     private fun reconcileNativeSnooze() {
         if (!::web.isInitialized) return
         val currentUrl = web.url ?: return
-        if (!(currentUrl == lifeOsOrigin || currentUrl.startsWith("$lifeOsOrigin/"))) return
+        if (!trustedPage(currentUrl)) return
         val until = NativeAlarm.pendingSnooze(this)
         if (until <= System.currentTimeMillis() || until > System.currentTimeMillis() + 5L * 60_000L + 10000L) {
             if (until > 0L) NativeAlarm.acknowledgeSnooze(this)
@@ -243,10 +254,16 @@ class MainActivity : Activity() {
         // Single-use control token; replay and stale notification actions are rejected.
         prefs.edit().remove(TimerService.KEY_TOKEN).apply()
         pendingNativeAction = Pair(id,action)
+        pendingNativeReceivedAt = android.os.SystemClock.elapsedRealtime()
     }
 
     private fun deliverNativeTimerAction() {
         val request = pendingNativeAction ?: return
+        if (android.os.SystemClock.elapsedRealtime() - pendingNativeReceivedAt > 90_000L) {
+            pendingNativeAction = null
+            Toast.makeText(this, "Timer command expired. Review in LifeOS.", Toast.LENGTH_LONG).show()
+            return
+        }
         if (!::web.isInitialized) return
         val url = web.url ?: return
         if (!(url == lifeOsOrigin || url.startsWith("$lifeOsOrigin/"))) return
