@@ -5,7 +5,7 @@ const visual=fs.readFileSync('personal_visual_intelligence_v4.js','utf8');
 assert.match(html,/ms>0&&ms<60000\)return '<1m'/,'Sub-minute activities must not display as zero duration');
 const analytics=require('./lifeos_unified_analytics.js');
 assert.doesNotThrow(()=>new Function(visual));
-assert.match(html,/<script src="personal_visual_intelligence_v4\.js" defer><\/script>/);
+assert.match(html,/<script src="personal_visual_intelligence_v4\.js(?:\?[^"]+)?" defer><\/script>/);
 assert.match(html,/lifeosReadOnlyWorkspace=\(\)=>JSON\.parse\(JSON\.stringify\(\{sessions:data\.sessions\|\|\[\],schedule:data\.schedule\|\|\[\]/);
 assert.match(html,/idealRoutines:data\.idealRoutines\|\|\[\]/,'Read-only workspace must retain ideal routines even when new fields are inserted');
 for(const category of ['goals','todos','workouts','personalLogs'])assert.match(html,new RegExp(category+':data\\.'+category+'\\|\\|\\[\\]'),'Read-only visual workspace missing '+category);
