@@ -55,6 +55,7 @@ class FocusControls(unittest.TestCase):
      page.reload(wait_until='load',timeout=45000)
      self.assertEqual(state()['mode'],'running')
      page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+     page.locator('#lo207-focus summary').click()
      page.locator('#lo221-open').click()
      self.assertTrue(page.locator('#lo207-focus-layer').is_visible())
      # Simulate expiration in a synthetic local workspace without waiting 5 min.
