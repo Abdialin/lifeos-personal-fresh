@@ -1,7 +1,7 @@
 /* LifeOS V207 — user-confirmed backfill of unlogged intervals; never infer travel. */
 (function(root){'use strict';
  const $=id=>document.getElementById(id);
- const names=['Travel / Commuting','Getting Ready','Shopping','Other (reviewed)'];
+ const names=['Travel / Commuting','Getting Ready','Shopping','Work','Studying','Prayer','Reading / Quran','Exercise / Gym','Meal / Eating','Sleep / Rest','Household chores','Family / Social','Other (describe below)'];
  const key=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
  const clock=x=>new Date(x).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
  const read=()=>{try{return root.lifeosReadOnlyWorkspace?.()||null}catch{return null}};
@@ -26,16 +26,20 @@
     const label=document.createElement('p');label.textContent=clock(g.start)+'–'+clock(g.end)+' · '+Math.round(g.durationMs/60000)+' minutes unlogged';row.append(label);
     const select=document.createElement('select');select.className='field';select.setAttribute('aria-label','What happened during '+clock(g.start)+' to '+clock(g.end));
     for(const x of names){const option=new Option(x,x);select.add(option)}
+    const custom=document.createElement('input');custom.className='field';custom.maxLength=80;
+    custom.placeholder='Describe activity if Other selected';custom.setAttribute('aria-label','Custom description for this unlogged period');
+    custom.hidden=true;select.addEventListener('change',()=>{custom.hidden=select.value!=='Other (describe below)'});
     const btn=document.createElement('button');btn.type='button';btn.className='btn outline';btn.textContent='Confirm and log this interval';
     btn.addEventListener('click',()=>{
-      const name=select.value;
+      const name=select.value==='Other (describe below)'?custom.value.trim():select.value;
+      if(!name||name.length>80){note.textContent='Describe the activity in 1 to 80 characters before confirming.';return}
       if(!root.confirm('Record '+name+' from '+new Date(g.start).toLocaleString()+' to '+new Date(g.end).toLocaleString()+'? This is retrospective and approximate.'))return;
       const detail={name,startAt:g.start,endAt:g.end};
       document.dispatchEvent(new CustomEvent('lifeos-v207-backfill-gap',{detail}));
       note.textContent=detail.result?.message||'Could not confirm this interval.';
       if(detail.result?.ok)refresh();
     });
-    row.append(select,btn);list.append(row);
+    row.append(select,custom,btn);list.append(row);
    }
   }
   section.addEventListener('toggle',refresh);input.addEventListener('change',refresh);
