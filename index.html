@@ -126,7 +126,7 @@ body[data-lifeos-view="dashboard"] #todayLegacyOverviewPanel{display:none!import
 .lo154-logout{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 15px;border:1px solid #40657a;border-radius:12px;background:#132b40;color:#eaf6fc!important;text-decoration:none;font-weight:700;font-size:14px}
 .lo154-logout:focus-visible{outline:3px solid #69d9be;outline-offset:2px}
 @media(max-width:480px){.lo154-access{gap:6px}.lo154-logout{font-size:13px;padding:8px 10px}.lo154-access #status{display:none}}
-</style><link rel="stylesheet" href="personal_goals_product_v160.css?v=20261117-v164"><link rel="stylesheet" href="personal_goals_repair_v168.css?v=20261117-v168"><link rel="stylesheet" href="personal_goals_focus_v169.css?v=20261117-v174"><link rel="stylesheet" href="personal_day_intelligence_v170.css?v=20261117-v186"><link rel="stylesheet" href="personal_android_first_run_v233.css?v=20261118-v233"><script src="personal_fresh_device_adoption_v234.js?v=20261118-v234"></script></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="lo154-access"><a class="lo154-logout" href="/logout" aria-label="Log out of LifeOS">Log out</a><div class="pill" id="status">● Ready</div></div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
+</style><link rel="stylesheet" href="personal_goals_product_v160.css?v=20261117-v164"><link rel="stylesheet" href="personal_goals_repair_v168.css?v=20261117-v168"><link rel="stylesheet" href="personal_goals_focus_v169.css?v=20261117-v174"><link rel="stylesheet" href="personal_day_intelligence_v170.css?v=20261117-v186"><link rel="stylesheet" href="personal_android_first_run_v233.css?v=20261118-v233"><script src="personal_fresh_device_adoption_v234.js?v=20261118-v234"></script><script src="personal_native_backup_v234.js?v=20261118-v234"></script></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="lo154-access"><a class="lo154-logout" href="/logout" aria-label="Log out of LifeOS">Log out</a><div class="pill" id="status">● Ready</div></div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
   <div class="today-welcome"><div><div class="today-eyebrow" id="todayFullDate">Today</div><h2>Your day at a glance</h2><p>Time, priorities and your next action.</p></div><span class="today-live-dot">● Live view</span></div>
   <div class="today-stats">
     <div class="today-stat"><span>Recorded today</span><strong id="todayRecorded">—</strong><small>Includes overlapping sessions</small></div>
@@ -1918,13 +1918,31 @@ async function v234Review(){
    outboxMirrorRaw:localStorage.getItem(OUTBOX_KEY),
    syncMetaMirrorRaw:localStorage.getItem(SYNC_META_KEY)
   };
-  download('LifeOS_v234_android_local_before_adoption.json',JSON.stringify(snapshot,null,2),'application/json');
-  download('LifeOS_v234_server_revision_'+policy.revision+'.json',JSON.stringify(remote.data,null,2),'application/json');
-  // No downloads are guaranteed until the user verifies they exist on-device.
+  const localName='LifeOS_v234_android_local_before_adoption.json';
+  const serverName='LifeOS_v234_server_revision_'+policy.revision+'.json';
+  const localBody=JSON.stringify(snapshot,null,2),serverBody=JSON.stringify(remote.data,null,2);
+  if(window.LifeOSNative){
+   const nativeSave=window.LifeOSV234BackupBridge?.save;
+   if(typeof nativeSave!=='function')throw Error('Native backup verification is unavailable. Update to the V234 Android APK before restoring.');
+   status.textContent='Choose where to save the local backup, then the server backup. Cancel either save to keep restoration disabled.';
+   await nativeSave(localName,localBody);
+   status.textContent='Local recovery backup verified. Save the server workspace backup to continue.';
+   await nativeSave(serverName,serverBody);
+  }else{
+   download(localName,localBody,'application/json');
+   download(serverName,serverBody,'application/json');
+  }
+  // Revalidate the local workspace after the user-selected file operations.
+  const still=window.LifeOSFreshDeviceAdoptionV234?.inspect({
+   local:data,queue:outbox,meta:syncMeta,remote,
+   blocked:syncBusy||atomicBlocked||outboxCorrupt
+  });
+  if(!still?.ok||still.queueId!==policy.queueId)throw Error('Local state changed during backup. Review again.');
   v234Reviewed={revision:policy.revision,queueId:policy.queueId};
   button.disabled=false;
   status.textContent='Eligible. Server revision '+policy.revision+' has '+policy.counts.sessions+
-   ' sessions and '+policy.counts.events+' events. Two JSON backup downloads were requested. Check both files in My Files before step 2. Never choose Upload local data.';
+   ' sessions and '+policy.counts.events+' events. '+(window.LifeOSNative?'Both Android backups were saved and byte-verified.':'Two JSON backups were requested; verify both downloads.')+
+   ' Review files in My Files before step 2. Never choose Upload local data.';
  }catch(e){status.textContent='Review failed without changing any records: '+(e?.message||'unknown')}
 }
 async function v234Adopt(){
