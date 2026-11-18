@@ -465,7 +465,25 @@ function trackingCommit(change){
   return false;
  }
 }
-/* V74: user-approved distraction metadata; saved through existing canonical checkpoint. */
+window.addEventListener('lifeos-v207-backfill-gap',function(evt){
+ const d=evt.detail||{},a=Number(d.startAt),b=Number(d.endAt),t=now();
+ d.result={ok:false,message:'No record was added.'};
+ if(!['Travel / Commuting','Getting Ready','Shopping','Other (reviewed)'].includes(d.name)||
+ !Number.isSafeInteger(a)||!Number.isSafeInteger(b)||b<=a||b>t||a<t-31*86400000||b-a>8*3600000){
+  d.result.message='Invalid activity category or time window. Choose a gap of up to eight hours within the last 31 days.';return;
+ }
+ if((data.sessions||[]).some(s=>(s.segments||[]).some(z=>{
+  const l=Number(z.start),r=z.end==null?(s.status==='running'?t:l):Number(z.end);
+  return Number.isFinite(l)&&Number.isFinite(r)&&r>a&&l<b;
+ }))){d.result.message='This time overlaps an existing tracked activity. Nothing was added.';return}
+ const record={id:uid(),name:d.name,status:'finished',createdAt:t,startAt:a,endAt:b,
+  segments:[{start:a,end:b}],notes:'User-reviewed unlogged interval.',precision:'retrospective-approximate',
+  source:'user-reviewed-gap',activityType:'retrospective'};
+ const ok=trackingCommit(()=>{data.sessions.push(record);event(record,'RETROSPECTIVE_GAP',t,{reviewedStartAt:a,reviewedEndAt:b})});
+ d.result=ok?{ok:true,id:record.id,message:'Reviewed activity saved; the gap is now recorded.'}:{ok:false,message:'Save failed; no activity was added.'};
+ if(ok){render();window.dispatchEvent(new Event('lifeos-v77-tracking-changed'));window.dispatchEvent(new Event('lifeos-v207-gap-committed'))}
+});
+ /* V74: user-approved distraction metadata; saved through existing canonical checkpoint. */
 window.addEventListener('lifeos-v74-classify-distraction',function(event){
  const detail=event.detail||{},id=String(detail.id||'');
  const category=String(detail.category||''),trigger=String(detail.trigger||'').trim();
@@ -787,7 +805,7 @@ function loDetailDefinition(kind){
  const field=(name,label,type='text',options=[])=>({name,label,type,options});
  const common=[field('notes','What did you do? (optional)','textarea')];
  const kinds={
-  prayer:[field('prayer','Prayer','select',['Not specified','Fajr','Dhuhr','Asr','Maghrib','Isha','Other']),field('setting','Where?','select',['Prefer not to say','Home','Mosque','Other']),field('congregation','Congregation','select',['Not specified','Yes','No']),...common],
+  prayer:[field('prayer','Prayer','select',['Not specified','Fajr','Dhuhr','Asr','Maghrib','Isha','Other']),field('setting','Where?','select',['Prefer not to say','Home','Mosque','Other']),field('congregation','Congregation','select',['Not specified','Yes','No']),field('sunnahPrayed','Sunnah units prayed (optional)','number'),field('sunnahMissed','Sunnah units intentionally reported as missed (optional)','number'),field('rowPosition','Congregation row (optional)','select',['Not specified','First row','Second row','Third row','Further back','Not applicable']),...common],
   fitness:[field('activityType','Fitness activity','select',['Not specified','Gym','Walking','Running','Boxing','Cycling','Swimming','Yoga','Other']),field('exercise','Workout focus'),field('exercises','Exercises, sets, reps','textarea'),field('distanceKm','Distance (km)','number'),field('intensity','Intensity','select',['Not specified','Easy','Moderate','Hard']),...common],
   work:[field('role','Work / project'),field('workResult','What was completed?','textarea'),field('breakMinutes','Break minutes','number'),field('workType','Work type','select',['Not specified','Regular','Overtime','On call']),...common],
   study:[field('subject','Course or subject'),field('studyType','Study activity','select',['Not specified','Lecture','Focused studying','Assignment','Research','Exam preparation','Coding practice','Other']),field('topics','Topics covered','textarea'),field('progress','Progress / outcome','textarea'),field('focusLevel','Focus level','select',['Not specified','Low','Moderate','High']),...common],
@@ -2448,7 +2466,7 @@ function schedule(){setTimeout(install,60)}
 document.addEventListener('DOMContentLoaded',()=>{schedule();document.getElementById('loLifeSectionTabs')?.addEventListener('click',schedule);document.getElementById('lifeosNavigation')?.addEventListener('click',schedule)});
 window.addEventListener('hashchange',schedule);
 })();
-</script><link rel="stylesheet" href="personal_my_life_focus_v190.css?v=20261117-v195"><script src="personal_my_life_focus_v190.js?v=20261117-v195b" defer></script><script src="personal_cross_section_integrity_v206.js?v=20261118-v206" defer></script><style id="lo197-style">
+</script><link rel="stylesheet" href="personal_my_life_focus_v190.css?v=20261117-v195"><script src="personal_my_life_focus_v190.js?v=20261117-v195b" defer></script><script src="personal_cross_section_integrity_v206.js?v=20261118-v206" defer></script><script src="personal_gap_review_v207.js?v=20261118-v207" defer></script><script src="personal_prayer_insights_v207.js?v=20261118-v207" defer></script><style id="lo197-style">
 /* LifeOS V197: one consolidated My Life Friends/Challenges workspace */
 body[data-lifeos-view="life"] #lo197-challenges{color:#e7f8f2;font-family:system-ui,sans-serif;padding:8px 0 14px}
 #lo197-challenges .lo197-head{margin:0 0 13px;display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
