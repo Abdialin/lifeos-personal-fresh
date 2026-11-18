@@ -19,6 +19,8 @@ jobs:
         run: node test_static_asset_routes.cjs
       - name: Validate navigation reuse
         run: node test_unified_navigation_reuse.cjs
+      - name: Validate Fitness to Goals evidence
+        run: node test_goal_fitness_cross_section_v204.cjs
       - name: Validate visual integration
         run: node test_visual_intelligence_v4.cjs
       - name: Validate planner and reality comparisons
