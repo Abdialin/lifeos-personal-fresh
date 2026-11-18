@@ -2076,7 +2076,7 @@ function v241Panel(){
    const tool=window.LifeOSBrowserActivityRecoveryV241;
    if(!tool)throw Error('Recovery checker has not loaded.');
    const plan=tool.preview(data,parsed);
-   if(!plan.ok)throw Error(plan.reason+' '+plan.conflictSessions+' session and '+plan.conflictEvents+' event conflicts.');
+   if(!plan.ok)throw Error(plan.reason||'Invalid recovery file.');
    if(!plan.addedSessions&&!plan.addedEvents)throw Error('No missing session/event IDs in this export. Compare the original browser history dates.');
    const original=localStorage.getItem(ATOMIC_KEY);
    if(v71StaleTab||!v71CheckpointUnchanged(original))throw Error('A different tab changed local records. Reload this screen.');
@@ -2084,10 +2084,39 @@ function v241Panel(){
    $('lo241-import').disabled=false;
    $('lo241-preview').textContent='Review complete. Missing: '+plan.addedSessions+' sessions, '+plan.addedEvents+
     ' events. Identical records already present: '+plan.matchedSessions+' sessions, '+plan.matchedEvents+
-    ' events. Shared ID conflicts: 0. Import will preserve original timestamps and all existing records.';
+    ' events. Shared-ID conflicts skipped: '+plan.conflictSessions+' sessions, '+plan.conflictEvents+
+    ' events. Import will preserve original timestamps and all existing records.';
   }catch(e){$('lo241-preview').textContent='Review blocked. No records changed: '+(e.message||e)}
  });
  $('lo241-import').addEventListener('click',v241Import);
+}
+function v241ConfirmImport(plan){
+ return new Promise(resolve=>{
+  if($('lo241-import-overlay'))return resolve(false);
+  const shade=document.createElement('div');
+  shade.id='lo241-import-overlay';
+  shade.style.cssText='position:fixed;inset:0;z-index:2147483000;background:#000d;display:grid;place-items:center;padding:16px;box-sizing:border-box';
+  shade.innerHTML='<section role="dialog" aria-modal="true" aria-labelledby="lo241-confirm-title" style="background:#122a40;color:#f3faff;border:2px solid #70daca;border-radius:18px;padding:20px;width:min(100%,520px);max-height:90vh;overflow:auto;box-sizing:border-box">'+
+   '<h2 id="lo241-confirm-title" style="font-size:21px;margin:0 0 12px">Import missing browser activities</h2>'+
+   '<p>This adds <b>'+plan.addedSessions+' session(s)</b> and <b>'+plan.addedEvents+' event(s)</b> to this device only. Existing sessions, event IDs, and original timestamps are not changed.</p>'+
+   '<p>'+plan.conflictSessions+' session and '+plan.conflictEvents+' event shared-ID conflict(s) will be <b>skipped</b>, not overwritten. Keep the source file for later review.</p>'+
+   '<label style="display:flex;gap:9px;align-items:flex-start"><input id="lo241-ack" type="checkbox" style="height:22px;width:22px;flex:none">I saved and verified the local recovery backup and kept the source browser export.</label>'+
+   '<p style="margin:14px 0 5px">Type <b>IMPORT MISSING</b> to confirm local recovery:</p>'+
+   '<input id="lo241-phrase" autocomplete="off" autocapitalize="characters" type="text" spellcheck="false" style="display:block;box-sizing:border-box;width:100%;min-height:46px;background:#091a2a;border:1px solid #638398;border-radius:10px;padding:10px;color:#fff;font-size:17px">'+
+   '<p style="font-size:13px;color:#d2e3eb">PostgreSQL will not be changed. Cloud sync will be disconnected until a separate reconciliation.</p>'+
+   '<div style="display:flex;gap:10px;flex-wrap:wrap"><button id="lo241-cancel" type="button" style="min-height:47px;padding:10px 16px;border-radius:10px">Cancel</button>'+
+   '<button id="lo241-confirm" type="button" disabled style="min-height:47px;padding:10px 16px;border-radius:10px;background:#70daca;color:#082b27;font-weight:bold">Import missing locally</button></div></section>';
+  document.body.appendChild(shade);
+  const checkbox=shade.querySelector('#lo241-ack'),phrase=shade.querySelector('#lo241-phrase'),yes=shade.querySelector('#lo241-confirm');
+  let finished=false;
+  const done=value=>{if(finished)return;finished=true;document.removeEventListener('keydown',onKey);shade.remove();resolve(value)};
+  const onKey=e=>{if(e.key==='Escape')done(false)};
+  checkbox.addEventListener('change',()=>{yes.disabled=!(checkbox.checked&&phrase.value.trim()==='IMPORT MISSING')});
+  phrase.addEventListener('input',()=>{yes.disabled=!(checkbox.checked&&phrase.value.trim()==='IMPORT MISSING')});
+  shade.querySelector('#lo241-cancel').addEventListener('click',()=>done(false));
+  yes.addEventListener('click',()=>{if(!yes.disabled&&checkbox.checked&&phrase.value.trim()==='IMPORT MISSING')done(true)});
+  document.addEventListener('keydown',onKey);phrase.focus();
+ });
 }
 async function v241Import(){
  const output=$('lo241-preview'),button=$('lo241-import'),review=v241Reviewed;
@@ -2119,7 +2148,7 @@ async function v241Import(){
    download('LifeOS_before_browser_import_'+localDate(now())+'.json',JSON.stringify(backup,null,2),'application/json');
    output.textContent='Check the current workspace backup downloaded successfully before continuing.';
   }
-  const confirmed=await v239ConfirmRestore();
+  const confirmed=await v241ConfirmImport(review.plan);
   if(!confirmed){output.textContent='Cancelled. All existing data retained.';return}
   if(syncBusy||atomicBlocked||outboxCorrupt||outbox.length||syncMeta.dirty||
      localStorage.getItem(ATOMIC_KEY)!==review.checkpoint||!v71CheckpointUnchanged(review.checkpoint))
