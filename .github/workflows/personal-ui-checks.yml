@@ -45,6 +45,8 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Validate actual runtime and six navigation areas
         run: python test_runtime_smoke_v206.py
+      - name: Verify V208 feedback controls in Chromium
+        run: timeout --signal=TERM 110s python -m unittest -v test_feedback_v208_browser
       - name: Verify isolated backend storage probe
         run: python -m unittest -v test_storage_status_probe
       - name: Test actual LifeOS Personal UI in Chromium
