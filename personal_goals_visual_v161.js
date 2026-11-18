@@ -54,7 +54,7 @@ if(cat==='fitness'){
   if(sample(x))continue;
   good.push(x);countedIds.add(String(x.id));minutes+=activeMinutes(x,a,b);
  }
- value=good.length;
+ value=g.unit==='hours'?minutes/60:good.length;
 }
 else if(cat==='meals'){src='meal records';all=(w.meals||[]).filter(x=>interval(x,a,b));good=all.filter(x=>!sample(x));value=good.length}
 else if(cat==='personal'){src='personal logs';all=(w.personalLogs||[]).filter(x=>interval(x,a,b)&&norm(x.category)===norm(g.match));good=all.filter(x=>!sample(x));value=g.unit==='quantity'?good.filter(x=>!g.quantityUnit||norm(x.unit)===norm(g.quantityUnit)).reduce((v,x)=>v+Math.max(0,Number(x.quantity)||0),0):good.length}

@@ -21,6 +21,8 @@ jobs:
         run: node test_unified_navigation_reuse.cjs
       - name: Validate Fitness to Goals evidence
         run: node test_goal_fitness_cross_section_v204.cjs
+      - name: Validate cross-section record integrity
+        run: node test_cross_section_integrity_v206.cjs
       - name: Validate visual integration
         run: node test_visual_intelligence_v4.cjs
       - name: Validate planner and reality comparisons
@@ -39,7 +41,7 @@ jobs:
       - name: Verify isolated backend storage probe
         run: python -m unittest -v test_storage_status_probe
       - name: Test actual LifeOS Personal UI in Chromium
-        run: python -m unittest -v test_personal_v4_browser
+        run: timeout --signal=TERM 540s python -m unittest -v test_personal_v4_browser
       - name: Upload mobile and desktop UI screenshots
         if: always()
         uses: actions/upload-artifact@v4
