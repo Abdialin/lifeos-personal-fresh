@@ -37,6 +37,8 @@ jobs:
         run: node test_timer_shortcut_v220.cjs
       - name: Validate native Android timer state projection
         run: node test_android_bridge_v222.cjs
+      - name: Validate native notification pause and resume safety
+        run: node test_android_bridge_v228.cjs
       - name: Validate substantial pause/resume intervals without double counting
         run: node test_activity_pauses_v225.cjs
       - name: Validate focus control states and alert engine
