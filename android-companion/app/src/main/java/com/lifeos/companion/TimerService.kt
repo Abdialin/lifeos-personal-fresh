@@ -116,5 +116,12 @@ class TimerService : Service() {
         return "%02d:%02d:%02d".format(total / 3600L, (total / 60L) % 60L, total % 60L)
     }
 
+    override fun onDestroy() {
+        // A stopped foreground service must not leave usable action tokens.
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+            .remove(KEY_TOKEN).remove(KEY_ID).remove(KEY_ACTION).apply()
+        super.onDestroy()
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 }
