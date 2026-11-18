@@ -12,9 +12,22 @@ function classify(s){if(s?.source==='development-starter'||s?.source==='assumed-
 function build(workspace,day,now=Date.now()){
  const b=bounds(day);if(!b)return {error:'Invalid date',records:[],plans:[],gaps:[],stats:{}};
  const [start,end]=b,cutoff=Math.max(start,Math.min(end,now));
- const records=[],plans=[];
+ const records=[],plans=[],pauses=[];
  const sessions=Array.isArray(workspace?.sessions)?workspace.sessions:[];
  for(const s of sessions){if(!s||!Array.isArray(s.segments))continue;const origin=classify(s);for(let i=0;i<s.segments.length;i++){const seg=s.segments[i];if(!seg||!safeNum(seg.start))continue;const segmentEnd=safeNum(seg.end)?seg.end:(s.status==='running'?now:NaN);const interval=clip(seg.start,segmentEnd,start,Math.min(end,now));if(!interval)continue;records.push({key:String(s.id||'activity')+':'+i,name:String(s.name||'Activity'),start:interval[0],end:interval[1],origin,status:String(s.status||'finished')});}}
+ // Consecutive work segments in one activity reveal a pause/resume history.
+ // Treat short interruptions (<5 min) as noise and never count paused time as tracked.
+ for(const session of sessions){
+  const segs=Array.isArray(session?.segments)?session.segments:[];
+  for(let i=1;i<segs.length;i++){
+   const a=segs[i-1],b=segs[i];
+   if(!a||!b||!safeNum(a.end)||!safeNum(b.start)||b.start-a.end<5*60000)continue;
+   const interval=clip(a.end,b.start,start,Math.min(end,now));
+   if(!interval||interval[1]-interval[0]<5*60000)continue;
+   pauses.push({key:String(session.id||'activity')+':pause:'+i,name:String(session.name||'Activity'),
+    start:interval[0],end:interval[1],durationMs:interval[1]-interval[0]});
+  }
+ }
  for(const p of Array.isArray(workspace?.schedule)?workspace.schedule:[]){if(!p||p.status==='skipped')continue;const interval=clip(p.startAt,p.endAt,start,end);if(!interval)continue;plans.push({key:String(p.id||'plan'),name:String(p.name||'Planned activity'),start:interval[0],end:interval[1],linkedSessionId:p.sessionId||null});}
  const verified=records.filter(r=>r.origin!=='sample'&&r.start<cutoff).map(r=>[r.start,Math.min(r.end,cutoff)]).filter(x=>x[1]>x[0]);
  const occupied=merge(verified);
@@ -25,7 +38,7 @@ function build(workspace,day,now=Date.now()){
   return {start:a,end:b,durationMs:b-a,previous,next};
  });
  const overlaps=[];for(let i=0;i<records.length;i++)for(let j=i+1;j<records.length;j++){const a=records[i],c=records[j];if(a.origin==='sample'||c.origin==='sample')continue;const o=clip(a.start,a.end,c.start,c.end);if(o)overlaps.push({left:a.key,right:c.key,minutes:Math.ceil((o[1]-o[0])/60000)});}
- return {error:null,start,end,cutoff,records,plans,gaps:gapsFound,gapDetails,overlaps,stats:{observedMs:length(occupied),plannedMs:length(plans.map(p=>[p.start,p.end])),unloggedMs:length(gapsFound),dayMs:end-start,recordCount:new Set(records.filter(r=>r.origin!=='sample').map(r=>r.key.split(':')[0])).size,exampleCount:records.filter(r=>r.origin==='sample').length}};
+ return {error:null,start,end,cutoff,records,plans,gaps:gapsFound,gapDetails,pauses,overlaps,stats:{observedMs:length(occupied),plannedMs:length(plans.map(p=>[p.start,p.end])),unloggedMs:length(gapsFound),dayMs:end-start,recordCount:new Set(records.filter(r=>r.origin!=='sample').map(r=>r.key.split(':')[0])).size,exampleCount:records.filter(r=>r.origin==='sample').length}};
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmt(ms){const n=Math.floor(ms/60000);return Math.floor(n/60)+'h '+String(n%60).padStart(2,'0')+'m'}
@@ -40,6 +53,8 @@ function render(host,workspace,day,now){
  const describeTime=t=>new Date(t).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
  const detailHtml=(x.gapDetails||[]).map(g=>'<li><strong>'+esc(describeTime(g.start))+'–'+esc(describeTime(g.end))+' ('+fmt(g.durationMs)+')</strong><br><small>After '+esc(g.previous?.name||'start of day')+' · Before '+esc(g.next?.name||'next recorded activity unknown')+'</small></li>').join('');
  tracks.insertAdjacentHTML('beforeend','<details class="lo54-gap-context"><summary>Unlogged gaps with neighboring activities ('+(x.gapDetails||[]).length+')</summary><ul>'+ (detailHtml||'<li>No unlogged gaps of 45 minutes or longer in this period.</li>') +'</ul></details>');
+ const pausesHtml=(x.pauses||[]).map(p=>'<li><strong>'+esc(p.name)+'</strong> · '+esc(describeTime(p.start))+'–'+esc(describeTime(p.end))+' ('+fmt(p.durationMs)+')</li>').join('');
+ tracks.insertAdjacentHTML('beforeend','<details class="lo54-pause-history"><summary>Activity pause / resume history ('+(x.pauses||[]).length+')</summary><p class="sub">Intervals between recorded segments of the same activity. Short breaks under 5 minutes are hidden; paused time is not counted as active tracking.</p><ul>'+(pausesHtml||'<li>No substantial pauses recorded for this date.</li>')+'</ul></details>');
  message.textContent='Unlogged means no verified activity record; it does not mean free time or inactivity. Development examples are excluded. Overlapping activities count once in recorded totals. For the current day, gaps are measured only up to the present time. *On daylight-saving transition dates, the day may contain 23 or 25 hours; the axis represents the full local calendar day.';
 }
 function mount(){
