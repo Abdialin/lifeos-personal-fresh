@@ -63,6 +63,7 @@ class MainActivity : Activity() {
                 view.postDelayed({ reconcileNativeSnooze() }, 1400L)
                 view.postDelayed({ deliverNativeTimerAction() }, 600L)
                 view.postDelayed({ deliverNativeTimerAction() }, 1800L)
+                view.postDelayed({ refreshNativeProjection() }, 2100L)
             }
             override fun onReceivedHttpAuthRequest(
                 view: WebView, handler: HttpAuthHandler, host: String, realm: String
@@ -291,6 +292,15 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun refreshNativeProjection() {
+        if (!::web.isInitialized || !trustedPage(web.url)) return
+        // The canonical browser tracker is the only authority. A lifecycle
+        // refresh must never reuse an old native notification's elapsed time.
+        web.evaluateJavascript(
+            "if(window.LifeOSAndroidBridgeV222){window.LifeOSAndroidBridgeV222.publish(true);window.LifeOSAndroidBridgeV222.publishAlarm(true)}"
+        , null)
+    }
+
     private fun receiveNativeTimerAction(source: Intent?) {
         if (source?.action != TimerService.ACTION_NATIVE_CONTROL) return
         val id = source.getStringExtra(TimerService.EXTRA_ID) ?: return
@@ -347,6 +357,8 @@ class MainActivity : Activity() {
         if (::web.isInitialized) web.post {
             reconcileNativeSnooze()
             deliverNativeTimerAction()
+            refreshNativeProjection()
+            web.postDelayed({ refreshNativeProjection() }, 1400L)
         }
     }
 
