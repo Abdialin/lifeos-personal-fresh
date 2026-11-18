@@ -1958,15 +1958,48 @@ async function v234Review(){
    ' Review files in My Files before step 2. Never choose Upload local data.';
  }catch(e){status.textContent='Review failed without changing any records: '+(e?.message||'unknown')}
 }
+/* V239: WebView-compatible in-page confirmation. Native WebView JavaScript
+   confirm()/prompt() are unavailable without WebChromeClient handlers. */
+function v239ConfirmRestore(){
+ return new Promise(resolve=>{
+  if(document.getElementById('lo239-restore-overlay'))return resolve(false);
+  const shade=document.createElement('div');
+  shade.id='lo239-restore-overlay';
+  shade.style.cssText='position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;overflow-y:auto';
+  shade.innerHTML='<section role="dialog" aria-modal="true" aria-labelledby="lo239-title" style="background:#14273b;border:2px solid #70daca;border-radius:18px;color:#f3fbff;width:min(100%,520px);max-height:90vh;overflow:auto;padding:22px;box-sizing:border-box;line-height:1.55;box-shadow:0 24px 60px #0009">'+
+   '<h2 id="lo239-title" style="margin:0 0 14px;font-size:22px">Confirm server history recovery</h2>'+
+   '<p>Both Android and server backups must already be saved and verified in My Files. This replaces <b>only this empty local installation</b> with the existing server history. PostgreSQL will not be uploaded to or overwritten.</p>'+
+   '<label style="display:flex;gap:12px;align-items:start;margin:16px 0"><input id="lo239-backups" type="checkbox" style="width:22px;height:22px;flex-shrink:0"><span>I verified both JSON backup files are saved.</span></label>'+
+   '<label for="lo239-phrase" style="display:block;margin:12px 0 6px">Type <b>RESTORE SERVER</b> to continue:</label>'+
+   '<input id="lo239-phrase" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" style="box-sizing:border-box;width:100%;min-height:48px;background:#0b1a2b;border:1px solid #638398;border-radius:10px;padding:10px;color:white;font-size:18px">'+
+   '<p id="lo239-hint" role="status" style="color:#bcd9e8;font-size:13px">This operation changes local storage only.</p>'+
+   '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:15px"><button id="lo239-cancel" type="button" style="padding:12px 18px;min-height:48px;border-radius:10px;background:#30445b;color:#fff;border:1px solid #8297a9">Cancel</button>'+
+   '<button id="lo239-approve" type="button" disabled style="padding:12px 18px;min-height:48px;border-radius:10px;background:#70daca;color:#092527;border:0;font-weight:750">Restore locally</button></div></section>';
+  document.body.appendChild(shade);
+  const check=shade.querySelector('#lo239-backups'),phrase=shade.querySelector('#lo239-phrase'),approve=shade.querySelector('#lo239-approve'),cancel=shade.querySelector('#lo239-cancel');
+  let settled=false;
+  const close=ok=>{
+   if(settled)return;settled=true;
+   document.removeEventListener('keydown',onKey);
+   shade.remove();
+   resolve(ok);
+  };
+  const onKey=e=>{if(e.key==='Escape'){e.preventDefault();close(false)}};
+  const update=()=>{approve.disabled=!(check.checked&&phrase.value.trim()==='RESTORE SERVER')};
+  check.addEventListener('change',update);phrase.addEventListener('input',update);
+  approve.addEventListener('click',()=>{if(!approve.disabled&&check.checked&&phrase.value.trim()==='RESTORE SERVER')close(true)});
+  cancel.addEventListener('click',()=>close(false));
+  document.addEventListener('keydown',onKey);
+  phrase.focus();
+ });
+}
 async function v234Adopt(){
  const status=$('lo234-status'),button=$('lo234-adopt-button'),review=v234Reviewed;
  button.disabled=true;
  if(!review){status.textContent='Review and download both backups first.';return}
  if(syncBusy||atomicBlocked||outboxCorrupt){status.textContent='Local storage or sync is blocked. No records changed.';return}
- const acknowledged=confirm('Before continuing, confirm BOTH JSON backup files were downloaded and verified in My Files on the phone. This replaces ONLY the empty local Android workspace with server history. PostgreSQL stays untouched. Cancel unless both backups exist.');
- if(!acknowledged){status.textContent='Cancelled. No records changed.';return}
- const typed=prompt('Type RESTORE SERVER to confirm replacing only this empty local device. No data will be uploaded.');
- if(typed!=='RESTORE SERVER'){status.textContent='Confirmation did not match. No records changed.';return}
+ const acknowledged=await v239ConfirmRestore();
+ if(!acknowledged){status.textContent='Cancelled. No records changed.';button.disabled=false;return}
  try{
   // Re-fetch on the actual confirmation: another device might have written.
   const epoch=syncEpoch;
