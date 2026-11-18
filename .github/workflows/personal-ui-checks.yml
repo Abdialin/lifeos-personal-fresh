@@ -45,6 +45,8 @@ jobs:
         run: node test_android_lifecycle_v231.cjs
       - name: Validate native Android diagnostic and lock-screen privacy source
         run: node test_android_companion_v230.cjs
+      - name: Validate first-run empty workspace safety and Android system-bar layout
+        run: node test_android_first_run_v233.cjs
       - name: Validate substantial pause/resume intervals without double counting
         run: node test_activity_pauses_v225.cjs
       - name: Validate focus control states and alert engine
