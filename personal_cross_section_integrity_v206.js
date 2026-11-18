@@ -21,7 +21,7 @@ function duration(session,at=Date.now()){
   ms+=end-part.start;
  }
  if(session?.status==='running'&&open!==1)malformed=true;
- if(session?.status==='finished'&&open!==0)malformed=true;
+ if((session?.status==='finished'||session?.status==='paused')&&open!==0)malformed=true;
  return {ms,malformed,open};
 }
 function inspect(workspace,at=Date.now()){

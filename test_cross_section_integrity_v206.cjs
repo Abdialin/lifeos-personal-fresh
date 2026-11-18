@@ -9,6 +9,7 @@ let r=integrity.inspect(w,t);
 assert.equal(r.summary.activities,1);assert.equal(r.summary.invalidIntervals,0);
 assert.equal(r.counts.meals.orphanLinks,1);assert.equal(r.summary.missingHabitEvidence,0);
 assert.equal(integrity.duration(live,t).ms,h);
+assert.equal(integrity.duration({status:'paused',segments:[{start:t-h,end:null}]},t).malformed,true);
 w.workouts.push({id:'w2',sessionId:'s1'});
 r=integrity.inspect(w,t);assert.equal(r.summary.linkedWorkoutDuplicates,1);
 w.sessions.push({...live});r=integrity.inspect(w,t);assert.equal(r.counts.sessions.duplicates,1);
