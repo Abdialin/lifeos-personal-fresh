@@ -9,8 +9,8 @@ android {
         applicationId = "com.lifeos.companion"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2-v229"
+        versionCode = 3
+        versionName = "0.3-v230"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
