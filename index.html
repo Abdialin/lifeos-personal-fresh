@@ -1932,7 +1932,7 @@ async function v234Adopt(){
  button.disabled=true;
  if(!review){status.textContent='Review and download both backups first.';return}
  if(syncBusy||atomicBlocked||outboxCorrupt){status.textContent='Local storage or sync is blocked. No records changed.';return}
- const acknowledged=confirm('Before continuing, confirm BOTH JSON backup files were downloaded and verified in your phone\\'s My Files. This replaces ONLY the empty local Android workspace with server history. PostgreSQL stays untouched. Cancel unless both backups exist.');
+ const acknowledged=confirm('Before continuing, confirm BOTH JSON backup files were downloaded and verified in My Files on the phone. This replaces ONLY the empty local Android workspace with server history. PostgreSQL stays untouched. Cancel unless both backups exist.');
  if(!acknowledged){status.textContent='Cancelled. No records changed.';return}
  const typed=prompt('Type RESTORE SERVER to confirm replacing only this empty local device. No data will be uploaded.');
  if(typed!=='RESTORE SERVER'){status.textContent='Confirmation did not match. No records changed.';return}
