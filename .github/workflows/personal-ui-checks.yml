@@ -78,6 +78,8 @@ jobs:
         run: timeout --signal=TERM 70s python -m unittest -v test_timer_shortcut_v220_browser
       - name: Verify focus pause break and alarm controls in Chromium
         run: timeout --signal=TERM 95s python -m unittest -v test_focus_controls_v221_browser
+      - name: Verify restricted Android bridge timer and alarm events
+        run: timeout --signal=TERM 80s python -m unittest -v test_android_bridge_v222_browser
       - name: Verify current six-section LifeOS interface
         run: timeout --signal=TERM 150s python -m unittest -v test_current_personal_v219_browser
       - name: Historical v4 UI compatibility (diagnostic; older layout assertions)
