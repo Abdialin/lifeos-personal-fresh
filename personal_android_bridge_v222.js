@@ -30,7 +30,7 @@ function nativeTimerAction(id,action){
  return true;
 }
 let last='',lastAlarm='';
-function publishAlarm(){
+function publishAlarm(force=false){
  const native=root.LifeOSNative;
  if(!native||typeof native.postMessage!=='function')return false;
  let saved=null;try{saved=JSON.parse(root.localStorage?.getItem('lifeos.personal.focus.v207')||'null')}catch(_){}
@@ -38,11 +38,10 @@ function publishAlarm(){
  const value=active?{kind:'alarm-status',status:'scheduled',name:String(saved.label||'LifeOS alarm').slice(0,80),endMs:Math.floor(Number(saved.end))}:
    saved?.mode==='ringing'?{kind:'alarm-status',status:'ringing'}:{kind:'alarm-status',status:'cancelled'};
  const signature=value.status+'|'+(value.endMs||'');
- if(signature===lastAlarm)return true;
- lastAlarm=signature;
- try{native.postMessage(JSON.stringify(value));return true}catch(_){return false}
+ if(signature===lastAlarm&&!force)return true;
+ try{native.postMessage(JSON.stringify(value));lastAlarm=signature;return true}catch(_){return false}
 }
-function publish(){
+function publish(force=false){
  const native=root.LifeOSNative;
  if(!native||typeof native.postMessage!=='function')return false;
  let sessions=[];try{sessions=root.lifeosReadOnlyWorkspace?.()?.sessions||[]}catch(_){}
@@ -54,18 +53,18 @@ function publish(){
    {kind:'timer-status',status:'stopped'};
  // Running elapsed changes continuously; send on initial mount, return, or activity changes.
  const signature=s?String(s.id)+'|'+s.status+'|'+s.name+'|'+openCount:'none';
- if(signature===last)return true;
- last=signature;
- try{native.postMessage(JSON.stringify(message));return true}catch(_){return false}
+ if(signature===last&&!force)return true;
+ try{native.postMessage(JSON.stringify(message));last=signature;return true}catch(_){return false}
 }
 if(root?.document){
  root.addEventListener('lifeos-v77-tracking-changed',()=>root.setTimeout(publish,100));
  root.addEventListener('lifeos-v221-focus-changed',()=>root.setTimeout(publishAlarm,100));
- root.addEventListener('pageshow',publish);
- root.addEventListener('focus',publish);
- root.addEventListener('load',()=>root.setTimeout(()=>{publish();publishAlarm()},400));
+ root.addEventListener('pageshow',()=>{publish(true);publishAlarm(true)});
+ root.addEventListener('focus',()=>{publish(true);publishAlarm(true)});
+ root.document.addEventListener('visibilitychange',()=>{if(!root.document.hidden){publish(true);publishAlarm(true)}});
+ root.addEventListener('load',()=>root.setTimeout(()=>{publish(true);publishAlarm(true)},400));
  // A bridge may be injected after scripts mount; one opportunistic retry.
- root.setTimeout(()=>{publish();publishAlarm()},1500);
+ root.setTimeout(()=>{publish(true);publishAlarm(true)},1500);
  // Quick Start and legacy handlers do not all dispatch v77 events. Read-only
  // change detection keeps the native display in sync without duplicating writes.
  root.setInterval(()=>{if(!document.hidden)publish()},2000);
