@@ -126,7 +126,7 @@ body[data-lifeos-view="dashboard"] #todayLegacyOverviewPanel{display:none!import
 .lo154-logout{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 15px;border:1px solid #40657a;border-radius:12px;background:#132b40;color:#eaf6fc!important;text-decoration:none;font-weight:700;font-size:14px}
 .lo154-logout:focus-visible{outline:3px solid #69d9be;outline-offset:2px}
 @media(max-width:480px){.lo154-access{gap:6px}.lo154-logout{font-size:13px;padding:8px 10px}.lo154-access #status{display:none}}
-</style><link rel="stylesheet" href="personal_goals_product_v160.css?v=20261117-v164"><link rel="stylesheet" href="personal_goals_repair_v168.css?v=20261117-v168"><link rel="stylesheet" href="personal_goals_focus_v169.css?v=20261117-v174"><link rel="stylesheet" href="personal_day_intelligence_v170.css?v=20261117-v186"><link rel="stylesheet" href="personal_android_first_run_v233.css?v=20261118-v233"></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="lo154-access"><a class="lo154-logout" href="/logout" aria-label="Log out of LifeOS">Log out</a><div class="pill" id="status">● Ready</div></div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
+</style><link rel="stylesheet" href="personal_goals_product_v160.css?v=20261117-v164"><link rel="stylesheet" href="personal_goals_repair_v168.css?v=20261117-v168"><link rel="stylesheet" href="personal_goals_focus_v169.css?v=20261117-v174"><link rel="stylesheet" href="personal_day_intelligence_v170.css?v=20261117-v186"><link rel="stylesheet" href="personal_android_first_run_v233.css?v=20261118-v233"><script src="personal_fresh_device_adoption_v234.js?v=20261118-v234"></script></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="lo154-access"><a class="lo154-logout" href="/logout" aria-label="Log out of LifeOS">Log out</a><div class="pill" id="status">● Ready</div></div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
   <div class="today-welcome"><div><div class="today-eyebrow" id="todayFullDate">Today</div><h2>Your day at a glance</h2><p>Time, priorities and your next action.</p></div><span class="today-live-dot">● Live view</span></div>
   <div class="today-stats">
     <div class="today-stat"><span>Recorded today</span><strong id="todayRecorded">—</strong><small>Includes overlapping sessions</small></div>
@@ -1873,6 +1873,104 @@ async function pull(){
   syncStatus('Loaded from server · revision '+syncRevision);
  }catch(e){syncStatus('Load failed: '+e.message)}
 }
+/* V234: explicit local-only adoption for a truly empty newly installed device.
+   No PUT requests, no queued replay, no automatic adoption on page load. */
+let v234Reviewed=null;
+function v234Panel(){
+ let panel=$('lo234-adopt');
+ if(panel)return panel;
+ panel=document.createElement('section');
+ panel.id='lo234-adopt';
+ panel.style.cssText='margin:16px 0;padding:16px;border:1px solid #529a91;border-radius:14px;background:#102c36;line-height:1.55';
+ panel.innerHTML='<strong style="display:block;font-size:17px;margin-bottom:7px">Restore your existing server history to this new Android installation</strong>'+
+  '<p class="sub">Only for a new, empty device with one unchanged initialization operation. This operation does not upload anything to the server. If you have real local records, use normal reconciliation instead.</p>'+
+  '<div class="row"><button class="btn outline" type="button" id="lo234-review">1 · Check eligibility & export both copies</button>'+
+  '<button class="btn primary" type="button" id="lo234-adopt-button" disabled>2 · Restore existing server history locally</button></div>'+
+  '<p class="sub" id="lo234-status" role="status" aria-live="polite">No changes have been made.</p>';
+ const anchor=$('cloudSyncPanel');
+ if(anchor)anchor.appendChild(panel);
+ else return null;
+ $('lo234-review').addEventListener('click',v234Review);
+ $('lo234-adopt-button').addEventListener('click',v234Adopt);
+ return panel;
+}
+async function v234Review(){
+ const panel=v234Panel();if(!panel)return;
+ const status=$('lo234-status'),button=$('lo234-adopt-button');
+ button.disabled=true;v234Reviewed=null;
+ if(syncBusy||outboxCorrupt||atomicBlocked){status.textContent='Recovery unavailable while storage or sync is blocked.';return}
+ if(!syncToken){status.textContent='Enter the private sync token and use Connect first. Never paste it into a screenshot.';return}
+ try{
+  const remote=await requestState();
+  validateWorkspace(remote.data);
+  const policy=window.LifeOSFreshDeviceAdoptionV234?.inspect({
+   local:data,queue:outbox,meta:syncMeta,remote,
+   blocked:syncBusy||atomicBlocked||outboxCorrupt
+  });
+  if(!policy?.ok){status.textContent='Restore unavailable: '+(policy?.reason||'Safety checker unavailable')+' No records changed.';return}
+  // Back up the complete current local recovery checkpoint and its operation
+  // journal, plus the server workspace. Credentials are never exported.
+  const snapshot={
+   exportType:'lifeos-v234-local-recovery',exportedAt:new Date().toISOString(),
+   workspace:data,queue:outbox,syncMeta,
+   checkpointRaw:localStorage.getItem(ATOMIC_KEY),
+   workspaceMirrorRaw:localStorage.getItem(KEY),
+   outboxMirrorRaw:localStorage.getItem(OUTBOX_KEY),
+   syncMetaMirrorRaw:localStorage.getItem(SYNC_META_KEY)
+  };
+  download('LifeOS_v234_android_local_before_adoption.json',JSON.stringify(snapshot,null,2),'application/json');
+  download('LifeOS_v234_server_revision_'+policy.revision+'.json',JSON.stringify(remote.data,null,2),'application/json');
+  // No downloads are guaranteed until the user verifies they exist on-device.
+  v234Reviewed={revision:policy.revision,queueId:policy.queueId};
+  button.disabled=false;
+  status.textContent='Eligible. Server revision '+policy.revision+' has '+policy.counts.sessions+
+   ' sessions and '+policy.counts.events+' events. Two JSON backup downloads were requested. Check both files in My Files before step 2. Never choose Upload local data.';
+ }catch(e){status.textContent='Review failed without changing any records: '+(e?.message||'unknown')}
+}
+async function v234Adopt(){
+ const status=$('lo234-status'),button=$('lo234-adopt-button'),review=v234Reviewed;
+ button.disabled=true;
+ if(!review){status.textContent='Review and download both backups first.';return}
+ if(syncBusy||atomicBlocked||outboxCorrupt){status.textContent='Local storage or sync is blocked. No records changed.';return}
+ const acknowledged=confirm('Before continuing, confirm BOTH JSON backup files were downloaded and verified in your phone\\'s My Files. This replaces ONLY the empty local Android workspace with server history. PostgreSQL stays untouched. Cancel unless both backups exist.');
+ if(!acknowledged){status.textContent='Cancelled. No records changed.';return}
+ const typed=prompt('Type RESTORE SERVER to confirm replacing only this empty local device. No data will be uploaded.');
+ if(typed!=='RESTORE SERVER'){status.textContent='Confirmation did not match. No records changed.';return}
+ try{
+  // Re-fetch on the actual confirmation: another device might have written.
+  const epoch=syncEpoch;
+  const remote=await requestState();
+  if(epoch!==syncEpoch)throw Error('Sync state changed during review.');
+  validateWorkspace(remote.data);
+  const policy=window.LifeOSFreshDeviceAdoptionV234?.inspect({
+   local:data,queue:outbox,meta:syncMeta,remote,
+   blocked:syncBusy||atomicBlocked||outboxCorrupt
+  });
+  if(!policy?.ok||policy.revision!==review.revision||policy.queueId!==review.queueId)
+   throw Error('Server or local recovery state changed since review. Review and export fresh backups again.');
+  const nextMeta={revision:remote.revision,dirty:false};
+  // One atomic local checkpoint replaces the empty workspace and its
+  // initialization-only journal; no server API write is performed.
+  if(!atomicCommit(remote.data,[],nextMeta))
+   throw Error('Local atomic storage rejected the restore. Previous state was preserved.');
+  stopSync();
+  data=remote.data;ensureModules();outbox=[];syncMeta=nextMeta;syncRevision=remote.revision;
+  try{
+   localStorage.setItem(KEY,JSON.stringify(data));
+   if(!compactMode)localStorage.setItem(OUTBOX_KEY,'[]');
+   localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta));
+  }catch(_){/* Atomic recovery checkpoint remains authoritative. */}
+  render();
+  v234Reviewed=null;
+  status.textContent='Server revision '+nextMeta.revision+' restored to this device only. No server upload occurred. Reconnect to Cloud sync to resume future updates.';
+  syncStatus('Server history restored locally at revision '+nextMeta.revision+'. Reconnect before syncing new changes.');
+ }catch(e){
+  v234Reviewed=null;
+  status.textContent='Restore blocked: '+(e?.message||'unknown')+'. Existing server data was not changed.';
+ }
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',v234Panel,{once:true});
+else v234Panel();
 async function push(){
  if(outboxCorrupt)return syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');
  if(syncRevision===null)return syncStatus('Connect first.');
