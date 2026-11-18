@@ -172,3 +172,17 @@ For safety, two outputs are now distinct:
 - `com.lifeos.companion.beta`: stable *signed release* test beta. Available only when GitHub Actions has all four private signing secrets configured; subsequent releases remain update-compatible if the same key is retained.
 
 See **`SIGNING_AND_SAFE_UPDATES_V238.md`** for the one-time secure key setup and Android data-protection instructions. No signing key, keystore password, or secret was committed to this repository. An APK build and the Samsung side-by-side install must still be confirmed.
+
+## V241–V242 browser-only activity recovery (17–18 November)
+
+Situation: Server revision 116 was adopted locally in Android with ~393 sessions, but activity records created in Samsung Browser on 17–18 November were not in that server snapshot. The Android UI legitimately shows the server's older data, not the browser's isolated local changes. Old running sessions from 16 November must not be inventively closed or converted to different dates.
+
+V241 adds an export of the original Samsung Browser's exact activity `sessions` and `events`, and a backup-first, local-only JSON import in Android Beta. Shared record IDs with differing content are **skipped, never overwritten**; imported timestamps, segments and statuses remain unchanged. Import creates a dirty local recovery state with no trusted upload baseline, so normal full-workspace upload remains blocked.
+
+**Preferred V242 recovery:** open original LifeOS site in Samsung Browser, go to Settings & data → Cloud sync → Synchronize missing activities across devices, tap **A (read-only compare)** and then **B** if eligible. Back up browser and server JSON files, explicitly type `PUBLISH MISSING`; the app fetches the current server revision again and sends a server-based snapshot with **only missing activity IDs added**, protected by server-side revision compare-and-swap. Other server collections and existing IDs are preserved. No automatic retry happens on ambiguous network failures. Skip conflicting shared IDs for separate review.
+
+On Android Beta, open the same section and tap **C** then **D**. It requires the local workspace to be a conflict-free subset of the server, with all other collections/settings identical. It requires verified Android Save As backups and the typed confirmation `UPDATE ANDROID`, refetches the server, and atomically adopts the verified server state locally without any server write. Check Track → History and reload to confirm persistence. If the server changed or any other collection diverged, refuse rather than overwrite it.
+
+Both methods require a functioning private sync token and their own backups and user approval. Neither the source browser localStorage nor existing PostgreSQL state was read or changed remotely during the code deployment. A new Android APK is **not** required because both workflows run in the web layer inside the installed companion. Existing activity records should not be re-created or reseeded.
+
+**Important:** V242 is a guarded manual cross-device recovery path, not proof that every concurrent multi-device edit now automatically merges. The legacy snapshot sync still guards conflicting revisions and may require further redesign for seamless collaboration.
