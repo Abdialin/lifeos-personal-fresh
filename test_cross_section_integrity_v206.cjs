@@ -7,6 +7,12 @@ const w={sessions:[live],workouts:[{id:'w1',sessionId:'s1',minutes:60}],
  meals:[{id:'m1',sessionId:'no-longer-present'}],schedule:[],habitChecks:[{id:'h1',evidenceType:'session',evidenceSourceId:'s1'}]};
 let r=integrity.inspect(w,t);
 assert.equal(r.summary.activities,1);assert.equal(r.summary.invalidIntervals,0);
+const orphanPlans=integrity.inspect({...w,schedule:[{id:'p1',sessionId:'missing'}]},t);
+assert.equal(orphanPlans.summary.orphanPlanLinks,1);
+assert.equal(orphanPlans.counts.schedule.orphanSessionLinks,1);
+const corrupt=integrity.inspect({sessions:{not:'an array'},workouts:null,meals:false,schedule:'invalid',habitChecks:5},t);
+assert.equal(corrupt.summary.activities,0);
+assert.equal(corrupt.summary.issues,0);
 assert.equal(r.counts.meals.orphanLinks,1);assert.equal(r.summary.missingHabitEvidence,0);
 assert.equal(integrity.duration(live,t).ms,h);
 assert.equal(integrity.duration({status:'paused',segments:[{start:t-h,end:null}]},t).malformed,true);
