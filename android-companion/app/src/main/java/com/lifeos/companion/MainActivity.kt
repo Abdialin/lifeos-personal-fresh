@@ -73,6 +73,9 @@ class MainActivity : Activity() {
         web.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
+                if (trustedPage(url)) {
+                    view.evaluateJavascript("window.LifeOSNativeBackupV234=true", null)
+                }
                 reconcileNativeSnooze()
                 view.postDelayed({ reconcileNativeSnooze() }, 1400L)
                 view.postDelayed({ deliverNativeTimerAction() }, 600L)
