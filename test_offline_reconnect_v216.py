@@ -53,7 +53,10 @@ class OfflineReconnect(unittest.TestCase):
                     ids=[s['id'] for s in first['workspace']['sessions'] if s['name']=='Work']
                     self.assertEqual(len(ids),1)
                     # Explicitly attempt a connection while offline.
-                    page.locator('#syncToken').fill('synthetic-token-not-real')
+                    page.locator('#syncToken').evaluate("""el => {
+                      el.value='synthetic-token-not-real';
+                      el.dispatchEvent(new Event('input',{bubbles:true}));
+                    }""")
                     page.locator('#connectSync').evaluate('(button) => button.click()')
                     page.wait_for_function("() => document.querySelector('#syncStatus')?.textContent.includes('Could not connect')",timeout=7000)
                     self.assertEqual(mode['writes'],0)
