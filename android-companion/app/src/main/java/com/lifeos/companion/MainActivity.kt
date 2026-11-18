@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowInsets
 import android.content.Context
 import android.webkit.WebResourceRequest
 import android.webkit.HttpAuthHandler
@@ -50,6 +51,15 @@ class MainActivity : Activity() {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 220)
         }
         web = WebView(this)
+        // Android 15+ may draw WebView content beneath system bars. Reserve
+        // only native system-bar insets; do not change persisted web layout.
+        web.setOnApplyWindowInsetsListener { view, insets ->
+            val bars = insets.getInsets(
+                WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars()
+            )
+            view.setPadding(0, bars.top, 0, bars.bottom)
+            insets
+        }
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
         web.settings.allowFileAccess = false
@@ -118,7 +128,7 @@ class MainActivity : Activity() {
         }
         setContentView(web)
         receiveNativeTimerAction(intent)
-        web.loadUrl("$lifeOsOrigin/?v=228#tracking")
+        web.loadUrl("$lifeOsOrigin/?v=233#dashboard")
         if (!getPreferences(Context.MODE_PRIVATE).getBoolean("native_permissions_explained", false)) {
             getPreferences(Context.MODE_PRIVATE).edit()
                 .putBoolean("native_permissions_explained", true).apply()
