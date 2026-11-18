@@ -1,4 +1,4 @@
-name: LifeOS Android companion compile (experimental)
+name: LifeOS Android companion APK verification (V232)
 on:
   push:
     branches: [main]
@@ -11,29 +11,60 @@ permissions:
 jobs:
   compile:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Use preinstalled Android SDK
+      - name: Configure Android SDK and diagnostics
+        shell: bash
         run: |
-          SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          test -d "$SDK_ROOT" || { echo "::error::Android SDK missing: $SDK_ROOT"; exit 1; }
           echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT: $SDK_ROOT"
+          java -version
           "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_ROOT" --install "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Compile companion debug APK (experimental, debug signed)
+      - name: Compile experimental V232 Android debug APK
         working-directory: android-companion
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
-      - name: Retain experimental Android APK for private device testing
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle :app:assembleDebug --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v232-build.log
+      - name: Verify APK archive and package metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="android-companion/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK" || { echo "::error::APK missing or empty"; exit 1; }
+          unzip -t "$APK" | tail -3
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$APK" | tee android-v232-package-info.txt
+          grep -q "package: name='com.lifeos.companion'" android-v232-package-info.txt
+          grep -q "sdkVersion:'26'" android-v232-package-info.txt
+          grep -q "targetSdkVersion:'35'" android-v232-package-info.txt
+          echo "APK passed archive, package ID, minSdk, targetSdk checks"
+      - name: Save build and validation diagnostics
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lifeos-android-v231-debug-test-only
+          name: lifeos-android-v232-build-diagnostics
+          path: |
+            android-v232-build.log
+            android-v232-package-info.txt
+            android-companion/app/build/outputs/logs/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Retain verified debug APK for private testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: lifeos-android-v232-debug-test-only
           path: android-companion/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 14
