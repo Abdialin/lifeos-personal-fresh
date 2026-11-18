@@ -113,3 +113,9 @@ The Focus panel now offers a **Test Android alarm sound & vibration** button onl
 5. Reboot with a future alarm, verify it fires; review Android notification channel, battery policy and exact-alarm settings using LifeOS native diagnostics.
 6. With two simultaneous activities, ensure the notification indicates other open timers and does not overwrite the non-displayed activity.
 7. After reconnecting or reopening, confirm all tracked segments persist and show correctly in the timeline and cross-section reports.
+
+## V232 APK build verification gate
+
+The GitHub Actions workflow under `.github/workflows/personal-android-build.yml` now compiles V232, checks that the APK is a nonempty valid ZIP, inspects its Android package name and min/target SDK metadata, and retains a separate build-diagnostics artifact even on failure. The debug APK artifact is uploaded **only after** those validations pass. Both artifacts are private test deliverables, not an app-store release. See `DEVICE_TEST_CHECKLIST_V232.md` for physical-phone acceptance tests.
+
+**Important:** A Render `live` deployment validates the **web staging service**, not the Android APK or Android alarm/notification behavior. The GitHub integration currently reports no workflow runs for the checked recent commits; therefore the compiled APK is not yet independently verified. The repository owner should check the Actions tab for the workflow, confirm it is enabled and run it manually if push-triggered runs do not appear. Do not install an unverified older APK or overwrite user tracking data.
