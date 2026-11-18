@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),i=require('./personal_recovery_import_v218.js');
+const workspace={version:1,sessions:[],events:[],goals:[{id:'g1'}]};
+assert.equal(i.inspect(workspace).ok,true);
+assert.equal(i.inspect(workspace).isBundle,false);
+const bundle={format:'lifeos-recovery-v1',workspace,atomicCheckpoint:{format:1,workspace,journal:[{id:'queued'}],meta:{revision:2,dirty:true}},offlineJournalRaw:'[]'};
+const r=i.inspect(bundle);assert.equal(r.ok,true);assert.equal(r.isBundle,true);assert.equal(r.journalEntries,1);
+assert.ok(r.message.includes('NOT replayed'));
+assert.equal(i.inspect({...bundle,atomicCheckpointIssue:'bad'}).ok,false);
+assert.equal(i.inspect({format:'lifeos-recovery-v1',workspace:{}}).ok,false);
+assert.equal(i.inspect({...bundle,atomicCheckpoint:{format:2,workspace:{},meta:{}}}).ok,true);
+assert.equal(i.inspect({format:'garbage',workspace}).ok,false);
+assert.equal(i.inspect(null).ok,false);
+console.log('V218 recovery bundle and plain workspace validation PASS');

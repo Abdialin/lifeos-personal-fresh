@@ -25,6 +25,8 @@ jobs:
         run: node test_cross_section_integrity_v206.cjs
       - name: Validate strict whole-workspace cloud parity
         run: node test_cloud_parity_v210.cjs
+      - name: Validate recovery bundle import and fail-closed backup formats
+        run: node test_recovery_import_v218.cjs
       - name: Validate offline queue revision safety
         run: node test_sync_gate_v211.cjs
       - name: Validate two-device conflict review
