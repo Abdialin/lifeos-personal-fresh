@@ -1,4 +1,4 @@
-name: LifeOS Android companion APK verification (V233)
+name: LifeOS Android companion APK verification (V234)
 on:
   push:
     branches: [main]
@@ -32,12 +32,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Compile experimental V233 Android debug APK
+      - name: Compile experimental V234 Android debug APK
         working-directory: android-companion
         shell: bash
         run: |
           set -euo pipefail
-          gradle :app:assembleDebug --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v233-build.log
+          gradle :app:assembleDebug --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v234-build.log
       - name: Verify APK archive and package metadata
         shell: bash
         run: |
@@ -45,26 +45,26 @@ jobs:
           APK="android-companion/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$APK" || { echo "::error::APK missing or empty"; exit 1; }
           unzip -t "$APK" | tail -3
-          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$APK" | tee android-v233-package-info.txt
-          grep -q "package: name='com.lifeos.companion'" android-v233-package-info.txt
-          grep -q "sdkVersion:'26'" android-v233-package-info.txt
-          grep -q "targetSdkVersion:'35'" android-v233-package-info.txt
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$APK" | tee android-v234-package-info.txt
+          grep -q "package: name='com.lifeos.companion'" android-v234-package-info.txt
+          grep -q "sdkVersion:'26'" android-v234-package-info.txt
+          grep -q "targetSdkVersion:'35'" android-v234-package-info.txt
           echo "APK passed archive, package ID, minSdk, targetSdk checks"
       - name: Save build and validation diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lifeos-android-v233-build-diagnostics
+          name: lifeos-android-v234-build-diagnostics
           path: |
-            android-v233-build.log
-            android-v233-package-info.txt
+            android-v234-build.log
+            android-v234-package-info.txt
             android-companion/app/build/outputs/logs/
           if-no-files-found: warn
           retention-days: 14
       - name: Retain verified debug APK for private testing
         uses: actions/upload-artifact@v4
         with:
-          name: lifeos-android-v233-debug-test-only
+          name: lifeos-android-v234-debug-test-only
           path: android-companion/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
