@@ -126,7 +126,7 @@ body[data-lifeos-view="dashboard"] #todayLegacyOverviewPanel{display:none!import
 .lo154-logout{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 15px;border:1px solid #40657a;border-radius:12px;background:#132b40;color:#eaf6fc!important;text-decoration:none;font-weight:700;font-size:14px}
 .lo154-logout:focus-visible{outline:3px solid #69d9be;outline-offset:2px}
 @media(max-width:480px){.lo154-access{gap:6px}.lo154-logout{font-size:13px;padding:8px 10px}.lo154-access #status{display:none}}
-</style><link rel="stylesheet" href="personal_goals_product_v160.css?v=20261117-v164"><link rel="stylesheet" href="personal_goals_repair_v168.css?v=20261117-v168"><link rel="stylesheet" href="personal_goals_focus_v169.css?v=20261117-v174"><link rel="stylesheet" href="personal_day_intelligence_v170.css?v=20261117-v186"><link rel="stylesheet" href="personal_android_first_run_v233.css?v=20261118-v233"><script src="personal_fresh_device_adoption_v234.js?v=20261118-v234"></script><script src="personal_native_backup_v234.js?v=20261118-v234"></script><script src="personal_native_secure_sync_v237.js?v=20261118-v237"></script><link rel="stylesheet" href="personal_android_navigation_safe_v240.css?v=20261118-v240"><script src="personal_browser_activity_recovery_v241.js?v=20261118-v241"></script></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="lo154-access"><a class="lo154-logout" href="/logout" aria-label="Log out of LifeOS">Log out</a><div class="pill" id="status">● Ready</div></div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
+</style><link rel="stylesheet" href="personal_goals_product_v160.css?v=20261117-v164"><link rel="stylesheet" href="personal_goals_repair_v168.css?v=20261117-v168"><link rel="stylesheet" href="personal_goals_focus_v169.css?v=20261117-v174"><link rel="stylesheet" href="personal_day_intelligence_v170.css?v=20261117-v186"><link rel="stylesheet" href="personal_android_first_run_v233.css?v=20261118-v233"><script src="personal_fresh_device_adoption_v234.js?v=20261118-v234"></script><script src="personal_native_backup_v234.js?v=20261118-v234"></script><script src="personal_native_secure_sync_v237.js?v=20261118-v237"></script><link rel="stylesheet" href="personal_android_navigation_safe_v240.css?v=20261118-v240"><script src="personal_browser_activity_recovery_v241.js?v=20261118-v241"></script><script src="personal_activity_delta_sync_v242.js?v=20261118-v242"></script></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="lo154-access"><a class="lo154-logout" href="/logout" aria-label="Log out of LifeOS">Log out</a><div class="pill" id="status">● Ready</div></div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
   <div class="today-welcome"><div><div class="today-eyebrow" id="todayFullDate">Today</div><h2>Your day at a glance</h2><p>Time, priorities and your next action.</p></div><span class="today-live-dot">● Live view</span></div>
   <div class="today-stats">
     <div class="today-stat"><span>Recorded today</span><strong id="todayRecorded">—</strong><small>Includes overlapping sessions</small></div>
@@ -2174,6 +2174,146 @@ async function v241Import(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',v241Panel,{once:true});
 else v241Panel();
+/* V242: explicit cross-device activity-only synchronization.
+   Publication starts with latest PostgreSQL workspace and adds unseen IDs.
+   Beta import requires local IDs to be a conflict-free subset of server. */
+let v242Review=null;
+function v242Panel(){
+ if($('lo242-activity-sync'))return;
+ const mount=$('cloudSyncPanel');if(!mount)return;
+ const el=document.createElement('section');el.id='lo242-activity-sync';
+ el.style.cssText='margin:18px 0;padding:17px;background:#10283b;border:1px solid #4b8897;border-radius:16px;color:#e9f8ff;line-height:1.55';
+ el.innerHTML='<h3 style="margin:0 0 10px">Synchronize missing activities across devices</h3>'+
+  '<p class="sub"><b>In Samsung Browser:</b> publish only activity sessions/events missing from the latest server revision. Existing server records are never overwritten. <b>In Android Beta:</b> update from server only when every existing local record matches.</p>'+
+  '<button type="button" class="btn outline" id="lo242-review-publish" style="min-height:49px;margin:6px 0">A · Compare browser and server (read-only)</button>'+
+  '<button type="button" class="btn primary" id="lo242-publish" disabled style="min-height:49px;margin:6px 0">B · Back up and publish missing IDs only</button>'+
+  '<hr style="border:0;border-top:1px solid #3e6471;margin:16px 0">'+
+  '<button type="button" class="btn outline" id="lo242-review-pull" style="min-height:49px;margin:6px 0">C · Check new server activities for this Android device</button>'+
+  '<button type="button" class="btn primary" id="lo242-pull" disabled style="min-height:49px;margin:6px 0">D · Back up and add server activities locally</button>'+
+  '<p id="lo242-status" class="sub" role="status" aria-live="polite">Read-only until you confirm a reviewed operation. Never use Upload local data for this recovery.</p>';
+ mount.appendChild(el);
+ $('lo242-review-publish').addEventListener('click',()=>v242Inspect('publish'));
+ $('lo242-review-pull').addEventListener('click',()=>v242Inspect('pull'));
+ $('lo242-publish').addEventListener('click',()=>v242Execute('publish'));
+ $('lo242-pull').addEventListener('click',()=>v242Execute('pull'));
+}
+function v242Output(message){$('lo242-status').textContent=message}
+async function v242Inspect(mode){
+ v242Review=null;$('lo242-publish').disabled=true;$('lo242-pull').disabled=true;
+ if(syncBusy||atomicBlocked||outboxCorrupt){v242Output('Sync/recovery storage is blocked; no changes made.');return}
+ if(!syncToken){v242Output('Tap Connect with your private sync token first. Do not include it in screenshots.');return}
+ if(mode==='pull'&&(outbox.length||syncMeta.dirty)){v242Output('Local changes are pending. Review and back them up before adopting anything from server.');return}
+ try{
+  const remote=await requestState();validateWorkspace(remote.data);
+  const tool=window.LifeOSActivityDeltaSyncV242;
+  if(!tool)throw Error('Activity synchronization safety checker unavailable.');
+  const plan=mode==='publish'?tool.publishPlan(data,remote.data):tool.receivePlan(data,remote.data);
+  if(!plan.ok)throw Error(plan.reason||'No eligible additions.');
+  if(!(plan.addSessions+plan.addEvents))throw Error('No missing activity IDs were found.');
+  validateWorkspace(plan.merged);
+  const checkpoint=localStorage.getItem(ATOMIC_KEY);
+  if(v71StaleTab||!v71CheckpointUnchanged(checkpoint))throw Error('Local data changed in another tab. Reload before comparing.');
+  v242Review={mode,revision:remote.revision,checkpoint,
+   addSessions:plan.addSessions,addEvents:plan.addEvents,
+   skippedSessions:plan.skippedSessions||0,skippedEvents:plan.skippedEvents||0};
+  $(mode==='publish'?'lo242-publish':'lo242-pull').disabled=false;
+  v242Output('Eligible at server revision '+remote.revision+': '+plan.addSessions+' missing sessions and '+plan.addEvents+
+   ' missing events. '+(mode==='publish'?'Existing server IDs remain unchanged. Skipping '+(plan.skippedSessions||0)+
+   ' conflicting sessions and '+(plan.skippedEvents||0)+' conflicting events.':'Every existing local activity and unrelated collection matches the server.')+
+   ' No changes have been made.');
+ }catch(e){v242Output('Comparison stopped safely: '+(e.message||e)+'. No records changed.')}
+}
+function v242Confirm(mode,review){
+ return new Promise(resolve=>{
+  const shade=document.createElement('div');shade.id='lo242-confirm';
+  shade.style.cssText='position:fixed;inset:0;z-index:2147483000;background:#000d;display:grid;place-items:center;padding:15px;box-sizing:border-box';
+  const phrase=mode==='publish'?'PUBLISH MISSING':'UPDATE ANDROID';
+  shade.innerHTML='<section role="dialog" aria-modal="true" aria-labelledby="lo242-title" style="background:#142b40;color:white;border:2px solid #70daca;border-radius:17px;padding:20px;width:min(100%,520px);max-height:90vh;overflow:auto;box-sizing:border-box">'+
+  '<h2 id="lo242-title">'+(mode==='publish'?'Publish missing records to PostgreSQL':'Update Android with new server activities')+'</h2>'+
+  '<p>Reviewed '+review.addSessions+' sessions and '+review.addEvents+' events. '+(mode==='publish'?'Only new IDs will be added to the latest server workspace; existing server IDs and all unrelated data will be preserved.':'Only newer server activities are added; all your existing local records must match exactly.')+'</p>'+
+  '<label style="display:flex;align-items:start;gap:8px"><input type="checkbox" id="lo242-backup-ack" style="min-height:20px;min-width:20px"> I saved and verified both the source and destination JSON backups.</label>'+
+  '<p>Type <b>'+phrase+'</b> to proceed:</p><input id="lo242-phrase" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" style="width:100%;min-height:44px;box-sizing:border-box;background:#0c1a2b;color:white;border:1px solid #6a8e9f;border-radius:10px;padding:9px">'+
+  '<div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap"><button id="lo242-cancel" type="button" style="min-height:46px;padding:9px 15px">Cancel</button><button id="lo242-approve" type="button" disabled style="min-height:46px;padding:9px 15px;background:#70daca;color:#092824;border-radius:10px">Confirm reviewed '+(mode==='publish'?'publication':'update')+'</button></div></section>';
+  document.body.appendChild(shade);
+  const check=shade.querySelector('#lo242-backup-ack'),input=shade.querySelector('#lo242-phrase'),yes=shade.querySelector('#lo242-approve');
+  let closed=false;const close=ok=>{if(closed)return;closed=true;document.removeEventListener('keydown',onKey);shade.remove();resolve(ok)};
+  const onKey=e=>{if(e.key==='Escape')close(false)};
+  const valid=()=>{yes.disabled=!(check.checked&&input.value.trim()===phrase)};
+  check.addEventListener('change',valid);input.addEventListener('input',valid);
+  shade.querySelector('#lo242-cancel').addEventListener('click',()=>close(false));
+  yes.addEventListener('click',()=>{if(!yes.disabled&&check.checked&&input.value.trim()===phrase)close(true)});
+  document.addEventListener('keydown',onKey);input.focus();
+ });
+}
+async function v242Backup(name,body){
+ if(window.LifeOSNative){
+  const save=window.LifeOSV234BackupBridge?.save;
+  if(window.LifeOSNativeBackupV234!==true||!save)
+   throw Error('Native Android document backup is unavailable. Use a compatible Android Beta APK.');
+  await save(name,JSON.stringify(body,null,2));return;
+ }
+ download(name,JSON.stringify(body,null,2),'application/json');
+}
+async function v242Execute(mode){
+ const button=$(mode==='publish'?'lo242-publish':'lo242-pull'),review=v242Review;
+ button.disabled=true;
+ if(!review||review.mode!==mode){v242Output('Review this operation again first.');return}
+ if(syncBusy||atomicBlocked||outboxCorrupt||v71StaleTab||
+  localStorage.getItem(ATOMIC_KEY)!==review.checkpoint||
+  !v71CheckpointUnchanged(review.checkpoint)){v242Output('Local data changed or sync is busy. Review again.');return}
+ if(mode==='pull'&&(outbox.length||syncMeta.dirty)){v242Output('Local operations appeared since review. No changes made.');return}
+ try{
+  const remote=await requestState();validateWorkspace(remote.data);
+  const tool=window.LifeOSActivityDeltaSyncV242;
+  const plan=mode==='publish'?tool.publishPlan(data,remote.data):tool.receivePlan(data,remote.data);
+  if(!plan.ok||remote.revision!==review.revision||
+     plan.addSessions!==review.addSessions||plan.addEvents!==review.addEvents)
+   throw Error('Remote or local activity state changed. Repeat read-only comparison.');
+  validateWorkspace(plan.merged);
+  const localBackup={exportType:'lifeos-v242-local-backup',exportedAt:new Date().toISOString(),
+   workspace:data,queue:outbox,syncMeta,checkpointRaw:review.checkpoint};
+  v242Output('Save both current local and current server backups before confirming.');
+  await v242Backup('LifeOS_v234_android_local_before_adoption.json',localBackup);
+  await v242Backup('LifeOS_v234_server_revision_'+remote.revision+'.json',remote.data);
+  const accepted=await v242Confirm(mode,review);
+  if(!accepted){v242Output('Cancelled. Nothing changed.');return}
+  if(syncBusy||atomicBlocked||outboxCorrupt||v71StaleTab||
+   localStorage.getItem(ATOMIC_KEY)!==review.checkpoint||
+   !v71CheckpointUnchanged(review.checkpoint)||(mode==='pull'&&(outbox.length||syncMeta.dirty)))
+   throw Error('Local state changed after backup. Repeat review.');
+  const latest=await requestState();validateWorkspace(latest.data);
+  if(latest.revision!==review.revision)throw Error('Server revision changed since backup. No changes made; review again.');
+  const fresh=mode==='publish'?tool.publishPlan(data,latest.data):tool.receivePlan(data,latest.data);
+  if(!fresh.ok||fresh.addSessions!==review.addSessions||fresh.addEvents!==review.addEvents)
+   throw Error('Revalidated activity changes differ. Review again.');
+  validateWorkspace(fresh.merged);
+  if(mode==='publish'){
+   // Backend uses revision compare-and-swap; only *missing* activity IDs
+   // are appended to the latest server state. No blind local snapshot upload.
+   const response=await requestState('PUT',{revision:latest.revision,data:fresh.merged});
+   const checked=await requestState();
+   if(!sameSnapshot(checked.data,fresh.merged))
+    throw Error('Server response was not verifiable. Do not repeat upload; check read-only server comparison first.');
+   stopSync();
+   v242Output('Published '+fresh.addSessions+' sessions and '+fresh.addEvents+
+    ' events on server revision '+checked.revision+'. Existing server records preserved. In Android Beta choose C then D. This browser retains its local records and any shared-ID conflicts for review.');
+  }else{
+   const meta={revision:latest.revision,dirty:false};
+   if(!atomicCommit(fresh.merged,[],meta))
+    throw Error('Local atomic update rejected. Existing Android records preserved.');
+   stopSync();data=fresh.merged;ensureModules();outbox=[];syncMeta=meta;syncRevision=latest.revision;
+   try{localStorage.setItem(KEY,JSON.stringify(data));
+    if(!compactMode)localStorage.setItem(OUTBOX_KEY,'[]');
+    localStorage.setItem(SYNC_META_KEY,JSON.stringify(meta));}catch(_){}
+   render();
+   v242Output('Updated Android with '+fresh.addSessions+' sessions and '+fresh.addEvents+
+    ' events from server revision '+latest.revision+'. No records were overwritten. Reopen Track → History.');
+  }
+  v242Review=null;
+ }catch(e){v242Review=null;v242Output('Operation stopped: '+(e?.message||e)+'. Review saved backups before retrying.')}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',v242Panel,{once:true});
+else v242Panel();
 async function push(){
  if(outboxCorrupt)return syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');
  if(syncRevision===null)return syncStatus('Connect first.');
