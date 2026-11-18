@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict'),x=require('./personal_timer_shortcut_v220.js');
+assert.equal(x.selected([]),null);
+assert.equal(x.selected([{id:'pause',status:'paused'},{id:'active',status:'running'}]).id,'active');
+assert.equal(x.selected([{id:'a',status:'finished'},{id:'b',status:'paused'}]).id,'b');
+assert.equal(x.selected([{id:'a',status:'finished'}]),null);
+const n=x.notificationData({id:'a/b?c',status:'running',name:'Work'});
+assert.equal(n.url,'/?timer=review&id=a%2Fb%3Fc');
+assert.equal(n.tag,'lifeos-v220-timer');
+assert.equal(n.requireInteraction,true);
+assert.ok(n.body.includes('Tap to review'));
+assert.ok(x.notificationData({id:'one',status:'paused',name:'Prayer'}).body.includes('Paused'));
+assert.equal(x.notificationData(null),null);
+assert.equal(x.safeState('true'),false);
+assert.equal(x.safeState(true),true);
+console.log('V220 opt-in notification shortcut model PASS');
