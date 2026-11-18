@@ -15,6 +15,8 @@ import android.os.Bundle
 import android.view.WindowInsets
 import android.content.Context
 import android.webkit.WebResourceRequest
+import android.webkit.WebChromeClient
+import android.webkit.ValueCallback
 import android.webkit.HttpAuthHandler
 import android.text.InputType
 import android.widget.EditText
@@ -34,6 +36,8 @@ class MainActivity : Activity() {
     private var pendingNativeAction: Pair<String,String>? = null
     private var pendingNativeReceivedAt = 0L
     private val backupSaveRequestCode = 234
+    private val importPickerRequestCode = 243
+    private var pendingImportPicker: ValueCallback<Array<Uri>>? = null
     private var pendingBackup: Triple<String, String, ByteArray>? = null
 
     private fun trustedPage(url: String?): Boolean {
@@ -67,7 +71,8 @@ class MainActivity : Activity() {
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
         web.settings.allowFileAccess = false
-        web.settings.allowContentAccess = false
+        // Android system document picker returns content:// URIs. Never grant file:// access.
+        web.settings.allowContentAccess = true
         web.settings.javaScriptCanOpenWindowsAutomatically = false
         web.settings.setSupportMultipleWindows(false)
         web.webViewClient = object : WebViewClient() {
@@ -122,6 +127,31 @@ class MainActivity : Activity() {
                 val url = request.url
                 if (url.scheme == "https" && url.host == "lifeos-personal-test.onrender.com") return false
                 try { startActivity(Intent(Intent.ACTION_VIEW, url)) } catch (_: Exception) {}
+                return true
+            }
+        }
+        // WebView does not automatically provide an HTML <input type=file>
+        // picker without a WebChromeClient. Use Android SAF for JSON only.
+        web.webChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(
+                view: WebView, filePathCallback: ValueCallback<Array<Uri>>,
+                fileChooserParams: FileChooserParams
+            ): Boolean {
+                if (!trustedPage(view.url) || pendingImportPicker != null) {
+                    filePathCallback.onReceiveValue(null)
+                    return true
+                }
+                pendingImportPicker = filePathCallback
+                try {
+                    startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "application/json"
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }, importPickerRequestCode)
+                } catch (_: Exception) {
+                    pendingImportPicker = null
+                    filePathCallback.onReceiveValue(null)
+                }
                 return true
             }
         }
@@ -328,6 +358,14 @@ class MainActivity : Activity() {
     @Deprecated("Uses legacy Activity result callback for minSdk 26 compatibility")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == importPickerRequestCode) {
+            val callback = pendingImportPicker
+            pendingImportPicker = null
+            val chosen = if (resultCode == RESULT_OK) data?.data else null
+            callback?.onReceiveValue(if (chosen != null && chosen.scheme == "content")
+                arrayOf(chosen) else null)
+            return
+        }
         if (requestCode != backupSaveRequestCode) return
         val request = pendingBackup ?: return
         pendingBackup = null
