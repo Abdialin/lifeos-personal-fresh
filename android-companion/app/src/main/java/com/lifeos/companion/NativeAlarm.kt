@@ -63,19 +63,23 @@ object NativeAlarm {
             "Alarm must be in the next seven days"
         }
         val manager = context.getSystemService(AlarmManager::class.java)
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-            .putLong("trigger", triggerMs).putString("label", label.take(80)).apply()
         val alarm = pending(context, label)
+        fun remember() {
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+                .putLong("trigger", triggerMs).putString("label", label.take(80)).apply()
+        }
         val exact = Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()
         if (exact) {
             try {
                 manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMs, alarm)
+                remember()
                 return true
             } catch (_: SecurityException) {
                 // Permission can be revoked immediately before scheduling.
             }
         }
         manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMs, alarm)
+        remember()
         return false
     }
 }
