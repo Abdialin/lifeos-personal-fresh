@@ -38,7 +38,7 @@ function publish(){
    {kind:'timer-status',status:'stopped'};
  // Running elapsed changes continuously; send on initial mount, return, or activity changes.
  const signature=s?String(s.id)+'|'+s.status+'|'+s.name:'none';
- if(signature===last&&!document.hasFocus())return true;
+ if(signature===last)return true;
  last=signature;
  try{native.postMessage(JSON.stringify(message));return true}catch(_){return false}
 }
@@ -50,6 +50,9 @@ if(root?.document){
  root.addEventListener('load',()=>root.setTimeout(()=>{publish();publishAlarm()},400));
  // A bridge may be injected after scripts mount; one opportunistic retry.
  root.setTimeout(()=>{publish();publishAlarm()},1500);
+ // Quick Start and legacy handlers do not all dispatch v77 events. Read-only
+ // change detection keeps the native display in sync without duplicating writes.
+ root.setInterval(()=>{if(!document.hidden)publish()},2000);
 }
 root.LifeOSAndroidBridgeV222={pick,elapsed,publish,publishAlarm};
 })(typeof window!=='undefined'?window:globalThis);
