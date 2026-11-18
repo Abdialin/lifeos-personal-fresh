@@ -70,6 +70,8 @@ jobs:
         run: timeout --signal=TERM 90s python -m unittest -v test_recovery_roundtrip_v218_browser
       - name: Verify isolated backend storage probe
         run: python -m unittest -v test_storage_status_probe
+      - name: Verify browser notification opt-in and removal
+        run: timeout --signal=TERM 70s python -m unittest -v test_timer_shortcut_v220_browser
       - name: Verify current six-section LifeOS interface
         run: timeout --signal=TERM 150s python -m unittest -v test_current_personal_v219_browser
       - name: Historical v4 UI compatibility (diagnostic; older layout assertions)
