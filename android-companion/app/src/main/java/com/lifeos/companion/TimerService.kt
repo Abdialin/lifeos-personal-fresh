@@ -19,6 +19,7 @@ class TimerService : Service() {
         const val EXTRA_NAME = "name"
         const val EXTRA_STATUS = "status"
         const val EXTRA_ELAPSED = "elapsed"
+        const val EXTRA_ACTIVE_COUNT = "active_count"
         private const val CHANNEL = "lifeos_native_timer_v1"
         private const val NOTIFICATION = 2210
     }
@@ -42,13 +43,16 @@ class TimerService : Service() {
         val name = intent.getStringExtra(EXTRA_NAME)?.take(80) ?: "Activity"
         val paused = intent.getStringExtra(EXTRA_STATUS) == "paused"
         val elapsed = intent.getLongExtra(EXTRA_ELAPSED, 0L).coerceIn(0L, 604800000L)
+        val otherCount = (intent.getIntExtra(EXTRA_ACTIVE_COUNT, 1).coerceIn(1, 100) - 1)
         val open = PendingIntent.getActivity(this, 0,
             Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val notification = Notification.Builder(this, CHANNEL)
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentTitle("LifeOS · $name")
-            .setContentText(if (paused) "Paused · Open LifeOS to review" else "Tracking · Open LifeOS to pause or finish")
+            .setContentText((if (paused) "Paused" else "Tracking") +
+                (if (otherCount > 0) " · $otherCount other open timer(s)" else "") +
+                " · Tap to manage in LifeOS")
             .setContentIntent(open)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
