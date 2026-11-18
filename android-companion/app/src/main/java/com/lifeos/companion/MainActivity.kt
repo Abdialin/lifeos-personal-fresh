@@ -1,6 +1,7 @@
 package com.lifeos.companion
 
 import android.Manifest
+import android.app.AlertDialog
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -8,6 +9,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.webkit.WebResourceRequest
+import android.webkit.HttpAuthHandler
+import android.text.InputType
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.webkit.WebViewCompat
@@ -33,6 +38,42 @@ class MainActivity : Activity() {
         web.settings.javaScriptCanOpenWindowsAutomatically = false
         web.settings.setSupportMultipleWindows(false)
         web.webViewClient = object : WebViewClient() {
+            override fun onReceivedHttpAuthRequest(
+                view: WebView, handler: HttpAuthHandler, host: String, realm: String
+            ) {
+                // Display the challenge only for the expected HTTPS staging host.
+                if (host != "lifeos-personal-test.onrender.com" || view.url?.startsWith(lifeOsOrigin) != true) {
+                    handler.cancel()
+                    return
+                }
+                val user = EditText(this@MainActivity).apply {
+                    hint = "Username"
+                    isSingleLine = true
+                }
+                val pass = EditText(this@MainActivity).apply {
+                    hint = "Password"
+                    inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    isSingleLine = true
+                }
+                val layout = LinearLayout(this@MainActivity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    val padding = (16 * resources.displayMetrics.density).toInt()
+                    setPadding(padding, padding, padding, 0)
+                    addView(user)
+                    addView(pass)
+                }
+                AlertDialog.Builder(this@MainActivity)
+                    .setTitle("Sign in to LifeOS staging")
+                    .setMessage("Credentials are sent only to the trusted HTTPS LifeOS server. They are not saved by the Android companion.")
+                    .setView(layout)
+                    .setPositiveButton("Sign in") { _, _ ->
+                        handler.proceed(user.text.toString(), pass.text.toString())
+                    }
+                    .setNegativeButton("Cancel") { _, _ -> handler.cancel() }
+                    .setOnCancelListener { handler.cancel() }
+                    .show()
+            }
+
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val url = request.url
                 if (url.scheme == "https" && url.host == "lifeos-personal-test.onrender.com") return false
