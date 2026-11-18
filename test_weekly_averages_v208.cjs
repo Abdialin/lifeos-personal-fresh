@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),p=require('./personal_weekly_averages_v208.js');
+const midnight=new Date(2026,10,18,0,0,0,0).getTime(),h=3600000;
+const now=midnight+2*h;
+const session={id:'overnight',name:'Work',status:'finished',startAt:midnight-h,endAt:midnight+h,segments:[{start:midnight-h,end:midnight+h}]};
+const work={sessions:[session]};
+const v=p.compute(work,now);const today=v.days[6],yesterday=v.days[5];
+assert.equal(today.uniqueMs,h);assert.equal(yesterday.uniqueMs,h);
+assert.equal(today.totalMs,h);assert.equal(today.recordCount,1);
+work.sessions.push({id:'parallel',name:'Study',status:'finished',segments:[{start:midnight,end:midnight+h}]});
+const q=p.compute(work,now);assert.equal(q.days[6].uniqueMs,h);
+assert.equal(q.days[6].totalMs,2*h);assert.equal(q.days[6].overlapMs,h);
+assert.equal(q.activeDays,2);assert.equal(q.averageUniqueMinutes,120/7);
+assert.equal(p.fmtMinutes(125),'2h 05m');
+console.log('V208 weekly averages across midnight and overlaps PASS');
