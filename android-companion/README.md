@@ -1,4 +1,4 @@
-# LifeOS Android Companion — V229 experimental companion
+# LifeOS Android Companion — V230 experimental companion
 
 **Status:** Native Android source + isolated build checks; **not yet a published or installed Android app**.
 
@@ -86,3 +86,10 @@ The Focus panel now offers a **Test Android alarm sound & vibration** button onl
 - The Focus panel now shows accumulated pause time, break time, and productive focus time against the planned session duration. These are local Focus metrics and do not overwrite tracked activity sessions.
 - The Android-only Focus panel includes a user-initiated link to Android battery optimization settings. The app does not request a blanket exemption or override the user's settings.
 - Browser regression assertions cover pause/break/focus duration, but a compiled APK installation on an actual phone is still necessary to establish reliability during device lock, Doze, process death, and Samsung background restrictions.
+
+## V230 on-device notification diagnostics and lock-screen privacy
+
+- **Focus Mode → Check Android notification health** opens a native diagnostic dialog, only within the trusted installed companion. It reads Android notification permission, whether notifications are enabled, alarm channel importance/sound/vibration, foreground timer channel importance, exact-alarm access, and battery optimization status. It does not request permissions automatically or claim to confirm physical alarm delivery.
+- The ongoing timer notification now has a privacy-safe lock-screen public version. Its generic title and chronometer stay visible where Android allows lock-screen notifications, without revealing the specific activity name or other private data.
+- Native diagnostics and privacy settings are covered by static regression checks and the web-to-native diagnostic request has a browser regression. **A successfully compiled APK and actual Samsung lock-screen, sound, vibration, battery restriction, and snooze testing remain necessary**; Android may override the requested presentation.
+- The companion intentionally uses START_NOT_STICKY: if Android kills the service, LifeOS must reconnect and project an authoritative timer again. It never invents a continuously running activity from stale local notification data. This is a safety limitation, not guaranteed background persistence.
