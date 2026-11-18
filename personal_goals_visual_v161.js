@@ -114,6 +114,12 @@ root.addEventListener('click',e=>{const mode=e.target.closest('[data-gv172-mode]
 root.addEventListener('click',e=>{if(e.target.closest('[data-gv163-close]')){root.classList.remove('gv163-editing','gv169-reviewing');render();root.scrollIntoView({block:'start'})}});
 root.addEventListener('change',e=>{if(e.target.id==='gv161-select')selected=e.target.value;if(e.target.id==='gv161-weeks')weeks=Number(e.target.value)||4;render()});
 const refresh=()=>{const active=document.body.dataset.lifeosView==='goals';root.hidden=!active;if(!active)return;if(E('g160-app'))E('g160-app').hidden=true;if(E('loGoalsVisual'))E('loGoalsVisual').hidden=true;render();consistentReview()};
-E('lifeosNavigation')?.addEventListener('click',()=>setTimeout(refresh,35));window.addEventListener('focus',refresh);document.addEventListener('submit',e=>{if(e.target.id==='goalForm')setTimeout(refresh,140)});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();}
+E('lifeosNavigation')?.addEventListener('click',()=>setTimeout(refresh,35));window.addEventListener('focus',refresh);document.addEventListener('submit',e=>{if(e.target.id==='goalForm')setTimeout(refresh,140)});document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
+ // Recalculate from the canonical workspace when a timer or a linked record changes,
+ // without creating additional workout, meal, or goal records.
+ let pendingRefresh=0;
+ const onEvidenceChange=()=>{if(document.body.dataset.lifeosView!=='goals')return;clearTimeout(pendingRefresh);pendingRefresh=setTimeout(refresh,120)};
+ ['lifeos-v77-tracking-changed','lifeos-v74-records-changed','lifeos-v76-activation-changed'].forEach(name=>window.addEventListener(name,onEvidenceChange));
+ refresh();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
