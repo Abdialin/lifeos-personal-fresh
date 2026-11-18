@@ -297,8 +297,9 @@ class MainActivity : Activity() {
         // The canonical browser tracker is the only authority. A lifecycle
         // refresh must never reuse an old native notification's elapsed time.
         web.evaluateJavascript(
-            "if(window.LifeOSAndroidBridgeV222){window.LifeOSAndroidBridgeV222.publish(true);window.LifeOSAndroidBridgeV222.publishAlarm(true)}"
-        , null)
+            "if(window.LifeOSAndroidBridgeV222){window.LifeOSAndroidBridgeV222.publish(true);window.LifeOSAndroidBridgeV222.publishAlarm(true)}",
+            null
+        )
     }
 
     private fun receiveNativeTimerAction(source: Intent?) {
