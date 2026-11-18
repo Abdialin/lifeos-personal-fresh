@@ -7,3 +7,5 @@
 .lo208-graph{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:end}.lo208-day{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;border-radius:13px;border:1px solid transparent;background:transparent;color:inherit;padding:8px 2px}
 .lo208-day[aria-pressed=true]{background:#254362;border-color:#5ba7a9}.lo208-day:focus-visible{outline:2px solid #96e9d4;outline-offset:2px}.lo208-day strong{font-size:10px;white-space:nowrap}.lo208-track{height:92px;width:100%;max-width:34px;border-radius:9px;background:#293c58;display:flex;align-items:flex-end;overflow:hidden}.lo208-track i{display:block;width:100%;min-height:2px;background:linear-gradient(180deg,#a5e8cb,#55a5db);border-radius:7px}.lo208-day small{font-size:11px;color:#b7c8da}.lo208-selected{font-size:12px;margin:11px 0 0;color:#b7eadd}
 @media(max-width:690px){.lo208-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.lo208-graph{gap:3px}.lo208-day strong{font-size:9px}.lo208-track{height:70px}.lo208-badge{display:none}}
+
+body:not([data-lifeos-view="analytics"]) #lo208-weekly-averages{display:none!important}

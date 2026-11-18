@@ -45,11 +45,11 @@ function compute(workspace,now=Date.now()){
 }
 function mount(){
  if(typeof document==='undefined'||document.getElementById('lo208-weekly-averages'))return;
- const target=document.getElementById('v4Insights')||document.getElementById('weeklyDashboardPanel');
+ const target=document.getElementById('lifeosViewTitle');
  if(!target)return;
  const host=document.createElement('section');host.id='lo208-weekly-averages';host.className='lo208-card';
  host.innerHTML='<div class="lo208-head"><div><span class="lo208-eyebrow">7-DAY RECORDING RHYTHM</span><h3>Weekly averages</h3><p>Actual saved activity, split at local midnight · overlapping minutes shown separately.</p></div><span class="lo208-badge">Read-only</span></div><div class="lo208-kpis"></div><div class="lo208-graph" role="group" aria-label="Recorded activity by day"></div><p class="lo208-note">An empty day means there is no qualifying recorded activity. It does not establish that nothing happened. Sample-tagged records are excluded.</p><p class="lo208-selected" role="status"></p>';
- target.prepend(host);
+ target.after(host);
  const kpis=host.querySelector('.lo208-kpis'),chart=host.querySelector('.lo208-graph'),selected=host.querySelector('.lo208-selected');
  let selectedDay='';
  function paint(){

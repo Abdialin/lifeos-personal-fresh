@@ -27,12 +27,13 @@ function mount(){
  #lo86-toggle{min-width:40px}
  #lo86-details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}
  #lo86-select{grid-column:1/-1;width:100%;min-width:0}
+ #lo86-details{grid-template-columns:repeat(2,minmax(0,1fr))}
  #lo86-status{grid-column:1/-1;font-size:12px;min-height:0;margin:0;color:#bbd7f4}
  @media(max-width:520px){#lo86-timer{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
  `;document.head.append(style);
  const box=document.createElement('aside');box.id='lo86-timer';box.hidden=true;
  box.setAttribute('aria-label','Ongoing LifeOS activity timer');
- box.innerHTML='<div id="lo86-summary"><span aria-hidden="true">⏱</span><strong id="lo86-name">Active timer</strong><span id="lo86-clock" role="timer">00:00:00</span><button id="lo86-toggle" type="button" aria-controls="lo86-details" aria-expanded="false" aria-label="Show timer controls">⌃</button></div><div id="lo86-details" hidden><select id="lo86-select" aria-label="Choose active or paused activity"></select><button type="button" data-lo86="review">Review</button><button type="button" data-lo86="pause">Pause</button><button type="button" data-lo86="finish">Finish</button><p id="lo86-status" role="status"></p></div>';
+ box.innerHTML='<div id="lo86-summary"><span aria-hidden="true">⏱</span><strong id="lo86-name">Active timer</strong><span id="lo86-clock" role="timer">00:00:00</span><button id="lo86-toggle" type="button" aria-controls="lo86-details" aria-expanded="false" aria-label="Show timer controls">⌃</button></div><div id="lo86-details" hidden><select id="lo86-select" aria-label="Choose active or paused activity"></select><button type="button" data-lo86="review">Review</button><button type="button" data-lo86="pause">Pause</button><button type="button" data-lo86="break">Break</button><button type="button" data-lo86="finish">Finish</button><p id="lo86-status" role="status"></p></div>';
  document.body.append(box);
  const get=id=>box.querySelector('#'+id),pick=get('lo86-select'),details=get('lo86-details'),toggle=get('lo86-toggle'),status=get('lo86-status');
  const sessions=()=>{try{return root.lifeosReadOnlyWorkspace?.()?.sessions||[]}catch{return []}};
@@ -60,6 +61,7 @@ function mount(){
   }
   pick.value=current;
   box.querySelector('[data-lo86="pause"]').textContent=s.status==='paused'?'Resume':'Pause';
+  box.querySelector('[data-lo86="break"]').hidden=s.status==='paused';
  }
  pick.addEventListener('change',()=>{current=pick.value;render()});
  toggle.addEventListener('click',()=>{details.hidden=!details.hidden;toggle.setAttribute('aria-expanded',String(!details.hidden));toggle.textContent=details.hidden?'⌃':'⌄'});

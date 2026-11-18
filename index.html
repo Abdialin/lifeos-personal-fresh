@@ -641,11 +641,12 @@ window.addEventListener('lifeos-v77-timer-action',function(evt){
  const id=String(detail.id||''),session=data.sessions.find(s=>String(s.id)===id);
  if(!session)return void(detail.result.message='Timer no longer exists. Review the current active sessions.');
  if(detail.action==='pause'&&session.status!=='running')return void(detail.result.message='Only a running timer can be paused.');
+ if(detail.action==='break'&&session.status!=='running')return void(detail.result.message='Only a running timer can start a break.');
  if(detail.action==='resume'&&session.status!=='paused')return void(detail.result.message='Only a paused timer can be resumed.');
- const ok=detail.action==='pause'?pause(id):detail.action==='resume'?resume(id):detail.action==='finish'?finish(id):false;
+ const ok=detail.action==='pause'?pause(id):detail.action==='break'?pause(id,'break'):detail.action==='resume'?resume(id):detail.action==='finish'?finish(id):false;
  if(!ok)return void(detail.result.message='Timer operation failed or was blocked by recovery storage.');
  const check=window.LifeOSPersistenceValidatorV70?.verify(localStorage.getItem(ATOMIC_KEY),data,window.LifeOSCompactRecovery?.unpack);
- detail.result={ok:!!check?.ok,message:check?.ok?'Timer '+(detail.action==='pause'?'paused':detail.action==='resume'?'resumed':'finished')+' and verified in local recovery storage.':'Timer changed, but checkpoint verification failed. Preserve a backup before refresh.'};
+ detail.result={ok:!!check?.ok,message:check?.ok?'Timer '+(detail.action==='break'?'on break':detail.action==='pause'?'paused':detail.action==='resume'?'resumed':'finished')+' and verified in local recovery storage.':'Timer changed, but checkpoint verification failed. Preserve a backup before refresh.'};
  window.dispatchEvent(new CustomEvent('lifeos-v77-tracking-changed',{detail:{id}}));
 });
 /* V76: scheduled activation uses the existing transactional plan and timer paths. */
