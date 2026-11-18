@@ -21,6 +21,7 @@ object NativeAlarm {
     const val CHANNEL = "lifeos_native_alarm_v1"
     const val NOTIFICATION_ID = 2220
     const val ACTION_SNOOZE = "com.lifeos.companion.SNOOZE"
+    const val ACTION_TEST = "com.lifeos.companion.TEST_ALARM"
     private const val PREFS = "lifeos_alarm_recovery"
     fun pendingSnooze(context: Context): Long =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong("snoozeUntil", 0L)
@@ -91,8 +92,9 @@ class AlarmReceiver : BroadcastReceiver() {
                 .cancel(NativeAlarm.NOTIFICATION_ID)
             return
         }
-        if (intent.action != NativeAlarm.ACTION_RING) return
-        NativeAlarm.cancel(context)
+        val isTest = intent.action == NativeAlarm.ACTION_TEST
+        if (!isTest && intent.action != NativeAlarm.ACTION_RING) return
+        if (!isTest) NativeAlarm.cancel(context)
         val manager = context.getSystemService(NotificationManager::class.java)
         val alarmSound = Settings.System.DEFAULT_ALARM_ALERT_URI
         val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()
@@ -112,7 +114,8 @@ class AlarmReceiver : BroadcastReceiver() {
         val open = PendingIntent.getActivity(context, 0,
             Intent(context, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val title = intent.getStringExtra(NativeAlarm.EXTRA_LABEL)?.take(80) ?: "LifeOS reminder"
+        val title = if (isTest) "Test alarm" else
+            (intent.getStringExtra(NativeAlarm.EXTRA_LABEL)?.take(80) ?: "LifeOS reminder")
         val snooze = PendingIntent.getBroadcast(context, 2221,
             Intent(context, AlarmReceiver::class.java).apply {
                 action = NativeAlarm.ACTION_SNOOZE
@@ -121,14 +124,15 @@ class AlarmReceiver : BroadcastReceiver() {
         val notification = Notification.Builder(context, NativeAlarm.CHANNEL)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle("LifeOS alarm · $title")
-            .setContentText("Alarm reached. Tap to open LifeOS, dismiss or snooze.")
+            .setContentText(if (isTest) "Native notification test. Check sound and vibration settings." else
+                "Alarm reached. Tap to open LifeOS, dismiss or snooze.")
             .setContentIntent(open)
-            .addAction(android.R.drawable.ic_lock_idle_alarm, "Snooze 5 min", snooze)
+            .apply { if (!isTest) addAction(android.R.drawable.ic_lock_idle_alarm, "Snooze 5 min", snooze) }
             .setAutoCancel(true)
             .setCategory(Notification.CATEGORY_ALARM)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
             .build()
-        manager.notify(NativeAlarm.NOTIFICATION_ID, notification)
+        manager.notify(if (isTest) NativeAlarm.NOTIFICATION_ID + 1 else NativeAlarm.NOTIFICATION_ID, notification)
     }
 }
 
