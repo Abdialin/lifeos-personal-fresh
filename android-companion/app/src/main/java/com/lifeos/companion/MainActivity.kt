@@ -144,6 +144,12 @@ class MainActivity : Activity() {
         try {
             if (raw.length > 1500) return
             val p = JSONObject(raw)
+            if (p.optString("kind") == "alarm-test") {
+                sendBroadcast(Intent(this, AlarmReceiver::class.java).apply {
+                    action = NativeAlarm.ACTION_TEST
+                })
+                return
+            }
             if (p.optString("kind") == "settings-request") {
                 when (p.optString("target")) {
                     "alarms" -> openAlarmSettings()
