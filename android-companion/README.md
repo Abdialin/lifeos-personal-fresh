@@ -16,8 +16,11 @@ paused timers display their last elapsed time. Notification tap reopens LifeOS.
   process kill, battery management, or permission restriction can remove it.
 - Android 13+ needs notification permission; Android 14+ requires the declared
   `specialUse` foreground-service type. That type requires Play Console review
-  before public distribution. The exact-alarm capability is **not implemented
-  in V222**; it should be developed separately with user-approved permissions.
+  before public distribution. Native alarms can be scheduled from the trusted Focus Mode alarm state.
+  **Exact alarm timing requires the user to allow Android's Alarms & reminders
+  permission**; if it is denied, the app uses an inexact while-idle alarm.
+  This is not guaranteed delivery, does not automatically reschedule after reboot
+  and does not yet include a built-in native permission settings screen.
 - This Android module has **not been installed or tested on a Samsung phone**.
 - The browser version remains unchanged except for sending restricted timer
   status when an origin-scoped native bridge is available. No tokens or user

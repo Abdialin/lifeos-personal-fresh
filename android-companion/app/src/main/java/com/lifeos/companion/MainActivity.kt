@@ -56,6 +56,10 @@ class MainActivity : Activity() {
         try {
             if (raw.length > 1500) return
             val p = JSONObject(raw)
+            if (p.optString("kind") == "alarm-status") {
+                handleAlarmState(p)
+                return
+            }
             if (p.optString("kind") != "timer-status") return
             val status = p.optString("status")
             val id = p.optString("id").take(100)
@@ -79,6 +83,20 @@ class MainActivity : Activity() {
             // Bad/untrusted messages never alter browser or server records.
         }
     }
+    /** Schedules only an explicit, bounded alarm timestamp, never arbitrary work. */
+    private fun handleAlarmState(p: JSONObject) {
+        val status = p.optString("status")
+        if (status == "cancelled") {
+            NativeAlarm.cancel(this)
+            return
+        }
+        if (status != "scheduled") return
+        val end = p.optLong("endMs", 0L)
+        val now = System.currentTimeMillis()
+        if (end <= now || end > now + 7L * 86400000L) return
+        NativeAlarm.schedule(this, p.optString("name", "LifeOS alarm").take(80), end)
+    }
+
     override fun onDestroy() {
         web.destroy()
         super.onDestroy()

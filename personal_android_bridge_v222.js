@@ -16,7 +16,18 @@ function elapsed(s,at){
   return sum+(Number.isFinite(a)&&Number.isFinite(b)&&b>=a?b-a:0);
  },0));
 }
-let last='';
+let last='',lastAlarm='';
+function publishAlarm(){
+ const native=root.LifeOSNative;
+ if(!native||typeof native.postMessage!=='function')return false;
+ let saved=null;try{saved=JSON.parse(root.localStorage?.getItem('lifeos.personal.focus.v207')||'null')}catch(_){}
+ const active=saved&&['focus','alarm'].includes(saved.kind)&&saved.mode==='running'&&Number.isFinite(Number(saved.end))&&saved.end>Date.now();
+ const value=active?{kind:'alarm-status',status:'scheduled',name:String(saved.label||'LifeOS alarm').slice(0,80),endMs:Math.floor(Number(saved.end))}:{kind:'alarm-status',status:'cancelled'};
+ const signature=value.status+'|'+(value.endMs||'');
+ if(signature===lastAlarm)return true;
+ lastAlarm=signature;
+ try{native.postMessage(JSON.stringify(value));return true}catch(_){return false}
+}
 function publish(){
  const native=root.LifeOSNative;
  if(!native||typeof native.postMessage!=='function')return false;
@@ -33,11 +44,12 @@ function publish(){
 }
 if(root?.document){
  root.addEventListener('lifeos-v77-tracking-changed',()=>root.setTimeout(publish,100));
+ root.addEventListener('lifeos-v221-focus-changed',()=>root.setTimeout(publishAlarm,100));
  root.addEventListener('pageshow',publish);
  root.addEventListener('focus',publish);
- root.addEventListener('load',()=>root.setTimeout(publish,400));
+ root.addEventListener('load',()=>root.setTimeout(()=>{publish();publishAlarm()},400));
  // A bridge may be injected after scripts mount; one opportunistic retry.
- root.setTimeout(publish,1500);
+ root.setTimeout(()=>{publish();publishAlarm()},1500);
 }
-root.LifeOSAndroidBridgeV222={pick,elapsed,publish};
+root.LifeOSAndroidBridgeV222={pick,elapsed,publish,publishAlarm};
 })(typeof window!=='undefined'?window:globalThis);

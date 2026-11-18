@@ -39,7 +39,7 @@ function init(){
  document.body.append(alarmPanel);
  const $=id=>document.getElementById(id),status=$('lo207-focus-status');
  const load=()=>{try{return normalizeState(JSON.parse(root.localStorage.getItem(KEY)||'null'))}catch{return null}};
- function save(s){try{if(!s)root.localStorage.removeItem(KEY);else root.localStorage.setItem(KEY,JSON.stringify(s));return true}catch{status.textContent='Could not save focus state. Browser storage may be full.';return false}}
+ function save(s){try{if(!s)root.localStorage.removeItem(KEY);else root.localStorage.setItem(KEY,JSON.stringify(s));root.dispatchEvent(new Event('lifeos-v221-focus-changed'));return true}catch{status.textContent='Could not save focus state. Browser storage may be full.';return false}}
  let current=load(),lastAlertAt=0,alertOpen=false,audioCheck='';
  const config=alerts?.load?.()||{sound:true,vibration:true,volume:75,repeatSeconds:20};
  $('lo221-sound').checked=config.sound;$('lo221-vibrate').checked=config.vibration;$('lo221-volume').value=config.volume;$('lo221-repeat').value=config.repeatSeconds;
