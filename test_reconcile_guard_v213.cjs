@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict'),g=require('./personal_reconcile_guard_v213.js');
+const w=()=>({sessions:[{id:'s1',name:'Gym'}],workouts:[],meals:[],schedule:[],habitChecks:[]});
+let local=w(),server=w();
+server.workouts.push({id:'w2',sessionId:'newSession'});
+assert.equal(g.preview(local,server,[{kind:'workouts',id:'w2'}]).reason,'new-dangling-reference');
+server.sessions.push({id:'newSession',name:'Walking'});
+let r=g.preview(local,server,[{kind:'sessions',id:'newSession'},{kind:'workouts',id:'w2'}]);assert.equal(r.ok,true);assert.equal(r.next.workouts.length,1);
+assert.equal(local.workouts.length,0,'preview must not mutate local');
+server.meals.push({id:'m1',sessionId:'newSession'});
+assert.equal(g.preview(local,server,[{kind:'meals',id:'m1'}]).ok,false);
+local.workouts.push({id:'old',sessionId:'already-missing'});
+assert.equal(g.preview(local,server,[{kind:'sessions',id:'newSession'}]).ok,true,'preexisting orphan not introduced');
+server.schedule.push({id:'p1',sessionId:'newSession'});
+assert.equal(g.preview(local,server,[{kind:'schedule',id:'p1'}]).ok,false);
+assert.equal(g.preview(local,server,[{kind:'sessions',id:'newSession'},{kind:'schedule',id:'p1'}]).ok,true);
+assert.equal(g.preview(local,server,[{kind:'sessions',id:'bad'}]).ok,false);
+assert.equal(g.preview(local,server,[{kind:'sessions',id:'newSession'},{kind:'sessions',id:'newSession'}]).ok,false);
+console.log('V213 selective copy: no orphaned linked fitness, meals, plans; no mutations PASS');

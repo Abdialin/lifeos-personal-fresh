@@ -29,6 +29,8 @@ jobs:
         run: node test_sync_gate_v211.cjs
       - name: Validate two-device conflict review
         run: node test_conflict_plan_v212.cjs
+      - name: Validate safe selective reconciliation
+        run: node test_reconcile_guard_v213.cjs
       - name: Validate new activity feedback features
         run: |
           node test_lifeos_feedback_v207.cjs
