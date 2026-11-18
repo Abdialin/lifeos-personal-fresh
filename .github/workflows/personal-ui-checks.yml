@@ -63,6 +63,8 @@ jobs:
         run: node test_browser_activity_recovery_v241.cjs
       - name: Validate additive browser-to-server and server-to-beta reconciliation
         run: node test_activity_delta_sync_v242.cjs
+      - name: Validate Android JSON picker and browser date inventory
+        run: node test_android_file_picker_v243.cjs
       - name: Validate substantial pause/resume intervals without double counting
         run: node test_activity_pauses_v225.cjs
       - name: Validate focus control states and alert engine
