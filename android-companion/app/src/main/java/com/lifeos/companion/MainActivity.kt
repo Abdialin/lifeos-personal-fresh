@@ -18,6 +18,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.WebResourceError
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import org.json.JSONObject
@@ -41,6 +42,10 @@ class MainActivity : Activity() {
         web.settings.javaScriptCanOpenWindowsAutomatically = false
         web.settings.setSupportMultipleWindows(false)
         web.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView, url: String) {
+                super.onPageFinished(view, url)
+                reconcileNativeSnooze()
+            }
             override fun onReceivedHttpAuthRequest(
                 view: WebView, handler: HttpAuthHandler, host: String, realm: String
             ) {
@@ -177,6 +182,29 @@ class MainActivity : Activity() {
         val now = System.currentTimeMillis()
         if (end <= now || end > now + 7L * 86400000L) return
         NativeAlarm.schedule(this, p.optString("name", "LifeOS alarm").take(80), end)
+    }
+
+    private fun reconcileNativeSnooze() {
+        if (!::web.isInitialized) return
+        val currentUrl = web.url ?: return
+        if (!(currentUrl == lifeOsOrigin || currentUrl.startsWith("$lifeOsOrigin/"))) return
+        val until = NativeAlarm.pendingSnooze(this)
+        if (until <= System.currentTimeMillis() || until > System.currentTimeMillis() + 5L * 60_000L + 10000L) {
+            if (until > 0L) NativeAlarm.acknowledgeSnooze(this)
+            return
+        }
+        // Only a bounded numeric timestamp reaches the trusted LifeOS page.
+        // The page refuses to extend unrelated or non-expired sessions.
+        web.evaluateJavascript(
+            "Boolean(window.LifeOSNativeFocusSync?.applyNativeSnooze($until))"
+        ) { result ->
+            if (result == "true") NativeAlarm.acknowledgeSnooze(this)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::web.isInitialized) web.post { reconcileNativeSnooze() }
     }
 
     override fun onDestroy() {
