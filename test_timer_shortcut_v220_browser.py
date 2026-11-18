@@ -52,6 +52,8 @@ class TimerNotificationBrowser(unittest.TestCase):
      self.assertIn('Work',n['title'])
      self.assertEqual(n['options']['tag'],'lifeos-v220-timer')
      self.assertTrue(n['options']['requireInteraction'])
+     self.assertEqual(n['options']['silent'],False)
+     self.assertEqual(n['options']['vibrate'],[180,80,180])
      self.assertTrue(page.evaluate("JSON.parse(localStorage.getItem('lifeos.personal.timer-shortcut.v220'))"))
      panel.locator('#lo220-clear').click()
      page.wait_for_function('() => window.__notifications.some(n=>n.closed)',timeout=5000)

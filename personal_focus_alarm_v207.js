@@ -71,7 +71,9 @@ function init(){
   try{
    if(root.Notification?.permission!=='granted'||!root.navigator?.serviceWorker)return;
    const reg=await root.navigator.serviceWorker.register('./lifeos_notifications_sw.js');
-   await reg.showNotification('LifeOS alarm · '+String(label).slice(0,65),{body:'Your scheduled focus or alarm time has arrived. Open LifeOS to dismiss or snooze.',tag:'lifeos-v221-alarm',requireInteraction:true,data:{url:'/?timer=review'}});
+   const opts={body:'Your scheduled focus or alarm time has arrived. Open LifeOS to dismiss or snooze.',tag:'lifeos-v221-alarm',requireInteraction:true,silent:false,data:{url:'/?timer=review'}};
+   if(alerts?.load?.()?.vibration)opts.vibrate=[220,100,220,100,380];
+   await reg.showNotification('LifeOS alarm · '+String(label).slice(0,65),opts);
   }catch(_){}
  }
  function startRinging(){

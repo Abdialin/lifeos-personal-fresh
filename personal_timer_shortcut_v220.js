@@ -58,8 +58,10 @@ function mount(){
   if(!force&&signature===last)return;
   const reg=await registration();
   if(typeof reg.showNotification!=='function')throw Error('Browser notification display is unsupported.');
-  await reg.showNotification(data.title,{body:data.body,tag:data.tag,renotify:false,
-    requireInteraction:true,data:{url:data.url}});
+  const opts={body:data.body,tag:data.tag,renotify:false,silent:false,
+    requireInteraction:true,data:{url:data.url}};
+  if(root.LifeOSAlertEngineV221?.load?.()?.vibration)opts.vibrate=[180,80,180];
+  await reg.showNotification(data.title,opts);
   last=signature;
   report('Shortcut displayed for '+String(s.name||'activity')+'. Tap the notification to reopen LifeOS; it is not a live clock.');
  }
