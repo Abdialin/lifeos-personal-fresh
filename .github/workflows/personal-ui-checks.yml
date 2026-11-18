@@ -41,6 +41,8 @@ jobs:
         run: node test_android_bridge_v228.cjs
       - name: Validate native WebView background-to-foreground timer refresh
         run: node test_android_bridge_v231.cjs
+      - name: Validate native alarm and timer service lifecycle safeguards
+        run: node test_android_lifecycle_v231.cjs
       - name: Validate native Android diagnostic and lock-screen privacy source
         run: node test_android_companion_v230.cjs
       - name: Validate substantial pause/resume intervals without double counting
