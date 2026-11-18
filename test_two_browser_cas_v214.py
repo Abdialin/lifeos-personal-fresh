@@ -80,6 +80,9 @@ class TwoBrowserCAS(unittest.TestCase):
                         self.assertEqual(unchanged['response']['revision'],1)
                         self.assertEqual([x['id'] for x in unchanged['response']['data']['sessions']],['device-A'])
                         # Review independent additions using the same pure reconciliation code as LifeOS.
+                        # Load the production conflict-analysis module into the isolated
+                        # browser even when the private backend serves a login gate.
+                        pages[1].add_script_tag(content=(ROOT/'personal_conflict_plan_v212.js').read_text())
                         report=pages[1].evaluate("""({local,remote}) => {
                           const summary=window.LifeOSConflictPlanV212.inspect(local,remote,1,0);
                           return {reason:summary.reason,
