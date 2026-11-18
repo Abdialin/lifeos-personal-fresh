@@ -53,12 +53,14 @@ class MainActivity : Activity() {
         web = WebView(this)
         // Android 15+ may draw WebView content beneath system bars. Reserve
         // only native system-bar insets; do not change persisted web layout.
-        web.setOnApplyWindowInsetsListener { view, insets ->
-            val bars = insets.getInsets(
-                WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars()
-            )
-            view.setPadding(0, bars.top, 0, bars.bottom)
-            insets
+        if (Build.VERSION.SDK_INT >= 30) {
+            web.setOnApplyWindowInsetsListener { view, insets ->
+                val bars = insets.getInsets(
+                    WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars()
+                )
+                view.setPadding(0, bars.top, 0, bars.bottom)
+                insets
+            }
         }
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
