@@ -5,7 +5,7 @@ const quran={id:'q1',name:'Quran memorization',status:'finished',startAt:midnigh
 const gym={id:'g1',name:'Träning',status:'finished',segments:[{start:midnight+hour,end:midnight+2*hour}]};
 const fake={id:'s1',name:'Work',status:'finished',source:'assumed-demo',segments:[{start:midnight,end:midnight+hour}]};
 const w={sessions:[work,quran,gym,fake],workouts:[{id:'workout-linked',sessionId:'g1',type:'Gym',minutes:60},{id:'manual',type:'Walking',date:'2026-11-18',minutes:30}]};
-const t=midnight+3*hour;
+const t=midnight+13*hour;
 const report=insights.evidence(w,'work',t,7);
 assert.equal(report.recordedSessions,1);
 assert.equal(report.totalMinutes,120);
