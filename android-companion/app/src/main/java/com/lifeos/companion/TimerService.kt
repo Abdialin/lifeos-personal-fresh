@@ -75,6 +75,14 @@ class TimerService : Service() {
         val open = PendingIntent.getActivity(this, 0,
             Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val publicVersion = Notification.Builder(this, CHANNEL)
+            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setContentTitle("LifeOS activity timer")
+            .setContentText(if (paused) "Paused" else "Tracking in progress")
+            .setShowWhen(!paused)
+            .setWhen(System.currentTimeMillis() - elapsed)
+            .setUsesChronometer(!paused)
+            .build()
         val notification = Notification.Builder(this, CHANNEL)
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentTitle("LifeOS · $name")
@@ -88,6 +96,8 @@ class TimerService : Service() {
                         if (paused) "Resume" else "Pause", controlPending)
             }
             .setOngoing(true)
+            .setVisibility(Notification.VISIBILITY_PRIVATE)
+            .setPublicVersion(publicVersion)
             .setOnlyAlertOnce(true)
             .setCategory(Notification.CATEGORY_SERVICE)
             .setShowWhen(!paused)
