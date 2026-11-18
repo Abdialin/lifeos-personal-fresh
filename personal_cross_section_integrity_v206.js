@@ -28,8 +28,9 @@ function inspect(workspace,at=Date.now()){
  const w=workspace&&typeof workspace==='object'?workspace:{};
  const types=['sessions','workouts','meals','schedule','habitChecks'];
  const counts={};const issues=[];const index={};
+ const rowsFor=type=>Array.isArray(w[type])?w[type]:[];
  for(const type of types){
-  const rows=Array.isArray(w[type])?w[type]:[];
+  const rows=rowsFor(type);
   const ids=new Set();let duplicates=0,missingIds=0;
   for(const row of rows){
    if(!validId(row?.id)){missingIds++;continue}
@@ -43,7 +44,7 @@ function inspect(workspace,at=Date.now()){
   if(missingIds)issues.push({kind:'invalid-id',section:type,number:missingIds,description:'Records without identifiers in '+type+'.'});
  }
  let invalidIntervals=0,longRunning=0,linkedWorkoutDuplicates=0,linkedMealDuplicates=0;
- for(const s of w.sessions||[]){
+ for(const s of rowsFor('sessions')){
   const d=duration(s,at);
   if(d.malformed)invalidIntervals++;
   if(s.status==='running'&&d.ms>16*3600000)longRunning++;
@@ -52,7 +53,7 @@ function inspect(workspace,at=Date.now()){
  if(longRunning)issues.push({kind:'stale',section:'Track',number:longRunning,description:'Running timers exceeding 16 hours should be reviewed; no automatic finish.'});
  for(const [key,label] of [['workouts','Fitness'],['meals','Nutrition']]){
   const seen=new Set();let orphan=0,duplicated=0;
-  for(const row of w[key]||[]){
+  for(const row of rowsFor(key)){
    if(!validId(row?.sessionId))continue;
    const id=String(row.sessionId);
    if(!index.sessions.has(id))orphan++;
@@ -65,14 +66,21 @@ function inspect(workspace,at=Date.now()){
   if(key==='workouts')linkedWorkoutDuplicates=duplicated;
   else linkedMealDuplicates=duplicated;
  }
+ let orphanPlanLinks=0;
+ for(const plan of rowsFor('schedule')){
+  if(validId(plan?.sessionId)&&!index.sessions.has(String(plan.sessionId)))orphanPlanLinks++;
+ }
+ counts.schedule.orphanSessionLinks=orphanPlanLinks;
+ if(orphanPlanLinks)issues.push({kind:'orphan',section:'Plan',number:orphanPlanLinks,
+  description:'Planned entries reference missing tracked activities. Review linked records.'});
  let missingHabitEvidence=0;
- for(const c of w.habitChecks||[]){
+ for(const c of rowsFor('habitChecks')){
   if(c?.evidenceType==='session'&&validId(c.evidenceSourceId)&&!index.sessions.has(String(c.evidenceSourceId)))missingHabitEvidence++;
  }
  if(missingHabitEvidence)issues.push({kind:'orphan',section:'Habits',number:missingHabitEvidence,description:'Habit confirmations referencing missing tracked activities.'});
  return {counts,issues,summary:{
   issues:issues.reduce((n,x)=>n+x.number,0),invalidIntervals,longRunning,linkedWorkoutDuplicates,linkedMealDuplicates,
-  missingHabitEvidence,activities:(w.sessions||[]).length,
+  missingHabitEvidence,orphanPlanLinks,activities:rowsFor('sessions').length,
   checkedAt:at
  }};
 }
