@@ -162,3 +162,13 @@ The old Cloud sync **Remember token in this browser tab** uses sessionStorage; i
 The backup recovery V234 capability is now requested again via an explicit native message if the original page-load capability flag is missing; the native response confirms feature support. It continues to **block** restoration on older installed APKs that cannot securely save/verify backup files. Installing V237 should preserve app storage when signed with the same debug key; if Android requests uninstall, do not clear data until a backup is confirmed. The Android debug key may vary across separate CI runs, which can make updating impossible without uninstall. This is not solved by the web deployment. The native encryption path and actual restore remain to be tested on device.
 
 The website's browser-tab checkbox remains session-only, never persists a token in localStorage. Neither the native token nor its ciphertext is included in workspace exports or cloud requests other than authenticated API headers already used by LifeOS.
+
+## V238 permanent signing and non-destructive parallel installation
+
+The Android V237 APK was rejected by Samsung with **“App not installed as package conflicts with an existing package.”** The app's old runner-generated signing certificate cannot be replaced in-place with a new unrelated key. The V238 Android project deliberately moves beta development to its own application ID, preserving the existing `com.lifeos.companion` install.
+
+For safety, two outputs are now distinct:
+- `com.lifeos.companion.beta.dev`: disposable runner-signed debug test build. This is a **separate** app and can be installed without uninstalling the old package, but future dev APKs may be rejected because their signing certificates change.
+- `com.lifeos.companion.beta`: stable *signed release* test beta. Available only when GitHub Actions has all four private signing secrets configured; subsequent releases remain update-compatible if the same key is retained.
+
+See **`SIGNING_AND_SAFE_UPDATES_V238.md`** for the one-time secure key setup and Android data-protection instructions. No signing key, keystore password, or secret was committed to this repository. An APK build and the Samsung side-by-side install must still be confirmed.
