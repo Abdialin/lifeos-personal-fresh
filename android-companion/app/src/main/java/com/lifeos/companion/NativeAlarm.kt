@@ -22,6 +22,12 @@ object NativeAlarm {
     const val NOTIFICATION_ID = 2220
     const val ACTION_SNOOZE = "com.lifeos.companion.SNOOZE"
     private const val PREFS = "lifeos_alarm_recovery"
+    fun pendingSnooze(context: Context): Long =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong("snoozeUntil", 0L)
+    fun acknowledgeSnooze(context: Context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .remove("snoozeUntil").apply()
+    }
     private fun clearSaved(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear().apply()
 
@@ -77,7 +83,10 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == NativeAlarm.ACTION_SNOOZE) {
             val label = intent.getStringExtra(NativeAlarm.EXTRA_LABEL)?.take(80) ?: "LifeOS reminder"
-            NativeAlarm.schedule(context, label, System.currentTimeMillis() + 5L * 60_000L)
+            val until = System.currentTimeMillis() + 5L * 60_000L
+            NativeAlarm.schedule(context, label, until)
+            context.getSharedPreferences("lifeos_alarm_recovery", Context.MODE_PRIVATE).edit()
+                .putLong("snoozeUntil", until).apply()
             context.getSystemService(NotificationManager::class.java)
                 .cancel(NativeAlarm.NOTIFICATION_ID)
             return
