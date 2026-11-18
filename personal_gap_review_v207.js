@@ -19,7 +19,7 @@
    if(!section.open)return;
    const ws=read(),timeline=root.LifeOSActivityTimelineV54;
    if(!ws||!timeline?.build){note.textContent='Activity history is unavailable.';return}
-   const result=timeline.build(ws,input.value,Date.now()),gaps=(result.gaps||[]).filter(g=>g.durationMs>=45*60000);
+   const result=timeline.build(ws,input.value,Date.now()),gaps=(result.gapDetails||[]).filter(g=>g.durationMs>=45*60000);
    list.replaceChildren();note.textContent=gaps.length?gaps.length+' unlogged interval(s) of 45 minutes or more.':'No unlogged interval of 45 minutes or more is available for this day.';
    for(const g of gaps.slice(0,12)){
     const row=document.createElement('div');row.className='lo207-gap-row';row.style.cssText='padding:12px;border:1px solid #51637a;border-radius:12px;margin:9px 0';
