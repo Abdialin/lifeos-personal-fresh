@@ -27,6 +27,8 @@ jobs:
         run: node test_cloud_parity_v210.cjs
       - name: Validate offline queue revision safety
         run: node test_sync_gate_v211.cjs
+      - name: Validate two-device conflict review
+        run: node test_conflict_plan_v212.cjs
       - name: Validate new activity feedback features
         run: |
           node test_lifeos_feedback_v207.cjs
