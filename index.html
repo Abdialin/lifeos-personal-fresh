@@ -1923,7 +1923,8 @@ async function v234Review(){
   const localBody=JSON.stringify(snapshot,null,2),serverBody=JSON.stringify(remote.data,null,2);
   if(window.LifeOSNative){
    const nativeSave=window.LifeOSV234BackupBridge?.save;
-   if(typeof nativeSave!=='function')throw Error('Native backup verification is unavailable. Update to the V234 Android APK before restoring.');
+   if(window.LifeOSNativeBackupV234!==true||typeof nativeSave!=='function')
+    throw Error('Native backup verification is unavailable in this Android build. Install the V234 APK before restoring.');
    status.textContent='Choose where to save the local backup, then the server backup. Cancel either save to keep restoration disabled.';
    await nativeSave(localName,localBody);
    status.textContent='Local recovery backup verified. Save the server workspace backup to continue.';
