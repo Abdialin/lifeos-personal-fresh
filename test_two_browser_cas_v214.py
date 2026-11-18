@@ -49,17 +49,17 @@ class TwoBrowserCAS(unittest.TestCase):
                         contexts=[browser.new_context(http_credentials={'username':USER,'password':PASSWORD}) for _ in range(2)]
                         pages=[c.new_page() for c in contexts]
                         for page in pages:page.goto(url+'/index.html',wait_until='load',timeout=40000)
-                        async_request="""async ({method, payload}) => {
-                          const r=await fetch('/api/state',{
-                            method,headers:{'X-LifeOS-Token': 'v214-isolated-test-token-not-real',
-                              ...(payload?{'Content-Type':'application/json'}:{})},
-                            body:payload?JSON.stringify(payload):undefined,cache:'no-store'
-                          });
-                          return {status:r.status,response:await r.json()};
-                        }"""
-                        def call(page,method,payload=None):
-                            return page.evaluate(async_request,{'method':method,'payload':payload})
-                        initial=[call(p,'GET') for p in pages]
+                        import base64
+                        basic=base64.b64encode((USER+':'+PASSWORD).encode()).decode()
+                        def call(context,method,payload=None):
+                            # Browser-context HTTP client with explicit private-server auth.
+                            headers={'Authorization':'Basic '+basic,'X-LifeOS-Token':TOKEN}
+                            if payload is not None:headers['Content-Type']='application/json'
+                            response=context.request.fetch(url+'/api/state',method=method,
+                                headers=headers,data=json.dumps(payload) if payload is not None else None,
+                                timeout=15000)
+                            return {'status':response.status,'response':response.json()}
+                        initial=[call(c,'GET') for c in contexts]
                         self.assertTrue(all(x['status']==200 and x['response']['revision']==0 for x in initial))
                         base={'version':1,'sessions':[],'events':[],'schedule':[],'todos':[],
                               'workouts':[],'meals':[],'goals':[],'personalLogs':[],
@@ -71,12 +71,12 @@ class TwoBrowserCAS(unittest.TestCase):
                               'startAt':1000,'endAt':61000,'segments':[{'start':1000,'end':61000}]}
                         first_data=json.loads(json.dumps(base));first_data['sessions']=[record('device-A')]
                         second_data=json.loads(json.dumps(base));second_data['sessions']=[record('device-B')]
-                        first=call(pages[0],'PUT',{'revision':0,'data':first_data})
-                        second=call(pages[1],'PUT',{'revision':0,'data':second_data})
+                        first=call(contexts[0],'PUT',{'revision':0,'data':first_data})
+                        second=call(contexts[1],'PUT',{'revision':0,'data':second_data})
                         self.assertEqual(first['status'],200,first)
                         self.assertEqual(second['status'],409,second)
                         self.assertEqual(second['response']['revision'],1)
-                        unchanged=call(pages[1],'GET')
+                        unchanged=call(contexts[1],'GET')
                         self.assertEqual(unchanged['response']['revision'],1)
                         self.assertEqual([x['id'] for x in unchanged['response']['data']['sessions']],['device-A'])
                         # Review independent additions using the same pure reconciliation code as LifeOS.
@@ -93,18 +93,18 @@ class TwoBrowserCAS(unittest.TestCase):
                         # No auto-merge: test explicitly creates a synthetic reviewed combination.
                         reviewed=json.loads(json.dumps(unchanged['response']['data']))
                         reviewed['sessions'].append(record('device-B'))
-                        commit=call(pages[1],'PUT',{'revision':1,'data':reviewed})
+                        commit=call(contexts[1],'PUT',{'revision':1,'data':reviewed})
                         self.assertEqual(commit['status'],200,commit)
                         self.assertEqual(commit['response']['revision'],2)
-                        both=[call(p,'GET') for p in pages]
+                        both=[call(c,'GET') for c in contexts]
                         self.assertTrue(all(x['response']['revision']==2 for x in both))
                         for snapshot in both:
                             self.assertEqual({x['id'] for x in snapshot['response']['data']['sessions']},
                                              {'device-A','device-B'})
                         # A disconnected writer cannot replace the reviewed state using revision 1.
-                        stale=call(pages[0],'PUT',{'revision':1,'data':first_data})
+                        stale=call(contexts[0],'PUT',{'revision':1,'data':first_data})
                         self.assertEqual(stale['status'],409)
-                        latest=call(pages[0],'GET')
+                        latest=call(contexts[0],'GET')
                         self.assertEqual({x['id'] for x in latest['response']['data']['sessions']},
                                          {'device-A','device-B'})
                         print('V214 real two-browser HTTP CAS, rejected stale write, reviewed convergence: PASS')
