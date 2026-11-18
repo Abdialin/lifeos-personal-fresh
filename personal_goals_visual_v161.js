@@ -35,7 +35,13 @@ function measure(g,w,a,b){let all=[],good=[],minutes=0,value=0,src='finished tim
 if(cat==='fitness'){
  src='workout records + qualifying finished timers';
  const sessions=(w.sessions||[]).filter(x=>x?.status==='finished'&&within(x,a,b));
- const workoutNames=/\b(gym|workout|fitness|strength|weightlifting|exercise|running|run|boxing|cardio|cycling|swimming|pilates|yoga)\b/i;
+ // Use the same activity classification as My Life so Gym/Training in different
+ // languages contributes to Goals exactly once (linked workout IDs are deduplicated below).
+ const isWorkoutSession=x=>{
+  const classify=window.LifeOSMyLifeV190?.kindOf;
+  if(typeof classify==='function')return classify(x.name)==='fitness';
+  return /\b(gym|workout|fitness|strength|weightlifting|exercise|running|run|boxing|cardio|cycling|swimming|pilates|yoga|training|walking|walk|jogging|träning|träna|promenad|löpning|styrketräning|boxning)\b/i.test(String(x.name||''));
+ };
  const linked=new Map(sessions.map(x=>[String(x.id),x]));
  const workouts=(w.workouts||[]).filter(x=>interval(linked.get(String(x.sessionId))||x,a,b));
  const countedIds=new Set();
@@ -43,7 +49,7 @@ if(cat==='fitness'){
  good=workouts.filter(x=>!sample(x)&&(!x.sessionId||linked.has(String(x.sessionId)))&&!sample(linked.get(String(x.sessionId)))).filter((x,i,list)=>!x.sessionId||list.findIndex(y=>String(y.sessionId)===String(x.sessionId))===i);
  for(const x of good)if(x.sessionId)countedIds.add(String(x.sessionId));
  minutes=good.reduce((v,x)=>v+(linked.has(String(x.sessionId))?activeMinutes(linked.get(String(x.sessionId)),a,b):Math.max(0,Number(x.durationMinutes)||Number(x.minutes)||0)),0);
- for(const x of sessions.filter(x=>workoutNames.test(String(x.name||''))&&!countedIds.has(String(x.id)))){
+ for(const x of sessions.filter(x=>isWorkoutSession(x)&&!countedIds.has(String(x.id)))){
   all.push(x);
   if(sample(x))continue;
   good.push(x);countedIds.add(String(x.id));minutes+=activeMinutes(x,a,b);
