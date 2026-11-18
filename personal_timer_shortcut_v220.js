@@ -71,8 +71,12 @@ function mount(){
    if(permission()!=='granted'){report('Notifications are blocked in Android or browser settings.');return}
    if(!active()){report('Start or resume an activity before showing its notification.');return}
    // Only opt in after registration and display succeeds.
+   const signal=root.LifeOSAlertEngineV221;
+   if(signal)await signal.unlock();
    pinned=true;await show(true);
+   const audible=signal?.play?.(signal.load());
    if(!write(true)){pinned=false;report('Could not store this preference. Check browser storage.');return}
+   report('Notification displayed. '+(audible?.sound?'In-app confirmation tone played.':'Notification sound is controlled by Android; in-app tone unavailable or muted.')+(audible?.vibration?' Vibration requested.':''));
   }catch(e){pinned=false;report('Could not display a notification: '+String(e.message||e))}
  });
  section.querySelector('#lo220-test-alert').addEventListener('click',async()=>{
@@ -91,7 +95,15 @@ function mount(){
  });
  root.addEventListener('lifeos-v77-tracking-changed',()=>{
   if(!pinned||document.hidden)return;
-  root.setTimeout(()=>show().catch(e=>report('Notification not refreshed: '+String(e.message||e))),100);
+  root.setTimeout(()=>{
+   const before=last;
+   show().then(()=>{
+    if(last&&before!==last){
+     const signal=root.LifeOSAlertEngineV221;
+     signal?.play?.(signal.load());
+    }
+   }).catch(e=>report('Notification not refreshed: '+String(e.message||e)));
+  },100);
  });
  report(pinned?'Previously enabled. Notification display depends on browser permission.':'Not enabled on this device.');
 }
