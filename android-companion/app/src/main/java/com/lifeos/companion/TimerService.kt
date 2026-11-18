@@ -65,7 +65,7 @@ class TimerService : Service() {
             .putString(KEY_TOKEN, token).apply()
         val controlIntent = Intent(this, MainActivity::class.java).apply {
             action = ACTION_NATIVE_CONTROL
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra(EXTRA_ID, id)
             putExtra(EXTRA_CONTROL, control)
             putExtra(EXTRA_TOKEN, token)
