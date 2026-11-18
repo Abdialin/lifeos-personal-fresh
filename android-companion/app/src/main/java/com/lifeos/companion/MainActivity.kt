@@ -74,7 +74,7 @@ class MainActivity : Activity() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
                 if (trustedPage(url)) {
-                    view.evaluateJavascript("window.LifeOSNativeBackupV234=true", null)
+                    view.evaluateJavascript("window.LifeOSNativeBackupV234=true;window.dispatchEvent(new Event(\'lifeos-native-ready\'))", null)
                 }
                 reconcileNativeSnooze()
                 view.postDelayed({ reconcileNativeSnooze() }, 1400L)
@@ -226,6 +226,27 @@ class MainActivity : Activity() {
         try {
             if (raw.length > 10_500_000) return
             val p = JSONObject(raw)
+            if (p.optString("kind") == "native-capabilities") {
+                sendNativeReply("window.LifeOSNativeBackupV234=true;window.dispatchEvent(new Event('lifeos-native-ready'))")
+                return
+            }
+            if (p.optString("kind") == "token-restore") {
+                val saved = NativePrivateToken.read(this)
+                if (saved != null) sendNativeReply("window.LifeOSNativeSecureSyncV237?.receive(" + JSONObject.quote(saved) + ")")
+                else sendNativeReply("window.LifeOSNativeSecureSyncV237?.receive(null)")
+                return
+            }
+            if (p.optString("kind") == "token-store") {
+                val token = p.optString("token")
+                val ok = NativePrivateToken.save(this, token)
+                sendNativeReply("window.LifeOSNativeSecureSyncV237?.saved(" + (if (ok) "true" else "false") + ")")
+                return
+            }
+            if (p.optString("kind") == "token-clear") {
+                val ok = NativePrivateToken.clear(this)
+                sendNativeReply("window.LifeOSNativeSecureSyncV237?.cleared(" + (if (ok) "true" else "false") + ")")
+                return
+            }
             if (p.optString("kind") == "backup-export") {
                 handleBackupExport(p)
                 return
@@ -277,6 +298,11 @@ class MainActivity : Activity() {
     }
     // Saving a user-selected JSON backup is an explicit Android Storage Access
     // Framework action. LifeOS does not gain blanket storage permissions.
+    private fun sendNativeReply(js: String) {
+        if (!::web.isInitialized || !trustedPage(web.url)) return
+        runOnUiThread { if (::web.isInitialized && trustedPage(web.url)) web.evaluateJavascript(js, null) }
+    }
+
     private fun handleBackupExport(p: JSONObject) {
         if (pendingBackup != null || !trustedPage(web.url)) return
         val requestId = p.optString("requestId")
