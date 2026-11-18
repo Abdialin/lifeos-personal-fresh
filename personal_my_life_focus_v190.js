@@ -244,8 +244,15 @@ function init(){
  $('lifeosNavigation')?.addEventListener('click',()=>setTimeout(run,60));
  root.addEventListener('hashchange',()=>setTimeout(run,60));
  root.addEventListener('lifeos-v76-route-check',()=>setTimeout(run,30));
- root.addEventListener('lifeos-v77-tracking-changed',()=>setTimeout(renderEvidence,80));
- root.addEventListener('focus',()=>{if(document.body.dataset.lifeosView==='life')renderEvidence()});
+ let evidenceTimer=0;
+ const evidenceChanged=()=>{
+  if(document.body.dataset.lifeosView!=='life')return;
+  clearTimeout(evidenceTimer);
+  evidenceTimer=setTimeout(renderEvidence,120);
+ };
+ ['lifeos-v77-tracking-changed','lifeos-v74-records-changed','lifeos-v76-activation-changed'].forEach(name=>root.addEventListener(name,evidenceChanged));
+ root.addEventListener('focus',evidenceChanged);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)evidenceChanged()});
  // Reconcile UI after optional modules mount without observing constantly regenerating chart markup.
  [120,700,1800].forEach(t=>setTimeout(run,t));
  document.addEventListener('submit',event=>{
