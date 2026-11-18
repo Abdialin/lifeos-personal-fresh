@@ -53,6 +53,8 @@ jobs:
         run: node test_fresh_device_adoption_v234.cjs
       - name: Validate encrypted native sync token and capability handshake
         run: node test_native_secure_sync_v237.cjs
+      - name: Validate side-by-side Android beta and stable signing configuration
+        run: node test_android_signing_v238.cjs
       - name: Validate substantial pause/resume intervals without double counting
         run: node test_activity_pauses_v225.cjs
       - name: Validate focus control states and alert engine
