@@ -3,11 +3,14 @@ package com.lifeos.companion
 import android.Manifest
 import android.app.AlertDialog
 import android.app.Activity
+import android.app.AlarmManager
+import android.provider.Settings
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.content.Context
 import android.webkit.WebResourceRequest
 import android.webkit.HttpAuthHandler
 import android.text.InputType
@@ -90,7 +93,45 @@ class MainActivity : Activity() {
                 }
         }
         setContentView(web)
-        web.loadUrl("$lifeOsOrigin/?v=222#tracking")
+        web.loadUrl("$lifeOsOrigin/?v=223#tracking")
+        if (!getPreferences(Context.MODE_PRIVATE).getBoolean("native_permissions_explained", false)) {
+            getPreferences(Context.MODE_PRIVATE).edit()
+                .putBoolean("native_permissions_explained", true).apply()
+            AlertDialog.Builder(this)
+                .setTitle("LifeOS notifications and alarms")
+                .setMessage("For a visible timer, allow notifications. For precisely timed alarms, Android may also require Alarms & reminders access. These are optional; you can change them in Android Settings.")
+                .setPositiveButton("Alarm settings") { _, _ -> openAlarmSettings() }
+                .setNeutralButton("Notification settings") { _, _ -> openNotificationSettings() }
+                .setNegativeButton("Later", null)
+                .show()
+        }
+    }
+
+    private fun openAlarmSettings() {
+        if (Build.VERSION.SDK_INT >= 31) {
+            val manager = getSystemService(AlarmManager::class.java)
+            if (!manager.canScheduleExactAlarms()) {
+                try {
+                    startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                        data = Uri.parse("package:$packageName")
+                    })
+                } catch (_: Exception) {
+                    openNotificationSettings()
+                }
+            }
+        }
+    }
+
+    private fun openNotificationSettings() {
+        try {
+            startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+            })
+        } catch (_: Exception) {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:$packageName")
+            })
+        }
     }
 
     private fun handleTimerState(raw: String) {
