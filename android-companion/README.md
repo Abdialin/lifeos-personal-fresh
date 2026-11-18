@@ -1,4 +1,4 @@
-# LifeOS Android Companion — V227 experimental companion
+# LifeOS Android Companion — V228 experimental companion
 
 **Status:** Native Android source + isolated build checks; **not yet a published or installed Android app**.
 
@@ -56,7 +56,7 @@ security, privacy, battery and Play policy review.
 - Focus UI has Android-specific buttons to reopen notification and exact-alarm settings, only when the trusted native bridge is present.
 - Native snooze reconciliation is intentionally bounded and best-effort. It does not alter the activity-tracking database.
 - Browser regression tests now cover the native snooze transition and ringing-state message; Android compile, real alarm sound, vibration, lock-screen presence, reboot restore, and Samsung battery-management handling are **not yet confirmed**.
-- Native foreground timer controls are still display-only. Pause/finish must occur in LifeOS until an authenticated write-safe command protocol is designed and tested.
+- Native notification supports Pause and Resume for the displayed activity only. Actions require a single-use token and the exact currently matching session state; the trusted page routes them to the same V77 timer transaction handler. Finish still requires the web app's review/confirmation. Device testing and successful Android build remain prerequisites for relying on these controls.
 - Review Android notification channel settings if sound or vibration is silent: user overrides on an existing channel are not overwritten by app code.
 
 ## V225–V226 Personal integration
@@ -70,3 +70,11 @@ security, privacy, battery and Play policy review.
 ## V227 native alert diagnostic
 
 The Focus panel now offers a **Test Android alarm sound & vibration** button only inside the trusted Android companion. It posts a one-time diagnostic notification on the native alarm channel, without cancelling or changing an existing scheduled alarm. The channel's current user-selected sound/vibration policy still applies; Android can silence it because of permission denial, system volume, Do Not Disturb, or OEM restrictions. The test has browser-side regression coverage but still needs a physical-device check.
+
+## V228 notification action safety
+
+- Android notification presents Pause or Resume for the single displayed timer. It does not offer Finish, because finishing requires confirmation and review of the actual record.
+- The app checks the explicit action ID, intended status, and a one-use private token before dispatch; the browser independently checks the activity ID and expected status before invoking the existing tracker operation. No direct native database writes are allowed.
+- If the app is offline, authentication is blocked, or the existing tracker cannot safely persist, commands may fail. Open LifeOS and verify the actual timer state; never assume the notification action succeeded merely because the button was tapped.
+- Multiple concurrent activities are not individually controlled in the notification: it displays one timer and the count of other open timers.
+- The V228 safety test uses a mocked canonical tracker. Device-level compilation, lifecycle checks, lock-screen behavior, and real PostgreSQL persistence require separate verification.
