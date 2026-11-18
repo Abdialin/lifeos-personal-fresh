@@ -3,6 +3,8 @@ assert.equal(focus.remaining(10000,9000),1000);
 assert.equal(focus.format(3661000),'01:01:01');
 assert.equal(focus.normalizeState({end:9000,label:'Study'}).mode,'running');
 assert.equal(focus.normalizeState({end:9000,mode:'break',breakMs:120000}).breakMs,120000);
+assert.equal(focus.normalizeState({end:9000,mode:'paused',pauseMs:90000}).pauseMs,90000);
+assert.equal(focus.normalizeState({end:9000,mode:'paused'}).pauseMs,0);
 assert.equal(alert.normalize({volume:1000,repeatSeconds:1}).volume,100);
 assert.equal(alert.normalize({volume:-90,repeatSeconds:1}).volume,0);
 assert.equal(alert.normalize({repeatSeconds:60}).repeatSeconds,60);
