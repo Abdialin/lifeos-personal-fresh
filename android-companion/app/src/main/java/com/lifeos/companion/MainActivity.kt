@@ -135,7 +135,7 @@ class MainActivity : Activity() {
         web.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
                 view: WebView, filePathCallback: ValueCallback<Array<Uri>>,
-                fileChooserParams: FileChooserParams
+                fileChooserParams: WebChromeClient.FileChooserParams
             ): Boolean {
                 if (!trustedPage(view.url) || pendingImportPicker != null) {
                     filePathCallback.onReceiveValue(null)
