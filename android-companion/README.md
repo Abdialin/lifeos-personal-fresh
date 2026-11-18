@@ -1,4 +1,4 @@
-# LifeOS Android Companion — V228 experimental companion
+# LifeOS Android Companion — V229 experimental companion
 
 **Status:** Native Android source + isolated build checks; **not yet a published or installed Android app**.
 
@@ -78,3 +78,11 @@ The Focus panel now offers a **Test Android alarm sound & vibration** button onl
 - If the app is offline, authentication is blocked, or the existing tracker cannot safely persist, commands may fail. Open LifeOS and verify the actual timer state; never assume the notification action succeeded merely because the button was tapped.
 - Multiple concurrent activities are not individually controlled in the notification: it displays one timer and the count of other open timers.
 - The V228 safety test uses a mocked canonical tracker. Device-level compilation, lifecycle checks, lock-screen behavior, and real PostgreSQL persistence require separate verification.
+
+## V229 Android lifecycle and Focus accounting
+
+- Incoming notification Pause/Resume actions now expire after 90 seconds if the trusted LifeOS page is not ready. A stale command does not automatically replay later. Android navigation and Basic Auth checks use an exact parsed HTTPS hostname instead of a URL prefix.
+- Notification success feedback states that the timer action was **saved in local recovery storage**, not that cloud synchronization has been verified. Users should check cloud sync status separately.
+- The Focus panel now shows accumulated pause time, break time, and productive focus time against the planned session duration. These are local Focus metrics and do not overwrite tracked activity sessions.
+- The Android-only Focus panel includes a user-initiated link to Android battery optimization settings. The app does not request a blanket exemption or override the user's settings.
+- Browser regression assertions cover pause/break/focus duration, but a compiled APK installation on an actual phone is still necessary to establish reliability during device lock, Doze, process death, and Samsung background restrictions.
