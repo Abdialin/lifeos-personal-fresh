@@ -20,7 +20,7 @@ function notificationData(s){
 }
 function mount(){
  if(!root.document||document.getElementById('lo220-phone-shortcut'))return;
- const host=document.getElementById('trackActivePanel');if(!host)return;
+ const host=document.getElementById('trackQuickPanel')||document.getElementById('trackActivePanel');if(!host)return;
  const section=document.createElement('details');section.id='lo220-phone-shortcut';section.className='lo220-phone-shortcut';
  section.innerHTML='<summary>Phone timer shortcut <span id="lo220-summary" aria-live="polite">· Optional</span></summary>'+
  '<p class="sub">Show a static notification for a running or paused activity on supported browsers. Tap it to reopen LifeOS. Its time does not tick in Android’s notification center. Android may dismiss it or stop delivery after the browser closes.</p>'+
