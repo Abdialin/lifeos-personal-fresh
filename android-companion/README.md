@@ -1,4 +1,4 @@
-# LifeOS Android Companion — V222 foundation
+# LifeOS Android Companion — V223 experimental companion
 
 **Status:** Native Android source + isolated build checks; **not yet a published or installed Android app**.
 
@@ -19,8 +19,12 @@ paused timers display their last elapsed time. Notification tap reopens LifeOS.
   before public distribution. Native alarms can be scheduled from the trusted Focus Mode alarm state.
   **Exact alarm timing requires the user to allow Android's Alarms & reminders
   permission**; if it is denied, the app uses an inexact while-idle alarm.
-  This is not guaranteed delivery, does not automatically reschedule after reboot
-  and does not yet include a built-in native permission settings screen.
+  Alarm scheduling is not guaranteed delivery. V223 retains a single pending alarm
+  and tries to restore it after reboot or package replacement, once Android sends
+  the relevant broadcast. Device-level battery restrictions can still interfere.
+  The first app launch now offers links to Android alarm and notification settings.
+  The notification includes a native five-minute snooze action. Snooze is native-only;
+  the web Focus countdown is not extended, so reopening the web app can cancel it.
 - This Android module has **not been installed or tested on a Samsung phone**.
 - The browser version remains unchanged except for sending restricted timer
   status when an origin-scoped native bridge is available. No tokens or user
@@ -37,3 +41,10 @@ From `android-companion/` with Android SDK 35, JDK 17 and Gradle 8.9:
 This is an integration foundation, **not a guarantee** of persistent lock-screen
 alerts. Do not treat this as a production app or distribute it without a
 security, privacy, battery and Play policy review.
+
+## V223 verification state
+
+- Source changes committed: optional permission explainer, native alarm snooze, and single pending-alarm reboot restoration.
+- No physical Android/Samsung installation has been verified; no foreground-service, background, sound, vibration, or locked-screen behavior is claimed as proven.
+- Native timer is a projection of the web tracker, not a second tracking database. Only one timer is shown natively even when several web timers exist.
+- Verify on a device: notification permission, exact-alarm access, sound/vibration channel configuration, five-minute snooze, reboot restoration, Android battery restrictions, and alarm cancellation from Focus Mode.
