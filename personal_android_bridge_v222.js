@@ -34,11 +34,13 @@ function publish(){
  if(!native||typeof native.postMessage!=='function')return false;
  let sessions=[];try{sessions=root.lifeosReadOnlyWorkspace?.()?.sessions||[]}catch(_){}
  const s=pick(sessions);
+ const openCount=sessions.filter(x=>x&&['running','paused'].includes(x.status)&&x.id!=null).length;
  const message=s?{kind:'timer-status',id:String(s.id).slice(0,100),name:String(s.name||'Activity').slice(0,80),
-   status:s.status,elapsedMs:Math.min(604800000,Math.floor(elapsed(s,Date.now())))}:
+   status:s.status,activeCount:Math.min(100,openCount),
+   elapsedMs:Math.min(604800000,Math.floor(elapsed(s,Date.now())))}:
    {kind:'timer-status',status:'stopped'};
  // Running elapsed changes continuously; send on initial mount, return, or activity changes.
- const signature=s?String(s.id)+'|'+s.status+'|'+s.name:'none';
+ const signature=s?String(s.id)+'|'+s.status+'|'+s.name+'|'+openCount:'none';
  if(signature===last)return true;
  last=signature;
  try{native.postMessage(JSON.stringify(message));return true}catch(_){return false}
