@@ -171,6 +171,7 @@ class MainActivity : Activity() {
                 putExtra(TimerService.EXTRA_NAME, name)
                 putExtra(TimerService.EXTRA_STATUS, status)
                 putExtra(TimerService.EXTRA_ELAPSED, elapsed)
+                putExtra(TimerService.EXTRA_ACTIVE_COUNT, p.optInt("activeCount", 1).coerceIn(1, 100))
             }
             if (Build.VERSION.SDK_INT >= 26) startForegroundService(intent)
             else startService(intent)
