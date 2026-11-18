@@ -6,7 +6,7 @@
 const KEY='lifeos.personal.focus.v207',MIN=60000;
 const remaining=(end,at)=>Math.max(0,Number(end)-Number(at));
 const format=ms=>{const t=Math.floor(Math.max(0,Number(ms)||0)/1000);return String(Math.floor(t/3600)).padStart(2,'0')+':'+String(Math.floor(t/60)%60).padStart(2,'0')+':'+String(t%60).padStart(2,'0')};
-const normalizeState=s=>s&&Number.isFinite(Number(s.end))&&Number(s.end)>0?{...s,mode:['running','paused','break','ringing'].includes(s.mode)?s.mode:'running',kind:s.kind==='alarm'?'alarm':'focus',label:String(s.label||'Focus').slice(0,80),remainingMs:Math.max(0,Number(s.remainingMs)||0),breakMs:Math.max(0,Number(s.breakMs)||0),pauseMs:Math.max(0,Number(s.pauseMs)||0),startedAt:Number.isFinite(Number(s.startedAt))?Number(s.startedAt):Number(s.modeAt)||Number(s.end)}:null;
+const normalizeState=s=>s&&Number.isFinite(Number(s.end))&&Number(s.end)>0?{...s,mode:['running','paused','break','ringing'].includes(s.mode)?s.mode:'running',kind:s.kind==='alarm'?'alarm':'focus',label:String(s.label||'Focus').slice(0,80),remainingMs:Math.max(0,Number(s.remainingMs)||0),breakMs:Math.max(0,Number(s.breakMs)||0),pauseMs:Math.max(0,Number(s.pauseMs)||0),plannedMs:Math.max(0,Number(s.plannedMs)||0),startedAt:Number.isFinite(Number(s.startedAt))?Number(s.startedAt):Number(s.modeAt)||Number(s.end)}:null;
 function init(){
  const parent=document.getElementById('trackQuickPanel');if(!parent||document.getElementById('lo207-focus'))return;
  const alerts=root.LifeOSAlertEngineV221;
@@ -131,8 +131,9 @@ function init(){
   $('lo221-focus-state').textContent=c.mode==='paused'?'Paused':c.mode==='break'?'Break':'Focus running';
   const pauseMs=c.pauseMs+(c.mode==='paused'&&Number.isFinite(c.modeAt)?Math.max(0,Date.now()-c.modeAt):0);
   const breakMs=c.breakMs+(c.mode==='break'&&Number.isFinite(c.modeAt)?Math.max(0,Date.now()-c.modeAt):0);
-  $('lo221-focus-detail').textContent='Break '+format(breakMs)+' · Paused '+format(pauseMs)+' · Focus left '+format(left);
-  $('lo221-session-stats').textContent=c.label+' · '+format(left)+' left · Paused '+format(pauseMs)+' · Break '+format(breakMs)+' · '+(c.mode==='break'?'Break in progress':c.mode==='paused'?'Paused':'Running');
+  const focusedMs=c.kind==='focus'?Math.max(0,(c.plannedMs||0)-left):0;
+  $('lo221-focus-detail').textContent=(c.kind==='focus'?'Focused '+format(focusedMs)+' · ':'')+'Break '+format(breakMs)+' · Paused '+format(pauseMs)+' · Time left '+format(left);
+  $('lo221-session-stats').textContent=c.label+' · '+format(left)+' left'+(c.kind==='focus'?' · Focused '+format(focusedMs):'')+' · Paused '+format(pauseMs)+' · Break '+format(breakMs)+' · '+(c.mode==='break'?'Break in progress':c.mode==='paused'?'Paused':'Running');
   $('lo221-layer-pause').textContent=c.mode==='paused'?'Resume':c.mode==='break'?'Resume focus':'Pause';
   $('lo221-layer-break').textContent=c.mode==='break'?'Resume focus':'Break';
   $('lo221-pause').textContent=$('lo221-layer-pause').textContent;
@@ -169,7 +170,7 @@ function init(){
   }
   if(load()&&!root.confirm('Replace your existing focus or alarm?'))return;
   const r=await primeSound();
-  current={label,kind,end,mode:'running',remainingMs:end-Date.now(),modeAt:Date.now(),startedAt:Date.now(),breakMs:0,pauseMs:0};
+  current={label,kind,end,mode:'running',remainingMs:end-Date.now(),plannedMs:kind==='focus'?end-Date.now():0,modeAt:Date.now(),startedAt:Date.now(),breakMs:0,pauseMs:0};
   if(!save(current))return;
   alarmPanel.hidden=true;alarmPanel.style.display='none';alertOpen=false;
   if(kind==='focus'){layer.hidden=false;layer.style.display='flex'}
