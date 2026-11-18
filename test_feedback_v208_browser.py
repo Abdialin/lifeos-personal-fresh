@@ -62,6 +62,11 @@ class FeedbackBrowser(unittest.TestCase):
         p.locator('#lo208-weekly-averages .lo208-day').first.wait_for(state='visible',timeout=6000)
         self.assertEqual(p.locator('#lo208-weekly-averages .lo208-day').count(),7)
         self.assertEqual(p.locator('#lo208-weekly-averages .lo208-kpi').count(),4)
+        p.locator('#lo209-activity-insights').wait_for(state='visible',timeout=6000)
+        self.assertEqual(p.locator('#lo209-activity-insights .lo209-picker button').count(),6)
+        p.locator('#lo209-activity-insights .lo209-picker button[data-kind="quran"]').click()
+        self.assertEqual(p.locator('#lo209-activity-insights .lo209-day').count(),7)
+        self.assertEqual(p.locator('#lo209-activity-insights button[data-kind="quran"]').get_attribute('aria-pressed'),'true')
         self.assertEqual(self.errors,[])
 
 if __name__=='__main__':unittest.main()
