@@ -20,6 +20,19 @@ object NativeAlarm {
     const val EXTRA_LABEL = "alarm_label"
     const val CHANNEL = "lifeos_native_alarm_v1"
     const val NOTIFICATION_ID = 2220
+    const val ACTION_SNOOZE = "com.lifeos.companion.SNOOZE"
+    private const val PREFS = "lifeos_alarm_recovery"
+    private fun clearSaved(context: Context) =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear().apply()
+
+    fun restoreAfterBoot(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val time = prefs.getLong("trigger", 0L)
+        val label = prefs.getString("label", "LifeOS alarm") ?: "LifeOS alarm"
+        val now = System.currentTimeMillis()
+        if (time > now && time <= now + 7L * 86400000L) schedule(context, label, time)
+        else clearSaved(context)
+    }
 
     private fun pending(context: Context, label: String = ""): PendingIntent {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
@@ -33,6 +46,7 @@ object NativeAlarm {
     fun cancel(context: Context) {
         val manager = context.getSystemService(AlarmManager::class.java)
         manager.cancel(pending(context))
+        clearSaved(context)
     }
 
     /** Returns true only if an exact request was permitted. */
@@ -42,6 +56,8 @@ object NativeAlarm {
             "Alarm must be in the next seven days"
         }
         val manager = context.getSystemService(AlarmManager::class.java)
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putLong("trigger", triggerMs).putString("label", label.take(80)).apply()
         val alarm = pending(context, label)
         val exact = Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()
         if (exact) {
@@ -59,7 +75,15 @@ object NativeAlarm {
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == NativeAlarm.ACTION_SNOOZE) {
+            val label = intent.getStringExtra(NativeAlarm.EXTRA_LABEL)?.take(80) ?: "LifeOS reminder"
+            NativeAlarm.schedule(context, label, System.currentTimeMillis() + 5L * 60_000L)
+            context.getSystemService(NotificationManager::class.java)
+                .cancel(NativeAlarm.NOTIFICATION_ID)
+            return
+        }
         if (intent.action != NativeAlarm.ACTION_RING) return
+        NativeAlarm.cancel(context)
         val manager = context.getSystemService(NotificationManager::class.java)
         val alarmSound = Settings.System.DEFAULT_ALARM_ALERT_URI
         val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()
@@ -80,15 +104,31 @@ class AlarmReceiver : BroadcastReceiver() {
             Intent(context, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val title = intent.getStringExtra(NativeAlarm.EXTRA_LABEL)?.take(80) ?: "LifeOS reminder"
+        val snooze = PendingIntent.getBroadcast(context, 2221,
+            Intent(context, AlarmReceiver::class.java).apply {
+                action = NativeAlarm.ACTION_SNOOZE
+                putExtra(NativeAlarm.EXTRA_LABEL, title)
+            }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val notification = Notification.Builder(context, NativeAlarm.CHANNEL)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle("LifeOS alarm · $title")
             .setContentText("Alarm reached. Tap to open LifeOS, dismiss or snooze.")
             .setContentIntent(open)
+            .addAction(android.R.drawable.ic_lock_idle_alarm, "Snooze 5 min", snooze)
             .setAutoCancel(true)
             .setCategory(Notification.CATEGORY_ALARM)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
             .build()
         manager.notify(NativeAlarm.NOTIFICATION_ID, notification)
+    }
+}
+
+/** Restores only pending alarms. Never creates or edits LifeOS tracking records. */
+class BootReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED ||
+            intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+            NativeAlarm.restoreAfterBoot(context)
+        }
     }
 }
