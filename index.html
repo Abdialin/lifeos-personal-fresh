@@ -1980,6 +1980,7 @@ async function v234Adopt(){
    localStorage.setItem(SYNC_META_KEY,JSON.stringify(syncMeta));
   }catch(_){/* Atomic recovery checkpoint remains authoritative. */}
   render();
+  document.getElementById('lo233-first-run')?.remove();
   v234Reviewed=null;
   status.textContent='Server revision '+nextMeta.revision+' restored to this device only. No server upload occurred. Reconnect to Cloud sync to resume future updates.';
   syncStatus('Server history restored locally at revision '+nextMeta.revision+'. Reconnect before syncing new changes.');
