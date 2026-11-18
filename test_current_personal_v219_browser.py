@@ -50,7 +50,7 @@ class CurrentLifeOS(unittest.TestCase):
                     self.view(p,key)
                     self.assertEqual(p.locator('#lifeosViewTitle').inner_text().strip(),title)
                     self.assertEqual(p.locator('#lifeosNavigation button[data-view][aria-current="page"]').get_attribute('data-view'),key)
-                    self.assertTrue(p.locator('#lo200-unified').is_visible(), 'Current unified navigation must be visible')
+                    self.assertTrue(p.locator('#lifeosNavigation button[data-view][aria-current="page"]').is_visible(), 'Active navigation control must be visible')
                     self.assertTrue(p.evaluate('document.documentElement.scrollWidth <= innerWidth+4'),'Horizontal overflow at '+str(width)+'px in '+key)
                 self.assertEqual(errors,[],f'Unexpected JS errors at {width}px')
     def test_track_quick_start_visible_timer_and_persistence(self):
@@ -102,10 +102,10 @@ class CurrentLifeOS(unittest.TestCase):
     def test_plan_and_goals_navigate_without_hidden_legacy_panels(self):
         p,errors=self.new_page()
         self.view(p,'schedule')
-        self.assertTrue(p.locator('#lo200-unified').is_visible(), 'Current unified navigation must be visible')
+        self.assertTrue(p.locator('#lifeosNavigation button[data-view][aria-current="page"]').is_visible(), 'Active navigation control must be visible')
         self.assertEqual(p.locator('#lifeosNavigation button[data-view="schedule"]').get_attribute('aria-current'),'page')
         self.view(p,'goals')
-        self.assertTrue(p.locator('#lo200-unified').is_visible(), 'Current unified navigation must be visible')
+        self.assertTrue(p.locator('#lifeosNavigation button[data-view][aria-current="page"]').is_visible(), 'Active navigation control must be visible')
         self.assertEqual(p.locator('#lifeosNavigation button[data-view="goals"]').get_attribute('aria-current'),'page')
         self.assertEqual(errors,[])
     def test_focus_gap_and_recovery_tools_mount(self):
