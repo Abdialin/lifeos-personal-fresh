@@ -55,6 +55,8 @@ jobs:
         run: node test_native_secure_sync_v237.cjs
       - name: Validate side-by-side Android beta and stable signing configuration
         run: node test_android_signing_v238.cjs
+      - name: Validate Android-safe recovery confirmation and unchanged backup gates
+        run: node test_android_restore_confirmation_v239.cjs
       - name: Validate substantial pause/resume intervals without double counting
         run: node test_activity_pauses_v225.cjs
       - name: Validate focus control states and alert engine
