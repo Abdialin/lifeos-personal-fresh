@@ -22,7 +22,7 @@ function init(){
  box.innerHTML='<strong>New Android installation: no local records detected</strong>'+
  '<p>LifeOS Android has its own local storage. Signing in to the website does not automatically import the activity records saved in Samsung Browser or on your cloud server. Your older records may still exist.</p>'+
  '<p><b>Before tracking or importing:</b> open Settings & data → Cloud sync, check the connection, and compare existing records. Do <b>not</b> use “Upload local data” from an empty installation. Do not clear Samsung Browser data.</p>'+
- '<button type="button" id="lo233-settings">Open Settings & data</button>';
+ '<button type="button" id="lo233-settings">Open server history recovery</button>';
  head.insertAdjacentElement('afterend',box);
  document.getElementById('lo233-settings').addEventListener('click',()=>{
   const settings=[...document.querySelectorAll('button')].find(b=>
@@ -31,8 +31,14 @@ function init(){
   else{
    const nav=document.querySelector('#lifeosNavigation button[data-view="settings"]');
    if(nav)nav.click();
-   else box.querySelector('p:last-of-type').textContent='Open the Settings & data button in the app header; then check Cloud sync. Do not upload an empty workspace.';
+   else box.querySelector('p:last-of-type').textContent='Open Settings & data → Cloud sync manually. Do not upload an empty workspace.';
   }
+  setTimeout(()=>{
+    const recovery=document.getElementById('lo234-adopt');
+    const cloud=document.getElementById('cloudSyncPanel');
+    const target=recovery||cloud;
+    if(target){target.scrollIntoView({behavior:'smooth',block:'start'});target.style.scrollMarginTop='24px'}
+  },200);
  });
 }
 if(root.document){
