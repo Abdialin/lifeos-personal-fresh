@@ -1,4 +1,4 @@
-# LifeOS Android Companion — V230 experimental companion
+# LifeOS Android Companion — V231 experimental companion
 
 **Status:** Native Android source + isolated build checks; **not yet a published or installed Android app**.
 
@@ -93,3 +93,23 @@ The Focus panel now offers a **Test Android alarm sound & vibration** button onl
 - The ongoing timer notification now has a privacy-safe lock-screen public version. Its generic title and chronometer stay visible where Android allows lock-screen notifications, without revealing the specific activity name or other private data.
 - Native diagnostics and privacy settings are covered by static regression checks and the web-to-native diagnostic request has a browser regression. **A successfully compiled APK and actual Samsung lock-screen, sound, vibration, battery restriction, and snooze testing remain necessary**; Android may override the requested presentation.
 - The companion intentionally uses START_NOT_STICKY: if Android kills the service, LifeOS must reconnect and project an authoritative timer again. It never invents a continuously running activity from stale local notification data. This is a safety limitation, not guaranteed background persistence.
+
+## V231 native reconnection and alarm recovery integrity
+
+- The read-only browser bridge forces a fresh projection of the authoritative active activity and scheduled alarm when LifeOS regains focus, becomes visible or is opened from the Android companion. This corrects the case where an unchanged timer ID/status prevented a stale native chronometer from refreshing after a long background period.
+- MainActivity explicitly requests the same refresh on lifecycle resume, with a second attempt after page initialization. Only an exactly trusted HTTPS LifeOS origin can be used.
+- Stopping the native timer service invalidates prior Pause/Resume action tokens. Commands still require an exact session ID and verified canonical timer action.
+- Pending alarm recovery metadata is now written only after Android accepts the scheduling call, so a scheduling failure cannot create a false saved alarm.
+- Malformed activity lists fail closed in the native bridge instead of breaking notification updates or triggering mutations.
+- Synthetic and source-level regression tests have been added for reconnection, idempotent polling, stale control invalidation, and alarm recovery ordering.
+- **Status limitation:** No current GitHub workflow runs were returned for the checked V229/V230 Android commits. The V231 APK build, sound, vibration, locked-screen behavior, and Samsung process-death recovery are NOT verified on an actual phone. A Render web deployment is not an Android APK release.
+
+### Manual acceptance checks (real Android device)
+
+1. Install a V231 debug APK from a verified successful Android build and sign into staging.
+2. Start Work tracking; check ongoing timer notification; lock phone for several minutes and unlock. Compare the displayed elapsed duration with the authoritative web session.
+3. Tap Pause from the notification, unlock, and verify the activity is paused and saved. Repeat with Resume. Verify that a stale Pause control cannot pause an already-paused activity.
+4. Allow a Focus alarm with permission, turn the screen off, and confirm real sound/vibration; test Snooze, reopening and state reconciliation.
+5. Reboot with a future alarm, verify it fires; review Android notification channel, battery policy and exact-alarm settings using LifeOS native diagnostics.
+6. With two simultaneous activities, ensure the notification indicates other open timers and does not overwrite the non-displayed activity.
+7. After reconnecting or reopening, confirm all tracked segments persist and show correctly in the timeline and cross-section reports.
