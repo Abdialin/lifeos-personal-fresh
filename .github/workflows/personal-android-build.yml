@@ -33,7 +33,7 @@ jobs:
       - name: Retain experimental Android APK for private device testing
         uses: actions/upload-artifact@v4
         with:
-          name: lifeos-android-v229-debug-test-only
+          name: lifeos-android-v230-debug-test-only
           path: android-companion/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
