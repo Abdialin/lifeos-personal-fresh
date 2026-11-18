@@ -12,6 +12,6 @@ assert.equal(integrity.duration(live,t).ms,h);
 w.workouts.push({id:'w2',sessionId:'s1'});
 r=integrity.inspect(w,t);assert.equal(r.summary.linkedWorkoutDuplicates,1);
 w.sessions.push({...live});r=integrity.inspect(w,t);assert.equal(r.counts.sessions.duplicates,1);
-assert.ok(/g\.unit==='hours'\?minutes\/60:value/.test(goals),'Fitness hours must use recorded minutes, not session count');
+assert.ok(/g\.unit==='hours'\?minutes\/60:good\.length/.test(goals),'Fitness hours must use recorded minutes, not session count');
 assert.ok(!/localStorage\.setItem|fetch\(|mutate\(/.test(require('node:fs').readFileSync('./personal_cross_section_integrity_v206.js','utf8')));
 console.log('V206 cross-section integrity and fitness-hour rules PASS');
