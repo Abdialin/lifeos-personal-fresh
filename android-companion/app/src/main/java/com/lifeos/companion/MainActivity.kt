@@ -27,6 +27,7 @@ import org.json.JSONObject
 class MainActivity : Activity() {
     private val lifeOsOrigin = "https://lifeos-personal-test.onrender.com"
     private lateinit var web: WebView
+    private var pendingNativeAction: Pair<String,String>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +47,8 @@ class MainActivity : Activity() {
                 super.onPageFinished(view, url)
                 reconcileNativeSnooze()
                 view.postDelayed({ reconcileNativeSnooze() }, 1400L)
+                view.postDelayed({ deliverNativeTimerAction() }, 600L)
+                view.postDelayed({ deliverNativeTimerAction() }, 1800L)
             }
             override fun onReceivedHttpAuthRequest(
                 view: WebView, handler: HttpAuthHandler, host: String, realm: String
@@ -99,7 +102,8 @@ class MainActivity : Activity() {
                 }
         }
         setContentView(web)
-        web.loadUrl("$lifeOsOrigin/?v=223#tracking")
+        receiveNativeTimerAction(intent)
+        web.loadUrl("$lifeOsOrigin/?v=228#tracking")
         if (!getPreferences(Context.MODE_PRIVATE).getBoolean("native_permissions_explained", false)) {
             getPreferences(Context.MODE_PRIVATE).edit()
                 .putBoolean("native_permissions_explained", true).apply()
@@ -175,6 +179,7 @@ class MainActivity : Activity() {
             val intent = Intent(this, TimerService::class.java).apply {
                 action = TimerService.ACTION_UPDATE
                 putExtra(TimerService.EXTRA_NAME, name)
+                putExtra(TimerService.EXTRA_ID, id)
                 putExtra(TimerService.EXTRA_STATUS, status)
                 putExtra(TimerService.EXTRA_ELAPSED, elapsed)
                 putExtra(TimerService.EXTRA_ACTIVE_COUNT, p.optInt("activeCount", 1).coerceIn(1, 100))
@@ -224,9 +229,56 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun receiveNativeTimerAction(source: Intent?) {
+        if (source?.action != TimerService.ACTION_NATIVE_CONTROL) return
+        val id = source.getStringExtra(TimerService.EXTRA_ID) ?: return
+        val action = source.getStringExtra(TimerService.EXTRA_CONTROL) ?: return
+        val token = source.getStringExtra(TimerService.EXTRA_TOKEN) ?: return
+        if (id.isBlank() || id.length > 100 || action !in listOf("pause","resume")) return
+        val prefs = getSharedPreferences(TimerService.PREFS, Context.MODE_PRIVATE)
+        if (prefs.getString(TimerService.KEY_ID, null) != id ||
+            prefs.getString(TimerService.KEY_ACTION, null) != action ||
+            prefs.getString(TimerService.KEY_TOKEN, null) != token) return
+        // Single-use control token; replay and stale notification actions are rejected.
+        prefs.edit().remove(TimerService.KEY_TOKEN).apply()
+        pendingNativeAction = Pair(id,action)
+    }
+
+    private fun deliverNativeTimerAction() {
+        val request = pendingNativeAction ?: return
+        if (!::web.isInitialized) return
+        val url = web.url ?: return
+        if (!(url == lifeOsOrigin || url.startsWith("$lifeOsOrigin/"))) return
+        val id = JSONObject.quote(request.first)
+        val action = JSONObject.quote(request.second)
+        web.evaluateJavascript(
+            "Boolean(window.LifeOSAndroidBridgeV222?.nativeTimerAction($id,$action))"
+        ) { result ->
+            if (result == "true") {
+                pendingNativeAction = null
+            } else {
+                // Do not repeatedly replay a command after a definitive rejection.
+                // The original notification tap still navigates to tracking for manual review.
+                pendingNativeAction = null
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        receiveNativeTimerAction(intent)
+        if (::web.isInitialized) {
+            web.postDelayed({ deliverNativeTimerAction() }, 300L)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
-        if (::web.isInitialized) web.post { reconcileNativeSnooze() }
+        if (::web.isInitialized) web.post {
+            reconcileNativeSnooze()
+            deliverNativeTimerAction()
+        }
     }
 
     override fun onDestroy() {
