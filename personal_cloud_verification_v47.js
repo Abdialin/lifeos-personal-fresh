@@ -94,14 +94,21 @@ async function check(){
   if(!Number.isInteger(remote.revision)||remote.revision!==storage.revision)
    throw Error('Server revision changed during verification. Repeat the read-only check.');
   const endLocal=live(),endStatus=localStatus();
-  const localChanged=JSON.stringify(startLocal.sessions)!==JSON.stringify(endLocal?.sessions)||
-    JSON.stringify(startLocal.schedule)!==JSON.stringify(endLocal?.schedule)||
+  const localChanged=!window.LifeOSCloudParityV210?.same?.(startLocal,endLocal)||
     startStatus.queuedOperations!==endStatus.queuedOperations||
     startStatus.acknowledgedRevision!==endStatus.acknowledgedRevision||
     startStatus.uploading!==endStatus.uploading||startStatus.dirty!==endStatus.dirty;
   if(localChanged)throw Error('Your device changed while checking. Repeat verification after the current activity or upload is finished.');
   const difference=recordDifferences(endLocal,remote.data);
+  const parity=window.LifeOSCloudParityV210?.compare?.(endLocal,remote.data);
+  if(!parity)throw Error('Whole-workspace comparison is unavailable. Cannot claim cloud parity.');
+  if(!parity.same)difference.same=false;
   const verdict=interpret(endStatus,remote.revision,difference,remote.data!==null);
+  if(!parity.same){
+   verdict.level='different';
+   verdict.label='Some saved LifeOS data differ from PostgreSQL';
+   verdict.detail='The read-only comparison found differences in '+[...new Set(parity.differences.map(d=>d.section))].join(', ')+'. Do not overwrite either device. Export a recovery backup and review both copies.';
+  }
   checkedAt=new Date().toLocaleString();
   renderResult({status:endStatus,backend:storage.backend,revision:remote.revision,
    hasState:storage.has_state,diff:difference,verdict});

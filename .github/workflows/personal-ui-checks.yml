@@ -23,6 +23,8 @@ jobs:
         run: node test_goal_fitness_cross_section_v204.cjs
       - name: Validate cross-section record integrity
         run: node test_cross_section_integrity_v206.cjs
+      - name: Validate strict whole-workspace cloud parity
+        run: node test_cloud_parity_v210.cjs
       - name: Validate new activity feedback features
         run: |
           node test_lifeos_feedback_v207.cjs
