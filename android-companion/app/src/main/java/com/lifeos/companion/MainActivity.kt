@@ -252,13 +252,10 @@ class MainActivity : Activity() {
         val id = JSONObject.quote(request.first)
         val action = JSONObject.quote(request.second)
         web.evaluateJavascript(
-            "Boolean(window.LifeOSAndroidBridgeV222?.nativeTimerAction($id,$action))"
+            "window.LifeOSAndroidBridgeV222 ? Boolean(window.LifeOSAndroidBridgeV222.nativeTimerAction($id,$action)) : 'not-ready'"
         ) { result ->
-            if (result == "true") {
-                pendingNativeAction = null
-            } else {
-                // Do not repeatedly replay a command after a definitive rejection.
-                // The original notification tap still navigates to tracking for manual review.
+            if (result != "\"not-ready\"" && pendingNativeAction == request) {
+                // Never replay after either success or a definitive rejection.
                 pendingNativeAction = null
             }
         }
