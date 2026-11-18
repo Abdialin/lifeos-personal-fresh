@@ -1,4 +1,4 @@
-name: LifeOS Android companion APK verification (V237)
+name: LifeOS Android beta APK verification (V238)
 on:
   push:
     branches: [main]
@@ -11,60 +11,131 @@ permissions:
 jobs:
   compile:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Configure Android SDK and diagnostics
+      - name: Configure Android SDK
         shell: bash
         run: |
           set -euo pipefail
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
-          test -d "$SDK_ROOT" || { echo "::error::Android SDK missing: $SDK_ROOT"; exit 1; }
+          test -d "$SDK_ROOT"
           echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT: $SDK_ROOT"
-          java -version
           "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_ROOT" --install "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Compile experimental V237 Android debug APK
+
+      - name: Inspect optional persistent signing configuration (never print secrets)
+        id: signing
+        shell: bash
+        env:
+          SIGNING_KEYSTORE: ${{ secrets.LIFEOS_BETA_KEYSTORE_BASE64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.LIFEOS_BETA_STORE_PASSWORD }}
+          SIGNING_ALIAS: ${{ secrets.LIFEOS_BETA_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.LIFEOS_BETA_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$SIGNING_KEYSTORE" && -n "$SIGNING_STORE_PASSWORD" &&
+                -n "$SIGNING_ALIAS" && -n "$SIGNING_KEY_PASSWORD" ]]; then
+            umask 077
+            keypath="$RUNNER_TEMP/lifeos-beta-signing.p12"
+            printf '%s' "$SIGNING_KEYSTORE" | base64 --decode > "$keypath"
+            test -s "$keypath"
+            echo "LIFEOS_SIGNING_STORE_FILE=$keypath" >> "$GITHUB_ENV"
+            echo "LIFEOS_SIGNING_STORE_PASSWORD=$SIGNING_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "LIFEOS_SIGNING_KEY_ALIAS=$SIGNING_ALIAS" >> "$GITHUB_ENV"
+            echo "LIFEOS_SIGNING_KEY_PASSWORD=$SIGNING_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Stable beta signing is configured."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Stable signing secrets are incomplete. Only disposable dev APK will be built; do not use it for long-term tracking."
+          fi
+
+      - name: Build disposable side-by-side Android dev APK
         working-directory: android-companion
         shell: bash
         run: |
           set -euo pipefail
-          gradle :app:assembleDebug --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v237-build.log
-      - name: Verify APK archive and package metadata
+          gradle :app:assembleDebug --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v238-build.log
+
+      - name: Verify disposable dev APK and its independent package ID
         shell: bash
         run: |
           set -euo pipefail
-          APK="android-companion/app/build/outputs/apk/debug/app-debug.apk"
-          test -s "$APK" || { echo "::error::APK missing or empty"; exit 1; }
-          unzip -t "$APK" | tail -3
-          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$APK" | tee android-v237-package-info.txt
-          grep -q "package: name='com.lifeos.companion'" android-v237-package-info.txt
-          grep -q "sdkVersion:'26'" android-v237-package-info.txt
-          grep -q "targetSdkVersion:'35'" android-v237-package-info.txt
-          echo "APK passed archive, package ID, minSdk, targetSdk checks"
-      - name: Save build and validation diagnostics
+          apk="android-companion/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$apk"
+          unzip -t "$apk" | tail -3
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$apk" | tee android-v238-dev-package.txt
+          grep -q "package: name='com.lifeos.companion.beta.dev'" android-v238-dev-package.txt
+          grep -q "sdkVersion:'26'" android-v238-dev-package.txt
+          grep -q "targetSdkVersion:'35'" android-v238-dev-package.txt
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner" verify --print-certs "$apk" > android-v238-dev-cert.txt
+          echo "Verified isolated DEV test package. Its debug signature is NOT stable across CI runs."
+
+      - name: Build persistently signed beta APK (only when secrets exist)
+        if: steps.signing.outputs.ready == 'true'
+        working-directory: android-companion
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle :app:assembleRelease --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v238-signed-build.log
+
+      - name: Verify stable beta APK and certificate
+        if: steps.signing.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="android-companion/app/build/outputs/apk/release/app-release.apk"
+          test -s "$apk"
+          unzip -t "$apk" | tail -3
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$apk" | tee android-v238-beta-package.txt
+          grep -q "package: name='com.lifeos.companion.beta'" android-v238-beta-package.txt
+          grep -q "sdkVersion:'26'" android-v238-beta-package.txt
+          grep -q "targetSdkVersion:'35'" android-v238-beta-package.txt
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner" verify --print-certs "$apk" | tee android-v238-beta-cert.txt
+          echo "Verified stable-signature beta package. Compare this certificate SHA-256 across future releases."
+
+      - name: Retain build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lifeos-android-v237-build-diagnostics
+          name: lifeos-android-v238-build-diagnostics
           path: |
-            android-v237-build.log
-            android-v237-package-info.txt
+            android-v238-build.log
+            android-v238-signed-build.log
+            android-v238-dev-package.txt
+            android-v238-dev-cert.txt
+            android-v238-beta-package.txt
+            android-v238-beta-cert.txt
             android-companion/app/build/outputs/logs/
           if-no-files-found: warn
           retention-days: 14
-      - name: Retain verified debug APK for private testing
+
+      - name: Retain disposable independent DEV test APK
         uses: actions/upload-artifact@v4
         with:
-          name: lifeos-android-v237-debug-test-only
+          name: lifeos-android-v238-disposable-dev-test-only
           path: android-companion/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Retain stable signed BETA APK (safe future upgrades with same key)
+        if: steps.signing.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lifeos-android-v238-signed-beta
+          path: android-companion/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Remove temporary signing keystore
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/lifeos-beta-signing.p12"
