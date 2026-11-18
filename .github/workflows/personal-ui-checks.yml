@@ -57,6 +57,8 @@ jobs:
         run: node test_android_signing_v238.cjs
       - name: Validate Android-safe recovery confirmation and unchanged backup gates
         run: node test_android_restore_confirmation_v239.cjs
+      - name: Validate Samsung navigation bar clearance and touch target layout
+        run: node test_android_navigation_safe_v240.cjs
       - name: Validate substantial pause/resume intervals without double counting
         run: node test_activity_pauses_v225.cjs
       - name: Validate focus control states and alert engine
