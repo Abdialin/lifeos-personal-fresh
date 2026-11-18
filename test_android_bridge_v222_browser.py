@@ -48,6 +48,8 @@ class NativeBridgeBrowser(unittest.TestCase):
      page.locator('#lo207-focus summary').click()
      page.locator('#lo227-native-test').click()
      page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='alarm-test')",timeout=6000)
+     page.locator('#lo230-diagnostics').click()
+     page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='settings-request'&&x.target==='diagnostics')",timeout=6000)
      page.locator('#lo207-focus-minutes').fill('5')
      page.locator('#lo207-start-focus').click()
      page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='alarm-status'&&x.status==='scheduled'&&x.endMs>Date.now())",timeout=6000)
