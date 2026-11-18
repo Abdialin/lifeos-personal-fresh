@@ -58,6 +58,8 @@ jobs:
         run: timeout --signal=TERM 110s python -m unittest -v test_feedback_v208_browser
       - name: Verify two real browser contexts against isolated sync backend
         run: timeout --signal=TERM 100s python -m unittest -v test_two_browser_cas_v214
+      - name: Verify isolated SQLite activity records survive backend restart
+        run: timeout --signal=TERM 50s python -m unittest -v test_sync_restart_v215
       - name: Verify isolated backend storage probe
         run: python -m unittest -v test_storage_status_probe
       - name: Test actual LifeOS Personal UI in Chromium
