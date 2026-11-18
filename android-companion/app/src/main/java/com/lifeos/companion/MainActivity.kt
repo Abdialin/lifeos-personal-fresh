@@ -45,6 +45,7 @@ class MainActivity : Activity() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
                 reconcileNativeSnooze()
+                view.postDelayed({ reconcileNativeSnooze() }, 1400L)
             }
             override fun onReceivedHttpAuthRequest(
                 view: WebView, handler: HttpAuthHandler, host: String, realm: String
@@ -143,6 +144,13 @@ class MainActivity : Activity() {
         try {
             if (raw.length > 1500) return
             val p = JSONObject(raw)
+            if (p.optString("kind") == "settings-request") {
+                when (p.optString("target")) {
+                    "alarms" -> openAlarmSettings()
+                    "notifications" -> openNotificationSettings()
+                }
+                return
+            }
             if (p.optString("kind") == "alarm-status") {
                 handleAlarmState(p)
                 return
