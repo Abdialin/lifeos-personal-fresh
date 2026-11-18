@@ -33,6 +33,8 @@ class MainActivity : Activity() {
     private lateinit var web: WebView
     private var pendingNativeAction: Pair<String,String>? = null
     private var pendingNativeReceivedAt = 0L
+    private val backupSaveRequestCode = 234
+    private var pendingBackup: Triple<String, String, ByteArray>? = null
 
     private fun trustedPage(url: String?): Boolean {
         if (url.isNullOrBlank()) return false
@@ -219,8 +221,13 @@ class MainActivity : Activity() {
 
     private fun handleTimerState(raw: String) {
         try {
-            if (raw.length > 1500) return
+            if (raw.length > 10_500_000) return
             val p = JSONObject(raw)
+            if (p.optString("kind") == "backup-export") {
+                handleBackupExport(p)
+                return
+            }
+            if (raw.length > 1500) return
             if (p.optString("kind") == "alarm-test") {
                 sendBroadcast(Intent(this, AlarmReceiver::class.java).apply {
                     action = NativeAlarm.ACTION_TEST
@@ -265,6 +272,65 @@ class MainActivity : Activity() {
             // Bad/untrusted messages never alter browser or server records.
         }
     }
+    // Saving a user-selected JSON backup is an explicit Android Storage Access
+    // Framework action. LifeOS does not gain blanket storage permissions.
+    private fun handleBackupExport(p: JSONObject) {
+        if (pendingBackup != null || !trustedPage(web.url)) return
+        val requestId = p.optString("requestId")
+        val filename = p.optString("filename")
+        if (!Regex("^b[a-z0-9]{10,40}$").matches(requestId) ||
+            !Regex("^LifeOS_v234_(android_local_before_adoption|server_revision_[0-9]+)\\.json$").matches(filename)) return
+        val contents = p.optString("contents")
+        val bytes = contents.toByteArray(Charsets.UTF_8)
+        if (bytes.isEmpty() || bytes.size > 10_000_000) return
+        pendingBackup = Triple(requestId, filename, bytes)
+        try {
+            startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/json"
+                putExtra(Intent.EXTRA_TITLE, filename)
+            }, backupSaveRequestCode)
+        } catch (_: Exception) {
+            pendingBackup = null
+            acknowledgeBackup(requestId, false)
+        }
+    }
+
+    @Deprecated("Uses legacy Activity result callback for minSdk 26 compatibility")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != backupSaveRequestCode) return
+        val request = pendingBackup ?: return
+        pendingBackup = null
+        val uri = if (resultCode == RESULT_OK) data?.data else null
+        if (uri == null) {
+            acknowledgeBackup(request.first, false)
+            return
+        }
+        var verified = false
+        try {
+            contentResolver.openOutputStream(uri, "wt")?.use { stream ->
+                stream.write(request.third)
+                stream.flush()
+            } ?: throw IllegalStateException("Cannot write backup")
+            // Verify bytes round-trip before declaring that a backup exists.
+            val saved = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            verified = saved != null && saved.contentEquals(request.third)
+        } catch (_: Exception) {
+            verified = false
+        }
+        acknowledgeBackup(request.first, verified)
+    }
+
+    private fun acknowledgeBackup(requestId: String, ok: Boolean) {
+        if (!::web.isInitialized || !trustedPage(web.url)) return
+        web.evaluateJavascript(
+            "window.LifeOSV234BackupBridge?.ack(" + JSONObject.quote(requestId) +
+                "," + (if (ok) "true" else "false") + ")",
+            null
+        )
+    }
+
     /** Schedules only an explicit, bounded alarm timestamp, never arbitrary work. */
     private fun handleAlarmState(p: JSONObject) {
         val status = p.optString("status")
