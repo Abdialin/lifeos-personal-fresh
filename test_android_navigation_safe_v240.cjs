@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const css=fs.readFileSync('personal_android_navigation_safe_v240.css','utf8');
+const js=fs.readFileSync('personal_android_first_run_v233.js','utf8');
+const html=fs.readFileSync('index.html','utf8');
+const server=fs.readFileSync('server.py','utf8');
+assert.doesNotThrow(()=>new Function(js));
+assert.match(js,/classList\.add\('lo240-native'\)/);
+assert.match(css,/html\.lo240-native body #lifeosNavigation/);
+assert.match(css,/bottom:calc\(64px \+ env\(safe-area-inset-bottom,0px\)\)!important/);
+assert.match(css,/grid-template-columns:repeat\(6,minmax\(0,1fr\)\)!important/);
+assert.match(css,/min-height:58px!important/);
+assert.match(css,/padding-bottom:calc\(185px/);
+assert.match(html,/personal_android_navigation_safe_v240\.css/);
+assert.match(server,/'personal_android_navigation_safe_v240\.css'/);
+assert.doesNotMatch(css,/^\s*\.lifeos-nav\s*\{/m,'Do not alter ordinary mobile browser navigation');
+console.log('PASS V240 Android-only clearance, six tab hit targets and static asset route');
