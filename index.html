@@ -837,7 +837,7 @@ function openActivityDetails(id){
  historyBlock.append(rows);
  if(shortPauses){const hint=document.createElement('p');hint.textContent=shortPauses+' brief pauses under 5 minutes hidden here; their timestamps remain saved.';historyBlock.append(hint)}
  const recorded=document.createElement('p'),days=[];
- for(let day=new Date(s.startAt),count=0;day.getTime()<=s.endAt&&count++<90;day.setDate(day.getDate()+1)){
+ for(let day=new Date(s.startAt),count=0;day.setHours(0,0,0,0),day.getTime()<=s.endAt&&count++<90;day.setDate(day.getDate()+1)){
   const a=new Date(day.getFullYear(),day.getMonth(),day.getDate()).getTime(),b=new Date(day.getFullYear(),day.getMonth(),day.getDate()+1).getTime();
   const ms=(s.segments||[]).reduce((v,z)=>{const start=Math.max(a,z.start),end=Math.min(b,z.end??s.endAt);return v+(Number.isFinite(start)&&Number.isFinite(end)&&end>start?end-start:0)},0);
   if(ms)days.push(day.toLocaleDateString()+' '+short(ms));
