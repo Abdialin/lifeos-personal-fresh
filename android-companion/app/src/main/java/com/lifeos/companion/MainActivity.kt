@@ -288,7 +288,7 @@ class MainActivity : Activity() {
                 // Never replay after either success or a definitive rejection.
                 pendingNativeAction = null
                 val message = if (result == "true")
-                    "LifeOS timer ${request.second} confirmed"
+                    "Timer ${request.second} saved locally. Check cloud sync in LifeOS."
                     else "Timer action needs review in LifeOS"
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show()
             }
