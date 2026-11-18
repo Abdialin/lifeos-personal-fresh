@@ -34,6 +34,14 @@ class NativeBridgeBrowser(unittest.TestCase):
      self.assertFalse(any('syncToken' in x or 'workspace' in x or 'email' in x for x in states))
      self.assertTrue(all(set(x.keys()).issubset({'kind','id','name','status','elapsedMs','endMs','activeCount'}) for x in states))
      self.assertTrue(any(x.get('activeCount',0)>=1 for x in states if x['kind']=='timer-status' and x.get('status')=='running'))
+     # Exercise real authoritative pause/resume handler through the native bridge.
+     session_id=page.evaluate("""() => String(window.lifeosReadOnlyWorkspace().sessions.find(
+       x=>x.name==='Work'&&x.status==='running').id)""")
+     self.assertTrue(page.evaluate("(id) => window.LifeOSAndroidBridgeV222.nativeTimerAction(id,'pause')",session_id))
+     self.assertFalse(page.evaluate("(id) => window.LifeOSAndroidBridgeV222.nativeTimerAction(id,'pause')",session_id))
+     self.assertEqual(page.evaluate("(id) => window.lifeosReadOnlyWorkspace().sessions.find(x=>String(x.id)===id).status",session_id),'paused')
+     self.assertTrue(page.evaluate("(id) => window.LifeOSAndroidBridgeV222.nativeTimerAction(id,'resume')",session_id))
+     self.assertEqual(page.evaluate("(id) => window.lifeosReadOnlyWorkspace().sessions.find(x=>String(x.id)===id).status",session_id),'running')
      page.locator('#lo86-toggle').click()
      page.locator('#lo86-details [data-lo86="pause"]').click()
      page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='timer-status'&&x.status==='paused'&&x.name==='Work')",timeout=6000)
