@@ -154,3 +154,11 @@ To test after an APK build is confirmed:
 6. Reconnect Cloud sync to establish future synchronization only after checking the restored data and any remaining warnings.
 
 **Do not press Upload local data on the empty Android installation**. Never remove its recovery queue manually or reset the server database to work around this guard.
+
+## V237 encrypted Android token persistence and backup handshake
+
+The old Cloud sync **Remember token in this browser tab** uses sessionStorage; it cannot guarantee remembering after closing Android. V237 adds a separate Android-only checkbox **Remember token securely on this Android device**. After a successful authenticated Connect (even when local sync is blocked by an unbased operation), the selected token is encrypted with a non-exportable Android Keystore AES/GCM key before writing ciphertext and IV to private app preferences. On a later app opening, the origin-scoped native bridge can restore the token into the Cloud sync field; the user must still tap Connect. Unchecking the Android box clears the encrypted saved token. Do not share the token, device or recovery screenshots containing credentials.
+
+The backup recovery V234 capability is now requested again via an explicit native message if the original page-load capability flag is missing; the native response confirms feature support. It continues to **block** restoration on older installed APKs that cannot securely save/verify backup files. Installing V237 should preserve app storage when signed with the same debug key; if Android requests uninstall, do not clear data until a backup is confirmed. The Android debug key may vary across separate CI runs, which can make updating impossible without uninstall. This is not solved by the web deployment. The native encryption path and actual restore remain to be tested on device.
+
+The website's browser-tab checkbox remains session-only, never persists a token in localStorage. Neither the native token nor its ciphertext is included in workspace exports or cloud requests other than authenticated API headers already used by LifeOS.
