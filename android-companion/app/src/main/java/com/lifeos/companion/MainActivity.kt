@@ -16,6 +16,7 @@ import android.webkit.HttpAuthHandler
 import android.text.InputType
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Toast
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebResourceError
@@ -257,6 +258,10 @@ class MainActivity : Activity() {
             if (result != "\"not-ready\"" && pendingNativeAction == request) {
                 // Never replay after either success or a definitive rejection.
                 pendingNativeAction = null
+                val message = if (result == "true")
+                    "LifeOS timer ${request.second} confirmed"
+                    else "Timer action needs review in LifeOS"
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
             }
         }
     }
