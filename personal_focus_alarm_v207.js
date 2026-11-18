@@ -85,6 +85,18 @@ function init(){
   if(document.visibilityState!=='hidden'){alertSignal();lastAlertAt=Date.now()}
   notification(current.label);
  }
+ // Native alarm snooze may occur while WebView is suspended. Reconcile on return.
+ // Only a previously expired/ringing alarm may be extended, never an unrelated new session.
+ function applyNativeSnooze(untilMs){
+  const until=Number(untilMs),now=Date.now(),c=load();
+  if(!c||!Number.isFinite(until)||until<=now||until>now+5*MIN+10000)return false;
+  if(c.mode!=='ringing'&&!(c.mode==='running'&&c.end<=now))return false;
+  current={...c,kind:'alarm',mode:'running',end:until,remainingMs:until-now,modeAt:now};
+  if(!save(current))return false;
+  alertOpen=false;alarmPanel.hidden=true;alarmPanel.style.display='none';
+  alerts?.vibrate?.(0);update();return true;
+ }
+ root.LifeOSNativeFocusSync={applyNativeSnooze};
  function update(){
   current=load();
   const c=current;
