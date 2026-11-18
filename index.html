@@ -2202,6 +2202,7 @@ async function v242Inspect(mode){
  v242Review=null;$('lo242-publish').disabled=true;$('lo242-pull').disabled=true;
  if(syncBusy||atomicBlocked||outboxCorrupt){v242Output('Sync/recovery storage is blocked; no changes made.');return}
  if(!syncToken){v242Output('Tap Connect with your private sync token first. Do not include it in screenshots.');return}
+ if(mode==='publish')stopSync(); // Pause background full-snapshot sync while reviewing an additive publish.
  if(mode==='pull'&&(outbox.length||syncMeta.dirty)){v242Output('Local changes are pending. Review and back them up before adopting anything from server.');return}
  try{
   const remote=await requestState();validateWorkspace(remote.data);
@@ -2273,7 +2274,8 @@ async function v242Execute(mode){
   const localBackup={exportType:'lifeos-v242-local-backup',exportedAt:new Date().toISOString(),
    workspace:data,queue:outbox,syncMeta,checkpointRaw:review.checkpoint};
   v242Output('Save both current local and current server backups before confirming.');
-  await v242Backup('LifeOS_v234_android_local_before_adoption.json',localBackup);
+  await v242Backup(window.LifeOSNative?'LifeOS_v234_android_local_before_adoption.json':
+   'LifeOS_v242_browser_before_publish_'+localDate(now())+'.json',localBackup);
   await v242Backup('LifeOS_v234_server_revision_'+remote.revision+'.json',remote.data);
   const accepted=await v242Confirm(mode,review);
   if(!accepted){v242Output('Cancelled. Nothing changed.');return}
