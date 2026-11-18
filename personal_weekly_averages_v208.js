@@ -78,7 +78,7 @@ function mount(){
   }
   if(selectedDay){const d=data.days.find(x=>x.date===selectedDay);if(d)selected.textContent=d.date+' · '+fmtMinutes(d.uniqueMs/60000)+' occupied · '+fmtMinutes(d.totalMs/60000)+' recorded across '+d.recordCount+' activity record(s). Selecting a day also updates the activity timeline when available.'}
  }
- let pending=0;const schedule=()=>{clearTimeout(pending);pending=setTimeout(paint,100)};
+ let pending=0;const schedule=()=>{clearTimeout(pending);pending=setTimeout(paint,15)};
  document.getElementById('lifeosNavigation')?.addEventListener('click',schedule);
  for(const event of ['lifeos-v77-tracking-changed','lifeos-v74-records-changed','lifeos-v207-gap-committed'])root.addEventListener(event,schedule);
  root.addEventListener('focus',schedule);

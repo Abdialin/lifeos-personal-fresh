@@ -59,6 +59,7 @@ class FeedbackBrowser(unittest.TestCase):
         p=self.page
         p.locator('#lifeosNavigation button[data-view="analytics"]').click()
         p.locator('#lo208-weekly-averages').wait_for(state='visible',timeout=6000)
+        p.locator('#lo208-weekly-averages .lo208-day').first.wait_for(state='visible',timeout=6000)
         self.assertEqual(p.locator('#lo208-weekly-averages .lo208-day').count(),7)
         self.assertEqual(p.locator('#lo208-weekly-averages .lo208-kpi').count(),4)
         self.assertEqual(self.errors,[])
