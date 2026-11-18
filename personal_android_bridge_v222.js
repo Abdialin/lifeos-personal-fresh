@@ -19,6 +19,7 @@ function elapsed(s,at){
 function nativeTimerAction(id,action){
  if(typeof id!=='string'||!id||id.length>100||!['pause','resume'].includes(action))return false;
  let sessions=[];try{sessions=root.lifeosReadOnlyWorkspace?.()?.sessions||[]}catch(_){return false}
+ if(!Array.isArray(sessions))return false;
  const item=Array.isArray(sessions)?sessions.find(x=>x&&String(x.id)===id):null;
  if(!item||(action==='pause'&&item.status!=='running')||(action==='resume'&&item.status!=='paused'))return false;
  if(typeof root.dispatchEvent!=='function'||typeof root.CustomEvent!=='function')return false;
@@ -45,6 +46,7 @@ function publish(force=false){
  const native=root.LifeOSNative;
  if(!native||typeof native.postMessage!=='function')return false;
  let sessions=[];try{sessions=root.lifeosReadOnlyWorkspace?.()?.sessions||[]}catch(_){}
+ if(!Array.isArray(sessions))sessions=[];
  const s=pick(sessions);
  const openCount=sessions.filter(x=>x&&['running','paused'].includes(x.status)&&x.id!=null).length;
  const message=s?{kind:'timer-status',id:String(s.id).slice(0,100),name:String(s.name||'Activity').slice(0,80),
