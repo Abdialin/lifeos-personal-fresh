@@ -40,7 +40,7 @@ class FeedbackBrowser(unittest.TestCase):
         self.assertEqual(sessions[0]['status'],'paused')
         self.assertTrue(any(e.get('sessionId')==sid and e.get('type')=='BREAK_START' for e in state['events']))
         p.locator('#sessions [data-act="resume"]').first.click()
-        p.locator('#sessions details.lo17-session').first.locator('summary').click()
+        p.locator('#sessions details.lo17-session').first.evaluate('(el) => {el.open=true}')
         p.locator('#sessions [data-act="finish"]').first.click()
         state=p.evaluate('JSON.parse(localStorage.getItem("lifeos-live-v1"))')
         final=next(s for s in state['sessions'] if s['id']==sid)
