@@ -19,7 +19,7 @@ class TimerNotificationBrowser(unittest.TestCase):
     browser=playwright.chromium.launch(headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     try:
      page=browser.new_page(viewport={'width':390,'height':844})
-     page.add_init_script("""() => {
+     page.add_init_script("""(() => {
        window.__notifications=[];
        class FakeNotification{}
        FakeNotification.permission='granted';
@@ -35,7 +35,7 @@ class TimerNotificationBrowser(unittest.TestCase):
        };
        Object.defineProperty(navigator,'serviceWorker',{configurable:true,
          value:{register:async()=>reg}});
-     }""")
+     })()""")
      errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
      page.goto('http://127.0.0.1:'+str(server.server_address[1])+'/index.html',wait_until='load',timeout=45000)
      page.locator('#lifeosNavigation button[data-view="tracking"]').click()
