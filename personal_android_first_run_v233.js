@@ -10,6 +10,7 @@ function inspect(workspace){
 }
 function init(){
  if(!root.LifeOSNative||typeof root.LifeOSNative.postMessage!=='function')return;
+ document.documentElement.classList.add('lo240-native');
  if(document.getElementById('lo233-first-run'))return;
  let data;try{data=root.lifeosReadOnlyWorkspace?.()}catch(_){}
  const state=inspect(data);
