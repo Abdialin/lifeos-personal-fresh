@@ -64,6 +64,8 @@ jobs:
         run: timeout --signal=TERM 50s python -m unittest -v test_sync_restart_v215
       - name: Verify actual app offline queue and reconnection
         run: timeout --signal=TERM 100s python -m unittest -v test_offline_reconnect_v216
+      - name: Verify recovery bundle export and restore in isolated Chromium
+        run: timeout --signal=TERM 90s python -m unittest -v test_recovery_roundtrip_v218_browser
       - name: Verify isolated backend storage probe
         run: python -m unittest -v test_storage_status_probe
       - name: Test actual LifeOS Personal UI in Chromium
