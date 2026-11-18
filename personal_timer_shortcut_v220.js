@@ -24,7 +24,7 @@ function mount(){
  const section=document.createElement('details');section.id='lo220-phone-shortcut';section.className='lo220-phone-shortcut';
  section.innerHTML='<summary>Phone timer shortcut <span id="lo220-summary" aria-live="polite">· Optional</span></summary>'+
  '<p class="sub">Show a static notification for a running or paused activity on supported browsers. Tap it to reopen LifeOS. Its time does not tick in Android’s notification center. Android may dismiss it or stop delivery after the browser closes.</p>'+
- '<div class="row"><button type="button" class="btn primary" id="lo220-pin">Show notification shortcut</button><button type="button" class="btn outline" id="lo220-clear">Remove shortcut</button></div>'+
+ '<div class="row"><button type="button" class="btn primary" id="lo220-pin">Show notification shortcut</button><button type="button" class="btn outline" id="lo220-test-alert">Test phone sound & vibration</button><button type="button" class="btn outline" id="lo220-clear">Remove shortcut</button></div>'+
  '<p id="lo220-status" class="sub" role="status" aria-live="polite">Not enabled on this device.</p>';
  host.append(section);
  const style=document.createElement('style');style.textContent='#lo220-phone-shortcut{margin:12px 0 0;border:1px solid #48637a;border-radius:13px;padding:11px;background:#142539}#lo220-phone-shortcut summary{cursor:pointer;font-weight:700;color:#e6f7fa}#lo220-phone-shortcut button{min-height:42px}#lo220-status{margin:8px 0 2px;overflow-wrap:anywhere}';document.head.append(style);
@@ -74,6 +74,15 @@ function mount(){
    pinned=true;await show(true);
    if(!write(true)){pinned=false;report('Could not store this preference. Check browser storage.');return}
   }catch(e){pinned=false;report('Could not display a notification: '+String(e.message||e))}
+ });
+ section.querySelector('#lo220-test-alert').addEventListener('click',async()=>{
+  try{
+   const alert=root.LifeOSAlertEngineV221;
+   if(!alert)throw Error('Alert engine unavailable.');
+   const unlocked=await alert.unlock();
+   const result=alert.play(alert.load());
+   report('Alert test: '+(result.sound?'Sound requested.':unlocked?.reason||'No audible sound.')+' '+(result.vibration?'Vibration requested.':'Vibration not available or disabled.')+' Phone settings may mute both. Open Focus mode & alarms to adjust sound, vibration, and volume.');
+  }catch(e){report('Sound/vibration test unavailable: '+String(e.message||e))}
  });
  section.querySelector('#lo220-clear').addEventListener('click',async()=>{
   pinned=false;last='';const saved=write(false);
