@@ -1,6 +1,6 @@
 /* V222: opt-in native Android origin-scoped WebMessage bridge.
- * Read-only projection of the canonical LifeOS active timer; does not alter
- * sessions, cloud state, or send personally sensitive workspace information.
+ * Projects the canonical active timer. Verified native pause/resume requests
+ * enter the existing authoritative V77 action handler; never mutate storage directly.
  */
 (function(root){
 'use strict';
@@ -15,6 +15,19 @@ function elapsed(s,at){
   const a=Number(part?.start),b=part?.end==null?(s.status==='running'?at:a):Number(part.end);
   return sum+(Number.isFinite(a)&&Number.isFinite(b)&&b>=a?b-a:0);
  },0));
+}
+function nativeTimerAction(id,action){
+ if(typeof id!=='string'||!id||id.length>100||!['pause','resume'].includes(action))return false;
+ let sessions=[];try{sessions=root.lifeosReadOnlyWorkspace?.()?.sessions||[]}catch(_){return false}
+ const item=Array.isArray(sessions)?sessions.find(x=>x&&String(x.id)===id):null;
+ if(!item||(action==='pause'&&item.status!=='running')||(action==='resume'&&item.status!=='paused'))return false;
+ if(typeof root.dispatchEvent!=='function'||typeof root.CustomEvent!=='function')return false;
+ const detail={id,action,result:{ok:false,message:'Native timer action was not accepted.'}};
+ root.dispatchEvent(new root.CustomEvent('lifeos-v77-timer-action',{detail}));
+ // The authoritative event handler synchronously updates status and result.
+ if(detail.result?.ok!==true)return false;
+ publish();
+ return true;
 }
 let last='',lastAlarm='';
 function publishAlarm(){
@@ -57,5 +70,5 @@ if(root?.document){
  // change detection keeps the native display in sync without duplicating writes.
  root.setInterval(()=>{if(!document.hidden)publish()},2000);
 }
-root.LifeOSAndroidBridgeV222={pick,elapsed,publish,publishAlarm};
+root.LifeOSAndroidBridgeV222={pick,elapsed,publish,publishAlarm,nativeTimerAction};
 })(typeof window!=='undefined'?window:globalThis);
