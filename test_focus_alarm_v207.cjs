@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const focus=require('./personal_focus_alarm_v207.js');
+assert.equal(focus.remaining(200,100),100);
+assert.equal(focus.remaining(100,200),0);
+assert.equal(focus.format(3661000),'01:01:01');
+const fs=require('node:fs'),html=fs.readFileSync('index.html','utf8');
+assert.match(html,/src="personal_focus_alarm_v207\.js\?/);
+assert.match(html,/data-act="break"/);
+assert.match(html,/lifeos-v207-backfill-gap/);
+assert.match(html,/sunnahMissed/);
+console.log('V207 focus, break, gap, prayer checks PASS');
