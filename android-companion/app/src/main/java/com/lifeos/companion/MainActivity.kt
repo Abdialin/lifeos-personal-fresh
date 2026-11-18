@@ -177,6 +177,13 @@ class MainActivity : Activity() {
             NativeAlarm.cancel(this)
             return
         }
+        if (status == "ringing") {
+            // An Android snooze remains valid until explicitly dismissed,
+            // replaced by a new web alarm, or naturally delivered.
+            if (NativeAlarm.pendingSnooze(this) <= System.currentTimeMillis())
+                NativeAlarm.cancel(this)
+            return
+        }
         if (status != "scheduled") return
         val end = p.optLong("endMs", 0L)
         val now = System.currentTimeMillis()
