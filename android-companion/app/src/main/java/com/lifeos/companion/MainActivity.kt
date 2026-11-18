@@ -144,6 +144,17 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun openBatterySettings() {
+        try {
+            // Only opens system settings. LifeOS never silently exempts itself.
+            startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        } catch (_: Exception) {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:$packageName")
+            })
+        }
+    }
+
     private fun openNotificationSettings() {
         try {
             startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
@@ -170,6 +181,7 @@ class MainActivity : Activity() {
                 when (p.optString("target")) {
                     "alarms" -> openAlarmSettings()
                     "notifications" -> openNotificationSettings()
+                    "battery" -> openBatterySettings()
                 }
                 return
             }
