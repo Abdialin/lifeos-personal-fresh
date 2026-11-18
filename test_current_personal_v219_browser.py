@@ -40,7 +40,7 @@ class CurrentLifeOS(unittest.TestCase):
         self.assertEqual(page.locator('#lifeosNavigation button[data-view][aria-current="page"]').count(),1)
     def test_six_navigation_views_at_mobile_tablet_desktop_widths(self):
         expected={'dashboard':'Today','tracking':'Activity tracking',
-                  'schedule':'Smart schedule','goals':'Goals & tasks',
+                  'schedule':'Smart schedule','goals':'Goals & progress',
                   'analytics':'Insights & trends','life':'My Life'}
         for width in (360,390,768,1280):
             with self.subTest(width=width):
