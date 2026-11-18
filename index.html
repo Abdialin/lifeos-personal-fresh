@@ -2063,8 +2063,14 @@ function v241Panel(){
       events:JSON.parse(JSON.stringify(data.events))}};
    download('LifeOS_browser_activities_'+localDate(now())+'.json',
     JSON.stringify(transfer,null,2),'application/json');
+   const nov17=transfer.workspace.sessions.filter(row=>Number.isFinite(row.startAt)&&localDate(row.startAt)==='2026-11-17').length;
+   const nov18=transfer.workspace.sessions.filter(row=>Number.isFinite(row.startAt)&&localDate(row.startAt)==='2026-11-18').length;
    $('lo241-preview').textContent='Export requested: '+transfer.workspace.sessions.length+' sessions and '+
-    transfer.workspace.events.length+' events. Open Samsung My Files to confirm the JSON download. Import this file in the Beta app.';
+    transfer.workspace.events.length+' events. Sessions started on 17 November: '+nov17+
+    '. Sessions started on 18 November: '+nov18+'. '+
+    (nov17+nov18===0?'WARNING: this workspace has no new sessions from 17–18 November. Do NOT expect this file to restore those dates. Open the original Samsung Browser LifeOS tab where the activities actually appear and export there. ':
+     'This export contains sessions from the dates you want to recover. ')+
+    'Verify the JSON download in Samsung My Files. Only then select that file inside the Android Beta app.';
   }catch(e){$('lo241-preview').textContent='Export could not complete: '+(e.message||e)}
  });
  $('lo241-file').addEventListener('change',async e=>{
