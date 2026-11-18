@@ -17,6 +17,8 @@ jobs:
           node-version: '22'
       - name: Validate static asset routes
         run: node test_static_asset_routes.cjs
+      - name: Validate full HTML-linked frontend asset allowlist
+        run: python3 test_frontend_static_assets_v236.py
       - name: Validate navigation reuse
         run: node test_unified_navigation_reuse.cjs
       - name: Validate Fitness to Goals evidence
