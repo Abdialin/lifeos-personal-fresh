@@ -54,6 +54,7 @@ class FocusControls(unittest.TestCase):
      self.assertGreater(resumed['pauseMs'],0)
      self.assertIn('Paused',page.locator('#lo221-session-stats').inner_text())
      self.assertIn('Break',page.locator('#lo221-session-stats').inner_text())
+     self.assertIn('Focused',page.locator('#lo221-session-stats').inner_text())
      page.locator('#lo207-hide-focus').click()
      page.reload(wait_until='load',timeout=45000)
      self.assertEqual(state()['mode'],'running')
