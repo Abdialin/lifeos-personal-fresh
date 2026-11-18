@@ -22,7 +22,8 @@ function publishAlarm(){
  if(!native||typeof native.postMessage!=='function')return false;
  let saved=null;try{saved=JSON.parse(root.localStorage?.getItem('lifeos.personal.focus.v207')||'null')}catch(_){}
  const active=saved&&['focus','alarm'].includes(saved.kind)&&saved.mode==='running'&&Number.isFinite(Number(saved.end))&&saved.end>Date.now();
- const value=active?{kind:'alarm-status',status:'scheduled',name:String(saved.label||'LifeOS alarm').slice(0,80),endMs:Math.floor(Number(saved.end))}:{kind:'alarm-status',status:'cancelled'};
+ const value=active?{kind:'alarm-status',status:'scheduled',name:String(saved.label||'LifeOS alarm').slice(0,80),endMs:Math.floor(Number(saved.end))}:
+   saved?.mode==='ringing'?{kind:'alarm-status',status:'ringing'}:{kind:'alarm-status',status:'cancelled'};
  const signature=value.status+'|'+(value.endMs||'');
  if(signature===lastAlarm)return true;
  lastAlarm=signature;
