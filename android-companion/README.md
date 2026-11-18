@@ -1,4 +1,4 @@
-# LifeOS Android Companion — V224 experimental companion
+# LifeOS Android Companion — V226 experimental companion
 
 **Status:** Native Android source + isolated build checks; **not yet a published or installed Android app**.
 
@@ -58,3 +58,11 @@ security, privacy, battery and Play policy review.
 - Browser regression tests now cover the native snooze transition and ringing-state message; Android compile, real alarm sound, vibration, lock-screen presence, reboot restore, and Samsung battery-management handling are **not yet confirmed**.
 - Native foreground timer controls are still display-only. Pause/finish must occur in LifeOS until an authenticated write-safe command protocol is designed and tested.
 - Review Android notification channel settings if sound or vibration is silent: user overrides on an existing channel are not overwritten by app code.
+
+## V225–V226 Personal integration
+
+- The browser timeline now shows pauses between consecutive segments of the same activity when at least five minutes long; paused minutes are not added to active time. Short interruptions remain in the raw record but are hidden from the summary.
+- Unlogged-time review now offers more user-selected activity categories and a custom label; it never infers or confirms activities automatically.
+- Read-only cross-section checks also flag schedule entries linked to missing sessions and gracefully handle malformed collection types.
+- Android foreground notification still displays one selected timer but now indicates how many other timers remain open. This does **not** provide multi-timer background control.
+- Test coverage includes synthetic pause-duration accounting, orphan schedule links and browser-to-native active-timer count fields.
