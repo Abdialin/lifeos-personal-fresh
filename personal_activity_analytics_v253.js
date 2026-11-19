@@ -144,6 +144,16 @@ function mount(){
  root.addEventListener?.('lifeos-v77-tracking-changed',render);doc.addEventListener('visibilitychange',()=>{if(!doc.hidden)render()});
  host.before(box);render();
 }
+if(root.document&&!root.document.getElementById('lo254-script')){
+ const load=()=>{
+  if(root.document.getElementById('lo254-script'))return;
+  if(!root.document.getElementById('lo254-style')){
+   const style=root.document.createElement('link');style.id='lo254-style';style.rel='stylesheet';style.href='/personal_ux_consolidation_v254.css?v=254';root.document.head.appendChild(style);
+  }
+  const script=root.document.createElement('script');script.id='lo254-script';script.src='/personal_ux_consolidation_v254.js?v=254';script.defer=true;root.document.head.appendChild(script);
+ };
+ if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+}
 if(root.document){const init=()=>{mount();root.setTimeout?.(mount,1000)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',init,{once:true});else init();}
 return {category,slices,unionMs,percentage,calculate,mount};
 });
