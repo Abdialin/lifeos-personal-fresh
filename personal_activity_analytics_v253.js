@@ -218,9 +218,9 @@ if(root.document&&!root.document.getElementById('lo254-script')){
  const load=()=>{
   if(root.document.getElementById('lo254-script'))return;
   if(!root.document.getElementById('lo254-style')){
-   const style=root.document.createElement('link');style.id='lo254-style';style.rel='stylesheet';style.href='/personal_ux_consolidation_v254.css?v=254';root.document.head.appendChild(style);
+   const style=root.document.createElement('link');style.id='lo254-style';style.rel='stylesheet';style.href='/personal_ux_consolidation_v254.css?v=260';root.document.head.appendChild(style);
   }
-  const script=root.document.createElement('script');script.id='lo254-script';script.src='/personal_ux_consolidation_v254.js?v=254';script.defer=true;root.document.head.appendChild(script);
+  const script=root.document.createElement('script');script.id='lo254-script';script.src='/personal_ux_consolidation_v254.js?v=260';script.defer=true;root.document.head.appendChild(script);
  };
  if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
 }
