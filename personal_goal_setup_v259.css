@@ -1,0 +1,46 @@
+/* LifeOS V259 — mobile navigation clearance and compact activity-goal setup. */
+html.lo254-ui .lo259-goal-helper{border:1px solid #3b697d;border-radius:15px;background:#143146;padding:13px;margin:10px 0 14px;max-width:100%}
+html.lo254-ui .lo259-goal-helper h3{margin:0 0 8px;font-size:17px}
+html.lo254-ui .lo259-goal-helper p{color:#b2d0de;font-size:12px;line-height:1.45;margin:8px 0}
+html.lo254-ui .lo259-goal-tiles{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0}
+html.lo254-ui .lo259-goal-chip{border:1px solid #47768a;background:#24465c;color:#e1eff8;padding:9px 12px;border-radius:999px;min-height:42px;font-size:13px;cursor:pointer}
+html.lo254-ui .lo259-goal-chip[aria-pressed=true]{color:#062a25;background:#82e6ca;border-color:#82e6ca;font-weight:700}
+html.lo254-ui #lo259-goal-context{padding:9px 11px;border-radius:10px;background:#1b3a50;color:#dcf3f2}
+html.lo254-ui .lo259-goal-caveat{font-size:11px!important;line-height:1.5}
+html.lo254-ui #goalForm.lo259-goal-ready{outline:1px solid #497e79;outline-offset:5px;border-radius:8px}
+html.lo254-ui .lo259-goal-chip:focus-visible,html.lo254-ui #lifeosNavigation button:focus-visible{outline:3px solid #a5f5df;outline-offset:2px}
+@media(max-width:750px){
+ /* Keep navigation and its labels entirely within the available viewport. */
+ html.lo254-ui body #lifeosNavigation{
+  box-sizing:border-box!important;
+  width:100%!important;max-width:100vw!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:3px!important;padding-inline:6px!important;
+  overflow:hidden!important;
+ }
+ html.lo254-ui body #lifeosNavigation button{
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  overflow:hidden!important;padding-inline:1px!important;
+  touch-action:manipulation!important;
+ }
+ html.lo254-ui body #lifeosNavigation .lifeos-tab-label{
+  display:block;max-width:100%;font-size:clamp(9px,2.4vw,12px)!important;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ }
+ html.lo254-ui body #lifeosNavigation .lifeos-tab-icon{font-size:19px!important}
+ html.lo254-ui body .wrap{padding-bottom:calc(225px + env(safe-area-inset-bottom,0px))!important}
+ html.lo254-ui #todayOverview,html.lo254-ui #trackActivePanel,html.lo254-ui #lo253-activity-analytics{scroll-margin-bottom:195px}
+}
+@media(max-width:750px){
+ /* Android WebView may place system navigation below the app's content viewport. */
+ html.lo240-native.lo254-ui body #lifeosNavigation{
+  bottom:calc(64px + env(safe-area-inset-bottom,0px))!important;
+  min-height:72px!important;
+  border-radius:14px 14px 0 0!important;
+ }
+ html.lo240-native.lo254-ui body .wrap{padding-bottom:calc(245px + env(safe-area-inset-bottom,0px))!important}
+ html.lo240-native.lo254-ui body #lo86-floating,
+ html.lo240-native.lo254-ui body #lo86-dock{
+  bottom:calc(158px + env(safe-area-inset-bottom,0px))!important;
+ }
+}
