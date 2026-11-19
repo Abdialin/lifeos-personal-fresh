@@ -41,9 +41,14 @@
    }catch(e){state.textContent='Storage usage could not be read. Existing data was not changed.'}
   };
   buttons.append(check);panel.append(buttons);const head=track.querySelector('.head');if(head)head.after(panel);else track.prepend(panel);
+  let usageHigh=false,lastUsage=0;
   const detect=()=>{const source=($('lifeosTimerActionFeedback')?.textContent||'')+' '+($('syncStatus')?.textContent||'')+' '+($('status')?.textContent||'');
    const full=/Browser storage capacity exceeded|QuotaExceededError|storage (quota|capacity).*exceed/i.test(source);
-   if(full)panel.style.display='block';
+   if(Date.now()-lastUsage>30000){
+    lastUsage=Date.now();
+    try{let units=0;for(let i=0;i<root.localStorage.length;i++){const key=root.localStorage.key(i);units+=((key||'').length+(root.localStorage.getItem(key)||'').length)*2}usageHigh=units>=3.5*1048576}catch(_){}
+   }
+   if(full||usageHigh)panel.style.display='block';
   };
   root.addEventListener('lifeos-v77-tracking-changed',detect);
   doc.addEventListener('click',e=>{
