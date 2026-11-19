@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const html=fs.readFileSync('index.html','utf8');
+const first=html.indexOf('function v246Setup(){');
+const last=html.indexOf('async function push(){',first);
+assert.ok(first>0&&last>first,'Beta status hook present');
+const fragment=html.slice(first,last);
+assert.doesNotThrow(()=>new Function(fragment));
+assert.match(fragment,/if\(!window\.LifeOSNative/,'Only installed Android app gets primary workspace panel');
+assert.match(fragment,/requestState\(\)/,'Read-only fetch');
+assert.match(fragment,/sameSnapshot\(data,remote\.data\)/);
+assert.match(fragment,/outbox\.length/);
+assert.match(fragment,/syncMeta\.dirty/);
+assert.match(fragment,/localStorage\.getItem\(ATOMIC_KEY\)!==localCheckpoint/);
+assert.match(fragment,/lifeos-native-ready/);
+assert.doesNotMatch(fragment,/requestState\('PUT'|atomicCommit\(|queueCurrentState\(|syncMeta\.dirty\s*=|localStorage\.setItem\(/,'Status check may never mutate data');
+assert.match(fragment,/automatic browser mirroring is not enabled yet/);
+console.log('PASS V246 beta-primary read-only revision and journal verification with no mutation');
