@@ -62,7 +62,7 @@ function recentDays(sessions,at=Date.now(),days=7){
  const today=localDay(at),rows=[];
  for(let offset=0;offset<days;offset++){
   const start=new Date(today);start.setDate(start.getDate()-offset);
-  const from=start.getTime(),to=new Date(start).setDate(start.getDate()+1);
+  const from=start.getTime();
   const end=new Date(start);end.setDate(end.getDate()+1);
   const report=inspect(sessions,from,end.getTime(),at);
   rows.push({date:new Date(from).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}),from,...report});
