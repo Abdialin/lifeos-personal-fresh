@@ -1,0 +1,37 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const code=fs.readFileSync('personal_pending_queue_recovery_v244.js','utf8');
+const html=fs.readFileSync('index.html','utf8'),server=fs.readFileSync('server.py','utf8');
+assert.doesNotThrow(()=>new Function(code));
+const ctx={};ctx.window=ctx;vm.runInNewContext(code,ctx);
+const api=ctx.LifeOSPendingQueueRecoveryV244;
+const base={version:1,sessions:[{id:'a',status:'finished',startAt:1}],
+ events:[{id:'e1',at:1}],schedule:[{id:'p1',title:'Study'}],todos:[],goals:[{id:'g1',name:'Exercise'}],
+ workouts:[],meals:[],idealRoutines:[],settings:{theme:'dark'}};
+const extended=JSON.parse(JSON.stringify(base));
+extended.sessions.push({id:'b',status:'finished',startAt:2});
+extended.events.push({id:'e2',at:2});
+const queue=[{id:'queued-change',createdAt:3,snapshot:JSON.parse(JSON.stringify(base))}];
+const read=(args={})=>api.inspect({local:base,remote:extended,queue,meta:{revision:116,dirty:true},remoteRevision:310,...args});
+const clean=read();
+assert.equal(clean.ok,true);
+assert.equal(clean.fastForwardSafe,true);
+assert.equal(clean.serverOnlyTotal,2);
+assert.equal(clean.queued,1);
+assert.equal(clean.conflictTotal,0);
+assert.equal(read({local:{...base,sessions:[...base.sessions,{id:'local17',startAt:17}]}}).fastForwardSafe,false);
+assert.equal(read({local:{...base,sessions:[{id:'a',status:'running',startAt:1}]}}).fastForwardSafe,false);
+assert.equal(read({local:{...base,settings:{theme:'light'}}}).fastForwardSafe,false);
+assert.equal(read({queue:[...queue,{id:'other',snapshot:base}]}).fastForwardSafe,true,'Queued operations remain explicitly backed up when current local snapshot is a safe subset');
+assert.equal(read({remote:{...extended,schedule:[{id:'p1',title:'Changed'}]}}).fastForwardSafe,false);
+assert.equal(read({local:{...base,goals:[{id:'g1'}, {id:'g1'}]}}).ok,false);
+assert.equal(read({blocked:true}).ok,false);
+const ui=html.slice(html.indexOf('let v244Reviewed'),html.indexOf('async function push(){',html.indexOf('let v244Reviewed')));
+assert.doesNotThrow(()=>new Function(ui));
+assert.match(ui,/await v242Backup/);
+assert.match(ui,/queue:outbox,syncMeta,checkpointRaw/);
+assert.match(ui,/if\(!atomicCommit\(latest\.data,\[\],meta\)\)/);
+assert.match(ui,/await v244Confirm\(\)/);
+assert.match(ui,/latest\.revision!==review\.revision/);
+assert.doesNotMatch(ui,/requestState\('PUT'|fetch\('/api\/state'/,'V244 is strictly local-only');
+assert.match(server,/'personal_pending_queue_recovery_v244\.js'/);
+console.log('PASS V244: read-only full-workspace stale-journal comparison and verified local-only update gates');
