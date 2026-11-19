@@ -1,0 +1,43 @@
+/* V254: compact, touch-friendly mobile design. Cosmetic only; no data changed. */
+html.lo254-ui{scroll-padding-bottom:190px}
+html.lo254-ui body{overflow-x:hidden}
+html.lo254-ui .lo254-disclosure{border:1px solid #36556b;border-radius:14px;background:#152b40;margin:12px 0;padding:0;min-width:0}
+html.lo254-ui .lo254-disclosure>summary{cursor:pointer;padding:14px 15px;min-height:48px;color:#d5e9f5;font-size:15px;font-weight:650}
+html.lo254-ui .lo254-disclosure[open]>summary{border-bottom:1px solid #38536b}
+html.lo254-ui .lo254-disclosure>.panel{border:0!important;box-shadow:none!important;background:transparent!important;padding:12px!important;border-radius:0}
+html.lo254-ui .lo254-catalog-hidden{display:none!important}
+html.lo254-ui .lo254-library-actions{display:grid;gap:8px;margin:10px 0 12px}
+html.lo254-ui .lo254-library-actions .field{margin:0}
+html.lo254-ui .lo254-library-actions>.btn{justify-self:start;font-size:13px;min-height:42px}
+html.lo254-ui .lo254-library-results{display:flex;gap:7px;flex-wrap:wrap}
+html.lo254-ui .lo254-chip{background:#1e4151;border:1px solid #457b83;color:#c8f5eb;border-radius:99px;padding:9px 12px;font:inherit;font-size:13px;min-height:41px}
+html.lo254-ui .lo254-chip:focus-visible{outline:2px solid #7de2c9;outline-offset:3px}
+html.lo254-ui #lo253-activity-analytics .lo254-secondary-kpi{display:none}
+html.lo254-ui #lo253-activity-analytics .lo254-kpis-expanded .lo254-secondary-kpi{display:block}
+html.lo254-ui .lo254-link{background:transparent;border:0;color:#8ce3d3;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:10px 2px;font-size:13px;min-height:42px}
+html.lo254-ui #lo251-activity>p.sub,html.lo254-ui #lo253-activity-analytics>p.sub{font-size:13px;line-height:1.45}
+html.lo254-ui #lo251-activity{margin-top:12px!important}
+html.lo254-ui #lo252-review .field,html.lo254-ui #lo253-activity-analytics .field{max-width:100%;box-sizing:border-box}
+html.lo254-ui #lo252-review button,html.lo254-ui #lo252-focus-quick button{min-height:44px}
+html.lo254-ui #lo253-activity-analytics #lo253-all-overview button{min-height:44px}
+@media(max-width:750px){
+ html.lo254-ui body{font-size:15px;line-height:1.45}
+ html.lo254-ui .panel{padding:14px!important;border-radius:16px!important;margin-bottom:12px!important;max-width:100%;min-width:0}
+ html.lo254-ui .panel h2{font-size:19px!important;line-height:1.25;letter-spacing:-.25px}
+ html.lo254-ui #lo253-activity-analytics{padding:14px!important}
+ html.lo254-ui #lo253-activity-analytics #lo253-all-overview{margin:10px 0!important}
+ html.lo254-ui #lo253-activity-analytics #lo253-all-overview button{grid-template-columns:minmax(90px,1.1fr) 1fr auto!important;gap:6px!important}
+ html.lo254-ui #lo253-activity-analytics #lo253-all-overview button span{min-width:0}
+ html.lo254-ui #lo253-activity-analytics .lo254-disclosure{margin-top:8px}
+ html.lo254-ui #lo252-review label{font-size:13px!important}
+ html.lo254-ui #lo252-review .field{min-height:46px!important;padding:10px 12px!important;font-size:16px!important}
+ html.lo254-ui #lo252-review #lo252-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ html.lo254-ui #lo252-review #lo252-fields label:has(input[type=text]),html.lo254-ui #lo252-review #lo252-fields label:has(select){min-width:0}
+ html.lo254-ui #lo252-review #lo252-fields label:has(input[type=text]){grid-column:span 2}
+ html.lo254-ui #lo252-review div[style*="grid-template-columns"]{max-width:100%}
+ html.lo254-ui #lo251-activity .lo254-library-results{gap:6px}
+ html.lo254-ui .lo254-disclosure>summary{font-size:14px}
+ html.lo254-ui body .wrap{padding-bottom:max(220px,calc(200px + env(safe-area-inset-bottom,0px)))!important}
+ html.lo254-ui body #lifeosNavigation{max-width:100vw;box-sizing:border-box;overflow:hidden}
+ html.lo254-ui body #lifeosNavigation button{min-width:0}
+}
