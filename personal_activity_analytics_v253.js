@@ -51,7 +51,7 @@ function calculate(workspace,id,days=14,at=Date.now()){
  const bool=key=>percentage(details.map(x=>x.details[key]));
  const frequency=key=>{const map={};for(const x of details){const v=String(x.details[key]||'').trim();if(v)map[v]=(map[v]||0)+1}return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5)};
  if(id==='prayer'){
-   Object.assign(metrics,{onTime:bool('onTime'),congregation:bool('congregation'),mosque:bool('mosque'),firstRow:percentage(details.map(x=>x.details.row),x=>x==='first'),sunnahUnits:numberSum('sunnahUnits'),sunnahRecorded:countKnown('sunnahUnits'),prayers:frequency('prayerName')});
+   Object.assign(metrics,{onTime:bool('onTime'),congregation:bool('congregation'),mosque:bool('mosque'),firstRow:percentage(details.map(x=>['first','other'].includes(x.details.row)?x.details.row:null),x=>x==='first'),sunnahUnits:numberSum('sunnahUnits'),sunnahRecorded:countKnown('sunnahUnits'),prayers:frequency('prayerName')});
  }else if(id==='study'){
    Object.assign(metrics,{pages:numberSum('studyPages'),pagesRecorded:countKnown('studyPages'),subjects:frequency('studySubject'),focus:frequency('studyFocus')});
  }else if(id==='fitness'){
