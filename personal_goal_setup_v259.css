@@ -44,3 +44,10 @@ html.lo254-ui .lo259-goal-chip:focus-visible,html.lo254-ui #lifeosNavigation but
   bottom:calc(158px + env(safe-area-inset-bottom,0px))!important;
  }
 }
+
+/* Keep suggestions compact rather than adding more vertical cards. */
+html.lo254-ui .lo259-goal-tiles{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:5px;scrollbar-width:thin}
+html.lo254-ui .lo259-goal-chip{flex:0 0 auto;scroll-snap-align:start}
+html.lo254-ui #lo259-legacy-presets{border:1px solid #35536d;border-radius:12px;margin:10px 0;padding:0;background:#142c40}
+html.lo254-ui #lo259-legacy-presets>summary{cursor:pointer;padding:12px 14px;min-height:44px;font-size:13px;color:#d0e4ee}
+html.lo254-ui #lo259-legacy-presets #lifeosGoalSuggestions{padding:8px 12px;margin:0;border:0}
