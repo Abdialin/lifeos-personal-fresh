@@ -61,7 +61,17 @@ function calculate(workspace,id,days=14,at=Date.now()){
  else if(id==='family'){Object.assign(metrics,{companions:frequency('familyWith')})}
  else if(id==='friends'){Object.assign(metrics,{activities:frequency('socialContext')})}
  else if(id==='distraction'){Object.assign(metrics,{causes:frequency('distractionCategory'),triggers:frequency('distractionTrigger')})}
- else if(id==='work'){Object.assign(metrics,{exceededSessions:details.filter(x=>finite(x.session.durationGuardV78?.targetMinutes)&&x.ms>x.session.durationGuardV78.targetMinutes*MIN).length})}
+ else if(id==='work'){Object.assign(metrics,{exceededSessions:details.filter(x=>finite(x.session.durationGuardV78?.targetMinutes)&&x.ms>x.session.durationGuardV78.targetMinutes*MIN).length,projects:frequency('workProject'),workQuality:frequency('workQuality'),breakMinutes:numberSum('workBreakMinutes')})}
+ else if(id==='sleep'){Object.assign(metrics,{sleepQuality:frequency('sleepQuality'),interruptions:numberSum('sleepInterruptions')})}
+ else if(id==='quran'){Object.assign(metrics,{quranPages:numberSum('quranPages'),quranPagesRecorded:countKnown('quranPages'),surahs:frequency('quranSurah'),revision:percentage(details.map(x=>x.details.quranRevision))})}
+ else if(id==='reading'){Object.assign(metrics,{bookPages:numberSum('bookPages'),bookPagesRecorded:countKnown('bookPages'),books:frequency('bookTitle')})}
+ else if(id==='chores'){Object.assign(metrics,{tasks:frequency('choresTask')})}
+ else if(id==='errands'){Object.assign(metrics,{errands:frequency('errandsTask'),waitingMinutes:numberSum('waitingMinutes')})}
+ else if(id==='travel'){Object.assign(metrics,{modes:frequency('travelMode'),purposes:frequency('travelPurpose')})}
+ else if(id==='health'){Object.assign(metrics,{healthActivities:frequency('healthType')})}
+ else if(id==='hobbies'){Object.assign(metrics,{hobbies:frequency('hobbyType'),projects:frequency('hobbyProgress')})}
+ else if(id==='outdoors'){Object.assign(metrics,{distanceKm:numberSum('distanceKm'),places:frequency('outdoorPlace')})}
+ else if(id==='volunteer'){Object.assign(metrics,{causes:frequency('volunteerCause')})}
  const activeDays=trends.filter(x=>x.count).length,uniqueMs=unionMs(ranges);
  return {id,days,sessions:sessions.length,finishedCount:sessions.length,activeDays,trackedMs:sumMs,uniqueMs,averagePerActiveDayMs:activeDays?sumMs/activeDays:0,averagePerCalendarDayMs:sumMs/days,
  averageSessionMs:sessions.length?sumMs/sessions.length:0,preparationMinutes:prep,travelMinutes:travel,detailsConfirmed:documented,detailsCoverage:sessions.length?Math.round(100*documented/sessions.length):null,trends,metrics};
@@ -111,9 +121,10 @@ function mount(){
   for(const [key,label] of [['onTime','On time'],['congregation','In congregation'],['mosque','At mosque'],['firstRow','First row']]){
    if(m[key])stat(details,label,m[key].pct===null?'Unknown':m[key].pct+'%',m[key].known+' recorded answers');
   }
-  for(const [key,label] of [['sunnahUnits','Sunnah units'],['pages','Study pages/questions'],['linkedWorkouts','Workout entries'],['setsRecorded','Sessions with sets'],['notedMeals','Meals with details'],['exceededSessions','Exceeded duration sessions']])
+  if(m.revision)stat(details,'Quran revision',m.revision.pct===null?'Unknown':m.revision.pct+'%',m.revision.known+' confirmed answers');
+  for(const [key,label] of [['sunnahUnits','Sunnah units'],['pages','Study pages/questions'],['linkedWorkouts','Workout entries'],['setsRecorded','Sessions with sets'],['notedMeals','Meals with details'],['exceededSessions','Exceeded duration sessions'],['quranPages','Quran pages'],['bookPages','Book pages'],['interruptions','Sleep interruptions'],['breakMinutes','Work break minutes'],['waitingMinutes','Waiting minutes'],['distanceKm','Distance (km)']])
    if(m[key]!==undefined)stat(details,label,m[key],key==='sunnahUnits'?m.sunnahRecorded+' sessions with sunnah records':key==='pages'?m.pagesRecorded+' sessions with page records':'');
-  for(const [key,label] of [['prayers','Prayer types'],['subjects','Study subjects'],['focus','Focus quality'],['workoutTypes','Workout types'],['mealTypes','Meal types'],['companions','Family members'],['activities','Social activities'],['causes','Distraction types'],['triggers','Distraction triggers']])
+  for(const [key,label] of [['prayers','Prayer types'],['subjects','Study subjects'],['focus','Focus quality'],['workoutTypes','Workout types'],['mealTypes','Meal types'],['companions','Family members'],['activities','Social activities'],['causes','Distraction types'],['triggers','Distraction triggers'],['projects','Projects and progress'],['workQuality','Work quality'],['sleepQuality','Sleep quality'],['surahs','Surahs'],['books','Books'],['tasks','Household tasks'],['errands','Errands'],['modes','Travel modes'],['purposes','Travel purposes'],['healthActivities','Self-care'],['hobbies','Hobbies'],['places','Outdoor places']])
    if(m[key]?.length)stat(details,label,m[key].map(([name,n])=>name+' ('+n+')').join(' · '));
   if(!report.sessions){stat(details,'Data confidence','No finished sessions','Start and finish activities to build this dashboard.')}
  }
