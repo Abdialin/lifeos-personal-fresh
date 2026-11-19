@@ -56,9 +56,12 @@ function mountToday(){
    const result=perform(s,s.status==='running'?'pause':'resume');
    if(!result?.ok)root.alert?.(result?.message||'Unable to update timer');paint();
   },true);
-  button('Finish / review',()=>{
-   if(typeof root.LifeOSReviewTimer==='function')root.LifeOSReviewTimer(String(s.id));
-   else jump('tracking','trackActivePanel');
+  button('Finish activity',()=>{
+   if(!root.confirm?.('Finish '+String(s.name||'this activity')+' and save the recorded time?'))return;
+   const result=perform(s,'finish');
+   if(result?.ok){paint();return}
+   root.alert?.(result?.message||'The activity was not finished. Your recorded timer has not been changed.');
+   paint();
   });
   const kind=String(s.activityDetailsV252?.category||root.LifeOSActivityIntelligenceV251?.match?.(s.name)?.id||'');
   if(['study','fitness','work','quran','reading','hobbies'].includes(kind)&&s.status==='running'){
