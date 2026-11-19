@@ -46,6 +46,11 @@ function mount(){
  panel.append(tiles);
  const message=doc.createElement('p');message.id='lo259-goal-context';message.setAttribute('role','status');message.textContent='Select an activity to prepare a supported weekly goal.';panel.append(message);
  presetsHost.before(panel);
+ if(!doc.getElementById('lo259-legacy-presets')){
+  const oldPresets=doc.createElement('details');oldPresets.id='lo259-legacy-presets';oldPresets.className='lo259-other-presets';
+  const label=doc.createElement('summary');label.textContent='Other existing goal suggestions';oldPresets.append(label);
+  presetsHost.before(oldPresets);oldPresets.append(presetsHost);
+ }
  const original=presetsHost.querySelector('p.note');if(original)original.textContent='Existing quick-start presets remain available below. Always review values before saving.';
  const disclaimer=doc.createElement('p');disclaimer.className='lo259-goal-caveat';disclaimer.textContent='Advanced targets such as first-row prayer attendance, sunnah units, intensity, or concentration remain activity details for analytics; they are not automatically counted by the current goal engine.';panel.append(disclaimer);
 }
