@@ -9,7 +9,7 @@ function eligible(s){return !!s&&s.status==='finished'&&!s.seedBatch&&!['develop
 function findReviewSession(workspace,requested,preferred){
  const sessions=(Array.isArray(workspace?.sessions)?workspace.sessions:[]).filter(eligible).sort((a,b)=>(b.endAt||b.startAt)-(a.endAt||a.startAt));
  if(preferred){const exact=sessions.find(s=>String(s.id)===String(preferred));if(exact)return exact}
- if(requested){const match=sessions.find(s=>category(s)===requested);if(match)return match}
+ if(requested)return sessions.find(s=>category(s)===requested)||null;
  return sessions[0]||null;
 }
 function distractionSummary(workspace,days=7,now=Date.now()){
@@ -46,6 +46,7 @@ function mountReview(){
  function open({category:requested,sessionId}={}){
   const s=findReviewSession(root.lifeosReadOnlyWorkspace?.(),requested,sessionId);
   const pick=$('lo252-picker');if(!pick)return false;
+  if(requested&&!s){root.alert?.('No completed '+requested+' activity is available to review. Finish a relevant activity first.');return false}
   if(s&&[...pick.options].some(o=>o.value===String(s.id))){pick.value=String(s.id);pick.dispatchEvent(new Event('change',{bubbles:true}))}
   previous=doc.activeElement;drawer.hidden=false;doc.body.classList.add('lo255-review-open');panel.scrollTop=0;close.focus({preventScroll:true});return true;
  }
