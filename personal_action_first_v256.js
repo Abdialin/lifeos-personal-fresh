@@ -111,6 +111,14 @@ function mountTrack(){
 function mount(){
  mountToday();mountTrack();
 }
+if(root.document&&!root.document.getElementById('lo257-script')){
+ const load=()=>{
+  if(root.document.getElementById('lo257-script'))return;
+  if(!root.document.getElementById('lo257-style')){const css=root.document.createElement('link');css.id='lo257-style';css.rel='stylesheet';css.href='/personal_insights_overview_v257.css?v=257';root.document.head.appendChild(css)}
+  const js=root.document.createElement('script');js.id='lo257-script';js.src='/personal_insights_overview_v257.js?v=257';js.defer=true;root.document.head.appendChild(js);
+ };
+ if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+}
 if(root.document){
  const start=()=>{mount();[450,1400].forEach(ms=>root.setTimeout?.(mount,ms))};
  if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',start,{once:true});else start();
