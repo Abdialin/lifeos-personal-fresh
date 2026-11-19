@@ -72,6 +72,29 @@ function mount(){
   if(d.result?.ok)populate(s.id);
  };
  host.after(card);populate();root.addEventListener?.('lifeos-v77-tracking-changed',()=>{const id=pick.value;populate(id)});
+ // Keep Focus Mode visible beside live activity controls while reusing V207.
+ const active=$('trackActivePanel'),focus=$('lo207-focus');
+ if(active&&focus&&!$('lo252-focus-quick')){
+  focus.open=true;
+  const bar=doc.createElement('section');bar.id='lo252-focus-quick';bar.className='panel';bar.style.cssText='background:#123348;border:1px solid #539b9a;padding:14px';
+  const heading=doc.createElement('h2');heading.textContent='Focus with your current activity';bar.append(heading);
+  const explain=doc.createElement('p');explain.className='sub';explain.textContent='Optional focus session. Your activity timer continues separately; pause, break and end remain in Focus Mode.';bar.append(explain);
+  const chooser=doc.createElement('select');chooser.className='field';bar.append(chooser);
+  const trigger=doc.createElement('button');trigger.type='button';trigger.className='btn primary';trigger.textContent='Start focus for selected activity';bar.append(trigger);
+  const feedback=doc.createElement('p');feedback.className='sub';feedback.setAttribute('role','status');bar.append(feedback);
+  function updateFocusChoices(){const selected=chooser.value;chooser.replaceChildren();for(const ses of get().filter(x=>['running','paused'].includes(x.status)&&['study','fitness','work','quran','reading','hobbies'].includes(category(x.name)))){const o=doc.createElement('option');o.value=ses.id;o.textContent=ses.name;chooser.append(o)}if([...chooser.options].some(o=>o.value===selected))chooser.value=selected;trigger.disabled=!chooser.options.length;feedback.textContent=chooser.options.length?'Choose an activity to start an optional focus session.':'Start a study, work, reading or workout timer to enable focus suggestions.';}
+  trigger.onclick=()=>{const ses=get().find(x=>String(x.id)===chooser.value);if(!ses)return;const label=$('lo207-focus-label'),button=$('lo207-start-focus');if(!label||!button){feedback.textContent='Focus controls are not ready. Open Focus Mode in Track.';return}label.value=ses.name;focus.open=true;focus.scrollIntoView({behavior:'smooth',block:'center'});if(root.confirm('Start Focus Mode for '+ses.name+'?')){button.click();feedback.textContent='Focus Mode requested. Use its Pause / Break / End controls.'}};
+  active.prepend(bar);updateFocusChoices();root.addEventListener?.('lifeos-v77-tracking-changed',updateFocusChoices);
+ }
+ // Android settings shortcuts belong in Settings, not inside the focus timer.
+ const settings=$('lo14SettingsHub'),nativeSettings=$('lo224-native-settings');
+ if(settings&&nativeSettings&&!$('lo252-android-settings')){
+  const wrapper=doc.createElement('div');wrapper.id='lo252-android-settings';wrapper.className='panel';
+  const h=doc.createElement('h3');h.textContent='Android notifications and timer settings';wrapper.append(h);
+  const p=doc.createElement('p');p.className='sub';p.textContent='Manage native timer notifications, battery settings and alarm diagnostics here.';wrapper.append(p);
+  nativeSettings.hidden=false;wrapper.append(nativeSettings);settings.append(wrapper);
+ }
+
 }
 if(root.document){const init=()=>{mount();root.setTimeout?.(mount,900)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',init,{once:true});else init()}
 return {category,mount};
