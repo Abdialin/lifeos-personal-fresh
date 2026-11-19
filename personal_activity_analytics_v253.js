@@ -160,6 +160,13 @@ function mount(){
    if(m[key]?.length)stat(details,label,m[key].map(([name,n])=>name+' ('+n+')').join(' · '));
   if(!report.sessions){stat(details,'Data confidence','No finished sessions','Start and finish activities to build this dashboard.')}
  }
+ root.addEventListener?.('lifeos-v257-open-category',e=>{
+  const target=String(e.detail?.id||'');
+  if(!catalog.some(x=>x.id===target))return;
+  select.value=target;render();
+  const navigate=doc.querySelector('#lifeosNavigation button[data-view="life"]');navigate?.click();
+  root.setTimeout?.(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),110);
+ });
  select.addEventListener('change',render);period.addEventListener('change',render);
  root.addEventListener?.('lifeos-v77-tracking-changed',render);doc.addEventListener('visibilitychange',()=>{if(!doc.hidden)render()});
  host.before(box);render();
