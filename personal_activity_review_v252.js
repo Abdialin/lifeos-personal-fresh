@@ -48,12 +48,12 @@ function mount(){
  const get=()=>root.lifeosReadOnlyWorkspace?.()?.sessions||[];
  function eligible(s){return s&&s.status==='finished'&&s.source!=='development-starter'&&s.source!=='assumed-demo'&&!s.seedBatch&&Number.isFinite(+s.startAt)}
  function current(){return get().find(s=>String(s.id)===pick.value)}
- function render(){
+ function render(selectedCategory){
   const s=current();body.replaceChildren();if(!s){status.textContent='No completed editable activity available.';return}
   const fields=s.activityDetailsV252||{},all=root.LifeOSActivityIntelligenceV251?.catalog||[],found=category(s.name),
-   cat=all.some(x=>x.id===fields.category)?fields.category:found,schema=schemas[cat]||[];
+   cat=all.some(x=>x.id===selectedCategory)?selectedCategory:all.some(x=>x.id===fields.category)?fields.category:found,schema=schemas[cat]||[];
   body.append(inputField(doc,'category','Activity category','select',['',...all.map(x=>x.id)],cat));
-  body.querySelector('[data-key="category"]')?.addEventListener('change',e=>{const selected=e.target.value;const field=s.activityDetailsV252||{};body.replaceChildren();body.append(inputField(doc,'category','Activity category','select',['',...all.map(x=>x.id)],selected));body.querySelector('[data-key="category"]').addEventListener('change',()=>render());for(const [key,label,type,options] of schemas[selected]||[])body.append(inputField(doc,key,label,type,options,field[key]));for(const [key,label] of [['preparationMinutes','Preparation minutes'],['travelMinutes','Travel minutes']])body.append(inputField(doc,key,label,'number',null,field[key]));body.append(inputField(doc,'notes','Optional details or notes','text',null,field.notes));});
+  body.querySelector('[data-key="category"]')?.addEventListener('change',e=>render(e.target.value));
   for(const [key,label,type,options] of schema)body.append(inputField(doc,key,label,type,options,fields[key]));
   for(const [key,label] of [['preparationMinutes','Preparation minutes'],['travelMinutes','Travel minutes']])body.append(inputField(doc,key,label,'number',null,fields[key]));
   body.append(inputField(doc,'notes','Optional details or notes','text',null,fields.notes));
