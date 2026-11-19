@@ -105,6 +105,16 @@ function mount(){
  }
  paint();
 }
+if(root.document&&!root.document.getElementById('lo259-script')){
+ const load=()=>{
+  if(root.document.getElementById('lo259-script'))return;
+  if(!root.document.getElementById('lo259-style')){
+   const css=root.document.createElement('link');css.id='lo259-style';css.rel='stylesheet';css.href='/personal_goal_setup_v259.css?v=259';root.document.head.appendChild(css);
+  }
+  const js=root.document.createElement('script');js.id='lo259-script';js.src='/personal_goal_setup_v259.js?v=259';js.defer=true;root.document.head.appendChild(js);
+ };
+ if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+}
 if(root.document){const start=()=>{mount();root.setTimeout?.(mount,900)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',start,{once:true});else start()}
 return {rangeSummary,goalsSummary,planSummary,recommendation,mount};
 });
