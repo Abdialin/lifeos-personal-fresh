@@ -64,7 +64,12 @@ function mountToday(){
  }
  root.addEventListener?.('lifeos-v77-tracking-changed',paint);
  root.document.addEventListener('visibilitychange',()=>{if(!root.document.hidden)paint()});
- root.setInterval?.(()=>{if(!root.document.hidden&&root.document.body?.dataset.lifeosView==='dashboard')paint()},1000);
+ root.setInterval?.(()=>{if(root.document.hidden||root.document.body?.dataset.lifeosView!=='dashboard')return;
+  const clock=host.querySelector('.lo256-live-clock');
+  if(!clock)return;
+  const open=sessions().filter(eligible),s=open.find(x=>x.status==='running')||open[0];
+  if(s)clock.textContent=fmt(activeTime(s,Date.now()));
+ },1000);
  paint();
 }
 function mountTrack(){
