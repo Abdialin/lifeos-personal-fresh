@@ -94,6 +94,8 @@ function mount(){
   }
  }
  period.onchange=paint;root.addEventListener?.('lifeos-v77-tracking-changed',paint);
+ doc.addEventListener('submit',e=>{if(e.target?.id==='goalForm')root.setTimeout?.(paint,80)});
+ doc.addEventListener('click',e=>{if(e.target?.closest?.('#goalList [data-delete]'))root.setTimeout?.(paint,80)});
  root.addEventListener?.('lifeos-v65-plan-committed',paint);
  doc.addEventListener('visibilitychange',()=>{if(!doc.hidden)paint()});
  host.prepend(panel);
