@@ -80,7 +80,7 @@ function moveSecondary(){
  if(prayer&&analytics&&!$('lo254-prayer-history')){
   const block=make('details','lo254-disclosure');block.id='lo254-prayer-history';block.append(make('summary','','Prayer tracking summary · additional details'));analytics.after(block);block.append(prayer);
  }
- collapseExisting('lo247-quality','Tracking quality · overlaps and recovery');
+ const quality=$('lo247-quality');if(quality&&quality.tagName==='DETAILS')quality.open=false;
  const report=$('lo94-report')||$('lo94-insights');
  if(report)collapseExisting(report.id,'Extended insights and technical details');
 }
