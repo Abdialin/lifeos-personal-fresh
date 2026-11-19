@@ -75,7 +75,7 @@
  }
  // Load V251 without modifying the large legacy HTML or existing timers.
  if(root.document && !root.document.getElementById('lo251-script')){
-  const load=()=>{if(root.document.getElementById('lo251-script'))return;const el=root.document.createElement('script');el.id='lo251-script';el.src='/personal_activity_intelligence_v251.js?v=251';el.defer=true;root.document.head.appendChild(el);};
+  const load=()=>{if(root.document.getElementById('lo251-script'))return;const el=root.document.createElement('script');el.id='lo251-script';el.src='/personal_activity_intelligence_v251.js?v=260';el.defer=true;root.document.head.appendChild(el);};
   if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
  }
  if(root.document){
