@@ -511,6 +511,11 @@ window.addEventListener('lifeos-v252-save-review',function(evt){
  const saved=trackingCommit(()=>{
   const session=data.sessions.find(s=>String(s.id)===id);
   session.activityDetailsV252={...(session.activityDetailsV252||{}),...clean,updatedAt:now()};
+  if(clean.distractionCategory!==undefined&&window.LifeOSAccountabilityV74?.CATEGORIES?.includes(clean.distractionCategory)&&
+   (session.activityType==='distraction'||/^Distraction[: —-]?/i.test(session.name||''))){
+   session.activityType='distraction';session.distractionCategory=clean.distractionCategory;
+   if(clean.distractionTrigger!==undefined)session.distractionTrigger=String(clean.distractionTrigger).slice(0,100);
+  }
   if(correction){
    const before={startAt:session.startAt,endAt:session.endAt,segments:session.segments.map(x=>({...x}))};
    session.startAt=correction.startAt;session.endAt=correction.endAt;
