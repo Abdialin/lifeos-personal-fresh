@@ -77,6 +77,24 @@ function calculate(workspace,id,days=14,at=Date.now()){
  averageSessionMs:sessions.length?sumMs/sessions.length:0,preparationMinutes:prep,travelMinutes:travel,detailsConfirmed:documented,detailsCoverage:sessions.length?Math.round(100*documented/sessions.length):null,trends,metrics};
 }
 const fmt=ms=>{const min=Math.round(ms/MIN);return Math.floor(min/60)+'h '+String(min%60).padStart(2,'0')+'m'};
+function categoryGoals(workspace,id,engine=root.LifeOSGoalEvidenceV175,catalog=root.LifeOSActivityIntelligenceV251){
+ const rows=engine?.rows?.(workspace);
+ if(!Array.isArray(rows))return {available:false,items:[]};
+ const list=[];
+ for(const row of rows){
+  const g=row?.g||{},rule=String(g.category||'').toLowerCase(),match=String(g.match||'').trim();
+  let relevant=false;
+  if(rule==='fitness'&&id==='fitness')relevant=true;
+  else if(rule==='meals'&&id==='nutrition')relevant=true;
+  else if(match&&catalog?.match?.(match)?.id===id)relevant=true;
+  else if(match&&catalog?.normalize?.(match)===id)relevant=true;
+  if(!relevant)continue;
+  const actual=Number(row?.cur?.value),target=Number(row?.t);
+  if(!Number.isFinite(actual)||!Number.isFinite(target)||target<=0)continue;
+  list.push({title:String(g.name||'Goal').slice(0,80),actual,target,ratio:Math.max(0,actual/target),unit:String(engine?.unit?.(g)||'').slice(0,30),records:Number(row?.cur?.records)||0});
+ }
+ return {available:true,items:list};
+}
 function mount(){
  const doc=root.document;if(!doc||doc.getElementById('lo253-activity-analytics'))return;
  const routines=doc.getElementById('personalActivityPanel'),fitness=doc.getElementById('lifeosFitnessDashboard');
@@ -92,6 +110,7 @@ function mount(){
  const period=doc.createElement('select');period.className='field';period.style.cssText='width:115px';for(const n of [7,14,30]){const o=doc.createElement('option');o.value=n;o.textContent=n+' days';period.append(o)}period.value='14';controls.append(select,period);box.append(controls);
  const status=doc.createElement('p');status.className='sub';status.setAttribute('role','status');box.append(status);
  const overview=doc.createElement('div');overview.id='lo253-all-overview';overview.style.cssText='display:grid;gap:7px;margin:12px 0 18px';box.append(overview);
+ const goalCard=doc.createElement('section');goalCard.id='lo258-category-goals';goalCard.className='lo258-goal-card';box.append(goalCard);
  const kpis=doc.createElement('div');kpis.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px';box.append(kpis);
  const chart=doc.createElement('div');chart.style.cssText='display:flex;align-items:end;gap:3px;height:135px;padding:12px 4px 2px;border-bottom:1px solid #6886a3;margin:14px 0';chart.setAttribute('role','img');box.append(chart);
  const details=doc.createElement('div');details.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:9px';box.append(details);
@@ -115,6 +134,27 @@ function mount(){
    const bar=doc.createElement('span');bar.style.cssText='display:block;height:100%;width:'+Math.round(100*item.stats.trackedMs/totals[0].stats.trackedMs)+'%;background:#6accc6;border-radius:7px';track.append(bar);row.append(track);
    const value=doc.createElement('span');value.textContent=fmt(item.stats.trackedMs);value.style.fontSize='12px';row.append(value);
    row.onclick=()=>{select.value=item.id;render()};overview.append(row);
+  }
+  const categoryGoal=categoryGoals(data,select.value);
+  goalCard.replaceChildren();
+  const title=doc.createElement('div');title.className='lo258-goal-head';
+  const name=doc.createElement('strong');name.textContent='Your '+(catalog.find(x=>x.id===select.value)?.title||'activity')+' goals';title.append(name);
+  const openGoal=doc.createElement('button');openGoal.className='lo258-goal-link';openGoal.type='button';openGoal.textContent='Open Goals';
+  openGoal.onclick=()=>doc.querySelector('#lifeosNavigation button[data-view="goals"]')?.click();
+  title.append(openGoal);goalCard.append(title);
+  if(!categoryGoal.available){
+   const p=doc.createElement('p');p.className='sub';p.textContent='Detailed goal comparison is unavailable until existing goal evidence is ready.';goalCard.append(p);
+  }else if(!categoryGoal.items.length){
+   const p=doc.createElement('p');p.className='sub';p.textContent='No measurable goals linked to this category yet. Set a target in Goals to compare progress here.';goalCard.append(p);
+  }else for(const item of categoryGoal.items.slice(0,4)){
+   const row=doc.createElement('div');row.className='lo258-goal-row';
+   const heading=doc.createElement('div');heading.className='lo258-goal-line';
+   const label=doc.createElement('span');label.textContent=item.title;
+   const value=doc.createElement('strong');value.textContent=(Math.round(item.actual*10)/10)+' / '+(Math.round(item.target*10)/10)+' '+item.unit;
+   heading.append(label,value);row.append(heading);
+   const track=doc.createElement('div');track.className='lo258-goal-rail';
+   const bar=doc.createElement('div');bar.className='lo258-goal-fill';bar.style.width=Math.min(100,Math.round(item.ratio*100))+'%';track.append(bar);row.append(track);
+   const note=doc.createElement('small');note.textContent=item.records+' qualifying records';row.append(note);goalCard.append(row);
   }
   status.textContent=report.sessions+' finished sessions · '+report.detailsConfirmed+' with saved activity details ('+(report.detailsCoverage??'—')+'% completeness).';
   stat(kpis,'Tracked time',fmt(report.trackedMs));
@@ -182,5 +222,5 @@ if(root.document&&!root.document.getElementById('lo254-script')){
  if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
 }
 if(root.document){const init=()=>{mount();root.setTimeout?.(mount,1000)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',init,{once:true});else init();}
-return {category,slices,unionMs,percentage,calculate,mount};
+return {category,slices,unionMs,percentage,calculate,categoryGoals,mount};
 });
