@@ -60,7 +60,7 @@ function mountToday(){
    if(!root.confirm?.('Finish '+String(s.name||'this activity')+' and save the recorded time?'))return;
    const result=perform(s,'finish');
    if(result?.ok){paint();return}
-   root.alert?.(result?.message||'The activity was not finished. Your recorded timer has not been changed.');
+   root.alert?.(result?.message||'Unable to verify the saved activity. Check Track before trying again.');
    paint();
   });
   const kind=String(s.activityDetailsV252?.category||root.LifeOSActivityIntelligenceV251?.match?.(s.name)?.id||'');
