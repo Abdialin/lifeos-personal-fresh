@@ -41,3 +41,9 @@ html.lo254-ui #lo253-activity-analytics #lo253-all-overview button{min-height:44
  html.lo254-ui body #lifeosNavigation{max-width:100vw;box-sizing:border-box;overflow:hidden}
  html.lo254-ui body #lifeosNavigation button{min-width:0}
 }
+
+/* Preserve alarm configuration usability after moving it into Settings. */
+html.lo254-ui #lo254-alarm-settings .lo221-settings{padding:12px;border:0;background:transparent}
+html.lo254-ui #lo254-alarm-settings .lo221-settings label{display:block;margin:10px 0;color:#d8e9f3}
+html.lo254-ui #lo254-alarm-settings .lo221-settings input[type=range]{width:100%}
+html.lo254-ui #lo254-alarm-settings button{min-height:44px}
