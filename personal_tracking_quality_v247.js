@@ -21,8 +21,8 @@ function segmentsFor(s,from,to,at){
  return out;
 }
 function inspect(sessions,from,to,at=Date.now()){
- if(!Number.isFinite(from)||!Number.isFinite(to)||to<=from||to-from>DAY||!Number.isFinite(at))
-  throw Error('Inspect a day window of up to 24 hours.');
+ if(!Number.isFinite(from)||!Number.isFinite(to)||to<=from||to-from>25*3600000||!Number.isFinite(at))
+  throw Error('Inspect a local calendar day (up to 25 hours during daylight-saving changes).');
  const intervals=[];let recordedMs=0,periodCount=0;
  for(const s of Array.isArray(sessions)?sessions:[]){
   for(const pair of segmentsFor(s,from,to,at)){
