@@ -2337,7 +2337,8 @@ function v244Panel(){
  '<button class="btn outline" type="button" id="lo244-review" style="min-height:48px">1 · Compare all local records and pending changes (read-only)</button>'+
  '<button class="btn primary" type="button" id="lo244-update" disabled style="min-height:48px;margin:12px 0">2 · Back up both copies and safely update Android</button>'+
  '<pre id="lo244-status" role="status" aria-live="polite" style="white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;background:#0b2033;border-radius:10px;padding:12px;font:13px/1.55 system-ui;margin:10px 0">No records changed. Begin with read-only comparison.</pre>';
- mount.appendChild(box);
+ const crossDevice=$('lo242-activity-sync');
+ if(crossDevice)crossDevice.before(box);else mount.appendChild(box);
  $('lo244-review').addEventListener('click',v244Inspect);
  $('lo244-update').addEventListener('click',v244Update);
 }
