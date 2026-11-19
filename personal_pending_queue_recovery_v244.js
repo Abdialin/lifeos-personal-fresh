@@ -48,8 +48,23 @@ function inspect({local,remote,queue,meta,remoteRevision,blocked=false}={}){
   return reject('Missing trusted local sync metadata.');
  let diff;
  try{diff=summaryRows(local,remote)}catch(e){return reject(e.message)}
- const fastForwardSafe=diff.localOnlyTotal===0&&diff.conflictTotal===0&&diff.otherDifferences.length===0;
- return {...diff,ok:true,fastForwardSafe,remoteRevision,queued:queue.length,
+ // Every queued snapshot is part of the user's unsent history, not merely
+ // the latest visible workspace. Only archive it if every queued record is
+ // already present identically in the verified server snapshot.
+ const queueDifferences=[];
+ for(let i=0;i<queue.length;i++){
+  let prior;
+  try{
+   if(queue[i].snapshot.version!==1)throw Error('Invalid queued workspace');
+   prior=summaryRows(queue[i].snapshot,remote);
+  }catch(e){return reject('Queued operation '+(i+1)+': '+e.message)}
+  if(prior.localOnlyTotal||prior.conflictTotal||prior.otherDifferences.length)
+   queueDifferences.push({index:i+1,localOnly:prior.localOnlyTotal,
+    changed:prior.conflictTotal,other:prior.otherDifferences});
+ }
+ const fastForwardSafe=diff.localOnlyTotal===0&&diff.conflictTotal===0&&
+  diff.otherDifferences.length===0&&queueDifferences.length===0;
+ return {...diff,ok:true,fastForwardSafe,remoteRevision,queued:queue.length,queueDifferences,
   acknowledgedRevision:meta.revision,
   reason:fastForwardSafe?
    'All local records are already present identically on server. A backup-first local fast-forward can safely adopt server history while archiving the pending queue.':
