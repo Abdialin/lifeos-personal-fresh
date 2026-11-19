@@ -27,3 +27,17 @@ html.lo254-ui #lo256-live-today button:focus-visible,html.lo254-ui #lo256-track-
  html.lo254-ui #lo256-track-tabs{position:relative;scroll-margin-top:12px}
  html.lo254-ui .lo256-track-tab{font-size:12px;padding:9px 7px}
 }
+
+/* V258 — goal progress integrated in each My Life activity. */
+html.lo254-ui .lo258-goal-card{background:#17374a;border:1px solid #376d72;border-radius:13px;padding:12px;margin:11px 0}
+html.lo254-ui .lo258-goal-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+html.lo254-ui .lo258-goal-head strong{font-size:14px}
+html.lo254-ui .lo258-goal-link{background:none;border:0;color:#91eddb;text-decoration:underline;text-underline-offset:3px;min-height:42px;padding:8px 0;font-size:12px}
+html.lo254-ui .lo258-goal-card .sub{font-size:12px;line-height:1.45;margin:9px 0 0;color:#b6d0dc}
+html.lo254-ui .lo258-goal-row{padding:10px 0;border-top:1px solid #32556b}
+html.lo254-ui .lo258-goal-line{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:12px}
+html.lo254-ui .lo258-goal-line span{overflow-wrap:anywhere}
+html.lo254-ui .lo258-goal-line strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+html.lo254-ui .lo258-goal-rail{margin:7px 0;background:#2b5167;border-radius:5px;height:7px;overflow:hidden}
+html.lo254-ui .lo258-goal-fill{height:100%;background:#7de2c9;border-radius:5px}
+html.lo254-ui .lo258-goal-row small{font-size:11px;color:#9bb6c5}
