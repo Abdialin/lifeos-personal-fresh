@@ -8,6 +8,17 @@ const schemas={
  fitness:[['workoutType','Workout type','text'],['workoutSets','Sets or repetitions','text']],
  nutrition:[['mealType','Meal type','select',['','breakfast','lunch','dinner','snack']],['mealNotes','Food notes','text']],
  family:[['familyWith','Spent time with','text']],friends:[['socialContext','Social activity','text']],
+ sleep:[['sleepQuality','Sleep quality','select',['','poor','fair','good','excellent']],['sleepInterruptions','Awakenings','number']],
+ quran:[['quranSurah','Surah or passage','text'],['quranPages','Pages memorized or revised','number'],['quranRevision','Revision completed','boolean']],
+ reading:[['bookTitle','Book title','text'],['bookPages','Pages read','number']],
+ work:[['workProject','Project or shift','text'],['workQuality','Work quality','select',['','low','medium','high']],['workBreakMinutes','Break minutes','number']],
+ chores:[['choresTask','Chore completed','text']],
+ errands:[['errandsTask','Errand completed','text'],['waitingMinutes','Waiting minutes','number']],
+ travel:[['travelMode','Transport mode','select',['','walk','bike','car','bus','train','other']],['travelPurpose','Purpose','text']],
+ health:[['healthType','Self-care activity','text']],
+ hobbies:[['hobbyType','Creative activity','text'],['hobbyProgress','Progress','text']],
+ outdoors:[['outdoorPlace','Place','text'],['distanceKm','Distance (km)','number']],
+ volunteer:[['volunteerCause','Organisation or cause','text']],
  distraction:[['distractionCategory','Distraction category','select',['','Social media','Entertainment','Communication','Procrastination','Interruption','Environment','Other']],['distractionTrigger','Trigger or reason','text']]
 };
 function category(name){return root.LifeOSActivityIntelligenceV251?.match(name)?.id||'other'}
