@@ -88,6 +88,7 @@ function categoryGoals(workspace,id,engine=root.LifeOSGoalEvidenceV175,catalog=r
   else if(rule==='meals'&&id==='nutrition')relevant=true;
   else if(match&&catalog?.match?.(match)?.id===id)relevant=true;
   else if(match&&catalog?.normalize?.(match)===id)relevant=true;
+  else if(id==='study'&&/^stud(y|ying|ied)?$/i.test(match))relevant=true;
   if(!relevant)continue;
   const actual=Number(row?.cur?.value),target=Number(row?.t);
   if(!Number.isFinite(actual)||!Number.isFinite(target)||target<=0)continue;
