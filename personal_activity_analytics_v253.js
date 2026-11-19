@@ -208,7 +208,10 @@ function mount(){
   root.setTimeout?.(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),110);
  });
  select.addEventListener('change',render);period.addEventListener('change',render);
- root.addEventListener?.('lifeos-v77-tracking-changed',render);doc.addEventListener('visibilitychange',()=>{if(!doc.hidden)render()});
+ root.addEventListener?.('lifeos-v77-tracking-changed',render);
+ doc.addEventListener('submit',e=>{if(e.target?.id==='goalForm')root.setTimeout?.(render,80)});
+ doc.addEventListener('click',e=>{if(e.target?.closest?.('#goalList [data-delete]'))root.setTimeout?.(render,80)});
+ doc.addEventListener('visibilitychange',()=>{if(!doc.hidden)render()});
  host.before(box);render();
 }
 if(root.document&&!root.document.getElementById('lo254-script')){
