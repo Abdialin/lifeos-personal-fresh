@@ -59,7 +59,8 @@ function mount(){
  const note=doc.createElement('p');note.className='lo257-sub';note.textContent='Recorded activities, verified plans and your existing goals—kept separate.';panel.append(note);
  const stats=doc.createElement('div');stats.className='lo257-stats';panel.append(stats);
  const mix=doc.createElement('section');mix.className='lo257-section';mix.append(document.createElement('h3'));mix.querySelector('h3').textContent='Where your tracked time went';panel.append(mix);
- const goal=doc.createElement('section');goal.className='lo257-section';goal.append(doc.createElement('h3'));goal.querySelector('h3').textContent='Goals · progress against targets';panel.append(goal);
+ const goal=doc.createElement('section');goal.className='lo257-section';goal.append(doc.createElement('h3'));goal.querySelector('h3').textContent='Goals · progress against targets';
+ const goalNote=doc.createElement('p');goalNote.className='lo257-sub';goalNote.textContent='Each goal uses its existing configured measurement period, independently of the activity filter above.';goal.append(goalNote);panel.append(goal);
  const advice=doc.createElement('section');advice.className='lo257-section';advice.append(doc.createElement('h3'));advice.querySelector('h3').textContent='Worth reviewing';panel.append(advice);
  const foot=doc.createElement('p');foot.className='lo257-foot';foot.textContent='Category time is summed across activities and may overlap. Unknown time is never classified as distraction. Goal comparisons use the existing goal-evidence rules.';panel.append(foot);
  const create=(tag,cls,content)=>{const el=doc.createElement(tag);el.className=cls;if(content!==undefined)el.textContent=content;return el};
@@ -68,7 +69,7 @@ function mount(){
   const w=root.lifeosReadOnlyWorkspace?.();if(!w)return;
   const days=Number(period.value),data=rangeSummary(w,days),goals=goalsSummary(w),plans=planSummary(w,days);
   stats.replaceChildren();statistic('Tracked category time',fmt(data.totalMs));statistic('Active categories',String(data.categories));statistic('Verified past plans',plans.confirmed+' / '+plans.past);
-  [...mix.children].slice(1).forEach(e=>e.remove());[...goal.children].slice(1).forEach(e=>e.remove());[...advice.children].slice(1).forEach(e=>e.remove());
+  [...mix.children].slice(1).forEach(e=>e.remove());[...goal.children].slice(2).forEach(e=>e.remove());[...advice.children].slice(1).forEach(e=>e.remove());
   if(!data.top.length)mix.append(create('p','lo257-empty','No finished tracked sessions in this period.'));
   for(const row of data.top){
    const b=create('button','lo257-mix-row');b.type='button';
@@ -95,7 +96,14 @@ function mount(){
  period.onchange=paint;root.addEventListener?.('lifeos-v77-tracking-changed',paint);
  root.addEventListener?.('lifeos-v65-plan-committed',paint);
  doc.addEventListener('visibilitychange',()=>{if(!doc.hidden)paint()});
- host.prepend(panel);paint();
+ host.prepend(panel);
+ if(!doc.getElementById('lo257-other-reports')){
+  const extras=doc.createElement('details');extras.id='lo257-other-reports';extras.className='lo255-legacy-report';
+  const summary=doc.createElement('summary');summary.textContent='Open detailed analytics and supporting reports';extras.append(summary);
+  for(const child of [...host.children])if(child!==panel&&child!==extras)extras.append(child);
+  host.append(extras);
+ }
+ paint();
 }
 if(root.document){const start=()=>{mount();root.setTimeout?.(mount,900)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',start,{once:true});else start()}
 return {rangeSummary,goalsSummary,planSummary,recommendation,mount};
