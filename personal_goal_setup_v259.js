@@ -4,9 +4,13 @@
 (function(root,factory){const api=factory(root);if(typeof module==='object'&&module.exports)module.exports=api;else root.LifeOSGoalSetupV259=api;})(typeof globalThis!=='undefined'?globalThis:this,function(root){
 'use strict';
 const presets=[
-{id:'prayer',label:'Prayer',name:'Prayer sessions',category:'sessions',match:'prayer',unit:'sessions',target:35,description:'Counts matching finished timer sessions. Naming prayers individually (Fajr, Dhuhr, etc.) requires a dedicated goal for each name. Congregation and on-time goals are not yet supported by this goal form.'},
+{id:'prayer',label:'Fajr',name:'Fajr prayer',category:'sessions',match:'Fajr',unit:'sessions',target:7,description:'Counts completed timers whose names contain Fajr. Create separate goals for Dhuhr, Asr, Maghrib and Isha. On-time and congregation goals need a future metric-specific engine.'},
+{id:'dhuhr',label:'Dhuhr',name:'Dhuhr prayer',category:'sessions',match:'Dhuhr',unit:'sessions',target:7,description:'Counts completed Dhuhr-named timers. Sessions recorded under Zuhr need a separate name match.'},
+{id:'asr',label:'Asr',name:'Asr prayer',category:'sessions',match:'Asr',unit:'sessions',target:7,description:'Counts completed Asr-named timers.'},
+{id:'maghrib',label:'Maghrib',name:'Maghrib prayer',category:'sessions',match:'Maghrib',unit:'sessions',target:7,description:'Counts completed Maghrib-named timers.'},
+{id:'isha',label:'Isha',name:'Isha prayer',category:'sessions',match:'Isha',unit:'sessions',target:7,description:'Counts completed Isha-named timers.'},
 {id:'quran',label:'Quran',name:'Quran sessions',category:'sessions',match:'Quran',unit:'sessions',target:7,description:'Counts completed Quran tracking sessions. Pages memorized are recorded in activity review; page-based goals need an explicitly logged quantity or a future linked measure.'},
-{id:'study',label:'Studying',name:'Study hours',category:'sessions',match:'Studying',unit:'hours',target:8,description:'Uses matched finished study timer duration. Activities named Study rather than Studying may need an additional matching goal under current rules.'},
+{id:'study',label:'Studying',name:'Study hours',category:'sessions',match:'Stud',unit:'hours',target:8,description:'Uses matched finished study timer duration. Activities named Study rather than Studying may need an additional matching goal under current rules.'},
 {id:'fitness',label:'Fitness',name:'Gym workouts',category:'fitness',match:'',unit:'sessions',target:3,description:'Counts qualifying Fitness Studio workout entries using existing goal evidence.'},
 {id:'work',label:'Work',name:'Work hours',category:'sessions',match:'Work',unit:'hours',target:35,description:'Counts finished tracked sessions whose names match Work.'},
 {id:'reading',label:'Reading',name:'Reading hours',category:'sessions',match:'Reading',unit:'hours',target:5,description:'Counts matched reading timer duration. Reading pages require explicit quantity records.'},
