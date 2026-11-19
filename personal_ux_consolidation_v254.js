@@ -109,6 +109,14 @@ function mount(){
  doc.documentElement.classList.add('lo254-ui');
  activityLibrary();reviewEditor();focus();moveSecondary();compactAnalytics();
 }
+if(root.document&&!root.document.getElementById('lo255-script')){
+ const load=()=>{
+  if(root.document.getElementById('lo255-script'))return;
+  if(!root.document.getElementById('lo255-style')){const sheet=root.document.createElement('link');sheet.id='lo255-style';sheet.rel='stylesheet';sheet.href='/personal_mobile_review_v255.css?v=255';root.document.head.appendChild(sheet)}
+  const script=root.document.createElement('script');script.id='lo255-script';script.src='/personal_mobile_review_v255.js?v=255';script.defer=true;root.document.head.appendChild(script);
+ };
+ if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+}
 if(root.document){
  const init=()=>{mount();[450,1200,2500].forEach(t=>root.setTimeout?.(mountModules,t))};
  const mountModules=()=>{activityLibrary();reviewEditor();focus();moveSecondary();compactAnalytics()};
