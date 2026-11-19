@@ -483,6 +483,50 @@ document.addEventListener('lifeos-v207-backfill-gap',function(evt){
  d.result=ok?{ok:true,id:record.id,message:'Reviewed activity saved; the gap is now recorded.'}:{ok:false,message:'Save failed; no activity was added.'};
  if(ok){render();window.dispatchEvent(new Event('lifeos-v77-tracking-changed'));window.dispatchEvent(new Event('lifeos-v207-gap-committed'))}
 });
+ /* V252: reviewed session details and auditable single-segment time correction. */
+window.addEventListener('lifeos-v252-save-review',function(evt){
+ const d=evt.detail||{},id=String(d.id||'');
+ d.result={ok:false,message:'Review not saved.'};
+ const original=(data.sessions||[]).find(s=>String(s.id)===id);
+ if(!original||original.source==='development-starter'||original.source==='assumed-demo'||original.seedBatch)return void(d.result.message='Not an editable real activity.');
+ const fields=d.fields;
+ if(!fields||typeof fields!=='object'||Array.isArray(fields))return void(d.result.message='Invalid activity details.');
+ const permitted=['category','prayerName','onTime','congregation','mosque','row','sunnahUnits','preparationMinutes','travelMinutes','studySubject','studyPages','studyFocus','workoutType','workoutSets','mealType','mealNotes','familyWith','socialContext','distractionCategory','distractionTrigger','notes'];
+ const clean={};
+ for(const [key,value] of Object.entries(fields)){
+  if(!permitted.includes(key))return void(d.result.message='Unsupported detail: '+key);
+  if(typeof value==='string'){if(value.length>240)return void(d.result.message='Detail too long.');clean[key]=value.trim();}
+  else if(typeof value==='boolean'||value===null)clean[key]=value;
+  else if(typeof value==='number'&&Number.isFinite(value)&&value>=0&&value<=10000)clean[key]=value;
+  else return void(d.result.message='Invalid detail value for '+key);
+ }
+ let correction=null;
+ if(d.correction){
+  if(original.status!=='finished'||!Array.isArray(original.segments)||original.segments.length!==1||original.segments[0]?.end==null)return void(d.result.message='Only a finished single-interval activity can be corrected here. Use the existing detailed timer review for more complex activity histories.');
+  const begin=Number(d.correction.startAt),end=Number(d.correction.endAt),at=Date.now();
+  if(!Number.isSafeInteger(begin)||!Number.isSafeInteger(end)||end<=begin||end>at+60000||end-begin>36*3600000||begin<946684800000)return void(d.result.message='Choose a valid past start and finish (maximum 36 hours).');
+  correction={startAt:begin,endAt:end,reason:String(d.correction.reason||'User correction').slice(0,160)};
+ }
+ const previous={fields:original.activityDetailsV252||{},correction:correction?{startAt:original.startAt,endAt:original.endAt,segments:original.segments.map(x=>({...x}))}:null};
+ const saved=trackingCommit(()=>{
+  const session=data.sessions.find(s=>String(s.id)===id);
+  session.activityDetailsV252={...(session.activityDetailsV252||{}),...clean,updatedAt:now()};
+  if(correction){
+   const before={startAt:session.startAt,endAt:session.endAt,segments:session.segments.map(x=>({...x}))};
+   session.startAt=correction.startAt;session.endAt=correction.endAt;
+   session.segments=[{...session.segments[0],start:correction.startAt,end:correction.endAt}];
+   session.precision='user-corrected';
+   event(session,'TIME_CORRECTED',now(),{before,after:{startAt:correction.startAt,endAt:correction.endAt},reason:correction.reason});
+  }
+  event(session,'DETAILS_REVIEWED',now(),{keys:Object.keys(clean)});
+ });
+ if(!saved)return void(d.result.message='Could not save; existing records retained.');
+ const check=window.LifeOSPersistenceValidatorV70?.verify(localStorage.getItem(ATOMIC_KEY),data,window.LifeOSCompactRecovery?.unpack);
+ if(!check?.ok)return void(d.result.message='Recovery verification failed. Export a backup before refreshing.');
+ d.result={ok:true,message:'Activity details'+(correction?' and corrected time':'')+' saved.'};
+ window.dispatchEvent(new CustomEvent('lifeos-v77-tracking-changed',{detail:{id}}));
+ try{render()}catch(err){console.warn('V252 saved, view update unavailable',err)}
+});
  /* V74: user-approved distraction metadata; saved through existing canonical checkpoint. */
 window.addEventListener('lifeos-v74-classify-distraction',function(event){
  const detail=event.detail||{},id=String(detail.id||'');
