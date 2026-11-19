@@ -73,6 +73,8 @@ jobs:
         run: node test_beta_primary_sync_v246.cjs
       - name: Validate read-only tracked and unique time quality audit
         run: node test_tracking_quality_v247.cjs
+      - name: Validate paused/resumed open timer timeline is read-only
+        run: node test_timer_history_v248.cjs
       - name: Validate substantial pause/resume intervals without double counting
         run: node test_activity_pauses_v225.cjs
       - name: Validate focus control states and alert engine
