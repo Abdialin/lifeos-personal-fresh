@@ -26,12 +26,19 @@ const norm=v=>String(v??'').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N
 function match(value){const n=norm(value);if(!n)return null;let best=null,score=0;for(const item of catalog)for(const alias of item.aliases){const a=norm(alias);let s=0;if(n===a)s=100+a.length;else if(n.startsWith(a+' ')||n.endsWith(' '+a)||n.includes(' '+a+' '))s=60+a.length;else if(a.length>4&&n.split(' ').includes(a))s=35+a.length;if(s>score){score=s;best=item;}}return score>=35?{id:best.id,title:best.title,fields:best.fields,matched:true}:null;}
 function prayerName(value){const n=norm(value);for(const p of ['fajr','dhuhr','zuhr','asr','maghrib','isha'])if(n.split(' ').includes(p))return p==='zuhr'?'dhuhr':p;return null;}
 function prayerOverview(workspace,days=7,now=Date.now()){
- const sessions=(workspace?.sessions||[]).filter(s=>s&&s.status==='finished'&&Number.isFinite(+s.startAt)&&+s.startAt>=now-days*86400000&&+s.startAt<=now&&match(s.name)?.id==='prayer');
+ const sessions=(workspace?.sessions||[]).filter(s=>s&&s.status==='finished'&&Number.isFinite(+s.startAt)&&+s.startAt>=now-days*86400000&&+s.startAt<=now&&(match(s.name)?.id==='prayer'||s.activityDetailsV252?.category==='prayer'));
  const observedDays=new Set(sessions.map(s=>new Date(s.startAt).toLocaleDateString('en-CA')));
- const named=new Set(sessions.map(s=>new Date(s.startAt).toLocaleDateString('en-CA')+':'+prayerName(s.name)).filter(x=>!x.endsWith(':null')));
- const duration=sessions.reduce((sum,s)=>sum+(Number.isFinite(+s.activeMs)?+s.activeMs:Math.max(0,(+s.endAt||+s.startAt)-+s.startAt)),0);
- // Session titles alone cannot verify worship compliance, congregation, row, or sunnah.
- return {sessions:sessions.length,observedDays:observedDays.size,identifiablePrayerSlots:named.size,recordedHours:Math.round(duration/360000)/10,verifiedCongregation:null,verifiedFirstRow:null,verifiedSunnahs:null};
+ const named=new Set(sessions.map(s=>new Date(s.startAt).toLocaleDateString('en-CA')+':'+(prayerName(s.name)||norm(s.activityDetailsV252?.prayerName))).filter(x=>!x.endsWith(':')));
+ let duration=0;for(const s of sessions){if(Array.isArray(s.segments))for(const x of s.segments){if(Number.isFinite(+x.start)&&Number.isFinite(+x.end)&&+x.end>=+x.start)duration+=x.end-x.start;}else if(Number.isFinite(+s.endAt)&&s.endAt>=s.startAt)duration+=s.endAt-s.startAt;}
+ const metric=key=>{const known=sessions.map(s=>s.activityDetailsV252?.[key]).filter(v=>typeof v==='boolean');return {known:known.length,yes:known.filter(Boolean).length,percentage:known.length?Math.round(100*known.filter(Boolean).length/known.length):null};};
+ const rowKnown=sessions.map(s=>s.activityDetailsV252?.row).filter(x=>x==='first'||x==='other');
+ const sunnahKnown=sessions.map(s=>s.activityDetailsV252?.sunnahUnits).filter(x=>Number.isFinite(x)&&x>=0);
+ const prep=sessions.map(s=>s.activityDetailsV252?.preparationMinutes).filter(x=>Number.isFinite(x));
+ const travel=sessions.map(s=>s.activityDetailsV252?.travelMinutes).filter(x=>Number.isFinite(x));
+ return {sessions:sessions.length,observedDays:observedDays.size,identifiablePrayerSlots:named.size,
+ recordedHours:Math.round(duration/360000)/10,onTime:metric('onTime'),congregation:metric('congregation'),mosque:metric('mosque'),
+ firstRow:{known:rowKnown.length,yes:rowKnown.filter(x=>x==='first').length,percentage:rowKnown.length?Math.round(100*rowKnown.filter(x=>x==='first').length/rowKnown.length):null},
+ sunnahUnits:sunnahKnown.reduce((a,b)=>a+b,0),sunnahRecorded:sunnahKnown.length,preparationMinutes:prep.reduce((a,b)=>a+b,0),travelMinutes:travel.reduce((a,b)=>a+b,0)};
 }
 function mount(){
  const d=root.document;if(!d||d.getElementById('lo251-activity'))return;
@@ -49,7 +56,7 @@ function mount(){
  const life=d.getElementById('lifeosMyLifeDashboard')||d.getElementById('lifeosPrayerDashboard');
  const host=life||d.getElementById('trackActivePanel');if(host&&!d.getElementById('lo251-prayer-insights')){
   const box=d.createElement('section');box.id='lo251-prayer-insights';box.className='panel';const title=d.createElement('h2');title.textContent='Prayer insights · verified tracking';box.append(title);const stats=d.createElement('p');stats.className='sub';box.append(stats);
-  const refresh=()=>{const w=typeof root.lifeosReadOnlyWorkspace==='function'?root.lifeosReadOnlyWorkspace():{};const r=prayerOverview(w);stats.textContent=r.sessions+' finished prayer sessions in the last 7 days · '+r.identifiablePrayerSlots+' identifiable daily prayer slots · '+r.recordedHours+' recorded hours. Congregation, mosque, first row and sunnahs require separately confirmed details; no percentages are assumed.';};
+  const refresh=()=>{const w=typeof root.lifeosReadOnlyWorkspace==='function'?root.lifeosReadOnlyWorkspace():{};const r=prayerOverview(w);stats.textContent=r.sessions+' finished sessions / 7 days · '+r.identifiablePrayerSlots+' identifiable prayer slots · '+r.recordedHours+' recorded hours · On time '+(r.onTime.percentage===null?'unknown':r.onTime.percentage+'% ('+r.onTime.known+' recorded)')+' · Congregation '+(r.congregation.percentage===null?'unknown':r.congregation.percentage+'% ('+r.congregation.known+' recorded)')+' · Mosque '+(r.mosque.percentage===null?'unknown':r.mosque.percentage+'% ('+r.mosque.known+' recorded)')+' · First row '+(r.firstRow.percentage===null?'unknown':r.firstRow.percentage+'% ('+r.firstRow.known+' recorded)')+' · Sunnah units '+r.sunnahUnits+' ('+r.sunnahRecorded+' recorded sessions) · Preparation '+r.preparationMinutes+' min · Travel '+r.travelMinutes+' min. Unknown entries are excluded from percentages.';};
   const b=d.createElement('button');b.type='button';b.className='btn outline';b.textContent='Refresh prayer insights';b.onclick=refresh;box.append(b);host.after(box);refresh();root.addEventListener?.('lifeos-v77-tracking-changed',refresh);
  }
 }
