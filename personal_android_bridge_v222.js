@@ -51,7 +51,12 @@ function publish(force=false){
  const openCount=sessions.filter(x=>x&&['running','paused'].includes(x.status)&&x.id!=null).length;
  const message=s?{kind:'timer-status',id:String(s.id).slice(0,100),name:String(s.name||'Activity').slice(0,80),
    status:s.status,activeCount:Math.min(100,openCount),
-   elapsedMs:Math.min(604800000,Math.floor(elapsed(s,Date.now())))}:
+   elapsedMs:Math.min(604800000,Math.floor(elapsed(s,Date.now()))),
+   // Native foreground service may use this snapshot to create a running
+   // Android chronometer without depending on WebView timers after screen lock.
+   snapshotAtMs:Date.now(),segmentsCount:Array.isArray(s.segments)?s.segments.length:0,
+   runningSegmentStartMs:s.status==='running'&&Array.isArray(s.segments)&&s.segments.at(-1)?.end==null?Number(s.segments.at(-1).start):null,
+   requiresForegroundService:s.status==='running',notificationType:'ongoing-timer'}:
    {kind:'timer-status',status:'stopped'};
  // Running elapsed changes continuously; send on initial mount, return, or activity changes.
  const signature=s?String(s.id)+'|'+s.status+'|'+s.name+'|'+openCount:'none';
