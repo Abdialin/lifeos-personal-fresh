@@ -1,0 +1,29 @@
+/* V256: priority-first Today and Track. Preserve all existing panels. */
+html.lo254-ui #lo256-live-today{background:linear-gradient(130deg,#153c48,#142943);border:1px solid #426b80;border-radius:16px;padding:13px 15px;margin:12px 0;min-width:0}
+html.lo254-ui .lo256-live-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+html.lo254-ui .lo256-live-head strong{font-size:14px}
+html.lo254-ui .lo256-live-label{font-size:11px;color:#8ee3cc;background:#214a4c;border-radius:99px;padding:4px 8px;white-space:nowrap}
+html.lo254-ui .lo256-live-body{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:12px 0}
+html.lo254-ui .lo256-live-name{font-size:17px;max-width:100%;overflow-wrap:anywhere}
+html.lo254-ui .lo256-live-clock{font-size:clamp(24px,5vw,32px);font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:#c1ffed}
+html.lo254-ui .lo256-live-more,html.lo254-ui .lo256-live-empty{color:#a9c5d6;font-size:12px}
+html.lo254-ui .lo256-live-actions{display:flex;gap:7px;flex-wrap:wrap}
+html.lo254-ui .lo256-action{background:#233c55;color:#ecf8ff;border:1px solid #48637b;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:650;min-height:43px;cursor:pointer}
+html.lo254-ui .lo256-action.primary{background:#7de2c9;border-color:#7de2c9;color:#0c2c29}
+html.lo254-ui #lo256-track-tabs{display:flex;gap:7px;overflow-x:auto;margin:8px 0 10px;scrollbar-width:none}
+html.lo254-ui .lo256-track-tab{flex:1;min-width:max-content;background:#182c43;color:#c3d8e8;border:1px solid #35536a;border-radius:11px;padding:10px 11px;font-size:13px;font-weight:600;min-height:44px}
+html.lo254-ui .lo256-track-tab[aria-pressed=true]{background:#245c56;color:#c6fff1;border-color:#5ecdb5}
+html.lo254-ui .lo256-track-hint{font-size:12px;color:#9fb9cb;margin:0 0 12px}
+html.lo254-ui #trackActivePanel,html.lo254-ui #trackQuickPanel,html.lo254-ui #trackDistractionPanel{scroll-margin-top:18px}
+html.lo254-ui #lo256-live-today button:focus-visible,html.lo254-ui #lo256-track-tabs button:focus-visible{outline:2px solid #affce4;outline-offset:3px}
+@media(max-width:750px){
+ html.lo254-ui #todayOverview{padding:13px!important}
+ html.lo254-ui #todayOverview .today-stats{gap:8px!important}
+ html.lo254-ui #todayOverview .today-stat{padding:10px!important;min-width:0}
+ html.lo254-ui #todayOverview .today-stat small{font-size:11px!important;line-height:1.25}
+ html.lo254-ui #todayOverview .today-welcome h2{font-size:21px!important}
+ html.lo254-ui #lo256-live-today{margin:10px 0;padding:12px!important}
+ html.lo254-ui .lo256-action{flex:1 1 auto;padding:10px!important}
+ html.lo254-ui #lo256-track-tabs{position:relative;scroll-margin-top:12px}
+ html.lo254-ui .lo256-track-tab{font-size:12px;padding:9px 7px}
+}
