@@ -57,6 +57,18 @@ function openRisk(sessions,at=Date.now(),guard=root.LifeOSDurationGuardV78){
 }
 function localDay(time){const d=new Date(time);d.setHours(0,0,0,0);return d.getTime()}
 function fmt(ms){const n=Math.round(Math.max(0,ms)/MIN);return Math.floor(n/60)+'h '+String(n%60).padStart(2,'0')+'m'}
+function recentDays(sessions,at=Date.now(),days=7){
+ if(!Number.isInteger(days)||days<1||days>14)throw Error('Choose 1–14 days');
+ const today=localDay(at),rows=[];
+ for(let offset=0;offset<days;offset++){
+  const start=new Date(today);start.setDate(start.getDate()-offset);
+  const from=start.getTime(),to=new Date(start).setDate(start.getDate()+1);
+  const end=new Date(start);end.setDate(end.getDate()+1);
+  const report=inspect(sessions,from,end.getTime(),at);
+  rows.push({date:new Date(from).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}),from,...report});
+ }
+ return rows;
+}
 function render(){
  const overview=root.document?.getElementById('todayOverview');
  if(!overview)return;
@@ -86,6 +98,23 @@ function render(){
  const note=root.document.createElement('p');note.style.cssText='font-size:13px;color:#b9cfdf';
  note.textContent='Summed activity durations may exceed 24h when timers run together. Unique time counts each clock minute only once. Unrecorded time is unknown, not automatically free time or distraction.';
  body.append(note);
+ const week=recentDays(sessions,at,7);
+ const unusual=week.filter(day=>day.over24h||day.overlapRatio>=.25||day.highCoverage);
+ const detail=root.document.createElement('details');detail.style.cssText='margin:10px 0;padding:10px;background:#0b2335;border:1px solid #426176;border-radius:12px';
+ const heading=root.document.createElement('summary');
+ heading.textContent='Last 7 days · '+unusual.length+' day'+(unusual.length===1?'':'s')+' worth reviewing';
+ detail.append(heading);
+ const list=root.document.createElement('div');list.style.cssText='display:grid;gap:8px;margin-top:12px;font-size:13px';
+ for(const day of week){
+  if(!day.periodCount)continue;
+  const row=root.document.createElement('div');row.style.cssText='padding:9px;border-bottom:1px solid #34516b';
+  row.textContent=day.date+' · summed '+fmt(day.recordedMs)+' · unique '+fmt(day.uniqueMs)+
+   ' · parallel '+fmt(day.overlapMs)+(day.over24h?' · more than 24h SUMMED':'')+
+   (day.highCoverage?' · nearly full-day coverage':'');
+  list.append(row);
+ }
+ if(!list.children.length)list.textContent='No activity periods in the last seven days.';
+ detail.append(list);body.append(detail);
  if(risk.length){
   const warning=root.document.createElement('p');warning.style.cssText='color:#f3c98b;font-weight:600';
   warning.textContent=risk.length+' running timer'+(risk.length===1?' needs':'s need')+
@@ -115,5 +144,5 @@ function mount(){
  root.setInterval?.(()=>{if(root.document.visibilityState!=='hidden')render()},60000);
 }
 if(root.document){if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',mount,{once:true});else mount()}
-return {inspect,openRisk,segmentsFor,localDay,fmt,render};
+return {inspect,openRisk,segmentsFor,localDay,recentDays,fmt,render};
 });
