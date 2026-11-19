@@ -491,7 +491,7 @@ window.addEventListener('lifeos-v252-save-review',function(evt){
  if(!original||original.source==='development-starter'||original.source==='assumed-demo'||original.seedBatch)return void(d.result.message='Not an editable real activity.');
  const fields=d.fields;
  if(!fields||typeof fields!=='object'||Array.isArray(fields))return void(d.result.message='Invalid activity details.');
- const permitted=['category','prayerName','onTime','congregation','mosque','row','sunnahUnits','preparationMinutes','travelMinutes','studySubject','studyPages','studyFocus','workoutType','workoutSets','mealType','mealNotes','familyWith','socialContext','distractionCategory','distractionTrigger','notes'];
+ const permitted=['sleepQuality','sleepInterruptions','quranSurah','quranPages','quranRevision','bookTitle','bookPages','workProject','workQuality','workBreakMinutes','choresTask','errandsTask','waitingMinutes','travelMode','travelPurpose','healthType','hobbyType','hobbyProgress','outdoorPlace','distanceKm','volunteerCause','category','prayerName','onTime','congregation','mosque','row','sunnahUnits','preparationMinutes','travelMinutes','studySubject','studyPages','studyFocus','workoutType','workoutSets','mealType','mealNotes','familyWith','socialContext','distractionCategory','distractionTrigger','notes'];
  const clean={};
  for(const [key,value] of Object.entries(fields)){
   if(!permitted.includes(key))return void(d.result.message='Unsupported detail: '+key);
