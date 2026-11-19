@@ -59,7 +59,7 @@
     const approve=doc.createElement('button');approve.type='button';approve.className='btn outline';
     approve.style.minHeight='44px';approve.textContent='Review & link completed session';
     approve.onclick=()=>{
-     if(!root.confirm('Link the finished session “‘+row.sessionName+'” to the plan “‘+row.planName+'”? This verifies the plan using existing tracking and will not modify recorded timestamps.'))return;
+     if(!root.confirm('Link finished session '+row.sessionName+' to plan '+row.planName+'? The original timestamps will remain unchanged.'))return;
      const detail={planId:row.planId,sessionId:row.sessionId,result:{ok:false,message:'Not saved.'}};
      root.dispatchEvent(new CustomEvent('lifeos-v250-link-evidence',{detail}));
      const notice=doc.createElement('p');notice.textContent=detail.result?.message||'Link not confirmed.';card.append(notice);
