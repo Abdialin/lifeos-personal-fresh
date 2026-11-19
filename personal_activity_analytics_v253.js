@@ -124,16 +124,32 @@ function mount(){
   stat(kpis,'Average per calendar day',fmt(report.averagePerCalendarDayMs));
   stat(kpis,'Preparation / travel',report.preparationMinutes+' / '+report.travelMinutes+' min');
   const top=Math.max(MIN,...report.trends.map(x=>x.ms));
+  let chartLabel=doc.getElementById('lo255-chart-label');
+  if(!chartLabel){chartLabel=doc.createElement('p');chartLabel.id='lo255-chart-label';chartLabel.className='lo255-chart-label';chart.before(chartLabel)}
+  chartLabel.textContent='Tracked time by day · '+report.days+' days';
   for(const [i,day] of report.trends.entries()){
    const item=doc.createElement('div');item.style.cssText='flex:1;min-width:0;height:'+Math.max(2,Math.round(day.ms/top*100))+'%;background:linear-gradient(#79d3ca,#4f8ce0);border-radius:5px 5px 0 0;position:relative';
    item.title=day.date+' · '+fmt(day.ms)+' · '+day.count+' sessions';item.setAttribute('aria-label',item.title);chart.append(item);
   }
   chart.setAttribute('aria-label','Daily tracked activity time over '+report.days+' days');
+  let axis=doc.getElementById('lo255-chart-axis');if(!axis){axis=doc.createElement('div');axis.id='lo255-chart-axis';axis.className='lo255-chart-axis';chart.after(axis)}
+  axis.replaceChildren();for(const day of [report.trends[0],report.trends[Math.floor((report.trends.length-1)/2)],report.trends[report.trends.length-1]]){const a=doc.createElement('span');a.textContent=day?.date||'';axis.append(a)}
   const m=report.metrics;
-  for(const [key,label] of [['onTime','On time'],['congregation','In congregation'],['mosque','At mosque'],['firstRow','First row']]){
-   if(m[key])stat(details,label,m[key].pct===null?'Unknown':m[key].pct+'%',m[key].known+' recorded answers');
+  const missing=[];
+  const ratio=(key,label)=>{const x=m[key];if(!x)return;
+   if(x.known>0)stat(details,label,x.pct+'%',x.yes+' of '+x.known+' confirmed answers');
+   else missing.push(label);
+  };
+  for(const [key,label] of [['onTime','On time'],['congregation','In congregation'],['mosque','At mosque'],['firstRow','First row']])ratio(key,label);
+  ratio('revision','Quran revision');
+  if(missing.length&&report.sessions){
+   const prompt=doc.createElement('div');prompt.className='lo255-missing-data';
+   const title=doc.createElement('strong');title.textContent='Add details to unlock insights';prompt.append(title);
+   const p=doc.createElement('p');p.className='sub';p.textContent=missing.join(', ')+' cannot be calculated yet. Review a completed activity to record these details.';prompt.append(p);
+   const b=doc.createElement('button');b.type='button';b.className='btn outline';b.textContent='Review an activity';
+   b.onclick=()=>root.dispatchEvent(new CustomEvent('lifeos-v255-open-review',{detail:{category:select.value}}));
+   prompt.append(b);details.append(prompt);
   }
-  if(m.revision)stat(details,'Quran revision',m.revision.pct===null?'Unknown':m.revision.pct+'%',m.revision.known+' confirmed answers');
   for(const [key,label] of [['sunnahUnits','Sunnah units'],['pages','Study pages/questions'],['linkedWorkouts','Workout entries'],['setsRecorded','Sessions with sets'],['notedMeals','Meals with details'],['exceededSessions','Exceeded duration sessions'],['quranPages','Quran pages'],['bookPages','Book pages'],['interruptions','Sleep interruptions'],['breakMinutes','Work break minutes'],['waitingMinutes','Waiting minutes'],['distanceKm','Distance (km)']])
    if(m[key]!==undefined)stat(details,label,m[key],key==='sunnahUnits'?m.sunnahRecorded+' sessions with sunnah records':key==='pages'?m.pagesRecorded+' sessions with page records':'');
   for(const [key,label] of [['prayers','Prayer types'],['subjects','Study subjects'],['focus','Focus quality'],['workoutTypes','Workout types'],['mealTypes','Meal types'],['companions','Family members'],['activities','Social activities'],['causes','Distraction types'],['triggers','Distraction triggers'],['projects','Projects and progress'],['workQuality','Work quality'],['sleepQuality','Sleep quality'],['surahs','Surahs'],['books','Books'],['tasks','Household tasks'],['errands','Errands'],['modes','Travel modes'],['purposes','Travel purposes'],['healthActivities','Self-care'],['hobbies','Hobbies'],['places','Outdoor places']])
