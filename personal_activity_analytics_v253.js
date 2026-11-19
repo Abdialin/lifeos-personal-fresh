@@ -91,6 +91,7 @@ function mount(){
  for(const item of catalog){const option=doc.createElement('option');option.value=item.id;option.textContent=item.title;select.append(option)}
  const period=doc.createElement('select');period.className='field';period.style.cssText='width:115px';for(const n of [7,14,30]){const o=doc.createElement('option');o.value=n;o.textContent=n+' days';period.append(o)}period.value='14';controls.append(select,period);box.append(controls);
  const status=doc.createElement('p');status.className='sub';status.setAttribute('role','status');box.append(status);
+ const overview=doc.createElement('div');overview.id='lo253-all-overview';overview.style.cssText='display:grid;gap:7px;margin:12px 0 18px';box.append(overview);
  const kpis=doc.createElement('div');kpis.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px';box.append(kpis);
  const chart=doc.createElement('div');chart.style.cssText='display:flex;align-items:end;gap:3px;height:135px;padding:12px 4px 2px;border-bottom:1px solid #6886a3;margin:14px 0';chart.setAttribute('role','img');box.append(chart);
  const details=doc.createElement('div');details.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:9px';box.append(details);
@@ -103,7 +104,18 @@ function mount(){
  }
  function render(){
   const data=root.lifeosReadOnlyWorkspace?.();if(!data){status.textContent='Activity records unavailable.';return}
-  const report=calculate(data,select.value,Number(period.value));kpis.replaceChildren();details.replaceChildren();chart.replaceChildren();
+  const report=calculate(data,select.value,Number(period.value));kpis.replaceChildren();details.replaceChildren();chart.replaceChildren();overview.replaceChildren();
+  const totals=catalog.map(c=>({title:c.title,id:c.id,stats:calculate(data,c.id,Number(period.value))})).filter(x=>x.stats.sessions>0).sort((a,b)=>b.stats.trackedMs-a.stats.trackedMs).slice(0,6);
+  const heading=doc.createElement('strong');heading.textContent='Your activity mix · top tracked categories';overview.append(heading);
+  if(!totals.length){const p=doc.createElement('small');p.textContent='No completed sessions in this period.';overview.append(p)}
+  for(const item of totals){
+   const row=doc.createElement('button');row.type='button';row.style.cssText='display:grid;grid-template-columns:minmax(105px,1fr) 2fr auto;align-items:center;gap:8px;border:0;border-radius:8px;background:#193650;color:#eef8ff;text-align:left;padding:7px 9px;min-height:42px';
+   const label=doc.createElement('span');label.textContent=item.title;label.style.cssText='font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';row.append(label);
+   const track=doc.createElement('span');track.style.cssText='height:10px;border-radius:7px;background:#314f6b;overflow:hidden';
+   const bar=doc.createElement('span');bar.style.cssText='display:block;height:100%;width:'+Math.round(100*item.stats.trackedMs/totals[0].stats.trackedMs)+'%;background:#6accc6;border-radius:7px';track.append(bar);row.append(track);
+   const value=doc.createElement('span');value.textContent=fmt(item.stats.trackedMs);value.style.fontSize='12px';row.append(value);
+   row.onclick=()=>{select.value=item.id;render()};overview.append(row);
+  }
   status.textContent=report.sessions+' finished sessions · '+report.detailsConfirmed+' with saved activity details ('+(report.detailsCoverage??'—')+'% completeness).';
   stat(kpis,'Tracked time',fmt(report.trackedMs));
   stat(kpis,'Finished sessions',report.sessions);
