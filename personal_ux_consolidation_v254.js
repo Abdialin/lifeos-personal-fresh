@@ -112,8 +112,8 @@ function mount(){
 if(root.document&&!root.document.getElementById('lo255-script')){
  const load=()=>{
   if(root.document.getElementById('lo255-script'))return;
-  if(!root.document.getElementById('lo255-style')){const sheet=root.document.createElement('link');sheet.id='lo255-style';sheet.rel='stylesheet';sheet.href='/personal_mobile_review_v255.css?v=255';root.document.head.appendChild(sheet)}
-  const script=root.document.createElement('script');script.id='lo255-script';script.src='/personal_mobile_review_v255.js?v=255';script.defer=true;root.document.head.appendChild(script);
+  if(!root.document.getElementById('lo255-style')){const sheet=root.document.createElement('link');sheet.id='lo255-style';sheet.rel='stylesheet';sheet.href='/personal_mobile_review_v255.css?v=260';root.document.head.appendChild(sheet)}
+  const script=root.document.createElement('script');script.id='lo255-script';script.src='/personal_mobile_review_v255.js?v=260';script.defer=true;root.document.head.appendChild(script);
  };
  if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
 }
