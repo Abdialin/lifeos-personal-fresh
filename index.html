@@ -2361,6 +2361,7 @@ async function v244Inspect(){
   const lines=['Server revision: '+policy.remoteRevision,
    'Local acknowledged revision: '+String(policy.acknowledgedRevision),
    'Pending journal operations: '+policy.queued,
+   'Queued snapshots with unsynchronized differences: '+policy.queueDifferences.length,
    'Local-only records: '+policy.localOnlyTotal,
    'Server-only records: '+policy.serverOnlyTotal,
    'Changed shared-ID records: '+policy.conflictTotal,
@@ -2368,6 +2369,8 @@ async function v244Inspect(){
   for(const [name,v] of Object.entries(policy.collections))
    if(v.localOnly||v.serverOnly||v.conflicts)
     lines.push(name+': '+v.localOnly+' local-only, '+v.serverOnly+' server-only, '+v.conflicts+' different');
+  for(const item of policy.queueDifferences.slice(0,5))
+   lines.push('Queued snapshot '+item.index+': '+item.localOnly+' local-only, '+item.changed+' changed IDs, other fields: '+(item.other.join(', ')||'none'));
   lines.push('',policy.fastForwardSafe?
     'ELIGIBLE: all existing Android records are already on server. The older journal can be archived in a verified backup, then Android can load the newer revision.':
     'BLOCKED: local-only or differing records exist. Do not clear your pending journal or upload a full workspace. Preserve both copies for conflict review.');
