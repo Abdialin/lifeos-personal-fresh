@@ -60,6 +60,17 @@ function mountToday(){
    if(typeof root.LifeOSReviewTimer==='function')root.LifeOSReviewTimer(String(s.id));
    else jump('tracking','trackActivePanel');
   });
+  const kind=String(s.activityDetailsV252?.category||root.LifeOSActivityIntelligenceV251?.match?.(s.name)?.id||'');
+  if(['study','fitness','work','quran','reading','hobbies'].includes(kind)&&s.status==='running'){
+   button('Focus',()=>{
+    const label=$('lo207-focus-label'),start=$('lo207-start-focus');
+    if(!label||!start){jump('tracking','lo207-focus');return}
+    if(!root.confirm?.('Start an optional Focus Mode session for '+s.name+'? Your tracked timer will continue.'))return;
+    label.value=String(s.name||'Focus');start.click();
+    const focus=$('lo207-focus');if(focus)focus.open=true;
+    jump('tracking','lo207-focus');
+   });
+  }
   button('All timers',()=>jump('tracking','trackActivePanel'));
  }
  root.addEventListener?.('lifeos-v77-tracking-changed',paint);
