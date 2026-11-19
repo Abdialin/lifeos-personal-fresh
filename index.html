@@ -2575,6 +2575,53 @@ async function v245Apply(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',v245Panel,{once:true});
 else v245Panel();
+/* V246: Beta-first cloud health. This is diagnostic only and never writes
+   server data or replaces local data. Normal editing remains in Android Beta. */
+function v246Setup(){
+ if(!window.LifeOSNative||$('lo246-beta-sync'))return;
+ const mount=$('cloudSyncPanel');if(!mount)return;
+ const panel=document.createElement('section');panel.id='lo246-beta-sync';
+ panel.style.cssText='margin:15px 0;padding:17px;border:1px solid #63bfae;background:#11323a;border-radius:16px;color:#f0ffff;line-height:1.6';
+ panel.innerHTML='<h3 style="margin:0 0 8px">LifeOS Beta · Primary workspace</h3>'+
+ '<p class="sub">Use this installed app for tracking, planning, and edits. Your work is saved locally first, then sent to PostgreSQL when synchronization is healthy. Samsung Browser is a secondary view; automatic browser mirroring is not enabled yet.</p>'+
+ '<button type="button" class="btn outline" id="lo246-verify" style="min-height:48px">Check whether my Beta changes are saved on server</button>'+
+ '<p id="lo246-state" role="status" aria-live="polite" style="margin:13px 0;white-space:pre-wrap;overflow-wrap:anywhere">Status not checked.</p>'+
+ '<p class="sub">This is read-only. It never uploads your local workspace, clears pending changes, or replaces data. If revisions differ, use the existing review tools rather than Upload local data.</p>';
+ const prior=$('lo244-reconcile');
+ if(prior)prior.before(panel);else mount.prepend(panel);
+ $('lo246-verify').addEventListener('click',v246Verify);
+}
+async function v246Verify(){
+ const output=$('lo246-state');if(!output)return;
+ if(!syncToken){output.textContent='Not connected. Tap Connect above first; then check again.';return}
+ if(syncBusy){output.textContent='Synchronization is currently running. Retry after it finishes.';return}
+ if(outboxCorrupt||atomicBlocked){output.textContent='Local storage requires recovery review. No records changed.';return}
+ const localCheckpoint=localStorage.getItem(ATOMIC_KEY);
+ const queueBefore=outbox.length,baseBefore=syncMeta.revision,dirtyBefore=syncMeta.dirty;
+ output.textContent='Checking PostgreSQL without changing records…';
+ try{
+  const remote=await requestState();validateWorkspace(remote.data);
+  if(localStorage.getItem(ATOMIC_KEY)!==localCheckpoint||outbox.length!==queueBefore||
+    syncMeta.revision!==baseBefore||syncMeta.dirty!==dirtyBefore){
+   output.textContent='Local data changed during the check. Run the read-only check again.';return
+  }
+  const same=sameSnapshot(data,remote.data);
+  const headline=same&&queueBefore===0&&!dirtyBefore?'✓ BETA AND SERVER MATCH':
+    queueBefore||dirtyBefore?'⚠ LOCAL CHANGES AWAIT SYNCHRONIZATION':'⚠ BETA AND SERVER DIFFER';
+  const explanation=same&&queueBefore===0&&!dirtyBefore?
+   'All workspace records match PostgreSQL. Browser can see the server version when it safely refreshes.':
+   queueBefore||dirtyBefore?
+   'Do not clear the pending journal. Reconnect and use the existing conflict review if needed.':
+   'Do not use Upload local data or Load from server to force a match. Review the differences first.';
+  output.textContent=headline+'\nServer revision: '+remote.revision+
+    '\nBeta acknowledged revision: '+String(baseBefore)+
+    '\nUnsent operations: '+queueBefore+
+    '\nLocal dirty state: '+(dirtyBefore?'Yes':'No')+'\n'+explanation;
+ }catch(e){output.textContent='Read-only verification failed: '+(e?.message||e)+'. Nothing was changed.'}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',v246Setup,{once:true});
+else v246Setup();
+window.addEventListener('lifeos-native-ready',v246Setup);
 async function push(){
  if(outboxCorrupt)return syncStatus('SYNC BLOCKED: offline journal invalid. Export a backup before recovery.');
  if(syncRevision===null)return syncStatus('Connect first.');
