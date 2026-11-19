@@ -53,6 +53,10 @@ function mount(){
   const b=d.createElement('button');b.type='button';b.className='btn outline';b.textContent='Refresh prayer insights';b.onclick=refresh;box.append(b);host.after(box);refresh();root.addEventListener?.('lifeos-v77-tracking-changed',refresh);
  }
 }
+if(root.document && !root.document.getElementById('lo252-script')){
+ const load=()=>{if(root.document.getElementById('lo252-script'))return;const el=root.document.createElement('script');el.id='lo252-script';el.src='/personal_activity_review_v252.js?v=252';el.defer=true;root.document.head.append(el)};
+ if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+}
 if(root.document){const init=()=>{mount();root.setTimeout?.(mount,700)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',init,{once:true});else init();}
 return {catalog,normalize:norm,match,prayerName,prayerOverview,mount};
 });
