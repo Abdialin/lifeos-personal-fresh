@@ -67,7 +67,7 @@ function focus(){
  if(focus&&!$('lo254-focus-summary')){
   const title=focus.querySelector('summary');if(title){title.id='lo254-focus-summary';title.textContent='Focus Mode · Start / Pause / Break'}
  }
- focus.open=false;
+ if(!focus.dataset.lo254Initialized){focus.open=false;focus.dataset.lo254Initialized='1'}
 }
 function moveSecondary(){
  const settings=$('lo14SettingsHub');
