@@ -69,6 +69,8 @@ jobs:
         run: node test_pending_queue_recovery_v244.cjs
       - name: Validate explicit per-record local/server conflict reconciliation
         run: node test_conflict_resolution_v245.cjs
+      - name: Validate beta-primary cloud health check has no write path
+        run: node test_beta_primary_sync_v246.cjs
       - name: Validate substantial pause/resume intervals without double counting
         run: node test_activity_pauses_v225.cjs
       - name: Validate focus control states and alert engine
