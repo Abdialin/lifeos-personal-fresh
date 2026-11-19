@@ -22,6 +22,9 @@ assert.equal(read({local:{...base,sessions:[...base.sessions,{id:'local17',start
 assert.equal(read({local:{...base,sessions:[{id:'a',status:'running',startAt:1}]}}).fastForwardSafe,false);
 assert.equal(read({local:{...base,settings:{theme:'light'}}}).fastForwardSafe,false);
 assert.equal(read({queue:[...queue,{id:'other',snapshot:base}]}).fastForwardSafe,true,'Queued operations remain explicitly backed up when current local snapshot is a safe subset');
+assert.equal(read({queue:[{id:'old-unsafe',snapshot:{...base,sessions:[{id:'a',status:'running',startAt:1}]}}]}).fastForwardSafe,false,'Queued earlier edits may not be discarded even if current state matches server');
+assert.equal(read({queue:[{id:'local-only',snapshot:{...base,sessions:[...base.sessions,{id:'unsent'}]}}]}).fastForwardSafe,false,'Queued historical local-only records may not be silently archived');
+
 assert.equal(read({remote:{...extended,schedule:[{id:'p1',title:'Changed'}]}}).fastForwardSafe,false);
 assert.equal(read({local:{...base,goals:[{id:'g1'}, {id:'g1'}]}}).ok,false);
 assert.equal(read({blocked:true}).ok,false);
