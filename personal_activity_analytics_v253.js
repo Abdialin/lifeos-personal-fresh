@@ -142,6 +142,10 @@ function mount(){
   };
   for(const [key,label] of [['onTime','On time'],['congregation','In congregation'],['mosque','At mosque'],['firstRow','First row']])ratio(key,label);
   ratio('revision','Quran revision');
+  if(report.sessions&&m.sunnahRecorded===0)missing.push('Sunnah units');
+  if(report.sessions&&m.pagesRecorded===0)missing.push('Study pages / questions');
+  if(report.sessions&&m.quranPagesRecorded===0)missing.push('Quran pages');
+  if(report.sessions&&m.bookPagesRecorded===0)missing.push('Book pages');
   if(missing.length&&report.sessions){
    const prompt=doc.createElement('div');prompt.className='lo255-missing-data';
    const title=doc.createElement('strong');title.textContent='Add details to unlock insights';prompt.append(title);
@@ -151,7 +155,7 @@ function mount(){
    prompt.append(b);details.append(prompt);
   }
   for(const [key,label] of [['sunnahUnits','Sunnah units'],['pages','Study pages/questions'],['linkedWorkouts','Workout entries'],['setsRecorded','Sessions with sets'],['notedMeals','Meals with details'],['exceededSessions','Exceeded duration sessions'],['quranPages','Quran pages'],['bookPages','Book pages'],['interruptions','Sleep interruptions'],['breakMinutes','Work break minutes'],['waitingMinutes','Waiting minutes'],['distanceKm','Distance (km)']])
-   if(m[key]!==undefined)stat(details,label,m[key],key==='sunnahUnits'?m.sunnahRecorded+' sessions with sunnah records':key==='pages'?m.pagesRecorded+' sessions with page records':'');
+   if(m[key]!==undefined&&!(key==='sunnahUnits'&&m.sunnahRecorded===0)&&!(key==='pages'&&m.pagesRecorded===0)&&!(key==='quranPages'&&m.quranPagesRecorded===0)&&!(key==='bookPages'&&m.bookPagesRecorded===0))stat(details,label,m[key],key==='sunnahUnits'?m.sunnahRecorded+' sessions with sunnah records':key==='pages'?m.pagesRecorded+' sessions with page records':'');
   for(const [key,label] of [['prayers','Prayer types'],['subjects','Study subjects'],['focus','Focus quality'],['workoutTypes','Workout types'],['mealTypes','Meal types'],['companions','Family members'],['activities','Social activities'],['causes','Distraction types'],['triggers','Distraction triggers'],['projects','Projects and progress'],['workQuality','Work quality'],['sleepQuality','Sleep quality'],['surahs','Surahs'],['books','Books'],['tasks','Household tasks'],['errands','Errands'],['modes','Travel modes'],['purposes','Travel purposes'],['healthActivities','Self-care'],['hobbies','Hobbies'],['places','Outdoor places']])
    if(m[key]?.length)stat(details,label,m[key].map(([name,n])=>name+' ('+n+')').join(' · '));
   if(!report.sessions){stat(details,'Data confidence','No finished sessions','Start and finish activities to build this dashboard.')}
