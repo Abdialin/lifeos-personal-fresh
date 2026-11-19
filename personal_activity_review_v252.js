@@ -110,7 +110,7 @@ function mount(){
 
 }
 if(root.document&&!root.document.getElementById('lo253-script')){
- const load=()=>{if(root.document.getElementById('lo253-script'))return;const el=root.document.createElement('script');el.id='lo253-script';el.src='/personal_activity_analytics_v253.js?v=253';el.defer=true;root.document.head.appendChild(el)};
+ const load=()=>{if(root.document.getElementById('lo253-script'))return;const el=root.document.createElement('script');el.id='lo253-script';el.src='/personal_activity_analytics_v253.js?v=260';el.defer=true;root.document.head.appendChild(el)};
  if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
 }
 if(root.document){const init=()=>{mount();root.setTimeout?.(mount,900)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',init,{once:true});else init()}
