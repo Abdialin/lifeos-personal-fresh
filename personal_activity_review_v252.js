@@ -8,7 +8,7 @@ const schemas={
  fitness:[['workoutType','Workout type','text'],['workoutSets','Sets or repetitions','text']],
  nutrition:[['mealType','Meal type','select',['','breakfast','lunch','dinner','snack']],['mealNotes','Food notes','text']],
  family:[['familyWith','Spent time with','text']],friends:[['socialContext','Social activity','text']],
- distraction:[['distractionCategory','Distraction category','select',['','social-media','phone','entertainment','unplanned-task','interruption','other']],['distractionTrigger','Trigger or reason','text']]
+ distraction:[['distractionCategory','Distraction category','select',['','Social media','Entertainment','Communication','Procrastination','Interruption','Environment','Other']],['distractionTrigger','Trigger or reason','text']]
 };
 function category(name){return root.LifeOSActivityIntelligenceV251?.match(name)?.id||'other'}
 function inputField(doc,key,label,type,options,value){
