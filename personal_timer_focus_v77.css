@@ -1,1 +1,10 @@
 #lo77-timer-quick{position:relative;border:1px solid #4ba890;border-radius:14px;padding:13px;margin:12px 0 16px;background:#102e36;min-width:0}#lo77-timer-quick[hidden]{display:none!important}#lo77-timer-quick .lo77-timer-line{display:flex;gap:10px;align-items:center;min-width:0}#lo77-timer-quick .lo77-led{color:#5edcaa}#lo77-timer-quick .lo77-name-group{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}#lo77-timer-quick .lo77-name-group strong{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#lo77-timer-quick .lo77-name-group small{color:#b0d4d0;font-size:12px}#lo77-timer-quick .lo77-clock{font-variant-numeric:tabular-nums;font-size:22px;white-space:nowrap;color:#e2fff5}#lo77-timer-quick .lo77-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}#lo77-timer-quick .lo77-actions button{min-height:42px;flex:1 1 auto}#lo77-timer-quick .lo77-actions button[hidden]{display:none!important}#lo77-timer-quick .lo77-message{font-size:12px;color:#c7efe0;margin:8px 0 0;line-height:1.5}#lo77-timer-quick .lo77-highlight{outline:2px solid #66e7bb;outline-offset:2px}@media(max-width:580px){#lo77-timer-quick .lo77-clock{font-size:20px}#lo32ActiveTimer .lo32-open-tracker{min-height:44px}}
+/* V262: explicit result banner for the Track Finish action. */
+#lo262-timer-feedback[hidden]{display:none!important}
+#lo262-timer-feedback{border-radius:12px;border:1px solid #527685;padding:12px 14px;margin-top:12px;line-height:1.45;background:#214454;color:#f2faff;overflow-wrap:anywhere;scroll-margin-top:16px}
+#lo262-timer-feedback[data-state=error]{background:#3b2637;border-color:#db8192;color:#fff2f4}
+#lo262-timer-feedback[data-state=ok]{background:#174a3d;border-color:#6bd6a7;color:#dcfff0}
+#lo262-timer-feedback strong{display:block;font-size:14px}
+#lo262-timer-feedback p{margin:6px 0 0;font-size:12px;color:inherit}
+#lo77-timer-quick .lo77-actions button[data-v77-action=finish]{font-weight:750;min-height:48px}
+@media(max-width:750px){#lo77-timer-quick{scroll-margin-top:14px}#lo262-timer-feedback{margin-bottom:12px}}
