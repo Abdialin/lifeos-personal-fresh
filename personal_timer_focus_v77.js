@@ -80,7 +80,7 @@ function mount(){
   const extra=/blocked|checkpoint|storage|quota|journal|recovery|newer|older tab|stale|sync/i.test(raw+' '+checkpoint)
    ?'Your recovery checkpoint may be blocked or full. Do NOT clear app data or reinstall LifeOS. Export your recovery backup, and review the Storage / Sync status before making further edits.':'The timer was not confirmed finished. The existing session is preserved. Please review the message below.';
   status.textContent=raw+' '+extra;
-  if(banner){banner.hidden=false;banner.dataset.state='error';banner.replaceChildren();
+  if(banner){top.hidden=false;banner.hidden=false;banner.dataset.state='error';banner.replaceChildren();
    const label=document.createElement('strong');label.textContent='Finish was not confirmed';banner.append(label);
    const detail=document.createElement('p');detail.textContent=raw;banner.append(detail);
    const advice=document.createElement('p');advice.textContent=extra;banner.append(advice);
@@ -92,7 +92,7 @@ function mount(){
   const banner=document.getElementById('lo262-timer-feedback');
   const message=action==='finish'?String(name)+' finished and saved. '+remaining+' open timer'+(remaining===1?' remains.':'s remain.'):String(name)+' '+(action==='pause'?'paused':'resumed')+' and saved.';
   status.textContent=message;
-  if(banner){banner.hidden=false;banner.dataset.state='ok';banner.replaceChildren();
+  if(banner){top.hidden=false;banner.hidden=false;banner.dataset.state='ok';banner.replaceChildren();
    const label=document.createElement('strong');label.textContent=message;banner.append(label);
   }
   return true;
