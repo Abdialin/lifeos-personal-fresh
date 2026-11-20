@@ -433,8 +433,18 @@ function addStage3(e,kind){
  }
  $(form).reset();$(kind==='workouts'?'fitnessDate':'mealDate').value=localDate(now());render();
 }
-function addGoal(e){e.preventDefault();const name=$('goalName').value.trim(),category=$('goalCategory').value,match=$('goalMatch').value.trim(),unit=$('goalUnit').value,target=Number($('goalTarget').value),quantityUnit=$('goalQuantityUnit').value.trim();if(!name||!Number.isFinite(target)||target<=0||(category==='sessions'||category==='personal'||category==='habit')&&!match||category==='fitness'&&unit!=='sessions'||category==='meals'&&unit!=='sessions'||category==='personal'&&unit==='hours'||category==='sessions'&&unit==='quantity'||(category==='personal'||category==='habit')&&unit==='quantity'&&!quantityUnit){alert('Check goal details. Fitness goals currently support session counts only.');return}data.goals.push({id:uid(),name,category,match,unit,target,quantityUnit:(category==='personal'||category==='habit')&&unit==='quantity'?quantityUnit:null});persist();$('goalForm').reset();render()}
-function deleteStage3(kind,id){if(!confirm('Delete this record?'))return;const previous=data[kind];data[kind]=previous.filter(x=>x.id!==id);if(!persist()){data[kind]=previous;alert('Delete could not be saved; record retained.');return}render()}
+function addGoal(e){e.preventDefault();const name=$('goalName').value.trim(),category=$('goalCategory').value,match=$('goalMatch').value.trim(),unit=$('goalUnit').value,target=Number($('goalTarget').value),quantityUnit=$('goalQuantityUnit').value.trim();if(!name||!Number.isFinite(target)||target<=0||(category==='sessions'||category==='personal'||category==='habit')&&!match||category==='fitness'&&unit!=='sessions'||category==='meals'&&unit!=='sessions'||category==='personal'&&unit==='hours'||category==='sessions'&&unit==='quantity'||(category==='personal'||category==='habit')&&unit==='quantity'&&!quantityUnit){alert('Check goal details. Fitness goals currently support session counts only.');return}const goal={id:uid(),name,category,match,unit,target,quantityUnit:(category==='personal'||category==='habit')&&unit==='quantity'?quantityUnit:null};
+data.goals.push(goal);
+if(!persist()){data.goals=data.goals.filter(x=>x.id!==goal.id);alert('Goal was NOT saved. No goal was added. Check storage status.');return}
+$('goalForm').reset();render()}
+async function deleteStage3(kind,id){
+ const record=(data[kind]||[]).find(x=>String(x.id)===String(id));if(!record)return;
+ const ok=await lifeosRepairConsent('Delete this record?','Remove this '+kind+' entry from your records? The change cannot be undone inside LifeOS.','Delete record');
+ if(!ok)return;
+ const previous=data[kind];data[kind]=previous.filter(x=>String(x.id)!==String(id));
+ if(!persist()){data[kind]=previous;alert('Delete could not be saved; the original record is retained.');return}
+ render()
+}
 // Validate all imported/synced records before allowing them to replace local state.
 // Older v1 backups may omit optional modules, but malformed sessions are rejected.
 function validateWorkspace(d){
@@ -1021,7 +1031,9 @@ window.addEventListener('lifeos-v270-delete-reviewed-activity',event=>{
  const d=event.detail||{};d.promise=removeSessionById(d.id);
 });
 
-function savePast(e){e.preventDefault();let name=$('pastName').value.trim(),start=new Date($('pastStart').value).getTime(),end=new Date($('pastEnd').value).getTime();if(!name||!Number.isFinite(start)||!Number.isFinite(end)||start>=end||end>now()){alert('Please enter an activity with a start before the end, and an end no later than now.');return}let s={id:uid(),name,status:'finished',createdAt:now(),startAt:start,endAt:end,segments:[{start,end}],notes:$('pastNotes').value,precision:'retrospective-approximate',source:'manual-past-entry'};data.sessions.push(s);event(s,'RETROSPECTIVE_ADD',now(),{start,end});persist();$('pastForm').reset();render()}
+function savePast(e){e.preventDefault();let name=$('pastName').value.trim(),start=new Date($('pastStart').value).getTime(),end=new Date($('pastEnd').value).getTime();if(!name||!Number.isFinite(start)||!Number.isFinite(end)||start>=end||end>now()){alert('Please enter an activity with a start before the end, and an end no later than now.');return}let s={id:uid(),name,status:'finished',createdAt:now(),startAt:start,endAt:end,segments:[{start,end}],notes:$('pastNotes').value,precision:'retrospective-approximate',source:'manual-past-entry'};const previousEvents=data.events.length;data.sessions.push(s);event(s,'RETROSPECTIVE_ADD',now(),{start,end});
+if(!persist()){data.sessions=data.sessions.filter(x=>x.id!==s.id);data.events.length=previousEvents;alert('Past activity was NOT saved. Original history remains unchanged.');return}
+$('pastForm').reset();render()}
 
 // Stage 4 analytics are derived exclusively from existing sessions; no new persisted schema.
 function analyticsIntervals(start,end,at=now()){if(at<=start)return [];const m=window.LifeOSUnifiedAnalytics.summarize({sessions:data.sessions},{start,end:Math.min(end,at),now:at});return m.recorded.map(x=>({a:x.start,b:x.end,name:x.name,id:x.id,precision:data.sessions.find(s=>s.id===x.id)?.precision||'unknown'}))}
@@ -1419,7 +1431,7 @@ function renderTodos(){
  if($('todoSubmitButton'))$('todoSubmitButton').textContent='+ Add task';
  if($('todoCancelEdit'))$('todoCancelEdit').hidden=true;
  $('todoTimingType')?.dispatchEvent(new Event('change',{bubbles:true}));renderTodos()
-}function todoAction(e){let b=e.target.closest('[data-todo-act]');if(!b)return;let t=(data.todos||[]).find(x=>x.id===b.dataset.todoId);if(!t)return;
+}async function todoAction(e){let b=e.target.closest('[data-todo-act]');if(!b)return;let t=(data.todos||[]).find(x=>x.id===b.dataset.todoId);if(!t)return;
  if(b.dataset.todoAct==='edit'){
   const editor=$('todoForm');
   if(editor?.hidden){
@@ -1437,7 +1449,9 @@ function renderTodos(){
   $('todoSubmitButton').textContent='Save task changes';$('todoCancelEdit').hidden=false;
   $('todoForm').scrollIntoView({behavior:'smooth',block:'center'});$('todoName').focus({preventScroll:true});return
  }
- if(b.dataset.todoAct==='delete'){if(!confirm('Delete this task?'))return}
+ if(b.dataset.todoAct==='delete'){
+  if(!await lifeosRepairConsent('Delete task?','Delete '+String(t.name||'this task')+' from your task list? Your recovery backup is not changed.','Delete task'))return;
+}
  const before=JSON.parse(JSON.stringify(data.todos||[]));
  if(b.dataset.todoAct==='delete')data.todos=data.todos.filter(x=>x.id!==t.id);
  else{t.done=b.checked;t.completedAt=t.done?now():null}
