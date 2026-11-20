@@ -68,7 +68,6 @@ function mountToday(){
    button('Focus',()=>{
     const label=$('lo207-focus-label'),start=$('lo207-start-focus');
     if(!label||!start){jump('tracking','lo207-focus');return}
-    if(!root.confirm?.('Start an optional Focus Mode session for '+s.name+'? Your tracked timer will continue.'))return;
     label.value=String(s.name||'Focus');start.click();
     const focus=$('lo207-focus');if(focus)focus.open=true;
     jump('tracking','lo207-focus');
