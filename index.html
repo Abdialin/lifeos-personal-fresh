@@ -134,7 +134,35 @@ body[data-lifeos-view="dashboard"] #todayLegacyOverviewPanel{display:none!import
 #editModal .modal-card .row button{min-height:48px;flex:1 1 auto}
 #editModal .modal-card .row button:focus-visible{outline:3px solid #8eecdf;outline-offset:2px}
 #editDeleteStatus{scroll-margin-bottom:120px}
-</style><link rel="stylesheet" href="/today_mobile_visual_v272.css?v=272"></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="lo154-access"><a class="lo154-logout" href="/logout" aria-label="Log out of LifeOS">Log out</a><div class="pill" id="status">● Ready</div></div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
+</style><link rel="stylesheet" href="/today_mobile_visual_v272.css?v=272"><style id="lifeos-today-polish-v273">
+/* Today-only visual refinement. No storage or timer behavior changes. */
+#todayOverview{background:linear-gradient(145deg,#102e43 0%,#101d34 55%,#10192d 100%);border:1px solid #2d6271;box-shadow:0 16px 38px #0003;border-radius:24px}
+#todayOverview .today-eyebrow{color:#70e5d1;font-weight:750;letter-spacing:.035em}
+#todayOverview .today-welcome h2{font-size:clamp(23px,4.2vw,32px);letter-spacing:-.045em;line-height:1.13}
+#todayOverview .today-live-dot{border:1px solid #316a69;background:#123b3b;padding:7px 10px;border-radius:999px}
+#todayOverview .today-stat{background:#12243b;border:1px solid #2a445e;border-radius:16px;box-shadow:inset 0 1px #ffffff0b}
+#todayOverview .today-stat strong{font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+#todayOverview .today-stat small{line-height:1.4}
+#todayOverview .today-actions button{min-height:46px;border-radius:13px}
+#todayOverview .today-priority{border-radius:15px}
+#todayOverview button:focus-visible,#todayOverview summary:focus-visible{outline:3px solid #7de2c9;outline-offset:3px}
+@media(max-width:750px){
+#todayOverview{padding:17px 15px;margin-bottom:14px}
+#todayOverview .today-welcome{gap:8px}
+#todayOverview .today-welcome h2{font-size:25px;margin:5px 0 8px}
+#todayOverview .today-welcome p{font-size:12px;line-height:1.45;margin-bottom:13px}
+#todayOverview .today-live-dot{font-size:10px;padding:5px 7px}
+#todayOverview .today-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#todayOverview .today-stat{padding:12px;min-width:0}
+#todayOverview .today-stat strong{font-size:24px;margin:5px 0}
+#todayOverview .today-stat span{font-size:12px}
+#todayOverview .today-stat small{font-size:10px}
+#todayOverview .today-actions{gap:7px}
+#todayOverview .today-actions button{min-height:45px}
+}
+@media(max-width:360px){#todayOverview .today-live-dot{font-size:9px}#todayOverview .today-stat{padding:10px}}
+@media(prefers-reduced-motion:reduce){#todayOverview *{transition:none!important}}
+</style></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="lo154-access"><a class="lo154-logout" href="/logout" aria-label="Log out of LifeOS">Log out</a><div class="pill" id="status">● Ready</div></div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
   <div class="today-welcome"><div><div class="today-eyebrow" id="todayFullDate">Today</div><h2>Your day at a glance</h2><p>Time, priorities and your next action.</p></div><span class="today-live-dot">● Live view</span></div>
   <div class="today-stats">
     <div class="today-stat"><span>Recorded today</span><strong id="todayRecorded">—</strong><small>Includes overlapping sessions</small></div>
