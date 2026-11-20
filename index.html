@@ -1002,6 +1002,7 @@ async function removeSessionById(id){
  }
  try{render()}catch(error){console.warn('Deletion saved, optional UI refresh failed',error)}
  window.dispatchEvent(new CustomEvent('lifeos-v77-tracking-changed',{detail:{id:String(id),deleted:true}}));
+ window.dispatchEvent(new CustomEvent('lifeos-v74-records-changed',{detail:{id:String(id),deleted:true}}));
  return {ok:true,message:'Activity deleted from the timeline and analytics.'};
 }
 async function deleteSession(){
