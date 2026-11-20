@@ -43,6 +43,8 @@ function mount(){
  const start=inputField(doc,'startAt','Start time','datetime-local',null,'');const end=inputField(doc,'endAt','Finish time','datetime-local',null,'');period.append(start,end);
  const note=doc.createElement('p');note.className='sub';note.textContent='Time edits are available only for completed single-interval sessions. Multi-segment pause/resume sessions require separate review.';card.append(note);
  const buttons=doc.createElement('div');buttons.className='row';const save=doc.createElement('button');save.type='button';save.className='btn primary';save.textContent='Save reviewed details';buttons.append(save);
+ const del=doc.createElement('button');del.type='button';del.id='lo270-delete-distraction';del.className='btn danger';del.textContent='Delete distraction';del.hidden=true;del.style.cssText='min-height:46px;flex:1 1 auto';
+ buttons.append(del);
  const refresh=doc.createElement('button');refresh.type='button';refresh.className='btn outline';refresh.textContent='Refresh activities';buttons.append(refresh);card.append(buttons);
  const status=doc.createElement('p');status.className='sub';status.setAttribute('role','status');card.append(status);
  const get=()=>root.lifeosReadOnlyWorkspace?.()?.sessions||[];
@@ -52,6 +54,9 @@ function mount(){
   const s=current();body.replaceChildren();if(!s){status.textContent='No completed editable activity available.';return}
   const fields=s.activityDetailsV252||{},all=root.LifeOSActivityIntelligenceV251?.catalog||[],found=category(s.name),
    cat=all.some(x=>x.id===selectedCategory)?selectedCategory:all.some(x=>x.id===fields.category)?fields.category:found,schema=schemas[cat]||[];
+  // Only offer deletion as a distraction when the saved record is classified
+  // as a distraction, not just because the user changed a draft category.
+  del.hidden=!(fields.category==='distraction'||found==='distraction');
   body.append(inputField(doc,'category','Activity category','select',['',...all.map(x=>x.id)],cat));
   body.querySelector('[data-key="category"]')?.addEventListener('change',e=>render(e.target.value));
   for(const [key,label,type,options] of schema)body.append(inputField(doc,key,label,type,options,fields[key]));
@@ -68,6 +73,20 @@ function mount(){
   if(rows.some(s=>String(s.id)===String(selected)))pick.value=String(selected);render();
  }
  pick.addEventListener('change',render);refresh.onclick=()=>populate(pick.value);
+ del.onclick=async()=>{
+  const selected=current();
+  if(!selected||del.hidden){status.textContent='Select an existing finished distraction first.';return}
+  del.disabled=true;status.textContent='Delete confirmation requested. No changes have been made yet.';
+  try{
+   const detail={id:String(selected.id),promise:null};
+   root.dispatchEvent(new CustomEvent('lifeos-v270-delete-reviewed-activity',{detail}));
+   if(!detail.promise){status.textContent='Deletion service unavailable. No activity was changed.';return}
+   const result=await detail.promise;
+   status.textContent=result?.message||'Deletion was not confirmed.';
+   if(result?.ok)populate();
+  }catch(error){status.textContent='Delete failed without confirmation: '+String(error?.message||error)}
+  finally{del.disabled=false}
+ };
  save.onclick=()=>{
   const s=current();if(!s)return;
   const values={};for(const node of body.querySelectorAll('[data-key]')){
