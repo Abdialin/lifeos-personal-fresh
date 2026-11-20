@@ -115,7 +115,7 @@ if(root.document&&!root.document.getElementById('lo256-script')){
  const load=()=>{
   if(root.document.getElementById('lo256-script'))return;
   if(!root.document.getElementById('lo256-style')){const css=root.document.createElement('link');css.id='lo256-style';css.rel='stylesheet';css.href='/personal_action_first_v256.css?v=261';root.document.head.appendChild(css)}
-  const script=root.document.createElement('script');script.id='lo256-script';script.src='/personal_action_first_v256.js?v=261';script.defer=true;root.document.head.appendChild(script);
+  const script=root.document.createElement('script');script.id='lo256-script';script.src='/personal_action_first_v256.js?v=270';script.defer=true;root.document.head.appendChild(script);
  };
  if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
 }
