@@ -50,7 +50,7 @@ function mount(){
  const track=document.getElementById('trackDistractionPanel'),plan=document.getElementById('scheduleEditorPanel');
  if(!track||!plan||document.getElementById('lo74-distraction'))return;
  const analytics=document.createElement('section');analytics.id='lo74-distraction';analytics.className='lo74-box';
- analytics.innerHTML='<h3>Distraction Intelligence · last 28 days</h3><p class="sub">Only explicitly recorded distractions are counted. Unlogged time and planned leisure are not distractions.</p><div id="lo74-distraction-results" aria-live="polite"></div><details><summary>Classify an existing distraction</summary><label class="sub" for="lo74-session">Recorded distraction</label><select class="field" id="lo74-session"></select><label class="sub" for="lo74-category">Category</label><select class="field" id="lo74-category"></select><label class="sub" for="lo74-trigger">Possible trigger (optional)</label><input class="field" id="lo74-trigger" maxlength="100" placeholder="e.g. boredom or notification"><button type="button" class="btn outline" id="lo74-save">Save classification</button><p id="lo74-save-status" role="status" class="sub"></p></details>';
+ analytics.innerHTML='<h3>Distraction Intelligence · last 28 days</h3><p class="sub">Only explicitly recorded distractions are counted. Unlogged time and planned leisure are not distractions.</p><div id="lo74-distraction-results" aria-live="polite"></div><details><summary>Classify an existing distraction</summary><label class="sub" for="lo74-session">Recorded distraction</label><select class="field" id="lo74-session"></select><label class="sub" for="lo74-category">Category</label><select class="field" id="lo74-category"></select><label class="sub" for="lo74-trigger">Possible trigger (optional)</label><input class="field" id="lo74-trigger" maxlength="100" placeholder="e.g. boredom or notification"><div class="row" style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px"><button type="button" class="btn outline" id="lo74-save">Save classification</button><button type="button" class="btn danger" id="lo270-delete-distraction" style="min-height:46px">Delete distraction</button></div><p id="lo74-save-status" role="status" class="sub"></p></details>';
  track.appendChild(analytics);
  const debt=document.createElement('section');debt.id='lo74-debt';debt.className='lo74-box';
  debt.innerHTML='<h3>Debt Chamber · last 28 days</h3><p class="sub">Only explicitly skipped plans or completed linked sessions with a measurable shortfall count as confirmed outstanding time. Unverified attendance is not automatically called debt.</p><div id="lo74-debt-results" aria-live="polite"></div><p class="sub">Recovery options (carry forward, reschedule, adjust goal or forgive) will require explicit user approval. No extra gym sessions are added automatically.</p>';
@@ -77,6 +77,20 @@ function mount(){
   root.dispatchEvent(new CustomEvent('lifeos-v74-classify-distraction',{detail}));
   analytics.querySelector('#lo74-save-status').textContent=detail.result?.message||'Classification could not be saved.';
   render();
+ });
+ const remove=analytics.querySelector('#lo270-delete-distraction');
+ remove.addEventListener('click',async()=>{
+  const id=select.value,feedback=analytics.querySelector('#lo74-save-status');
+  if(!id){feedback.textContent='Choose the recorded distraction you want to delete.';return}
+  remove.disabled=true;feedback.textContent='Delete confirmation opened. No record has been changed yet.';
+  try{
+   const detail={id,promise:null};root.dispatchEvent(new CustomEvent('lifeos-v270-delete-reviewed-activity',{detail}));
+   if(!detail.promise){feedback.textContent='Delete service unavailable. No record changed.';return}
+   const result=await detail.promise;
+   feedback.textContent=result?.message||'Deletion was not confirmed.';
+   if(result?.ok)render();
+  }catch(error){feedback.textContent='Deletion could not be confirmed: '+String(error?.message||error)}
+  finally{remove.disabled=false}
  });
  root.addEventListener('lifeos-v74-records-changed',render);
  root.addEventListener('lifeos-v75-changed',render);
