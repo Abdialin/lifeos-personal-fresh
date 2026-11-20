@@ -51,7 +51,7 @@ function mount(){
  function eligible(s){return s&&s.status==='finished'&&s.source!=='development-starter'&&s.source!=='assumed-demo'&&!s.seedBatch&&Number.isFinite(+s.startAt)}
  function current(){return get().find(s=>String(s.id)===pick.value)}
  function render(selectedCategory){
-  const s=current();body.replaceChildren();if(!s){status.textContent='No completed editable activity available.';return}
+  const s=current();body.replaceChildren();if(!s){del.hidden=true;status.textContent='No completed editable activity available.';return}
   const fields=s.activityDetailsV252||{},all=root.LifeOSActivityIntelligenceV251?.catalog||[],found=category(s.name),
    cat=all.some(x=>x.id===selectedCategory)?selectedCategory:all.some(x=>x.id===fields.category)?fields.category:found,schema=schemas[cat]||[];
   // Only offer deletion as a distraction when the saved record is classified
@@ -115,7 +115,7 @@ function mount(){
   const trigger=doc.createElement('button');trigger.type='button';trigger.className='btn primary';trigger.textContent='Start focus for selected activity';bar.append(trigger);
   const feedback=doc.createElement('p');feedback.className='sub';feedback.setAttribute('role','status');bar.append(feedback);
   function updateFocusChoices(){const selected=chooser.value;chooser.replaceChildren();for(const ses of get().filter(x=>['running','paused'].includes(x.status)&&['study','fitness','work','quran','reading','hobbies'].includes(category(x.name)))){const o=doc.createElement('option');o.value=ses.id;o.textContent=ses.name;chooser.append(o)}if([...chooser.options].some(o=>o.value===selected))chooser.value=selected;trigger.disabled=!chooser.options.length;feedback.textContent=chooser.options.length?'Choose an activity to start an optional focus session.':'Start a study, work, reading or workout timer to enable focus suggestions.';}
-  trigger.onclick=()=>{const ses=get().find(x=>String(x.id)===chooser.value);if(!ses)return;const label=$('lo207-focus-label'),button=$('lo207-start-focus');if(!label||!button){feedback.textContent='Focus controls are not ready. Open Focus Mode in Track.';return}label.value=ses.name;focus.open=true;focus.scrollIntoView({behavior:'smooth',block:'center'});if(root.confirm('Start Focus Mode for '+ses.name+'?')){button.click();feedback.textContent='Focus Mode requested. Use its Pause / Break / End controls.'}};
+  trigger.onclick=()=>{const ses=get().find(x=>String(x.id)===chooser.value);if(!ses)return;const label=$('lo207-focus-label'),button=$('lo207-start-focus');if(!label||!button){feedback.textContent='Focus controls are not ready. Open Focus Mode in Track.';return}label.value=ses.name;focus.open=true;focus.scrollIntoView({behavior:'smooth',block:'center'});{button.click();feedback.textContent='Focus Mode requested. Use its Pause / Break / End controls.'}};
   active.prepend(bar);updateFocusChoices();root.addEventListener?.('lifeos-v77-tracking-changed',updateFocusChoices);
  }
  // Android settings shortcuts belong in Settings, not inside the focus timer.
