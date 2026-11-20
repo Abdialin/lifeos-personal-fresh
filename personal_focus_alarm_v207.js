@@ -45,7 +45,7 @@ function init(){
    p=document.createElement('p');p.id='lo270-focus-feedback';
    p.setAttribute('role','status');p.setAttribute('aria-live','polite');
    p.style.cssText='padding:11px 13px;margin:9px 0;border:1px solid #597f92;border-radius:10px;background:#233a4b;color:#f2fbff;font-size:13px;line-height:1.5';
-   $('lo221-live-controls').append(p);
+   details.append(p);
   }
   p.textContent=message;
   status.textContent=message;
