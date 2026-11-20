@@ -39,6 +39,17 @@ function init(){
  alarmPanel.innerHTML='<div style="width:min(100%,460px);background:#20314a;border:2px solid #f0be74;border-radius:20px;text-align:center;padding:24px"><h2>⏰ Alarm reached</h2><p id="lo221-alert-label"></p><p class="sub">Sound and vibration repeat while this page remains active. Phone silent mode and background restrictions may prevent alerts.</p><div class="row"><button id="lo221-dismiss" class="btn primary" type="button">Dismiss alarm</button><button id="lo221-snooze" class="btn outline" type="button">Snooze 5 minutes</button></div></div>';
  document.body.append(alarmPanel);
  const $=id=>document.getElementById(id),status=$('lo207-focus-status');
+ const actionFeedback=message=>{
+  let p=document.getElementById('lo270-focus-feedback');
+  if(!p){
+   p=document.createElement('p');p.id='lo270-focus-feedback';
+   p.setAttribute('role','status');p.setAttribute('aria-live','polite');
+   p.style.cssText='padding:11px 13px;margin:9px 0;border:1px solid #597f92;border-radius:10px;background:#233a4b;color:#f2fbff;font-size:13px;line-height:1.5';
+   $('lo221-live-controls').append(p);
+  }
+  p.textContent=message;
+  status.textContent=message;
+ };
  const load=()=>{try{return normalizeState(JSON.parse(root.localStorage.getItem(KEY)||'null'))}catch{return null}};
  const native=root.LifeOSNative;
  if(native&&typeof native.postMessage==='function'){
@@ -52,7 +63,19 @@ function init(){
     catch(_){status.textContent='Unable to open Android settings.'}};
   }
  }
- function save(s){try{if(!s)root.localStorage.removeItem(KEY);else root.localStorage.setItem(KEY,JSON.stringify(s));root.dispatchEvent(new Event('lifeos-v221-focus-changed'));return true}catch{status.textContent='Could not save focus state. Browser storage may be full.';return false}}
+ function save(s){
+  try{
+   if(!s)root.localStorage.removeItem(KEY);
+   else root.localStorage.setItem(KEY,JSON.stringify(s));
+   const raw=root.localStorage.getItem(KEY);
+   const expected=s?JSON.stringify(s):null;
+   if(raw!==expected)throw Error('Focus state read-back mismatch');
+   root.dispatchEvent(new Event('lifeos-v221-focus-changed'));return true;
+  }catch(error){
+   actionFeedback('Focus control NOT saved: '+String(error?.message||error)+'. The previous focus state remains authoritative.');
+   return false;
+  }
+ }
  let current=load(),lastAlertAt=0,alertOpen=false,audioCheck='';
  const config=alerts?.load?.()||{sound:true,vibration:true,volume:75,repeatSeconds:20};
  $('lo221-sound').checked=config.sound;$('lo221-vibrate').checked=config.vibration;$('lo221-volume').value=config.volume;$('lo221-repeat').value=config.repeatSeconds;
@@ -149,11 +172,29 @@ function init(){
   if(next==='running'){current.end=t+current.remainingMs;current.modeAt=t}
   else{current.modeAt=t;current.mode=next}
   if(next==='running')current.mode='running';
-  if(save(current))update();
+  if(save(current)){
+   update();
+   actionFeedback(next==='paused'?'Focus paused.':next==='break'?'Break started.':'Focus resumed.');
+  }else{current=load()}
  }
- function pauseOrResume(){const s=load();if(!s||s.kind!=='focus')return;if(s.mode==='running')changeMode('paused');else changeMode('running')}
- function breakOrResume(){const s=load();if(!s||s.kind!=='focus')return;if(s.mode==='break')changeMode('running');else changeMode('break')}
- function stop(){current=null;save(null);alerts?.vibrate?.(0);update();status.textContent='Focus/alarm ended. No tracked activity was changed.'}
+ function pauseOrResume(){
+  const s=load();
+  if(!s||s.kind!=='focus'){actionFeedback('No active focus session to pause or resume.');return}
+  if(s.mode==='ringing'){actionFeedback('Dismiss the finished focus alarm first.');return}
+  changeMode(s.mode==='running'?'paused':'running')
+ }
+ function breakOrResume(){
+  const s=load();
+  if(!s||s.kind!=='focus'){actionFeedback('No active focus session to start a break.');return}
+  if(s.mode==='ringing'){actionFeedback('Dismiss the completed focus alarm first.');return}
+  changeMode(s.mode==='break'?'running':'break')
+ }
+ function stop(){
+  const previous=load();
+  if(!previous){actionFeedback('No focus session is active.');return}
+  if(!save(null)){current=previous;return}
+  current=null;alerts?.vibrate?.(0);update();actionFeedback('Focus/alarm ended. Your tracked activity has not been changed.');
+ }
  async function start(kind){
   const label=$('lo207-focus-label').value.trim()||'Focus';
   let end;
@@ -168,7 +209,23 @@ function init(){
    if(date.getTime()<=Date.now())date.setDate(date.getDate()+1);
    end=date.getTime();
   }
-  if(load()&&!root.confirm('Replace your existing focus or alarm?'))return;
+  if(load()){
+   const existing=load(),question='Replace your current '+existing.kind+' ('+existing.label+') with a new '+kind+'?';
+   let allowed=false;
+   if(typeof root.LifeOSConfirmFocusReplacement==='function')allowed=await root.LifeOSConfirmFocusReplacement(question);
+   else{
+    allowed=await new Promise(resolve=>{
+     const shade=document.createElement('div');shade.style.cssText='position:fixed;inset:0;z-index:2147483005;background:#000b;display:flex;align-items:center;justify-content:center;padding:18px';
+     const box=document.createElement('section');box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.style.cssText='width:min(100%,460px);padding:20px;border-radius:17px;background:#162a40;color:#fff;border:1px solid #6595a3';
+     const message=document.createElement('p');message.textContent=question;message.style.marginBottom='18px';
+     const no=document.createElement('button');no.type='button';no.className='btn outline';no.textContent='Keep current focus';
+     const yes=document.createElement('button');yes.type='button';yes.className='btn primary';yes.textContent='Replace focus';
+     const finish=value=>{shade.remove();resolve(value)};no.onclick=()=>finish(false);yes.onclick=()=>finish(true);
+     box.append(message,no,yes);shade.append(box);document.body.append(shade);no.focus();
+    });
+   }
+   if(!allowed){actionFeedback('Current focus kept unchanged.');return}
+  }
   const r=await primeSound();
   current={label,kind,end,mode:'running',remainingMs:end-Date.now(),plannedMs:kind==='focus'?end-Date.now():0,modeAt:Date.now(),startedAt:Date.now(),breakMs:0,pauseMs:0};
   if(!save(current))return;
