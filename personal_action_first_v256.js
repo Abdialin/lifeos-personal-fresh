@@ -117,7 +117,7 @@ if(root.document&&!root.document.getElementById('lo257-script')){
  const load=()=>{
   if(root.document.getElementById('lo257-script'))return;
   if(!root.document.getElementById('lo257-style')){const css=root.document.createElement('link');css.id='lo257-style';css.rel='stylesheet';css.href='/personal_insights_overview_v257.css?v=260';root.document.head.appendChild(css)}
-  const js=root.document.createElement('script');js.id='lo257-script';js.src='/personal_insights_overview_v257.js?v=270';js.defer=true;root.document.head.appendChild(js);
+  const js=root.document.createElement('script');js.id='lo257-script';js.src='/personal_insights_overview_v257.js?v=271';js.defer=true;root.document.head.appendChild(js);
  };
  if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
 }
