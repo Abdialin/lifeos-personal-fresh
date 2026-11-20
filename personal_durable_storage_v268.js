@@ -43,7 +43,10 @@
   // Do not overwrite a newer verified backup with an older save.
   const prior=await get();
   if(prior?.raw===raw){status.available=true;status.savedAt=prior.savedAt;status.verified=true;return true}
-  await put({raw,savedAt:Date.now(),committedAt:Number(record.committedAt)||0});
+  const timestamp=Number(record.committedAt)||0;
+  // An earlier async callback must not replace a more recent durable shadow.
+  if(prior&&Number(prior.committedAt)>timestamp){status.available=true;status.savedAt=prior.savedAt;status.verified=true;return true}
+  await put({raw,savedAt:Date.now(),committedAt:timestamp});
   const saved=await get();
   if(saved?.raw!==raw)throw new Error('IndexedDB read-back differs from checkpoint');
   status.available=true;status.savedAt=saved.savedAt;status.verified=true;status.error=null;
