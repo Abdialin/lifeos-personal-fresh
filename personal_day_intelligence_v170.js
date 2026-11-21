@@ -151,7 +151,7 @@ function planComparison(report,workspace){
  });
  const intersect=(left,right)=>{let total=0;for(const [a,b] of left)for(const [x,y] of right)total+=Math.max(0,Math.min(b,y)-Math.max(a,x));return total};
  const normalize=t=>String(t||'').toLowerCase().replace(/[^a-z0-9\p{L}]+/gu,' ').trim();
- const matchesPlan=(p,r)=>(p.linkedId&&String(r.id)===p.linkedId)||(normalize(p.name).length>=3&&normalize(r.name)===normalize(p.name));
+ const matchesPlan=(p,r)=>p.linkedId?String(r.id)===p.linkedId:(normalize(p.name).length>=3&&normalize(r.name)===normalize(p.name));
  const rows=plans.map(p=>{
   const target=normalize(p.name);
   const matches=report.records.filter(r=>matchesPlan(p,r));
