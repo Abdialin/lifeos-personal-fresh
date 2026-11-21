@@ -159,7 +159,11 @@ function planComparison(report,workspace){
   const scheduled=p.end-p.start,matchedMs=intersect(match,[[p.start,p.end]]),occupiedMs=intersect(all,[[p.start,p.end]]);
   return {...p,scheduledMs:scheduled,matchedMs,otherRecordedMs:Math.max(0,occupiedMs-matchedMs),noRecordMs:Math.max(0,scheduled-occupiedMs),confidence:p.linkedId?'linked session':target.length>=3?'exact activity name':'unmatched'};
  });
- return {rows,scheduledMs:mins(merge(rows.map(x=>[x.start,x.end])))*M,matchedMs:rows.reduce((n,x)=>n+x.matchedMs,0),otherRecordedMs:rows.reduce((n,x)=>n+x.otherRecordedMs,0),noRecordMs:rows.reduce((n,x)=>n+x.noRecordMs,0)};
+ const scheduledUnion=merge(rows.map(x=>[x.start,x.end]));
+ const matchedUnion=merge(rows.flatMap(p=>report.records.filter(r=>(p.linkedId&&String(r.id)===p.linkedId)||(p.name.trim().length>=3&&String(r.name||'').toLowerCase().trim()===p.name.toLowerCase().trim())).map(r=>[Math.max(p.start,r.start),Math.min(p.end,r.end)]).filter(([a,b])=>b>a)));
+ const occupiedUnion=merge(report.records.flatMap(r=>scheduledUnion.map(([a,b])=>[Math.max(a,r.start),Math.min(b,r.end)]).filter(([x,y])=>y>x)));
+ const scheduledMs=mins(scheduledUnion)*M,matchedMs=mins(matchedUnion)*M,occupiedMs=mins(occupiedUnion)*M;
+ return {rows,scheduledMs,matchedMs,otherRecordedMs:Math.max(0,occupiedMs-matchedMs),noRecordMs:Math.max(0,scheduledMs-occupiedMs)};
 }
 function mountReports(){
  const panel=$('analyticsPanel');if(!panel||$('lo180-report'))return;
