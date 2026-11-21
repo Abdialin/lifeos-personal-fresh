@@ -28,7 +28,7 @@ function averageIdentity(s){
  const canonical=t=>{const m=String(t||'').match(/\b(fajr|fajer|dhuhr|duhr|dhur|zuhr|zuhur|asr|maghrib|isha)\b/i);return m?(/^(zuhr|zuhur|duhr|dhur|dhuhr)$/i.test(m[1])?'Dhuhr':/^fajer$/i.test(m[1])?'Fajr':m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()):null};
  const prayerType=canonical(prayer)||canonical(name);
  if(prayerType)return {group:'Prayer',name:prayerType};
- if(/\b(prayer|salah|salat|salaah|bön)\b/i.test(name)||prayer&&prayer!=='not specified')return {group:'Prayer',name:'Unspecified prayer'};
+ if(/\b(prayer|salah|salat|salaah|bön)\b/i.test(name)||prayer&&prayer!=='not specified'||/^(prayer|prayers|salah|salat|bön)$/i.test(String(s?.category||detail.category||'').trim()))return {group:'Prayer',name:'Unspecified prayer'};
  const combined=[name,String(detail.activityType||''),String(detail.exercise||''),String(detail.subject||''),String(detail.role||'')].join(' ');
  const academicCategory=/^(study|studies|studying|university|education|coursework|student|school|universitet|högskola)$/i.test(String(s?.category||detail.category||'').trim());
  const academicCode=/\b(?:BTA|ERA|MTK|MAA|PPU|DVA|DVG)\s*[-:]?\s*\d{3}\b/i.test(combined);
@@ -98,7 +98,7 @@ else if(view==='averages'){
  const rows=[...avg.entries()].sort((a,b)=>b[1].sum-a[1].sum);
  const row=(name,x)=>'<div class="l170-row"><strong>'+esc(name)+'</strong><b>'+fmt(x.sum/x.n)+'</b><span>'+x.n+' sessions · '+fmt(x.sum)+' total</span></div>';
  const openGroups=new Set([...box.querySelectorAll('details.l170-avg-group[open]')].map(d=>d.dataset.group));
- box.innerHTML='<h3>Activity averages · last 7 days</h3>'+rows.map(([group,x])=>{
+ box.innerHTML='<h3>Activity averages · last 7 days</h3>'+(rows.length?'':'<p class="l170-hint">No completed activity sessions found in the last 7 days.</p>')+rows.map(([group,x])=>{
   const items=[...(children.get(group)||new Map()).entries()].sort((a,b)=>b[1].sum-a[1].sum);
   const body=items.map(([name,v])=>row(name,v)).join('');
   return '<details class="l170-avg-group" data-group="'+esc(group)+'"'+(openGroups.has(group)?' open':'')+'><summary><strong>'+esc(group)+'</strong><span>'+fmt(x.sum)+' total · '+x.n+' sessions</span><small>'+fmt(x.sum/x.n)+' avg</small></summary><div class="l170-avg-children">'+body+'</div></details>';
