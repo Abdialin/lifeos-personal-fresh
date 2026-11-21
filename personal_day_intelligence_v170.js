@@ -24,7 +24,7 @@ function daySegments(s,from,to,now=Date.now()){
 /* Today averages: read-only classification from explicit session details first, then name. */
 function averageIdentity(s){
  const detail=s?.activityDetails||{},raw=String(s?.name||'').trim(),name=raw.toLowerCase();
- const prayer=String(detail.prayer||detail.prayerName||detail.prayerType||'').toLowerCase();
+ const prayer=String(detail.prayer||detail.prayerName||detail.prayerType||s?.prayerType||s?.prayerName||s?.prayer||'').toLowerCase();
  const canonical=t=>{const m=String(t||'').match(/\b(fajr|fajer|dhuhr|duhr|dhur|zuhr|zuhur|asr|maghrib|isha)\b/i);return m?(/^(zuhr|zuhur|duhr|dhur|dhuhr)$/i.test(m[1])?'Dhuhr':/^fajer$/i.test(m[1])?'Fajr':m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()):null};
  const prayerType=canonical(prayer)||canonical(name);
  if(prayerType)return {group:'Prayer',name:prayerType};
@@ -76,8 +76,10 @@ if(view==='timeline'){
 else if(view==='averages'){
  const avg=new Map(),children=new Map();
  for(const s of v.ss){
-  const t=Number(s.endAt);if(s.status!=='finished'||t<v.now-7*D||t>v.now)continue;
-  const m=mins(spans(s));if(!m||m>1440)continue;
+  const t=Number(s.endAt);if(s.status!=='finished'||!Number.isFinite(t)||t<v.now-7*D||t>v.now)continue;
+  const windowStart=v.now-7*D;
+  const clipped=spans(s).map(([a,b])=>[Math.max(a,windowStart),Math.min(b,v.now)]).filter(([a,b])=>b>a);
+  const m=mins(clipped);if(!m||m>1440)continue;
   const id=averageIdentity(s),group=id.group;
   const total=avg.get(group)||{n:0,sum:0};total.n++;total.sum+=m;avg.set(group,total);
   let names=children.get(group);if(!names){names=new Map();children.set(group,names)}
@@ -86,10 +88,11 @@ else if(view==='averages'){
  }
  const rows=[...avg.entries()].sort((a,b)=>b[1].sum-a[1].sum);
  const row=(name,x)=>'<div class="l170-row"><strong>'+esc(name)+'</strong><b>'+fmt(x.sum/x.n)+'</b><span>'+x.n+' sessions · '+fmt(x.sum)+' total</span></div>';
+ const openGroups=new Set([...box.querySelectorAll('details.l170-avg-group[open]')].map(d=>d.dataset.group));
  box.innerHTML='<h3>Activity averages · last 7 days</h3>'+rows.map(([group,x])=>{
   const items=[...(children.get(group)||new Map()).entries()].sort((a,b)=>b[1].sum-a[1].sum);
   const body=items.map(([name,v])=>row(name,v)).join('');
-  return '<details class="l170-avg-group"><summary><strong>'+esc(group)+'</strong><span>'+fmt(x.sum)+' total · '+x.n+' sessions</span><small>'+fmt(x.sum/x.n)+' avg</small></summary><div class="l170-avg-children">'+body+'</div></details>';
+  return '<details class="l170-avg-group" data-group="'+esc(group)+'"'+(openGroups.has(group)?' open':'')+'><summary><strong>'+esc(group)+'</strong><span>'+fmt(x.sum)+' total · '+x.n+' sessions</span><small>'+fmt(x.sum/x.n)+' avg</small></summary><div class="l170-avg-children">'+body+'</div></details>';
  }).join('')+'<p class="l170-hint">Tap a category to see its activities. Averages count completed sessions only. Unidentified sessions are not guessed or renamed.</p>';
 }
 
