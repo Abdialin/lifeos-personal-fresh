@@ -1084,7 +1084,7 @@ function pause(id,reason='pause'){
   if(seg&&seg.end==null)seg.end=t;
   s.status='paused';s.pauseReason=reason==='break'?'break':'pause';event(s,reason==='break'?'BREAK_START':'PAUSE',t);
  });
- if(ok){try{render()}catch(error){console.warn('Timer saved; optional screen repaint failed',error)}}
+ if(ok){try{render()}catch(error){console.warn('Timer saved; optional screen repaint failed',error)}window.dispatchEvent(new CustomEvent('lifeos-track-action-committed',{detail:{id:String(id),action:reason==='break'?'break':'pause',status:'paused'}}))}
  return ok;
 }
 function resume(id){
@@ -1093,7 +1093,7 @@ function resume(id){
   const s=data.sessions.find(x=>x.id===id),t=now();
   s.segments.push({start:t,end:null});s.status='running';event(s,s.pauseReason==='break'?'BREAK_END':'RESUME',t);delete s.pauseReason;
  });
- if(ok){try{render()}catch(error){console.warn('Timer saved; optional screen repaint failed',error)}}
+ if(ok){try{render()}catch(error){console.warn('Timer saved; optional screen repaint failed',error)}window.dispatchEvent(new CustomEvent('lifeos-track-action-committed',{detail:{id:String(id),action:'resume',status:'running'}}))}
  return ok;
 }
 function finish(id){
@@ -4447,7 +4447,7 @@ ids.forEach(function(id){const related=source.filter(b=>b.dataset.id===id);const
 related.forEach(function(button){const control=document.createElement('button');control.type='button';control.dataset.action=button.dataset.act;control.textContent=button.dataset.act==='break'?'Take a break':button.dataset.act==='pause'?'Pause activity':button.dataset.act==='finish'?'Finish activity':'Resume activity';control.addEventListener('click',function(){const live=[...document.querySelectorAll('#sessions [data-act]')].find(b=>b.dataset.id===id&&b.dataset.act===control.dataset.action);if(!live){document.getElementById('loFocusMessage').textContent='Timer state changed. Review the active session and try again.';return}document.getElementById('loFocusMessage').textContent='Applying '+control.textContent.toLowerCase()+'…';live.click();setTimeout(function(){const still=[...document.querySelectorAll('#sessions [data-act]')].find(b=>b.dataset.id===id&&b.dataset.act===control.dataset.action);document.getElementById('loFocusMessage').textContent=still?'Check the activity above: the requested action may not have been saved.':'Timer controls updated. Review the session status above.';queue()},250)});actions.appendChild(control)});card.append(title,time,actions);out.appendChild(card)});
 }
 function queue(){if(scheduled)return;scheduled=true;requestAnimationFrame(render)}
-function init(){if(!getPanel())return;const host=document.getElementById('sessions');if(!host)return;observer=new MutationObserver(queue);observer.observe(host,{childList:true,subtree:true,attributes:true,attributeFilter:['data-act','data-id']});queue();document.addEventListener('lifeos-v77-tracking-changed',queue);window.addEventListener('pageshow',queue);window.addEventListener('lifeos-track-timer-snapshot',function(event){for(const item of event.detail?.sessions||[]){const node=[...document.querySelectorAll('#loFocusSessions [data-focus-timer]')].find(el=>el.dataset.focusTimer===String(item.id));const live=document.querySelector('#sessions [data-timer="'+CSS.escape(String(item.id))+'"]');if(node&&live)node.textContent=live.textContent}})}
+function init(){if(!getPanel())return;const host=document.getElementById('sessions');if(!host)return;observer=new MutationObserver(queue);observer.observe(host,{childList:true,subtree:true,attributes:true,attributeFilter:['data-act','data-id']});queue();document.addEventListener('lifeos-v77-tracking-changed',queue);window.addEventListener('pageshow',queue);window.addEventListener('lifeos-track-action-committed',function(e){const action=e.detail?.action;const name=action==='break'?'Break started':action==='pause'?'Activity paused':action==='resume'?'Activity resumed':action==='finish'?'Activity finished':'Timer updated';const message=document.getElementById('loFocusMessage');if(message)message.textContent=name+' and saved.';queue()});window.addEventListener('lifeos-track-timer-snapshot',function(event){for(const item of event.detail?.sessions||[]){const node=[...document.querySelectorAll('#loFocusSessions [data-focus-timer]')].find(el=>el.dataset.focusTimer===String(item.id));const live=document.querySelector('#sessions [data-timer="'+CSS.escape(String(item.id))+'"]');if(node&&live)node.textContent=live.textContent}})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();</script><style id="lo-track-history-enhancements">
 body[data-lifeos-view="tracking"] #trackHistoryPanel{background:linear-gradient(155deg,#152438,#111b2c);border-color:#3c5d70}
