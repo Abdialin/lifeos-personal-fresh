@@ -111,11 +111,11 @@ else if(view==='averages'){
  const rows=[...avg.entries()].sort((a,b)=>b[1].sum-a[1].sum);
  const recordedMinutes=rows.reduce((n,[,x])=>n+x.sum,0),unknown=avg.get('Unclassified');
  const uniqueMinutes=mins(merge(trackedSpans)),overlapMinutes=Math.max(0,recordedMinutes-uniqueMinutes);
- const coverageSummary=rows.length?'<p class="l170-hint"><strong>Activity time:</strong> '+fmt(recordedMinutes)+' across categories · <strong>Unique tracked time:</strong> '+fmt(uniqueMinutes)+(overlapMinutes>0.01?' · <strong>Overlapping activity time:</strong> '+fmt(overlapMinutes):'')+'. Unique time counts simultaneous activities only once.</p>':'';
+ const coverageSummary=rows.length?'<p class="l170-hint"><strong>Completed activity time:</strong> '+fmt(recordedMinutes)+' across categories · <strong>Unique completed-session time:</strong> '+fmt(uniqueMinutes)+(overlapMinutes>0.01?' · <strong>Overlapping activity time:</strong> '+fmt(overlapMinutes):'')+'. This seven-day summary includes completed sessions only; running and unfinished activities are not included. Unique time counts simultaneous completed sessions only once.</p>':'';
  const unknownSummary=unknown?'<p class="l170-hint"><strong>Needs classification:</strong> '+unknown.n+' session(s) · '+fmt(unknown.sum)+' · '+Math.round(unknown.sum/recordedMinutes*100)+'% of recorded session time. Expand Unclassified to review original activity names.</p>':'<p class="l170-hint">All included sessions have an activity category.</p>';
  const row=(name,x)=>'<div class="l170-row"><strong>'+esc(name)+'</strong><b>'+fmt(x.sum/x.n)+' / session</b><span>'+x.n+' sessions · '+fmt(x.sum)+' total</span></div>';
  const openGroups=new Set([...box.querySelectorAll('details.l170-avg-group[open]')].map(d=>d.dataset.group));
- box.innerHTML='<h3>Activity averages · last 7 days</h3>'+(rows.length?coverageSummary+unknownSummary:'<p class="l170-hint">No completed activity sessions found in the last 7 days.</p>')+rows.map(([group,x])=>{
+ box.innerHTML='<h3>Completed activity averages · last 7 days</h3>'+(rows.length?coverageSummary+unknownSummary:'<p class="l170-hint">No completed activity sessions found in the last 7 days.</p>')+rows.map(([group,x])=>{
   const items=[...(children.get(group)||new Map()).entries()].sort((a,b)=>b[1].sum-a[1].sum);
   const body=items.map(([name,v])=>row(name,v)).join('');
   return '<details class="l170-avg-group" data-group="'+esc(group)+'"'+(openGroups.has(group)?' open':'')+'><summary><strong>'+esc(group)+'</strong><span>'+fmt(x.sum)+' total · '+x.n+' sessions</span><small>'+fmt(x.sum/x.n)+' / session · '+fmt(x.sum/7)+' / day</small></summary><div class="l170-avg-children">'+body+'</div></details>';
