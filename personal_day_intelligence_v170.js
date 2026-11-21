@@ -25,18 +25,20 @@ function daySegments(s,from,to,now=Date.now()){
 function averageIdentity(s){
  const detail=s?.activityDetails||{},raw=String(s?.name||'').trim(),name=raw.toLowerCase();
  const prayer=String(detail.prayer||detail.prayerName||detail.prayerType||'').toLowerCase();
- const canonical=t=>{const m=String(t||'').match(/\b(fajr|dhuhr|zuhr|asr|maghrib|isha)\b/i);return m?(m[1].toLowerCase()==='zuhr'?'Dhuhr':m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()):null};
+ const canonical=t=>{const m=String(t||'').match(/\b(fajr|fajer|dhuhr|duhr|dhur|zuhr|zuhur|asr|maghrib|isha)\b/i);return m?(/^(zuhr|zuhur|duhr|dhur|dhuhr)$/i.test(m[1])?'Dhuhr':/^fajer$/i.test(m[1])?'Fajr':m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()):null};
  const prayerType=canonical(prayer)||canonical(name);
  if(prayerType)return {group:'Prayer',name:prayerType};
  if(/\b(prayer|salah|salat|salaah|bön)\b/i.test(name)||prayer&&prayer!=='not specified')return {group:'Prayer',name:'Unspecified prayer'};
  const combined=[name,String(detail.activityType||''),String(detail.exercise||''),String(detail.subject||''),String(detail.role||'')].join(' ');
  if(/\b(quran|qur.an|koran|hifdh|hifz|surah|memorization)\b/i.test(combined)||detail.surah)return {group:'Quran',name:'Quran'};
  if(/\b(gym|workout|fitness|training|running|walking|cycling|boxing|swim|yoga|strength|träning|promenad)\b/i.test(combined))return {group:'Fitness',name:'Fitness'};
- if(/\b(study|studying|lecture|coursework|assignment|exam|research|homework|studier|plugg)\b/i.test(combined)||detail.subject)return {group:'Study',name:'Study'};
+ if(/\b(study|studying|lecture|coursework|assignment|exam|research|homework|studier|plugg|arabic|language practice|language learning)\b/i.test(combined)||detail.subject)return {group:'Study',name:'Study'};
  if(/\b(work|shift|business|development|security|arbete|jobba|jobb)\b/i.test(combined)||detail.role)return {group:'Work',name:'Work'};
  if(/\b(sleep|sleeping|nap)\b/i.test(combined))return {group:'Sleep',name:'Sleep'};
  if(/\b(eating|meal|breakfast|lunch|dinner|food|nutrition)\b/i.test(combined))return {group:'Nutrition',name:'Eating'};
  if(/\b(commut|travel|transport|driving)\b/i.test(combined))return {group:'Travel',name:'Travel'};
+ if(/\b(distraction|distracted|scrolling|social media)\b/i.test(combined))return {group:'Distractions',name:'Distractions'};
+ if(/\b(grocery|groceries|shopping|car wash|errand)\b/i.test(combined))return {group:'Errands',name:'Errands'};
  const category=String(s?.category||detail.category||'').trim();
  if(category&&category.toLowerCase()!=='other')return {group:category,name:category};
  return {group:'Unclassified',name:raw&&raw.toLowerCase()!=='other'?raw:'Needs classification'};
@@ -72,18 +74,23 @@ if(view==='timeline'){
  '<p class="l170-hint">Unlogged is unknown; it is not automatically free time or distraction. Pauses are excluded from recorded time.</p></div></details>';
 }
 else if(view==='averages'){
- const avg=new Map(),sub=new Map();
+ const avg=new Map(),children=new Map();
  for(const s of v.ss){
   const t=Number(s.endAt);if(s.status!=='finished'||t<v.now-7*D||t>v.now)continue;
   const m=mins(spans(s));if(!m||m>1440)continue;
-  const id=averageIdentity(s),key=id.group;
-  const item=avg.get(key)||{n:0,sum:0};item.n++;item.sum+=m;avg.set(key,item);
-  if(key==='Prayer'){const prayer=sub.get(id.name)||{n:0,sum:0};prayer.n++;prayer.sum+=m;sub.set(id.name,prayer)}
-  else if(key==='Unclassified'){const unknown=sub.get(id.name)||{n:0,sum:0};unknown.n++;unknown.sum+=m;sub.set(id.name,unknown)}
+  const id=averageIdentity(s),group=id.group;
+  const total=avg.get(group)||{n:0,sum:0};total.n++;total.sum+=m;avg.set(group,total);
+  let names=children.get(group);if(!names){names=new Map();children.set(group,names)}
+  const label=group==='Prayer'?id.name:String(s.name||id.name||group).trim()||group;
+  const item=names.get(label)||{n:0,sum:0};item.n++;item.sum+=m;names.set(label,item);
  }
  const rows=[...avg.entries()].sort((a,b)=>b[1].sum-a[1].sum);
- const row=(name,x,subrow=false)=>'<div class="l170-row'+(subrow?' l170-subrow':'')+'"><strong>'+esc(name)+'</strong><b>'+fmt(x.sum/x.n)+'</b><span>'+x.n+' sessions · '+fmt(x.sum)+' total</span></div>';
- box.innerHTML='<h3>Activity averages · last 7 days</h3>'+rows.map(([name,x])=>row(name,x)+(name==='Prayer'?[...sub.entries()].filter(([k])=>['Fajr','Dhuhr','Asr','Maghrib','Isha','Unspecified prayer'].includes(k)).map(([k,v])=>row('↳ '+k,v,true)).join(''):'')+(name==='Unclassified'?[...sub.entries()].filter(([k])=>!['Fajr','Dhuhr','Asr','Maghrib','Isha','Unspecified prayer'].includes(k)).map(([k,v])=>row('↳ '+k,v,true)).join(''):'' )).join('')+'<p class="l170-hint">Prayer totals combine all named prayers. Classification uses saved details first. Unidentified records remain visible for review; no saved activities are renamed.</p>';
+ const row=(name,x)=>'<div class="l170-row"><strong>'+esc(name)+'</strong><b>'+fmt(x.sum/x.n)+'</b><span>'+x.n+' sessions · '+fmt(x.sum)+' total</span></div>';
+ box.innerHTML='<h3>Activity averages · last 7 days</h3>'+rows.map(([group,x])=>{
+  const items=[...(children.get(group)||new Map()).entries()].sort((a,b)=>b[1].sum-a[1].sum);
+  const body=items.map(([name,v])=>row(name,v)).join('');
+  return '<details class="l170-avg-group"><summary><strong>'+esc(group)+'</strong><span>'+fmt(x.sum)+' total · '+x.n+' sessions</span><small>'+fmt(x.sum/x.n)+' avg</small></summary><div class="l170-avg-children">'+body+'</div></details>';
+ }).join('')+'<p class="l170-hint">Tap a category to see its activities. Averages count completed sessions only. Unidentified sessions are not guessed or renamed.</p>';
 }
 
 else{let presets=[['Gym','gym',60],['Work','work',720],['Prayer','prayer',30],['Quran','quran',90],['Sleep','sleep',360],['Laundry','laundry',120],['Groceries','groceries',60],['Reading','reading',30]];box.innerHTML='<h3>Expected activity durations</h3>'+presets.map(([name,key,def])=>'<label class="l170-lim"><span>'+name+'</span><input type="number" min="5" max="1440" step="5" data-l170-limit="'+key+'" value="'+(c[key]?.minutes||def)+'"><small>min</small></label>').join('')+'<button id="l170-save">Save limits</button><p id="l170-lim-msg" class="l170-hint"></p>';$('l170-save').onclick=()=>{let val={...load(PROF,{})};for(let e of box.querySelectorAll('[data-l170-limit]')){let n=Number(e.value);if(!Number.isInteger(n)||n<5||n>1440){$('l170-lim-msg').textContent='Use 5–1440 whole minutes.';return}val[e.dataset.l170Limit]={minutes:n}}try{store(PROF,val);$('l170-lim-msg').textContent='Saved on this device. Existing sessions unchanged.'}catch{$('l170-lim-msg').textContent='Unable to save.'}}}
