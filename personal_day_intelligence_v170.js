@@ -32,7 +32,7 @@ function averageIdentity(s){
  const combined=[name,String(detail.activityType||''),String(detail.exercise||''),String(detail.subject||''),String(detail.role||'')].join(' ');
  if(/\b(quran|qur.an|koran|hifdh|hifz|surah|memorization)\b/i.test(combined)||detail.surah)return {group:'Quran',name:'Quran'};
  if(/\b(gym|workout|fitness|training|running|walking|cycling|boxing|swim|yoga|strength|träning|promenad)\b/i.test(combined))return {group:'Fitness',name:'Fitness'};
- if(/\b(study|studying|lecture|coursework|assignment|exam|research|homework|studier|plugg|arabic|language practice|language learning)\b/i.test(combined)||detail.subject)return {group:'Study',name:'Study'};
+ if(/\b(study|studying|studies|university|universitet|högskola|kurs|course|lecture|föreläsning|seminar|seminarium|coursework|assignment|inlämning|submit|exam|tentamen|research|homework|projektarbete|project work|studier|plugg|arabic|language practice|language learning)\b/i.test(combined)||/\bkurs[. :_-]*grp\b/i.test(combined)||detail.subject)return {group:'University / Studies',name:raw||'University activity'};
  if(/\b(work|shift|business|development|security|arbete|jobba|jobb)\b/i.test(combined)||detail.role)return {group:'Work',name:'Work'};
  if(/\b(sleep|sleeping|nap)\b/i.test(combined))return {group:'Sleep',name:'Sleep'};
  if(/\b(eating|meal|breakfast|lunch|dinner|food|nutrition)\b/i.test(combined))return {group:'Nutrition',name:'Eating'};
@@ -40,7 +40,8 @@ function averageIdentity(s){
  if(/\b(distraction|distracted|scrolling|social media)\b/i.test(combined))return {group:'Distractions',name:'Distractions'};
  if(/\b(grocery|groceries|shopping|car wash|errand)\b/i.test(combined))return {group:'Errands',name:'Errands'};
  const category=String(s?.category||detail.category||'').trim();
- if(category&&category.toLowerCase()!=='other')return {group:category,name:category};
+ if(/^(study|studies|studying|university|education|coursework)$/i.test(category))return {group:'University / Studies',name:raw||category};
+ if(category&&category.toLowerCase()!=='other')return {group:category,name:raw||category};
  return {group:'Unclassified',name:raw&&raw.toLowerCase()!=='other'?raw:'Needs classification'};
 }
 function snapshot(at=Date.now(),workspace=read()){
