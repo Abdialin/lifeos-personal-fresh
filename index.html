@@ -4419,4 +4419,27 @@ related.forEach(function(button){const control=document.createElement('button');
 function queue(){if(scheduled)return;scheduled=true;requestAnimationFrame(render)}
 function init(){if(!getPanel())return;const host=document.getElementById('sessions');if(!host)return;observer=new MutationObserver(queue);observer.observe(host,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['data-act','data-id']});queue();document.addEventListener('lifeos-v77-tracking-changed',queue);window.addEventListener('pageshow',queue)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();</script><style id="lo-track-history-enhancements">
+body[data-lifeos-view="tracking"] #trackHistoryPanel{background:linear-gradient(155deg,#152438,#111b2c);border-color:#3c5d70}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .head{align-items:flex-start;flex-wrap:wrap}
+body[data-lifeos-view="tracking"] #trackHistoryPanel h2{font-size:21px;letter-spacing:-.025em}
+body[data-lifeos-view="tracking"] #trackHistoryPanel #exportCsv{min-height:44px}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar{display:grid;grid-template-columns:minmax(0,2fr) minmax(140px,1fr);gap:7px 12px;align-items:end;margin:14px 0}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar label{margin:0}
+body[data-lifeos-view="tracking"] #trackHistoryPanel #loHistorySearch{grid-column:1;grid-row:2}
+body[data-lifeos-view="tracking"] #trackHistoryPanel #loHistoryPeriod{grid-column:2;grid-row:2}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .history{max-height:520px;overflow:auto;overscroll-behavior:contain}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .history button{min-height:40px}
+body[data-lifeos-view="tracking"] #trackPastPanel input,body[data-lifeos-view="tracking"] #trackPastPanel select{min-height:45px}
+body[data-lifeos-view="tracking"] #trackPastPanel h2{font-size:21px}
+body[data-lifeos-view="tracking"] #trackDistractionPanel h2{font-size:21px}
+body[data-lifeos-view="tracking"] #trackDistractionPanel .row{gap:12px}
+@media(max-width:580px){body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar{grid-template-columns:1fr}body[data-lifeos-view="tracking"] #trackHistoryPanel #loHistorySearch,body[data-lifeos-view="tracking"] #trackHistoryPanel #loHistoryPeriod{grid-column:1;grid-row:auto}body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar label{margin-top:5px}body[data-lifeos-view="tracking"] #trackHistoryPanel .history{max-height:440px}body[data-lifeos-view="tracking"] #trackHistoryPanel .head #exportCsv{width:100%}}
+</style><script id="lo-track-history-navigation">(function(){'use strict';
+function init(){const panel=document.getElementById('trackHistoryPanel');if(!panel||document.getElementById('loTrackHistoryGuide'))return;const guide=document.createElement('p');guide.id='loTrackHistoryGuide';guide.className='sub';guide.textContent='Search by activity or date, choose a time period, then open a saved session to review or correct its details. Export CSV for your own records.';const toolbar=panel.querySelector('.lo-history-toolbar');if(toolbar)panel.insertBefore(guide,toolbar);
+const search=document.getElementById('loHistorySearch');if(search){search.setAttribute('aria-label','Search recorded activity history');search.setAttribute('inputmode','search')}
+const period=document.getElementById('loHistoryPeriod');if(period)period.setAttribute('aria-label','Filter recorded activity history by period');
+const history=document.getElementById('history');if(history){history.setAttribute('role','region');history.setAttribute('aria-label','Recorded activity sessions');history.setAttribute('tabindex','0')}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();</script></body></html>
