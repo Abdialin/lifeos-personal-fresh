@@ -78,7 +78,7 @@ function render(){
   card.id='lo247-quality';
   card.style.cssText='margin:16px 0;border:1px solid #50748a;border-radius:16px;padding:14px 16px;background:#142a40;color:#e6f6fa;line-height:1.5';
   const title=root.document.createElement('summary');
-  title.textContent='Recording quality · overlaps and timer review';
+  title.textContent='Tracking quality';
   title.style.cssText='cursor:pointer;font-weight:700;font-size:16px;min-height:44px';
   const body=root.document.createElement('div');body.id='lo247-quality-body';
   card.append(title,body);
@@ -91,12 +91,16 @@ function render(){
  const at=Date.now(),from=localDay(at),today=inspect(sessions,from,from+DAY,at);
  const risk=openRisk(sessions,at);
  body.replaceChildren();
- const p=root.document.createElement('p');
- p.textContent='Today: '+fmt(today.recordedMs)+' summed activity time · '+fmt(today.uniqueMs)+
-  ' unique tracked time · '+fmt(today.overlapMs)+' parallel/overlapping time · '+fmt(today.unknownMs)+' not recorded so far.';
- body.append(p);
- const note=root.document.createElement('p');note.style.cssText='font-size:13px;color:#b9cfdf';
- note.textContent='Summed activity durations may exceed 24h when timers run together. Unique time counts each clock minute only once. Unrecorded time is unknown, not automatically free time or distraction.';
+ const metrics=root.document.createElement('div');metrics.className='lo286-quality-metrics';
+ for(const [label,value] of [['Unique',fmt(today.uniqueMs)],['Overlap',fmt(today.overlapMs)],['Unlogged',fmt(today.unknownMs)]]){
+  const tile=root.document.createElement('div');tile.className='lo286-quality-tile';
+  const val=root.document.createElement('strong');val.textContent=value;
+  const name=root.document.createElement('span');name.textContent=label;
+  tile.append(val,name);metrics.append(tile);
+ }
+ body.append(metrics);
+ const note=root.document.createElement('p');note.className='lo286-quality-note';
+ note.textContent='Overlapping time is counted once. Unlogged time is unknown.';
  body.append(note);
  const week=recentDays(sessions,at,7);
  const unusual=week.filter(day=>day.over24h||day.overlapRatio>=.25||day.highCoverage);
