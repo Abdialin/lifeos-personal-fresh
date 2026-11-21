@@ -150,17 +150,18 @@ function planComparison(report,workspace){
   return Number.isFinite(from)&&Number.isFinite(to)&&to>from?[{id:String(p.id||''),name:String(p.name||'Planned activity'),linkedId:String(p.sessionId||''),start:from,end:to}]:[];
  });
  const intersect=(left,right)=>{let total=0;for(const [a,b] of left)for(const [x,y] of right)total+=Math.max(0,Math.min(b,y)-Math.max(a,x));return total};
+ const normalize=t=>String(t||'').toLowerCase().replace(/[^a-z0-9\p{L}]+/gu,' ').trim();
+ const matchesPlan=(p,r)=>(p.linkedId&&String(r.id)===p.linkedId)||(normalize(p.name).length>=3&&normalize(r.name)===normalize(p.name));
  const rows=plans.map(p=>{
-  const normalize=t=>String(t||'').toLowerCase().replace(/[^a-z0-9\p{L}]+/gu,' ').trim();
   const target=normalize(p.name);
-  const matches=report.records.filter(r=>(p.linkedId&&String(r.id)===p.linkedId)||(target.length>=3&&normalize(r.name)===target));
+  const matches=report.records.filter(r=>matchesPlan(p,r));
   const match=merge(matches.map(r=>[Math.max(p.start,r.start),Math.min(p.end,r.end)]).filter(([a,b])=>b>a));
   const all=merge(report.records.map(r=>[Math.max(p.start,r.start),Math.min(p.end,r.end)]).filter(([a,b])=>b>a));
   const scheduled=p.end-p.start,matchedMs=intersect(match,[[p.start,p.end]]),occupiedMs=intersect(all,[[p.start,p.end]]);
   return {...p,scheduledMs:scheduled,matchedMs,otherRecordedMs:Math.max(0,occupiedMs-matchedMs),noRecordMs:Math.max(0,scheduled-occupiedMs),confidence:p.linkedId?'linked session':target.length>=3?'exact activity name':'unmatched'};
  });
  const scheduledUnion=merge(rows.map(x=>[x.start,x.end]));
- const matchedUnion=merge(rows.flatMap(p=>report.records.filter(r=>(p.linkedId&&String(r.id)===p.linkedId)||(p.name.trim().length>=3&&String(r.name||'').toLowerCase().trim()===p.name.toLowerCase().trim())).map(r=>[Math.max(p.start,r.start),Math.min(p.end,r.end)]).filter(([a,b])=>b>a)));
+ const matchedUnion=merge(rows.flatMap(p=>report.records.filter(r=>matchesPlan(p,r)).map(r=>[Math.max(p.start,r.start),Math.min(p.end,r.end)]).filter(([a,b])=>b>a)));
  const occupiedUnion=merge(report.records.flatMap(r=>scheduledUnion.map(([a,b])=>[Math.max(a,r.start),Math.min(b,r.end)]).filter(([x,y])=>y>x)));
  const scheduledMs=mins(scheduledUnion)*M,matchedMs=mins(matchedUnion)*M,occupiedMs=mins(occupiedUnion)*M;
  return {rows,scheduledMs,matchedMs,otherRecordedMs:Math.max(0,occupiedMs-matchedMs),noRecordMs:Math.max(0,scheduledMs-occupiedMs)};
