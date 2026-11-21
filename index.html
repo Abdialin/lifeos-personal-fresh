@@ -335,6 +335,21 @@ body[data-lifeos-view="dashboard"] #todayLegacyOverviewPanel{display:none!import
 #lo170-day .l170-avg-children .l170-row strong{font-size:12px;overflow-wrap:anywhere}
 #lo170-day .l170-avg-children .l170-row b{font-size:12px}
 #lo170-day .l170-avg-children .l170-row span{grid-column:1/-1;font-size:11px;color:#b2cbd7}
+</style><style id="lo294-today-mobile-polish">
+/* Today mobile command center: keep dense reports readable and accessible above fixed navigation. */
+@media(max-width:700px){
+ body[data-lifeos-view="dashboard"]{scroll-padding-bottom:calc(var(--lo280-nav-height,110px) + 28px)}
+ body[data-lifeos-view="dashboard"] .wrap{padding-bottom:calc(var(--lo280-nav-height,110px) + 56px)!important}
+ body[data-lifeos-view="dashboard"] #todayOverview,
+ body[data-lifeos-view="dashboard"] #lo170-day,
+ body[data-lifeos-view="dashboard"] #todayActivityHistoryPanel,
+ body[data-lifeos-view="dashboard"] #lo170-day details{scroll-margin-bottom:calc(var(--lo280-nav-height,110px) + 40px)}
+ body[data-lifeos-view="dashboard"] #lo170-day .l170-avg-group>summary{padding:11px 12px;min-height:48px}
+ body[data-lifeos-view="dashboard"] #lo170-day .l170-avg-group{margin:6px 0}
+ body[data-lifeos-view="dashboard"] #lo170-day .l170-avg-group>summary strong{font-size:15px;overflow-wrap:anywhere}
+ body[data-lifeos-view="dashboard"] #lo170-day .l170-avg-group>summary span{font-size:12px}
+ body[data-lifeos-view="dashboard"] #lo170-day .l170-avg-group>summary small{font-size:12px}
+}
 </style></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="lo154-access"><a class="lo154-logout" href="/logout" aria-label="Log out of LifeOS">Log out</a><div class="pill" id="status">● Ready</div></div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
   <div class="today-welcome"><div><div class="today-eyebrow" id="todayFullDate">Today</div><h2>Your day at a glance</h2><p>Time, priorities and your next action.</p></div><span class="today-live-dot">● Live view</span></div>
   <section class="lo274-dayclock" aria-label="Current time and remaining day"><div class="lo274-clockhead"><div><span class="lo274-kicker">YOUR DAY · LIVE</span><strong id="lo274Clock">--:--:--</strong><small id="lo274Date">Local time</small></div><div class="lo274-remaining"><span>Time left today</span><strong id="lo274Remaining">-- h -- m</strong><small id="lo274Elapsed">Day progress</small></div></div><div class="lo274-progress" role="progressbar" aria-label="Day elapsed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="lo274Bar"><span id="lo274Fill"></span></div><div class="lo274-scale"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div></section><div class="today-stats">
