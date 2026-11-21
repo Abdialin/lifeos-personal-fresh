@@ -96,13 +96,13 @@ else if(view==='averages'){
   const item=names.get(label)||{n:0,sum:0};item.n++;item.sum+=m;names.set(label,item);
  }
  const rows=[...avg.entries()].sort((a,b)=>b[1].sum-a[1].sum);
- const row=(name,x)=>'<div class="l170-row"><strong>'+esc(name)+'</strong><b>'+fmt(x.sum/x.n)+'</b><span>'+x.n+' sessions · '+fmt(x.sum)+' total</span></div>';
+ const row=(name,x)=>'<div class="l170-row"><strong>'+esc(name)+'</strong><b>'+fmt(x.sum/x.n)+' / session</b><span>'+x.n+' sessions · '+fmt(x.sum)+' total</span></div>';
  const openGroups=new Set([...box.querySelectorAll('details.l170-avg-group[open]')].map(d=>d.dataset.group));
  box.innerHTML='<h3>Activity averages · last 7 days</h3>'+(rows.length?'':'<p class="l170-hint">No completed activity sessions found in the last 7 days.</p>')+rows.map(([group,x])=>{
   const items=[...(children.get(group)||new Map()).entries()].sort((a,b)=>b[1].sum-a[1].sum);
   const body=items.map(([name,v])=>row(name,v)).join('');
-  return '<details class="l170-avg-group" data-group="'+esc(group)+'"'+(openGroups.has(group)?' open':'')+'><summary><strong>'+esc(group)+'</strong><span>'+fmt(x.sum)+' total · '+x.n+' sessions</span><small>'+fmt(x.sum/x.n)+' avg</small></summary><div class="l170-avg-children">'+body+'</div></details>';
- }).join('')+'<p class="l170-hint">Tap a category to see its activities. Averages count completed sessions only. Totals are summed session durations and can include overlapping time. Unidentified sessions are not guessed or renamed.</p>'+(excludedLong?'<p class="l170-hint">'+excludedLong+' unusually long session(s) excluded from averages for review.</p>':'');
+  return '<details class="l170-avg-group" data-group="'+esc(group)+'"'+(openGroups.has(group)?' open':'')+'><summary><strong>'+esc(group)+'</strong><span>'+fmt(x.sum)+' total · '+x.n+' sessions</span><small>'+fmt(x.sum/x.n)+' / session</small></summary><div class="l170-avg-children">'+body+'</div></details>';
+ }).join('')+'<p class="l170-hint">Tap a category to see its activities. Averages are per completed session, not per day. Totals are summed session durations and can include overlapping time. Unidentified sessions are not guessed or renamed.</p>'+(excludedLong?'<p class="l170-hint">'+excludedLong+' unusually long session(s) excluded from averages for review.</p>':'');
 }
 
 else{let presets=[['Gym','gym',60],['Work','work',720],['Prayer','prayer',30],['Quran','quran',90],['Sleep','sleep',360],['Laundry','laundry',120],['Groceries','groceries',60],['Reading','reading',30]];box.innerHTML='<h3>Expected activity durations</h3>'+presets.map(([name,key,def])=>'<label class="l170-lim"><span>'+name+'</span><input type="number" min="5" max="1440" step="5" data-l170-limit="'+key+'" value="'+(c[key]?.minutes||def)+'"><small>min</small></label>').join('')+'<button id="l170-save">Save limits</button><p id="l170-lim-msg" class="l170-hint"></p>';$('l170-save').onclick=()=>{let val={...load(PROF,{})};for(let e of box.querySelectorAll('[data-l170-limit]')){let n=Number(e.value);if(!Number.isInteger(n)||n<5||n>1440){$('l170-lim-msg').textContent='Use 5–1440 whole minutes.';return}val[e.dataset.l170Limit]={minutes:n}}try{store(PROF,val);$('l170-lim-msg').textContent='Saved on this device. Existing sessions unchanged.'}catch{$('l170-lim-msg').textContent='Unable to save.'}}}
