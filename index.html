@@ -372,6 +372,11 @@ body[data-lifeos-view="tracking"] #trackDistractionPanel #distractionToggle{min-
 body[data-lifeos-view="tracking"] #trackingRecoveryPanel,body[data-lifeos-view="tracking"] #activityHierarchyPanel{border-color:#33465c}
 body[data-lifeos-view="tracking"] #trackingRecoveryPanel h2,body[data-lifeos-view="tracking"] #activityHierarchyPanel h2{font-size:17px}
 @media(max-width:600px){body[data-lifeos-view="tracking"] #trackActivePanel .head{gap:8px;flex-wrap:wrap}body[data-lifeos-view="tracking"] #trackActivePanel .controls{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-lifeos-view="tracking"] #trackQuickPanel .quick{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-lifeos-view="tracking"] #trackQuickPanel .quick button{min-height:62px;padding:11px;gap:7px}body[data-lifeos-view="tracking"] #trackQuickPanel .row:has(#customName){display:grid;grid-template-columns:minmax(0,1fr) auto}body[data-lifeos-view="tracking"] #trackQuickPanel #customName{min-width:0!important;width:100%}}
+</style><style id="lo-track-pause-summary-style">
+.lo-track-pause-summary{display:flex;flex-direction:column;gap:5px;margin:12px 0;padding:12px;border:1px solid #36566d;border-radius:12px;background:#152b3e}
+.lo-track-pause-summary strong{font-size:15px;color:#d4f8ee}
+.lo-track-pause-summary span{font-size:12px;color:#b4c7d6}
+.lo-track-pause-list{padding-left:22px;font-size:13px;line-height:1.7;color:#d2dfec}
 </style></head><body><main class="wrap"><header class="top"><div class="brand"><div class="logo">L</div><div><b>LifeOS <span style="color:#7de2c9">Personal</span></b><div class="small muted">Unified Personal · Your reality, your plan</div></div></div><div class="lo154-access"><a class="lo154-logout" href="/logout" aria-label="Log out of LifeOS">Log out</a><div class="pill" id="status">● Ready</div></div></header><nav class="lifeos-nav" id="lifeosNavigation" aria-label="Personal app sections"><button type="button" data-view="dashboard" aria-label="Today" aria-current="page"><span class="lifeos-tab-icon" aria-hidden="true">⌂</span><span class="lifeos-tab-label">Today</span></button><button type="button" data-view="tracking" aria-label="Track"><span class="lifeos-tab-icon" aria-hidden="true">◉</span><span class="lifeos-tab-label">Track</span></button><button type="button" data-view="schedule" aria-label="Plan"><span class="lifeos-tab-icon" aria-hidden="true">▦</span><span class="lifeos-tab-label">Plan</span></button><button type="button" data-view="goals" aria-label="Goals"><span class="lifeos-tab-icon" aria-hidden="true">◎</span><span class="lifeos-tab-label">Goals</span></button><button type="button" data-view="analytics" aria-label="Insights"><span class="lifeos-tab-icon" aria-hidden="true">▥</span><span class="lifeos-tab-label">Insights</span></button><button type="button" data-view="life" aria-label="My Life"><span class="lifeos-tab-icon" aria-hidden="true">♡</span><span class="lifeos-tab-label">My Life</span></button></nav><h1 class="lifeos-view-title" id="lifeosViewTitle">Dashboard</h1><article class="today-overview" id="todayOverview" aria-label="Today's overview">
   <div class="today-welcome"><div><div class="today-eyebrow" id="todayFullDate">Today</div><h2>Your day at a glance</h2><p>Time, priorities and your next action.</p></div><span class="today-live-dot">● Live view</span></div>
   <section class="lo274-dayclock" aria-label="Current time and remaining day"><div class="lo274-clockhead"><div><span class="lo274-kicker">YOUR DAY · LIVE</span><strong id="lo274Clock">--:--:--</strong><small id="lo274Date">Local time</small></div><div class="lo274-remaining"><span>Time left today</span><strong id="lo274Remaining">-- h -- m</strong><small id="lo274Elapsed">Day progress</small></div></div><div class="lo274-progress" role="progressbar" aria-label="Day elapsed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="lo274Bar"><span id="lo274Fill"></span></div><div class="lo274-scale"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div></section><div class="today-stats">
@@ -1154,6 +1159,31 @@ function openActivityDetails(id){
   const li=document.createElement('li');li.textContent=new Date(e.t).toLocaleString()+' — '+({START:'Started',PAUSE:'Paused',RESUME:'Resumed',BREAK_START:'Break started',BREAK_END:'Break ended',FINISH:'Finished'}[e.type]);rows.append(li);
  }
  historyBlock.append(rows);
+ const pauseIntervals=[];let pauseStart=null,pauseType='';
+ for(const entry of history){
+  if(entry.type==='PAUSE'||entry.type==='BREAK_START'){
+   if(pauseStart===null){pauseStart=entry.t;pauseType=entry.type==='BREAK_START'?'Break':'Pause'}
+  }else if((entry.type==='RESUME'||entry.type==='BREAK_END'||entry.type==='FINISH')&&pauseStart!==null){
+   const duration=Math.max(0,entry.t-pauseStart);
+   pauseIntervals.push({start:pauseStart,end:entry.t,duration,type:pauseType});
+   pauseStart=null;pauseType='';
+  }
+ }
+ if(pauseStart!==null&&Number.isFinite(s.endAt)&&s.endAt>pauseStart)pauseIntervals.push({start:pauseStart,end:s.endAt,duration:s.endAt-pauseStart,type:pauseType});
+ const pauseTotal=pauseIntervals.reduce((total,p)=>total+p.duration,0);
+ const significant=pauseIntervals.filter(p=>p.duration>=300000);
+ const pauseSummary=document.createElement('div');pauseSummary.className='lo-track-pause-summary';
+ const totalSpan=document.createElement('strong');totalSpan.textContent='Paused / on break: '+short(pauseTotal);
+ const countSpan=document.createElement('span');countSpan.textContent=pauseIntervals.length+' interruption'+(pauseIntervals.length===1?'':'s')+' recorded · '+significant.length+' lasting at least 5 minutes';
+ pauseSummary.append(totalSpan,countSpan);
+ historyBlock.append(pauseSummary);
+ if(significant.length){
+  const pauseList=document.createElement('ul');pauseList.className='lo-track-pause-list';
+  for(const p of significant){
+   const li=document.createElement('li');li.textContent=p.type+' · '+new Date(p.start).toLocaleString()+' – '+new Date(p.end).toLocaleTimeString()+' ('+short(p.duration)+')';pauseList.append(li)
+  }
+  historyBlock.append(pauseList);
+ }
  if(shortPauses){const hint=document.createElement('p');hint.textContent=shortPauses+' brief pauses under 5 minutes hidden here; their timestamps remain saved.';historyBlock.append(hint)}
  const recorded=document.createElement('p'),days=[];
  for(let day=new Date(s.startAt),count=0;day.setHours(0,0,0,0),day.getTime()<=s.endAt&&count++<90;day.setDate(day.getDate()+1)){
