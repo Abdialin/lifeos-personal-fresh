@@ -159,7 +159,7 @@ function planComparison(report,workspace){
   const scheduled=p.end-p.start,matchedMs=intersect(match,[[p.start,p.end]]),occupiedMs=intersect(all,[[p.start,p.end]]);
   return {...p,scheduledMs:scheduled,matchedMs,otherRecordedMs:Math.max(0,occupiedMs-matchedMs),noRecordMs:Math.max(0,scheduled-occupiedMs),confidence:p.linkedId?'linked session':target.length>=3?'exact activity name':'unmatched'};
  });
- return {rows,scheduledMs:rows.reduce((n,x)=>n+x.scheduledMs,0),matchedMs:rows.reduce((n,x)=>n+x.matchedMs,0),otherRecordedMs:rows.reduce((n,x)=>n+x.otherRecordedMs,0),noRecordMs:rows.reduce((n,x)=>n+x.noRecordMs,0)};
+ return {rows,scheduledMs:mins(merge(rows.map(x=>[x.start,x.end])))*M,matchedMs:rows.reduce((n,x)=>n+x.matchedMs,0),otherRecordedMs:rows.reduce((n,x)=>n+x.otherRecordedMs,0),noRecordMs:rows.reduce((n,x)=>n+x.noRecordMs,0)};
 }
 function mountReports(){
  const panel=$('analyticsPanel');if(!panel||$('lo180-report'))return;
