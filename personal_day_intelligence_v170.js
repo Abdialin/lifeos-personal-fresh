@@ -108,9 +108,11 @@ else if(view==='averages'){
   const item=names.get(label)||{n:0,sum:0};item.n++;item.sum+=m;names.set(label,item);
  }
  const rows=[...avg.entries()].sort((a,b)=>b[1].sum-a[1].sum);
+ const recordedMinutes=rows.reduce((n,[,x])=>n+x.sum,0),unknown=avg.get('Unclassified');
+ const unknownSummary=unknown?'<p class="l170-hint"><strong>Needs classification:</strong> '+unknown.n+' session(s) · '+fmt(unknown.sum)+' · '+Math.round(unknown.sum/recordedMinutes*100)+'% of recorded session time. Expand Unclassified to review original activity names.</p>':'<p class="l170-hint">All included sessions have an activity category.</p>';
  const row=(name,x)=>'<div class="l170-row"><strong>'+esc(name)+'</strong><b>'+fmt(x.sum/x.n)+' / session</b><span>'+x.n+' sessions · '+fmt(x.sum)+' total</span></div>';
  const openGroups=new Set([...box.querySelectorAll('details.l170-avg-group[open]')].map(d=>d.dataset.group));
- box.innerHTML='<h3>Activity averages · last 7 days</h3>'+(rows.length?'':'<p class="l170-hint">No completed activity sessions found in the last 7 days.</p>')+rows.map(([group,x])=>{
+ box.innerHTML='<h3>Activity averages · last 7 days</h3>'+(rows.length?unknownSummary:'<p class="l170-hint">No completed activity sessions found in the last 7 days.</p>')+rows.map(([group,x])=>{
   const items=[...(children.get(group)||new Map()).entries()].sort((a,b)=>b[1].sum-a[1].sum);
   const body=items.map(([name,v])=>row(name,v)).join('');
   return '<details class="l170-avg-group" data-group="'+esc(group)+'"'+(openGroups.has(group)?' open':'')+'><summary><strong>'+esc(group)+'</strong><span>'+fmt(x.sum)+' total · '+x.n+' sessions</span><small>'+fmt(x.sum/x.n)+' / session</small></summary><div class="l170-avg-children">'+body+'</div></details>';
