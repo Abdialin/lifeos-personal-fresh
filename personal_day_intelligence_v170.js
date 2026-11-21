@@ -33,7 +33,13 @@ function averageIdentity(s){
  const academicCategory=/^(study|studies|studying|university|education|coursework|student|school|universitet|högskola)$/i.test(String(s?.category||detail.category||'').trim());
  const academicCode=/\b(?:BTA|ERA|MTK|MAA|PPU|DVA|DVG)\s*[-:]?\s*\d{3}\b/i.test(combined);
  if(/\b(quran|qur.an|koran|hifdh|hifz|surah|memorization)\b/i.test(combined)||detail.surah)return {group:'Quran',name:'Quran'};
- if(/\b(gym|workout|fitness|training|running|walking|cycling|boxing|swim|yoga|strength|träning|promenad)\b/i.test(combined))return {group:'Fitness',name:'Fitness'};
+ const fitnessCategory=/^(fitness|gym|exercise|workout|training|träning|physical activity|sport|sports|running|walking|cycling|boxing|swimming)$/i.test(String(s?.category||detail.category||'').trim());
+ const fitnessType=String(detail.fitnessType||detail.workoutType||detail.sport||detail.exerciseType||s?.fitnessType||'').trim();
+ const fitnessText=[name,fitnessType,String(detail.exercise||''),String(detail.activityType||'')].join(' ');
+ if(fitnessCategory||fitnessType||/\\b(gym|workout|fitness|exercise|training|running|jogging|walking|hiking|cycling|biking|boxing|kickboxing|swimming|swim|yoga|pilates|strength|weightlifting|cardio|treadmill|träning|styrketräning|löpning|joggning|promenad|simning|cykling|vandring|boxning|idrott)\\b/i.test(fitnessText)){
+  const kind=/\\b(boxing|kickboxing|boxning)\\b/i.test(fitnessText)?'Boxing':/\\b(running|jogging|löpning|joggning)\\b/i.test(fitnessText)?'Running':/\\b(walking|hiking|promenad|vandring)\\b/i.test(fitnessText)?'Walking / Hiking':/\\b(cycling|biking|cykling)\\b/i.test(fitnessText)?'Cycling':/\\b(swimming|swim|simning)\\b/i.test(fitnessText)?'Swimming':/\\b(yoga|pilates)\\b/i.test(fitnessText)?'Yoga / Pilates':/\\b(gym|strength|weightlifting|styrketräning)\\b/i.test(fitnessText)?'Gym / Strength':fitnessType||'Other exercise';
+  return {group:'Fitness',name:kind};
+ }
  if(academicCategory||academicCode||/\b(study|studying|studies|university|universitet|högskola|kurs|course|lecture|föreläsning|seminar|seminarium|coursework|assignment|inlämning|submit|exam|tentamen|research|homework|projektarbete|project work|studier|plugg|arabic|language practice|language learning)\b/i.test(combined)||/\bkurs[. :_-]*grp\b/i.test(combined)||detail.subject)return {group:'University / Studies',name:raw||'University activity'};
  if(/\b(work|shift|business|development|security|arbete|jobba|jobb)\b/i.test(combined)||detail.role)return {group:'Work',name:'Work'};
  if(/\b(sleep|sleeping|nap)\b/i.test(combined))return {group:'Sleep',name:'Sleep'};
