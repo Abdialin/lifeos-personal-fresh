@@ -4442,4 +4442,19 @@ const period=document.getElementById('loHistoryPeriod');if(period)period.setAttr
 const history=document.getElementById('history');if(history){history.setAttribute('role','region');history.setAttribute('aria-label','Recorded activity sessions');history.setAttribute('tabindex','0')}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();</script><style id="lo-track-distraction-review-v1">
+#loTrackDistractionReview{display:none;margin-top:13px;border-top:1px solid #5b4756;padding-top:13px}
+body[data-lifeos-view="tracking"] #loTrackDistractionReview{display:block}
+#loTrackDistractionReview .lo-d-actions{display:flex;gap:8px;flex-wrap:wrap}
+#loTrackDistractionReview button{min-height:44px;padding:10px 13px;border:1px solid #795869;border-radius:11px;background:#392a3d;color:#f5e6ed;font-weight:650}
+#loTrackDistractionReview p{font-size:12px;color:#c9b5c2;margin:8px 0}
+#loTrackDistractionReview button:focus-visible{outline:3px solid #f3b6d2;outline-offset:3px}
+</style><script id="lo-track-distraction-review-script">(function(){'use strict';
+function init(){const panel=document.getElementById('trackDistractionPanel');if(!panel||document.getElementById('loTrackDistractionReview'))return;
+const wrap=document.createElement('div');wrap.id='loTrackDistractionReview';
+const desc=document.createElement('p');desc.textContent='Review a distraction before correcting or deleting it. Existing history controls handle edits and deletion; nothing is removed automatically.';
+const row=document.createElement('div');row.className='lo-d-actions';const review=document.createElement('button');review.type='button';review.textContent='Review distraction history';
+review.addEventListener('click',function(){const search=document.getElementById('loHistorySearch'),period=document.getElementById('loHistoryPeriod'),history=document.getElementById('trackHistoryPanel');if(!history||!search)return;if(period){period.value='all';period.dispatchEvent(new Event('change',{bubbles:true}))}search.value='Distraction';search.dispatchEvent(new Event('input',{bubbles:true}));history.scrollIntoView({behavior:'smooth',block:'start'});search.focus({preventScroll:true})});
+const all=document.createElement('button');all.type='button';all.textContent='Show all activities';all.addEventListener('click',function(){const search=document.getElementById('loHistorySearch'),history=document.getElementById('trackHistoryPanel');if(search){search.value='';search.dispatchEvent(new Event('input',{bubbles:true}))}history?.scrollIntoView({behavior:'smooth',block:'start'})});row.append(review,all);wrap.append(desc,row);panel.appendChild(wrap)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();</script></body></html>
