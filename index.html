@@ -4508,4 +4508,30 @@ edit.insertAdjacentElement('afterend',group);group.appendChild(deleteButton);
 const explanation=document.createElement('p');explanation.className='note';explanation.textContent='Deleting opens the existing session editor. You must explicitly confirm deletion; the app does not remove records automatically.';group.appendChild(explanation);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();</script><style id="lo-track-duration-review-v1">
+#loTrackDurationReview{display:none;margin:0 0 16px;padding:15px;border:1px solid #99774b;border-radius:15px;background:linear-gradient(130deg,#352b26,#222a39)}
+body[data-lifeos-view="tracking"] #loTrackDurationReview{display:block}
+#loTrackDurationReview h2{font-size:17px;margin:0 0 6px}
+#loTrackDurationReview .lo-duration-row{border-top:1px solid #65513e;padding:11px 0;display:flex;justify-content:space-between;align-items:center;gap:12px}
+#loTrackDurationReview .lo-duration-row strong{display:block;font-size:14px;overflow-wrap:anywhere}
+#loTrackDurationReview .lo-duration-row p{margin:4px 0;color:#e1c9a8;font-size:12px;line-height:1.5}
+#loTrackDurationReview button{min-height:43px;border:1px solid #ab8b64;border-radius:10px;background:#463b36;color:#fff2df;padding:9px 12px;font-weight:700;white-space:nowrap}
+#loTrackDurationReview .lo-duration-empty{font-size:12px;color:#c9c1bb;margin:5px 0}
+@media(max-width:480px){#loTrackDurationReview .lo-duration-row{align-items:stretch;flex-direction:column}#loTrackDurationReview button{width:100%}}
+</style><script id="lo-track-duration-review-v1">(function(){'use strict';
+let panel,observer,pending=false;
+const thresholds=[{pattern:/prayer|salah|salat|namaz|bön|fajr|dhuhr|asr|maghrib|isha/i,ms:45*60000,label:'Prayer review after 45 minutes'},{pattern:/work|shift|arbete|jobb|väktare/i,ms:12*3600000,label:'Work shift review after 12 hours'}];
+function initialize(){const anchor=document.getElementById('trackActivePanel');if(!anchor||document.getElementById('loTrackDurationReview'))return;panel=document.createElement('section');panel.id='loTrackDurationReview';panel.innerHTML='<h2>Timers needing review</h2><div id="loTrackDurationRows"></div><p class="lo-duration-empty">Reminders only. LifeOS never automatically finishes your timer here.</p>';anchor.insertAdjacentElement('afterend',panel);observer=new MutationObserver(schedule);observer.observe(document.getElementById('sessions'),{subtree:true,childList:true,characterData:true});schedule();window.addEventListener('pageshow',schedule);document.addEventListener('visibilitychange',function(){if(!document.hidden)schedule()});setInterval(function(){if(!document.hidden)schedule()},60000)}
+function schedule(){if(pending)return;pending=true;requestAnimationFrame(function(){pending=false;refresh()})}
+function refresh(){const out=document.getElementById('loTrackDurationRows'),host=document.getElementById('sessions');if(!out||!host)return;out.replaceChildren();let count=0;
+for(const session of host.querySelectorAll('details[data-session-id]')){const name=session.querySelector('.session-title')?.textContent?.trim()||'Activity';const status=session.querySelector('.lo17-meta')?.textContent||'';if(/Paused/.test(status))continue;
+const started=status.match(/Started\s+(\d{1,2}:\d{2})/);if(!started)continue;
+const clock=session.querySelector('[data-timer]')?.textContent||'';const chunks=clock.match(/\d+/g);if(!chunks||chunks.length<2)continue;let duration=0;if(chunks.length===3)duration=(Number(chunks[0])*3600+Number(chunks[1])*60+Number(chunks[2]))*1000;else duration=(Number(chunks[0])*60+Number(chunks[1]))*60000;
+const rule=thresholds.find(x=>x.pattern.test(name))||{ms:4*3600000,label:'Long-running timer review after 4 hours'};
+if(duration<rule.ms)continue;
+const row=document.createElement('div');row.className='lo-duration-row';const info=document.createElement('div');const title=document.createElement('strong');title.textContent=name;const description=document.createElement('p');description.textContent=rule.label+' · '+clock+' shown on today’s timer. Check whether the activity is still running.';info.append(title,description);
+const button=document.createElement('button');button.type='button';button.textContent='Review timer';button.addEventListener('click',function(){session.open=true;session.scrollIntoView({behavior:'smooth',block:'center'});session.querySelector('[data-act="pause"],[data-act="resume"],[data-act="finish"]')?.focus({preventScroll:true})});row.append(info,button);out.append(row);count++}
+panel.querySelector('.lo-duration-empty').textContent=count?count+' timer'+(count===1?'':'s')+' may need attention. No automatic changes have been made.':'No unusually long timers detected. Reminders do not change your activity records.';
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize,{once:true});else initialize();
 })();</script></body></html>
