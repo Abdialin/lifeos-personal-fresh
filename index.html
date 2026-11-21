@@ -4457,4 +4457,25 @@ const row=document.createElement('div');row.className='lo-d-actions';const revie
 review.addEventListener('click',function(){const search=document.getElementById('loHistorySearch'),period=document.getElementById('loHistoryPeriod'),history=document.getElementById('trackHistoryPanel');if(!history||!search)return;if(period){period.value='all';period.dispatchEvent(new Event('change',{bubbles:true}))}search.value='Distraction';search.dispatchEvent(new Event('input',{bubbles:true}));history.scrollIntoView({behavior:'smooth',block:'start'});search.focus({preventScroll:true})});
 const all=document.createElement('button');all.type='button';all.textContent='Show all activities';all.addEventListener('click',function(){const search=document.getElementById('loHistorySearch'),history=document.getElementById('trackHistoryPanel');if(search){search.value='';search.dispatchEvent(new Event('input',{bubbles:true}))}history?.scrollIntoView({behavior:'smooth',block:'start'})});row.append(review,all);wrap.append(desc,row);panel.appendChild(wrap)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();</script><style id="lo-track-details-delete-link-style">
+#loDetailManageActions{display:flex;gap:9px;flex-wrap:wrap;margin:5px 0 16px}
+#loDetailManageActions button{flex:1;min-width:125px;min-height:44px}
+#loDetailManageActions .lo-delete-link{background:#452838;border:1px solid #98596c;color:#ffd8df}
+#loDetailManageActions .lo-delete-link:focus-visible{outline:3px solid #ffb3cb;outline-offset:3px}
+#activityDetailsModal .modal-card{max-height:90dvh;overflow-y:auto;overscroll-behavior:contain}
+#editModal .modal-card{max-height:90dvh;overflow-y:auto;overscroll-behavior:contain}
+@media(max-width:440px){#loDetailManageActions{display:grid;grid-template-columns:1fr 1fr}#loDetailManageActions button{min-width:0;padding:10px 6px;font-size:13px}}
+</style><script id="lo-track-details-delete-link">(function(){'use strict';
+function init(){const edit=document.getElementById('loDetailEditTime');if(!edit||document.getElementById('loDetailManageActions'))return;
+const group=document.createElement('div');group.id='loDetailManageActions';
+const deleteButton=document.createElement('button');deleteButton.type='button';deleteButton.className='btn lo-delete-link';deleteButton.textContent='Delete activity…';
+deleteButton.addEventListener('click',function(){const summary=document.getElementById('loDetailSummary');const original=document.getElementById('loDetailEditTime');if(!original)return;
+original.click();
+const editModal=document.getElementById('editModal');if(!editModal||editModal.hidden){const warning=document.getElementById('loDetailDeleteMessage')||document.createElement('p');warning.id='loDetailDeleteMessage';warning.setAttribute('role','alert');warning.textContent='Open Edit start & end time, then choose Delete to review removal.';group.after(warning);return}
+const deleteControl=document.getElementById('deleteEdit');deleteControl?.focus();
+});
+edit.insertAdjacentElement('afterend',group);group.appendChild(deleteButton);
+const explanation=document.createElement('p');explanation.className='note';explanation.textContent='Deleting opens the existing session editor. You must explicitly confirm deletion; the app does not remove records automatically.';group.appendChild(explanation);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();</script></body></html>
