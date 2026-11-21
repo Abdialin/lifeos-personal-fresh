@@ -4537,4 +4537,15 @@ const button=document.createElement('button');button.type='button';button.textCo
 panel.querySelector('.lo-duration-empty').textContent=count?count+' timer'+(count===1?'':'s')+' may need attention. No automatic changes have been made.':'No unusually long timers detected. Reminders do not change your activity records.';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize,{once:true});else initialize();
+})();</script><style id="lo-track-storage-check-style">
+#loTrackStorageCheck{display:none;margin:0 0 16px;padding:14px;border:1px solid #476276;border-radius:14px;background:#152535}
+body[data-lifeos-view="tracking"] #loTrackStorageCheck{display:block}
+#loTrackStorageCheck .lo-storage-line{font-size:13px;line-height:1.6;margin:8px 0;white-space:pre-line}
+#loTrackStorageCheck button{min-height:44px;border-radius:9px;padding:8px 13px;border:1px solid #6691a7;background:#25495f;color:white;font-weight:700}
+</style><script id="lo-track-storage-check-script">(function(){'use strict';
+const KEY='lifeos-v4-stage21-atomic';
+function init(){const anchor=document.getElementById('trackActivePanel');if(!anchor||document.getElementById('loTrackStorageCheck'))return;
+const panel=document.createElement('section');panel.id='loTrackStorageCheck';panel.innerHTML='<strong>Activity storage check</strong><p class="lo-storage-line" id="loStorageCheckResult">Check whether a recovery checkpoint is readable. This does not modify your records.</p><button type="button" id="loStorageCheckButton">Check saved activity records</button>';anchor.insertAdjacentElement('afterend',panel);
+panel.querySelector('button').addEventListener('click',function(){const out=panel.querySelector('#loStorageCheckResult');try{const raw=localStorage.getItem(KEY);if(!raw){out.textContent='No canonical recovery checkpoint found in this browser. Do not clear app data. Use the existing recovery tools.';return}const record=JSON.parse(raw);const workspace=record?.workspace;if(workspace&&Array.isArray(workspace.sessions)){const sessions=workspace.sessions;const active=sessions.filter(x=>x.status==='running'||x.status==='paused').length;const completed=sessions.filter(x=>x.status==='finished').length;out.textContent='Recovery checkpoint readable. '+sessions.length+' activities saved ('+active+' open, '+completed+' finished). Last checkpoint: '+(Number.isFinite(record.committedAt)?new Date(record.committedAt).toLocaleString():'time unavailable')+'. Reload the app and run this check again to confirm continuity.'}else{out.textContent='Recovery checkpoint exists but uses a compact or unsupported format. Its activities cannot be counted by this check. Do not delete or reset storage.'}}catch(error){out.textContent='Could not read the recovery checkpoint: '+String(error?.message||error)+'. Do not clear storage.'}})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();</script></body></html>
