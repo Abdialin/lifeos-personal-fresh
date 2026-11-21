@@ -4369,4 +4369,27 @@ function tidy(){
 }
 function init(){tidy();document.addEventListener('lifeos-v77-tracking-changed',tidy);window.addEventListener('pageshow',tidy)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();</script><style id="lifeos-track-workspace-v2">
+body[data-lifeos-view="tracking"] #loTrackWorkspace{display:block}
+#loTrackWorkspace{display:none;background:linear-gradient(125deg,#152b3c,#101b2e);border:1px solid #3d6671;border-radius:19px;padding:18px;margin:0 0 18px}
+#loTrackWorkspace h2{font-size:22px;margin:0 0 5px;letter-spacing:-.03em}
+#loTrackWorkspace p{margin:0 0 15px;color:#aabbd1;font-size:13px;line-height:1.5}
+#loTrackWorkspace .lo-track-nav{display:flex;gap:8px;flex-wrap:wrap}
+#loTrackWorkspace button{min-height:44px;border:1px solid #3b596d;background:#1c3549;color:#e7f6ff;border-radius:12px;padding:10px 13px;font-weight:650}
+#loTrackWorkspace button:first-child{background:#7de2c9;color:#082c29;border-color:#7de2c9}
+#loTrackWorkspace button:focus-visible{outline:3px solid #a4f6e3;outline-offset:3px}
+body[data-lifeos-view="tracking"] #trackPastPanel,body[data-lifeos-view="tracking"] #trackHistoryPanel{border-color:#36566a}
+body[data-lifeos-view="tracking"] #trackPastPanel .statrow{gap:12px}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar{gap:10px}
+@media(max-width:540px){#loTrackWorkspace{padding:15px}#loTrackWorkspace .lo-track-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#loTrackWorkspace button{padding:10px 7px;font-size:13px}body[data-lifeos-view="tracking"] #trackPastPanel .statrow{grid-template-columns:1fr}body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar{display:grid;grid-template-columns:1fr}}
+</style><script id="lo-track-workspace-script">(function(){'use strict';
+function install(){if(document.getElementById('loTrackWorkspace'))return;const target=document.getElementById('trackActivePanel');if(!target)return;
+const box=document.createElement('section');box.id='loTrackWorkspace';box.setAttribute('aria-label','Track workspace navigation');
+const title=document.createElement('h2');title.textContent='Your tracking workspace';
+const desc=document.createElement('p');desc.textContent='Start or manage live activities, record something you did earlier, or review your history. Your saved sessions stay unchanged.';
+const nav=document.createElement('div');nav.className='lo-track-nav';
+[['Active timers','trackActivePanel'],['Quick start','trackQuickPanel'],['Past activity','trackPastPanel'],['History','trackHistoryPanel'],['Distractions','trackDistractionPanel'],['Recovery','trackingRecoveryPanel']].forEach(function(pair){const button=document.createElement('button');button.type='button';button.textContent=pair[0];button.addEventListener('click',function(){const destination=document.getElementById(pair[1]);if(!destination)return;destination.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});destination.setAttribute('tabindex','-1');destination.focus({preventScroll:true})});nav.appendChild(button)});
+box.append(title,desc,nav);target.parentNode.insertBefore(box,target);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();</script></body></html>
