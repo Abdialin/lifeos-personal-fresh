@@ -19,7 +19,7 @@ function spans(s,now=Date.now()){
 function merge(xs){const out=[];for(const [a,b] of xs.slice().sort((x,y)=>x[0]-y[0])){const last=out[out.length-1];if(last&&a<=last[1])last[1]=Math.max(b,last[1]);else out.push([a,b])}return out}
 const mins=xs=>xs.reduce((n,[a,b])=>n+(b-a)/M,0);
 function daySegments(s,from,to,now=Date.now()){
- return spans(s,now).map(([a,b])=>[Math.max(from,a),Math.min(to,b)]).filter(([a,b])=>b>a);
+ return merge(spans(s,now).map(([a,b])=>[Math.max(from,a),Math.min(to,b)]).filter(([a,b])=>b>a));
 }
 /* Today averages: read-only classification from explicit session details first, then name. */
 function averageIdentity(s){
