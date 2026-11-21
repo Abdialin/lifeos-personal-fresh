@@ -92,7 +92,7 @@ else if(view==='averages'){
   const id=averageIdentity(s),group=id.group;
   const total=avg.get(group)||{n:0,sum:0};total.n++;total.sum+=m;avg.set(group,total);
   let names=children.get(group);if(!names){names=new Map();children.set(group,names)}
-  const label=group==='Prayer'?id.name:String(s.name||id.name||group).trim()||group;
+  const label=(group==='Prayer'||group==='Fitness')?id.name:String(s.name||id.name||group).trim()||group;
   const item=names.get(label)||{n:0,sum:0};item.n++;item.sum+=m;names.set(label,item);
  }
  const rows=[...avg.entries()].sort((a,b)=>b[1].sum-a[1].sum);
