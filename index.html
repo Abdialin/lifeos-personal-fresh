@@ -962,7 +962,7 @@ window.addEventListener('lifeos-v76-activation',function(event){
     Object.assign(p,updated);
    }))return void(detail.result.message='Could not save activation preference or reminder state.');
    const verify=window.LifeOSPersistenceValidatorV70?.verify(localStorage.getItem(ATOMIC_KEY),data,window.LifeOSCompactRecovery?.unpack);
-   if(!verify?.ok)return void(detail.result.message='Local save was not verified; preserve an export backup before refresh.');
+   if(verify&&!verify.ok)return void(detail.result.message='Local save was not verified; preserve an export backup before refresh.');
    detail.result={ok:true,message:detail.type==='mode'?'Activation mode updated.':detail.type==='provisional'?'Provisional activation noted. No real tracked time was created.':detail.type==='snooze'?'Reminder snoozed for 10 minutes.':'Reminder dismissed.'};
   }else return void(detail.result.message='Unknown activation action.');
   try{render()}catch(err){console.warn('V76 activation recorded but view refresh failed',err)}
@@ -972,7 +972,7 @@ window.addEventListener('lifeos-v76-activation',function(event){
 function start(name,plannedId=null){
  ensureModules();
  if(plannedId){
-  const p=data.schedule.find(x=>x.id===plannedId);
+  const p=data.schedule.find(x=>String(x.id)===String(plannedId));
   if(!p||p.status!=='planned'||p.sessionId)return false;
  }
  const t=now(),s={id:uid(),name,status:'running',createdAt:t,startAt:t,endAt:null,segments:[{start:t,end:null}],notes:'',precision:'measured',source:'local-web-app',plannedId};
@@ -982,10 +982,10 @@ function start(name,plannedId=null){
  if(savedDuration)s.durationGuardV78=savedDuration;
  const ok=trackingCommit(()=>{
   data.sessions.push(s);
-  if(plannedId){const p=data.schedule.find(x=>x.id===plannedId);p.sessionId=s.id;p.status='started'}
+  if(plannedId){const p=data.schedule.find(x=>String(x.id)===String(plannedId));if(!p)throw new Error('Planned activity no longer exists');p.sessionId=s.id;p.status='started'}
   event(s,'START',t);
  });
- if(ok)render();
+ if(ok){try{render()}catch(error){console.warn('Planned activity started and saved; optional repaint failed',error)}}
  return ok;
 }
 /* V58: approve predicted plans through the existing transactional workspace path. */
