@@ -49,7 +49,19 @@ function averageIdentity(s){
  if(/\b(grocery|groceries|shopping|car wash|errand)\b/i.test(combined))return {group:'Errands',name:'Errands'};
  const category=String(s?.category||detail.category||'').trim();
  if(/^(study|studies|studying|university|education|coursework)$/i.test(category))return {group:'University / Studies',name:raw||category};
- if(category&&category.toLowerCase()!=='other')return {group:category,name:raw||category};
+ if(category&&category.toLowerCase()!=='other'){
+  const normalized=category.toLowerCase().trim();
+  const aliases={
+   work:'Work',job:'Work',jobb:'Work',arbete:'Work',employment:'Work',
+   sleep:'Sleep',sleeping:'Sleep',sömn:'Sleep',rest:'Sleep',
+   nutrition:'Nutrition',food:'Nutrition',eating:'Nutrition',meal:'Nutrition',meals:'Nutrition',mat:'Nutrition',
+   travel:'Travel',transport:'Travel',commute:'Travel',commuting:'Travel',resa:'Travel',
+   distraction:'Distractions',distractions:'Distractions',scrolling:'Distractions',
+   errand:'Errands',errands:'Errands',shopping:'Errands',ärenden:'Errands',
+   quran:'Quran',koran:'Quran',hifdh:'Quran',hifz:'Quran'
+  };
+  return {group:aliases[normalized]||category,name:raw||category};
+ }
  return {group:'Unclassified',name:raw&&raw.toLowerCase()!=='other'?raw:'Needs classification'};
 }
 function snapshot(at=Date.now(),workspace=read()){
