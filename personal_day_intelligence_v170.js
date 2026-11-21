@@ -97,7 +97,7 @@ if(view==='timeline'){
 else if(view==='averages'){
  const avg=new Map(),children=new Map();let excludedLong=0;
  for(const s of v.ss){
-  const t=Number(s.endAt);if(s.status!=='finished'||!Number.isFinite(t)||t<v.now-7*D||t>v.now)continue;
+  const t=Number(s.endAt);if(s.status!=='finished'||!Number.isFinite(t)||t>v.now)continue;
   const windowStart=v.now-7*D;
   const clipped=merge(spans(s).map(([a,b])=>[Math.max(a,windowStart),Math.min(b,v.now)]).filter(([a,b])=>b>a));
   const m=mins(clipped);if(!m)continue;if(m>1440){excludedLong++;continue;}
