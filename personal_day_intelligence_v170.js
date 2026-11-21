@@ -87,7 +87,7 @@ else if(view==='averages'){
  for(const s of v.ss){
   const t=Number(s.endAt);if(s.status!=='finished'||!Number.isFinite(t)||t<v.now-7*D||t>v.now)continue;
   const windowStart=v.now-7*D;
-  const clipped=spans(s).map(([a,b])=>[Math.max(a,windowStart),Math.min(b,v.now)]).filter(([a,b])=>b>a);
+  const clipped=merge(spans(s).map(([a,b])=>[Math.max(a,windowStart),Math.min(b,v.now)]).filter(([a,b])=>b>a));
   const m=mins(clipped);if(!m)continue;if(m>1440){excludedLong++;continue;}
   const id=averageIdentity(s),group=id.group;
   const total=avg.get(group)||{n:0,sum:0};total.n++;total.sum+=m;avg.set(group,total);
