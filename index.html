@@ -4599,4 +4599,14 @@ function update(){const nav=document.querySelector('.lifeos-nav');if(!nav)return
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',update,{once:true});else update();
 window.addEventListener('resize',update);window.addEventListener('orientationchange',update);
 if('ResizeObserver' in window){const observer=new ResizeObserver(update);const attach=()=>{const nav=document.querySelector('.lifeos-nav');if(nav)observer.observe(nav)};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attach,{once:true});else attach()}
-})();</script></body></html>
+})();</script><style id="lo-mobile-overlay-safe-area-v2">
+@media(max-width:750px){
+ #lo76-activation-dock{
+  bottom:calc(var(--lifeos-mobile-nav-height,112px) + 12px + env(safe-area-inset-bottom))!important;
+  max-height:calc(100dvh - var(--lifeos-mobile-nav-height,112px) - 40px - env(safe-area-inset-top))!important;
+  overflow-y:auto!important;overscroll-behavior:contain;
+  box-sizing:border-box;z-index:10021!important
+ }
+ #lo76-activation-dock .lo76-dock-actions button{min-height:44px!important}
+}
+</style></body></html>
