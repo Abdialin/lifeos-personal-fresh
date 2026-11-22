@@ -1308,11 +1308,61 @@ $('pastForm').reset();render()}
 function analyticsIntervals(start,end,at=now()){if(at<=start)return [];const m=window.LifeOSUnifiedAnalytics.summarize({sessions:data.sessions},{start,end:Math.min(end,at),now:at});return m.recorded.map(x=>({a:x.start,b:x.end,name:x.name,id:x.id,precision:data.sessions.find(s=>s.id===x.id)?.precision||'unknown'}))}
 function analyticsMetrics(intervals){const total=intervals.reduce((n,x)=>n+x.b-x.a,0);const unique=window.LifeOSUnifiedAnalytics.unionDuration(intervals.map(x=>({start:x.a,end:x.b})));return{total,unique,overlap:Math.max(0,total-unique)}}
 function analyticsDayBounds(dateStr){if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr))return null;const [y,m,d]=dateStr.split('-').map(Number);const start=new Date(y,m-1,d);if(start.getFullYear()!==y||start.getMonth()!==m-1||start.getDate()!==d)return null;return[start.getTime(),new Date(y,m-1,d+1).getTime()];}
+/* v275: read-only, overlap-safe day audit; never mutates historical records. */
+function lifeosDayReviewV275(){
+ const panel=document.getElementById('analyticsPanel'),date=document.getElementById('analyticsDate');
+ if(!panel||!date)return;
+ let node=document.getElementById('lifeosDayReviewV275');
+ if(!node){
+  node=document.createElement('section');node.id='lifeosDayReviewV275';
+  node.setAttribute('aria-label','24-hour integrity review');
+  node.style.cssText='margin:14px 0;padding:15px;border:1px solid #354661;border-radius:14px;background:#15243b';
+  const summary=panel.querySelector('.analytics-summary');
+  if(summary)summary.insertAdjacentElement('afterend',node);else panel.appendChild(node);
+ }
+ const bounds=analyticsDayBounds(date.value||localDate(now()));if(!bounds)return;
+ const start=bounds[0],end=bounds[1],cutoff=Math.min(end,now());
+ const ints=analyticsIntervals(start,end).filter(x=>Number.isFinite(x.a)&&Number.isFinite(x.b)&&x.b>x.a);
+ const sum=analyticsMetrics(ints),span=Math.max(0,cutoff-start),unlogged=Math.max(0,span-sum.unique);
+ const fmtMs=n=>short(Math.max(0,n));
+ const categories=[
+  ['Prayer',/prayer|salah|salat|fajr|dhuhr|zuhr|asr|maghrib|isha|mosque|masjid/i],
+  ['University',/university|lecture|seminar|assignment|course|kurs|föreläs|förelas|studying|study|exam|tentamen|lab|research|thesis|bta\\d|mdu/i],
+  ['Fitness',/gym|workout|training|exercise|running|walking|boxing|fitness|cardio/i],
+  ['Nutrition',/meal|breakfast|lunch|dinner|eating|food|snack|nutrition/i],
+  ['Sleep',/sleep|nap|resting/i],
+  ['Quran & Arabic',/quran|qur'an|hifdh|arabic|hadith|dugsi/i],
+  ['Work & business',/work|shift|business|app development|coding|job|employment|coach/i],
+  ['Distraction',/distraction|scrolling|social media|doomscroll/i]
+ ];
+ const totals=new Map(),unknown=new Map(),flags=[];
+ for(const x of ints){
+  const name=String(x.name||'Unlabelled');
+  const group=(categories.find(c=>c[1].test(name))||['Other / review'])[0];
+  totals.set(group,(totals.get(group)||0)+x.b-x.a);
+  if(group==='Other / review')unknown.set(name,(unknown.get(name)||0)+x.b-x.a);
+  const session=data.sessions.find(y=>String(y.id)===String(x.id));
+  const fullMs=session?elapsed(session,Math.min(now(),end)):x.b-x.a;
+  if(fullMs>16*3600000&&!flags.some(f=>f.id===x.id))flags.push({id:x.id,name,ms:fullMs});
+ }
+ const esc=x=>escape(String(x));
+ const groupRows=[...totals].sort((a,b)=>b[1]-a[1]).map(([name,ms])=>'<div style="display:flex;justify-content:space-between;gap:8px;margin:7px 0"><span>'+esc(name)+'</span><strong>'+fmtMs(ms)+'</strong></div>').join('');
+ const unknownRows=[...unknown].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,ms])=>'<li>'+esc(name)+' — '+fmtMs(ms)+'</li>').join('');
+ const flagRows=flags.slice(0,6).map(f=>'<li>'+esc(f.name)+' — '+fmtMs(f.ms)+'</li>').join('');
+ node.innerHTML='<h3 style="margin:0 0 8px;font-size:16px">24-hour integrity review</h3>'+
+ '<p class="note" style="margin:0 0 12px">Actual elapsed time counts concurrent activities once. Category totals are activity-hours and may overlap. Original activity names remain unchanged.</p>'+
+ '<div class="analytics-summary"><div class="stat"><strong>'+fmtMs(sum.unique)+'</strong><span>Unique recorded</span></div><div class="stat"><strong>'+fmtMs(unlogged)+'</strong><span>Unlogged / unknown</span></div><div class="stat"><strong>'+fmtMs(sum.overlap)+'</strong><span>Parallel activity time</span></div><div class="stat"><strong>'+fmtMs(span)+'</strong><span>Day elapsed so far</span></div></div>'+
+ '<h4 style="margin:15px 0 8px">Grouped activity time</h4>'+ (groupRows||'<p class="sub">No tracked activities on this day.</p>')+
+ (unknownRows?'<details style="margin-top:12px"><summary>Review unclassified activity names ('+unknown.size+')</summary><ul>'+unknownRows+'</ul></details>':'')+
+ (flagRows?'<details style="margin-top:10px"><summary>Review unusually long sessions ('+flags.length+')</summary><ul>'+flagRows+'</ul><p class="note">No durations have been changed. Check pauses, overnight activity and overlapping records before editing.</p></details>':'')+
+ '<p class="note" style="margin-top:12px">Unlogged means no activity was recorded; it does not mean distraction or free time. Day length is based on local time and can differ during daylight-saving changes.</p>';
+}
 function renderAnalytics(){const day=$('analyticsDate').value||localDate(now()),bounds=analyticsDayBounds(day);if(!bounds)return;const [start,end]=bounds,intervals=analyticsIntervals(start,end),metrics=analyticsMetrics(intervals);const ids=new Set(intervals.map(x=>x.id));
  $('anaTotal').textContent=short(metrics.total);$('anaUnique').textContent=short(metrics.unique);$('anaOverlap').textContent=short(metrics.overlap);$('anaSessions').textContent=String(ids.size);
  $('anaTimeline').innerHTML=intervals.map(x=>`<div class="timeline-seg ${x.name.toLowerCase().includes('distraction')?'distraction':''}" title="${escape(x.name)}" style="left:${(x.a-start)/(end-start)*100}%;width:${(x.b-x.a)/(end-start)*100}%"></div>`).join('');
  const byName=new Map();for(const x of intervals)byName.set(x.name,(byName.get(x.name)||0)+x.b-x.a);const groups=[...byName].sort((a,b)=>b[1]-a[1]);$('anaBreakdown').innerHTML=groups.length?groups.slice(0,12).map(([name,ms])=>`<div class="analytics-bar"><span title="${escape(name)}">${escape(name)}</span><div class="analytics-track"><div class="analytics-fill" style="width:${metrics.total?ms/metrics.total*100:0}%"></div></div><span>${short(ms)}</span></div>`).join(''):'<div class="sub">No recorded active time on this day.</div>';
  const selected=[...data.sessions].filter(s=>ids.has(s.id)).sort((a,b)=>a.startAt-b.startAt);$('anaDaySessions').innerHTML=selected.length?selected.map(s=>{const ms=intervals.filter(x=>x.id===s.id).reduce((a,x)=>a+x.b-x.a,0);return `<div class="item"><div><strong>${escape(s.name)}</strong><div class="sub">${escape(s.status)} · ${escape(s.precision||'unknown')}</div></div><strong>${short(ms)}</strong></div>`}).join(''):'<div class="sub">No sessions on this day.</div>';
+ lifeosDayReviewV275();
  const today=new Date();today.setHours(0,0,0,0);const week=[];for(let i=6;i>=0;i--){const a=new Date(today);a.setDate(a.getDate()-i);const b=new Date(a);b.setDate(b.getDate()+1);const m=analyticsMetrics(analyticsIntervals(a.getTime(),b.getTime()));week.push({date:a,ms:m.unique});}const max=Math.max(1,...week.map(x=>x.ms));$('anaWeek').innerHTML=week.map(x=>`<div class="day-col"><span>${escape(x.date.toLocaleDateString(undefined,{weekday:'short'}))}</span><div class="day-track" title="${short(x.ms)}"><div class="day-fill" style="height:${x.ms/max*100}%"></div></div><span>${short(x.ms)}</span></div>`).join('');
 }
 function renderWeeklyDashboard(){try{const result=window.LifeOSWeeklyDashboard.build(data,localDate(now()),window.LifeOSQuality,now());const h=x=>(x/3600000).toFixed(1)+'h';const measured=result.measuredShare==null?'Not enough data':Math.round(result.measuredShare*100)+'%';$('weeklyDashboardResults').textContent='Recorded '+h(result.recordedMs)+' · Unique '+h(result.uniqueMs)+' · Overlap '+h(result.overlapMs)+' · Measured share '+measured+' · Unlogged gaps '+h(result.unloggedMs)+' (unknown, not free time) · Planned entries '+result.plannedCount+'. '+result.days.map(x=>x.date.slice(5)+': '+h(x.uniqueMs)).join(' | ');}catch(e){$('weeklyDashboardResults').textContent='Weekly report unavailable: '+e.message;}}
