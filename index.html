@@ -977,7 +977,7 @@ window.addEventListener('lifeos-v76-activation',function(event){
  if(!plan||plan.status!=='planned'||plan.sessionId)return void(detail.result.message='This plan is already started or no longer available.');
  try{
   if(detail.type==='start'){
-   if(!confirm('Start '+plan.name+' now? The actual timer starts from the present moment, not the planned start time.'))return void(detail.result.message='Start cancelled.');
+   // The explicit Start now button is the user's consent. Avoid blocking WebView confirm dialogs.
    if(!start(plan.name,plan.id))return void(detail.result.message='Timer could not be saved; no tracked start was committed.');
    detail.result={ok:true,message:'Tracking started and saved locally from now.'};
   }else if(detail.type==='mode'||['snooze','dismiss','provisional'].includes(detail.type)){
