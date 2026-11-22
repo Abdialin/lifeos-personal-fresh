@@ -58,3 +58,17 @@ body.v137-modal-open{overflow:hidden!important}
 #v136Workspace .v137-explainer{margin:0 0 10px;color:#ffe2b5;background:#3a3027;border-left:3px solid #e6ad5c;border-radius:8px;padding:11px;font-size:12px;line-height:1.5}
 @media(min-width:720px){#v137ActivityModal{align-items:center}#v137ActivityModal .v137-modal-sheet{border-radius:22px;max-height:85dvh}}
 @media(max-width:360px){#v137ActivityModal .v137-modal-sheet{padding-left:12px;padding-right:12px}#v137ActivityModal .v137-datetime strong{font-size:12px}}
+
+/* V137 mobile action access: a modal is a dedicated interaction layer.
+   Hide the persistent six-tab bar while the sheet is open, restoring it on close. */
+@media(max-width:750px){
+ body.v137-modal-open .lifeos-nav{display:none!important}
+ body.v137-modal-open #v137ActivityModal{z-index:30000!important}
+ #v137ActivityModal .v137-modal-sheet{
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - 12px)!important;
+  padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))!important;
+  box-sizing:border-box;
+  scroll-padding-bottom:28px;
+ }
+ #v137ActivityModal .v137-primary,#v137ActivityModal .v137-actions-secondary button,#v137ActivityModal .v137-link{min-height:48px}
+}
