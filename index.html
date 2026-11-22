@@ -4866,4 +4866,22 @@ header.top .lo154-logout{min-height:42px;font-size:13px;padding:9px 12px}
  setTimeout(organize,900);
  setTimeout(organize,2400);
 })();
+</script><script id="lifeos-build-check-v277">
+(function(){
+ function install(){
+  const host=document.getElementById('recoveryTools');if(!host||document.getElementById('lifeosBuildCheckV277'))return;
+  const wrap=document.createElement('div');wrap.id='lifeosBuildCheckV277';wrap.style.cssText='padding:12px;margin:12px 0;border:1px solid #354661;border-radius:12px';
+  const button=document.createElement('button');button.type='button';button.className='btn outline';button.textContent='Verify installed LifeOS version';
+  const output=document.createElement('p');output.className='note';output.setAttribute('role','status');output.style.whiteSpace='pre-wrap';
+  button.addEventListener('click',function(){
+   const found=!!document.getElementById('lifeosHistoryDayTotalsV276');
+   const analytics=typeof lifeosDayReviewV275==='function';
+   const sessions=typeof data!=='undefined'&&Array.isArray(data.sessions)?data.sessions.length:'not available';
+   const plans=typeof data!=='undefined'&&Array.isArray(data.schedule)?data.schedule.length:'not available';
+   output.textContent='Build check v277 · Analytics module: '+(analytics?'loaded':'not detected')+' · History module: '+(typeof lifeosHistoryDayTotalsV276==='function'?'loaded':'not detected')+' · Sessions currently loaded: '+sessions+' · Plans currently loaded: '+plans+' · Visible history summary: '+(found?'yes':'open Track history first')+'. This is a local check, not a cloud synchronization confirmation.';
+  });
+  wrap.append(button,output);host.appendChild(wrap);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
 </script></body></html>
