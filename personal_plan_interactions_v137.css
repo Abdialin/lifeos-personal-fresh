@@ -72,3 +72,19 @@ body.v137-modal-open{overflow:hidden!important}
  }
  #v137ActivityModal .v137-primary,#v137ActivityModal .v137-actions-secondary button,#v137ActivityModal .v137-link{min-height:48px}
 }
+
+/* Shared compact mobile sheet treatment, consistent with Edit Session. */
+@media(max-width:750px){
+ #v137ActivityModal .v137-modal-sheet{
+  padding:8px 15px calc(24px + env(safe-area-inset-bottom,0px))!important;
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - 8px)!important;
+  scroll-padding-bottom:30px
+ }
+ #v137ActivityModal .v137-modal-bar{margin-bottom:10px}
+ #v137ActivityModal .v137-modal-heading{margin-bottom:12px}
+ #v137ActivityModal .v137-modal-heading h2{font-size:21px;line-height:1.25;margin-top:5px}
+ #v137ActivityModal .v137-datetime span{padding:9px}
+ #v137ActivityModal .v137-close{min-width:44px;min-height:44px}
+ #v137ActivityModal button,#v137ActivityModal a.v137-link{scroll-margin-bottom:24px}
+ #v137ActivityModal :is(button,a,input,select,textarea):focus-visible{outline:3px solid #7de2c9;outline-offset:2px}
+}
