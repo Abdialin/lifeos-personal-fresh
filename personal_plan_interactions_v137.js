@@ -47,9 +47,9 @@ function show(kind,id,trigger){
  '<button class="v137-primary" type="button" data-v137-action="details">View original plan →</button>')+
  (kind==='plan'?'<button class="v137-link" type="button" data-v137-action="details">View full plan details</button>':'');
  $('v137ActionStatus').textContent='';
- const node=$('v137ActivityModal');node.hidden=false;document.body.classList.add('v137-modal-open');node.querySelector('[data-v137-close]:not(.v137-backdrop)')?.focus({preventScroll:true});
+ const node=$('v137ActivityModal');node.hidden=false;document.body.classList.add('v137-modal-open');const nav=$('lifeosNavigation');if(nav){nav.style.setProperty('display','none','important');nav.setAttribute('inert','');nav.setAttribute('aria-hidden','true')}node.querySelector('[data-v137-close]:not(.v137-backdrop)')?.focus({preventScroll:true});
 }
-function hide(){const node=$('v137ActivityModal');if(node)node.hidden=true;document.body.classList.remove('v137-modal-open');activeId=null;activeKind=null;if(closeFocus?.isConnected)closeFocus.focus({preventScroll:true})}
+function hide(){const node=$('v137ActivityModal');if(node)node.hidden=true;document.body.classList.remove('v137-modal-open');const nav=$('lifeosNavigation');if(nav){nav.style.removeProperty('display');nav.removeAttribute('inert');nav.removeAttribute('aria-hidden')}activeId=null;activeKind=null;if(closeFocus?.isConnected)closeFocus.focus({preventScroll:true})}
 function refreshPlan(){
  const p=plan();if(!p)return;
  const picker=$('scheduleDay');if(picker){picker.value=local(p.startAt);picker.dispatchEvent(new Event('change',{bubbles:true}))}
