@@ -4609,4 +4609,19 @@ if('ResizeObserver' in window){const observer=new ResizeObserver(update);const a
  }
  #lo76-activation-dock .lo76-dock-actions button{min-height:44px!important}
 }
-</style></body></html>
+</style><style id="lo-mobile-action-accessibility-v1">
+@media(max-width:750px){
+ html{scroll-padding-bottom:calc(var(--lifeos-mobile-nav-height,112px) + 24px)}
+ body{scroll-padding-bottom:calc(var(--lifeos-mobile-nav-height,112px) + 24px)}
+ button,input,select,textarea,[role="button"]{scroll-margin-bottom:calc(var(--lifeos-mobile-nav-height,112px) + 24px)}
+ .modal{z-index:12000!important;box-sizing:border-box;padding:calc(12px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom))!important;overflow-y:auto;align-items:safe center}
+ .modal .modal-card{max-height:calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain}
+ #lo200-dialog{z-index:12000!important;overflow-y:auto!important}
+ #lo200-dialog [role="dialog"],#lo200-dialog .lo200-dialog{max-height:calc(100dvh - 40px);overflow-y:auto}
+ #lo76-activation-dock,#loPlannedReminder{scrollbar-width:thin}
+}
+</style><script id="lo-mobile-action-accessibility-script">(function(){'use strict';
+function ensureVisible(event){const el=event.target;if(!el?.matches?.('button,input,select,textarea,[role="button"]'))return;if(window.innerWidth>750)return;const nav=document.querySelector('.lifeos-nav');if(!nav||getComputedStyle(nav).position!=='fixed')return;const n=nav.getBoundingClientRect(),b=el.getBoundingClientRect();if(b.bottom>n.top-8&&b.top<n.bottom&&b.top<n.top){const scroller=el.closest('.modal-card,.lo255-sheet,#lo76-activation-dock,#loPlannedReminder,[role="dialog"]');if(scroller&&scroller.scrollHeight>scroller.clientHeight+4)scroller.scrollBy({top:b.bottom-n.top+18,behavior:'smooth'});else window.scrollBy({top:b.bottom-n.top+18,behavior:'smooth'})}}
+document.addEventListener('focusin',ensureVisible,true);
+document.addEventListener('pointerdown',function(e){const el=e.target.closest?.('button,[role="button"]');if(!el)return;const nav=document.querySelector('.lifeos-nav');if(!nav||window.innerWidth>750)return;const n=nav.getBoundingClientRect(),b=el.getBoundingClientRect();if(!nav.contains(el)&&b.bottom>n.top&&b.top<n.bottom&&getComputedStyle(nav).position==='fixed'){console.warn('LifeOS: action overlaps mobile navigation',el.id||el.textContent?.trim()?.slice(0,50));ensureVisible({target:el})}},true)
+})();</script></body></html>
