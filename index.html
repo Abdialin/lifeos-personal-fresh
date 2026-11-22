@@ -4681,28 +4681,33 @@ document.addEventListener('pointerdown',function(e){const el=e.target.closest?.(
 function setup(id,cancelId){const modal=document.getElementById(id);if(!modal)return;const card=modal.querySelector('.modal-card');if(!card||card.querySelector('.lo-dialog-close'))return;const close=document.createElement('button');close.type='button';close.className='lo-dialog-close';close.textContent='×';close.setAttribute('aria-label','Close '+(card.querySelector('h3')?.textContent||'dialog'));close.addEventListener('click',()=>{const cancel=document.getElementById(cancelId);if(cancel&&!cancel.disabled)cancel.click();else if(!cancel)modal.hidden=true});card.insertBefore(close,card.firstChild)}
 function init(){setup('editModal','cancelEdit');setup('activityDetailsModal','loDetailSkip')}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();</script><script id="lo-modal-nav-coordinator-v1">(function(){'use strict';
-const selectors=['#editModal','#activityDetailsModal','#v137ActivityModal','#lo255-review-drawer','#lo200-dialog'];
-let hiddenByCoordinator=false,wasHidden=false,previousDisplay='',previousPriority='',previousInert=false,previousAria=null;
-function visible(el){if(!el||el.hidden||el.getAttribute('aria-hidden')==='true')return false;const cs=getComputedStyle(el);return cs.display!=='none'&&cs.visibility!=='hidden'}
-function sync(){
- const nav=document.getElementById('lifeosNavigation');if(!nav)return;
- const modalOpen=window.innerWidth<=750&&selectors.some(sel=>visible(document.querySelector(sel)));
- if(modalOpen&&!hiddenByCoordinator){
-  previousDisplay=nav.style.getPropertyValue('display');previousPriority=nav.style.getPropertyPriority('display');
-  previousInert=nav.hasAttribute('inert');previousAria=nav.getAttribute('aria-hidden');
-  hiddenByCoordinator=true;nav.style.setProperty('display','none','important');nav.setAttribute('inert','');nav.setAttribute('aria-hidden','true');
- }else if(!modalOpen&&hiddenByCoordinator){
-  hiddenByCoordinator=false;
-  if(previousDisplay)nav.style.setProperty('display',previousDisplay,previousPriority);else nav.style.removeProperty('display');
-  if(!previousInert)nav.removeAttribute('inert');
-  if(previousAria===null)nav.removeAttribute('aria-hidden');else nav.setAttribute('aria-hidden',previousAria);
+})();</script><style id="lo-nav-modal-visibility-repair-v1">
+@media(max-width:750px){
+ body:not(.v137-modal-open):not(.lo-mobile-edit-open):not(.lo-mobile-detail-open) #lifeosNavigation{
+  display:grid!important;visibility:visible!important;pointer-events:auto!important
  }
+ body.v137-modal-open #lifeosNavigation,
+ body.lo-mobile-edit-open #lifeosNavigation,
+ body.lo-mobile-detail-open #lifeosNavigation{display:none!important;pointer-events:none!important}
+}
+</style><script id="lo-nav-modal-visibility-repair-script">(function(){'use strict';
+function sync(){
+ const edit=document.getElementById('editModal'),detail=document.getElementById('activityDetailsModal'),nav=document.getElementById('lifeosNavigation');
+ const isOpen=el=>!!el&&!el.hidden&&getComputedStyle(el).display!=='none';
+ document.body.classList.toggle('lo-mobile-edit-open',isOpen(edit));
+ document.body.classList.toggle('lo-mobile-detail-open',isOpen(detail));
+ if(!nav)return;
+ const active=window.innerWidth<=750&&(document.body.classList.contains('v137-modal-open')||isOpen(edit)||isOpen(detail));
+ if(!active){nav.style.removeProperty('display');nav.removeAttribute('inert');nav.removeAttribute('aria-hidden')}
 }
 function init(){
  const observer=new MutationObserver(()=>sync());
- observer.observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden','class','style','aria-hidden']});
- window.addEventListener('resize',sync);window.addEventListener('pageshow',sync);sync();
+ for(const id of ['editModal','activityDetailsModal']){
+  const el=document.getElementById(id);if(el)observer.observe(el,{attributes:true,attributeFilter:['hidden','style','class']})
+ }
+ observer.observe(document.body,{attributes:true,attributeFilter:['class']});
+ window.addEventListener('pageshow',sync);window.addEventListener('resize',sync);
+ sync()
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();</script></body></html>
