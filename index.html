@@ -4737,4 +4737,53 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
+</script><style id="lifeos-header-layout-v274">
+/* Header organization: presentation only, no changes to app state or data. */
+header.top{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;gap:10px 14px!important;margin-bottom:12px!important}
+header.top .brand{min-width:0;gap:10px}
+header.top .brand .logo{flex:none;width:42px;height:42px}
+header.top .brand b{font-size:clamp(17px,3.6vw,22px);line-height:1.1}
+header.top .brand .small{font-size:11px;line-height:1.35}
+header.top .lo154-access{grid-column:2;grid-row:1;gap:7px;flex-wrap:nowrap}
+header.top .lo154-logout{min-height:42px;font-size:13px;padding:9px 12px}
+#lifeosHeaderActionsV274{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 0 2px;border-top:1px solid #273b54}
+#lifeosHeaderActionsV274 button{min-height:42px!important;max-width:100%;font-size:13px!important;padding:9px 12px!important;border-radius:11px!important;width:auto!important;flex:0 0 auto}
+#lifeosHeaderActionsV274 .lifeos-settings-action{margin-left:auto}
+@media(max-width:600px){
+ header.top{grid-template-columns:minmax(0,1fr) auto!important;gap:9px!important}
+ header.top .brand .small{display:none}
+ header.top .lo154-access #status{display:none!important}
+ header.top .lo154-logout{padding:8px 10px;font-size:12px}
+ #lifeosHeaderActionsV274{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #lifeosHeaderActionsV274 button{width:100%!important;min-width:0!important;white-space:normal!important;overflow-wrap:anywhere}
+ #lifeosHeaderActionsV274 .lifeos-settings-action{margin:0}
+}
+</style>
+<script id="lifeos-header-layout-script-v274">
+(function(){
+ function organize(){
+  const header=document.querySelector('header.top');
+  if(!header)return;
+  let actions=document.getElementById('lifeosHeaderActionsV274');
+  if(!actions){actions=document.createElement('div');actions.id='lifeosHeaderActionsV274';actions.setAttribute('aria-label','LifeOS quick actions');header.appendChild(actions)}
+  const refresh=document.getElementById('lifeosManualRefreshV273');
+  if(refresh&&refresh.parentNode!==actions)actions.appendChild(refresh);
+  // Move the original controls, preserving their existing event handlers.
+  const candidates=Array.from(document.querySelectorAll('button,[role="button"]')).filter(el=>!actions.contains(el)&&!el.closest('dialog,[role="dialog"],nav')&&!el.closest('#lifeosHeaderActionsV274'));
+  for(const el of candidates){
+   const label=(el.textContent||'').replace(/\\s+/g,' ').trim().toLowerCase();
+   const aria=(el.getAttribute('aria-label')||'').toLowerCase();
+   if(/^(☀\\s*)?light mode$|^(☾\\s*)?dark mode$|^(sun\\s*)?light mode$|^(moon\\s*)?dark mode$/.test(label)||/toggle (light|dark) mode|switch to (light|dark) mode/.test(aria)){
+    if(el.parentNode!==actions)actions.appendChild(el);
+   }else if(label==='settings & data'||label==='settings and data'){
+    el.classList.add('lifeos-settings-action');
+    if(el.parentNode!==actions)actions.appendChild(el);
+   }
+  }
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',organize,{once:true});else organize();
+ window.addEventListener('load',organize,{once:true});
+ setTimeout(organize,900);
+ setTimeout(organize,2400);
+})();
 </script></body></html>
