@@ -30,7 +30,19 @@ function nativeTimerAction(id,action){
  publish();
  return true;
 }
-let last='',lastAlarm='';
+let last='',lastAlarm='',lastPlanned='';
+function publishPlanned(force=false){
+ const native=root.LifeOSNative;if(!native||typeof native.postMessage!=='function')return false;
+ let plans=[];try{plans=root.lifeosReadOnlyWorkspace?.()?.schedule||[]}catch(_){}
+ const now=Date.now();
+ const upcoming=(Array.isArray(plans)?plans:[]).filter(p=>p&&p.reminder===true&&p.status==='planned'&&!p.sessionId&&Number.isFinite(Number(p.startAt))&&Number(p.startAt)-600000>now&&Number(p.startAt)-600000<=now+7*86400000)
+  .sort((a,b)=>Number(a.startAt)-Number(b.startAt))[0];
+ const value=upcoming?{kind:'planned-reminder',status:'scheduled',id:String(upcoming.id||'').slice(0,100),name:String(upcoming.name||'Planned activity').slice(0,80),atMs:Number(upcoming.startAt)-600000}:{kind:'planned-reminder',status:'cancelled'};
+ const signature=value.status+'|'+(value.id||'')+'|'+(value.atMs||0);
+ if(signature===lastPlanned&&!force)return true;
+ try{native.postMessage(JSON.stringify(value));lastPlanned=signature;return true}catch(_){return false}
+}
+
 function publishAlarm(force=false){
  const native=root.LifeOSNative;
  if(!native||typeof native.postMessage!=='function')return false;
@@ -64,19 +76,19 @@ function publish(force=false){
  try{native.postMessage(JSON.stringify(message));last=signature;return true}catch(_){return false}
 }
 if(root?.document){
- root.addEventListener('lifeos-v77-tracking-changed',()=>root.setTimeout(publish,100));
+ root.addEventListener('lifeos-v77-tracking-changed',()=>root.setTimeout(()=>{publish();publishPlanned()},100));
  root.addEventListener('lifeos-track-action-committed',()=>root.setTimeout(()=>publish(true),0));
  root.addEventListener('lifeos-track-timer-snapshot',()=>{if(root.document?.hidden)return;publish()});
  root.addEventListener('lifeos-v221-focus-changed',()=>root.setTimeout(publishAlarm,100));
- root.addEventListener('pageshow',()=>{publish(true);publishAlarm(true)});
- root.addEventListener('focus',()=>{publish(true);publishAlarm(true)});
- root.document.addEventListener('visibilitychange',()=>{if(!root.document.hidden){publish(true);publishAlarm(true)}});
- root.addEventListener('load',()=>root.setTimeout(()=>{publish(true);publishAlarm(true)},400));
+ root.addEventListener('pageshow',()=>{publish(true);publishAlarm(true);publishPlanned(true)});
+ root.addEventListener('focus',()=>{publish(true);publishAlarm(true);publishPlanned(true)});
+ root.document.addEventListener('visibilitychange',()=>{if(!root.document.hidden){publish(true);publishAlarm(true);publishPlanned(true)}});
+ root.addEventListener('load',()=>root.setTimeout(()=>{publish(true);publishAlarm(true);publishPlanned(true)},400));
  // A bridge may be injected after scripts mount; one opportunistic retry.
- root.setTimeout(()=>{publish(true);publishAlarm(true)},1500);
+ root.setTimeout(()=>{publish(true);publishAlarm(true);publishPlanned(true)},1500);
  // Quick Start and legacy handlers do not all dispatch v77 events. Read-only
  // change detection keeps the native display in sync without duplicating writes.
- root.setInterval(()=>{if(!document.hidden)publish()},2000);
+ root.setInterval(()=>{if(!document.hidden){publish();publishPlanned()}},2000);
 }
-root.LifeOSAndroidBridgeV222={pick,elapsed,publish,publishAlarm,nativeTimerAction};
+root.LifeOSAndroidBridgeV222={pick,elapsed,publish,publishAlarm,publishPlanned,nativeTimerAction};
 })(typeof window!=='undefined'?window:globalThis);
