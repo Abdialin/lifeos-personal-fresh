@@ -4624,4 +4624,20 @@ if('ResizeObserver' in window){const observer=new ResizeObserver(update);const a
 function ensureVisible(event){const el=event.target;if(!el?.matches?.('button,input,select,textarea,[role="button"]'))return;if(window.innerWidth>750)return;const nav=document.querySelector('.lifeos-nav');if(!nav||getComputedStyle(nav).position!=='fixed')return;const n=nav.getBoundingClientRect(),b=el.getBoundingClientRect();if(b.bottom>n.top-8&&b.top<n.bottom&&b.top<n.top){const scroller=el.closest('.modal-card,.lo255-sheet,#lo76-activation-dock,#loPlannedReminder,[role="dialog"]');if(scroller&&scroller.scrollHeight>scroller.clientHeight+4)scroller.scrollBy({top:b.bottom-n.top+18,behavior:'smooth'});else window.scrollBy({top:b.bottom-n.top+18,behavior:'smooth'})}}
 document.addEventListener('focusin',ensureVisible,true);
 document.addEventListener('pointerdown',function(e){const el=e.target.closest?.('button,[role="button"]');if(!el)return;const nav=document.querySelector('.lifeos-nav');if(!nav||window.innerWidth>750)return;const n=nav.getBoundingClientRect(),b=el.getBoundingClientRect();if(!nav.contains(el)&&b.bottom>n.top&&b.top<n.bottom&&getComputedStyle(nav).position==='fixed'){console.warn('LifeOS: action overlaps mobile navigation',el.id||el.textContent?.trim()?.slice(0,50));ensureVisible({target:el})}},true)
-})();</script></body></html>
+})();</script><style id="lo-modal-navigation-separation-v1">
+/* Full-screen interaction sheets take precedence over the six-tab dock.
+   Applies only while a known sheet is visibly open; inline reminders remain above the dock. */
+@media(max-width:750px){
+ body:has(#v137ActivityModal:not([hidden])) .lifeos-nav,
+ body:has(#lo255-review-drawer:not([hidden])) .lifeos-nav,
+ body.lo200-modal-open .lifeos-nav{visibility:hidden!important;pointer-events:none!important}
+ body:has(#v137ActivityModal:not([hidden])) #v137ActivityModal,
+ body:has(#lo255-review-drawer:not([hidden])) #lo255-review-drawer{z-index:30000!important}
+ #lo255-review-drawer .lo255-sheet{
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - 10px)!important;
+  padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))!important;
+  box-sizing:border-box;scroll-padding-bottom:36px
+ }
+ body.lo200-modal-open #lo200-dialog{z-index:30000!important}
+}
+</style></body></html>
