@@ -65,6 +65,8 @@ function publish(force=false){
 }
 if(root?.document){
  root.addEventListener('lifeos-v77-tracking-changed',()=>root.setTimeout(publish,100));
+ root.addEventListener('lifeos-track-action-committed',()=>root.setTimeout(()=>publish(true),0));
+ root.addEventListener('lifeos-track-timer-snapshot',()=>{if(root.document?.hidden)return;publish()});
  root.addEventListener('lifeos-v221-focus-changed',()=>root.setTimeout(publishAlarm,100));
  root.addEventListener('pageshow',()=>{publish(true);publishAlarm(true)});
  root.addEventListener('focus',()=>{publish(true);publishAlarm(true)});
