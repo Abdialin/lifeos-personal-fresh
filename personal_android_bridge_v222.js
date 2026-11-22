@@ -35,9 +35,9 @@ function publishPlanned(force=false){
  const native=root.LifeOSNative;if(!native||typeof native.postMessage!=='function')return false;
  let plans=[];try{plans=root.lifeosReadOnlyWorkspace?.()?.schedule||[]}catch(_){}
  const now=Date.now();
- const upcoming=(Array.isArray(plans)?plans:[]).filter(p=>p&&p.reminder===true&&p.status==='planned'&&!p.sessionId&&Number.isFinite(Number(p.startAt))&&Number(p.startAt)-600000>now&&Number(p.startAt)-600000<=now+7*86400000)
+ const upcoming=(Array.isArray(plans)?plans:[]).filter(p=>p&&p.reminder===true&&p.status==='planned'&&!p.sessionId&&Number.isFinite(Number(p.startAt))&&Number(p.startAt)>now&&Number(p.startAt)-600000<=now+7*86400000)
   .sort((a,b)=>Number(a.startAt)-Number(b.startAt))[0];
- const value=upcoming?{kind:'planned-reminder',status:'scheduled',id:String(upcoming.id||'').slice(0,100),name:String(upcoming.name||'Planned activity').slice(0,80),atMs:Number(upcoming.startAt)-600000}:{kind:'planned-reminder',status:'cancelled'};
+ const value=upcoming?{kind:'planned-reminder',status:'scheduled',id:String(upcoming.id||'').slice(0,100),name:String(upcoming.name||'Planned activity').slice(0,80),atMs:Math.max(now+3000,Number(upcoming.startAt)-600000)}:{kind:'planned-reminder',status:'cancelled'};
  const signature=value.status+'|'+(value.id||'')+'|'+(value.atMs||0);
  if(signature===lastPlanned&&!force)return true;
  try{native.postMessage(JSON.stringify(value));lastPlanned=signature;return true}catch(_){return false}
