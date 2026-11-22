@@ -4710,4 +4710,31 @@ function init(){
  sync()
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();</script></body></html>
+})();</script><script id="lifeos-manual-refresh-v273">
+(function(){
+ function install(){
+  if(document.getElementById('lifeosManualRefreshV273'))return;
+  const header=document.querySelector('header.top');
+  if(!header)return;
+  const button=document.createElement('button');
+  button.id='lifeosManualRefreshV273';
+  button.type='button';
+  button.textContent='↻ Refresh';
+  button.setAttribute('aria-label','Refresh LifeOS display without closing the app');
+  button.style.cssText='min-height:44px;padding:9px 12px;border-radius:11px;border:1px solid #49627a;background:#20324c;color:#eaf0ff;font-weight:650;white-space:nowrap';
+  button.addEventListener('click',function(){
+   button.disabled=true;
+   try{
+    if(typeof render==='function')render();
+    window.dispatchEvent(new Event('resize'));
+    button.textContent='✓ Updated';
+   }catch(error){
+    console.error('LifeOS view refresh failed',error);
+    button.textContent='Refresh failed';
+   }finally{setTimeout(function(){button.disabled=false;button.textContent='↻ Refresh'},1600)}
+  });
+  header.appendChild(button);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
+</script></body></html>
