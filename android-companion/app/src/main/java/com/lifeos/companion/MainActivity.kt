@@ -297,6 +297,11 @@ class MainActivity : Activity() {
                 }
                 return
             }
+            if (p.optString("kind") == "planned-reminder") {
+                if (p.optString("status") == "cancelled") PlannedReminder.cancel(this)
+                else if (p.optString("status") == "scheduled") PlannedReminder.schedule(this, p.optString("id"), p.optString("name", "Planned activity"), p.optLong("atMs", 0L))
+                return
+            }
             if (p.optString("kind") == "alarm-status") {
                 handleAlarmState(p)
                 return
