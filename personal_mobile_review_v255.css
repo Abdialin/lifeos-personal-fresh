@@ -39,3 +39,20 @@ html.lo254-ui .lo255-chart-label{font-size:13px;color:#b0c9dd;margin:10px 0 0}
 html.lo254-ui .lo255-chart-axis{display:flex;justify-content:space-between;color:#a8c1d1;font-size:11px;margin:5px 0 12px}
 @media(min-width:751px){html.lo254-ui .lo255-sheet{border-radius:20px;max-height:85vh;margin-bottom:4vh}}
 @media(max-width:400px){html.lo254-ui .lo255-sheet-body #lo252-fields{grid-template-columns:1fr!important}html.lo254-ui .lo255-sheet-body #lo252-fields label:has(input[type=text]){grid-column:span 1}html.lo254-ui .lo255-mini-stat strong{font-size:16px}}
+
+/* Compact and accessible review dialog, matching activity and edit sheets. */
+@media(max-width:750px){
+ html.lo254-ui #lo255-review-drawer .lo255-sheet{
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - 8px)!important;
+  padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))!important;
+  scroll-padding-bottom:32px
+ }
+ html.lo254-ui #lo255-review-drawer .lo255-sheet-header{padding:10px 14px}
+ html.lo254-ui #lo255-review-drawer .lo255-sheet-header h2{font-size:18px!important}
+ html.lo254-ui #lo255-review-drawer .lo255-sheet-header button{min-width:44px;min-height:44px}
+ html.lo254-ui #lo255-review-drawer .lo255-sheet-body{padding:10px 13px 18px}
+ html.lo254-ui #lo255-review-drawer .lo255-actions{gap:8px}
+ html.lo254-ui #lo255-review-drawer .lo255-actions button{min-height:46px!important;flex:1 1 125px}
+ html.lo254-ui #lo255-review-drawer :is(button,input,select,textarea){scroll-margin-bottom:32px}
+ html.lo254-ui #lo255-review-drawer :is(button,input,select,textarea):focus-visible{outline:3px solid #7de2c9;outline-offset:2px}
+}
