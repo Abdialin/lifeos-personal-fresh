@@ -36,7 +36,7 @@ function mount(){
  const panel=document.createElement('section');panel.id='lo76-activation';panel.className='lo76-activation';
  panel.innerHTML='<h3>Scheduled activity activation</h3><p class="sub">Assisted is the default. Only pressing Start records real tracked time. Automatic mode creates a provisional prompt that you must confirm; it does not assume you performed an activity.</p><label for="lo76-plan">Choose a future plan</label><select class="field" id="lo76-plan"></select><label for="lo76-mode">Activation mode</label><select class="field" id="lo76-mode"><option value="assisted">Assisted (recommended)</option><option value="manual">Manual</option><option value="automatic">Automatic — provisional only</option></select><button class="btn outline" id="lo76-save-mode" type="button">Save mode for this plan</button><p class="sub" role="status" id="lo76-mode-status"></p>';
  plan.prepend(panel);
- const dock=document.createElement('aside');dock.id='lo76-activation-dock';dock.hidden=true;dock.className='lo76-dock';dock.innerHTML='<div class="lo76-dock-head"><strong id="lo76-dock-name"></strong><span id="lo76-dock-time"></span></div><div class="lo76-dock-actions"><button type="button" class="btn primary" data-v76="start">Start now</button><button type="button" class="btn outline" data-v76="snooze">Snooze 10 min</button><button type="button" class="btn outline" data-v76="dismiss">Dismiss</button></div><small>Scheduled ≠ completed. Starting uses the current real time. No phone notifications have been enabled.</small>';
+ const dock=document.createElement('aside');dock.id='lo76-activation-dock';dock.hidden=true;dock.className='lo76-dock';dock.innerHTML='<div class="lo76-dock-head"><strong id="lo76-dock-name"></strong><span id="lo76-dock-time"></span></div><div class="lo76-dock-actions"><button type="button" class="btn primary" data-v76="start">Start now</button><button type="button" class="btn outline" data-v76="snooze">Snooze 10 min</button><button type="button" class="btn outline" data-v76="dismiss">Dismiss</button></div><p id="lo76-dock-feedback" role="status" aria-live="assertive" style="margin:8px 0;color:#eaffd4;font-size:13px"></p><small>Scheduled ≠ completed. Starting uses the current real time. No phone notifications have been enabled.</small>';
  document.body.append(dock);
  const get=()=>root.lifeosReadOnlyWorkspace?.(),picker=panel.querySelector('#lo76-plan'),select=panel.querySelector('#lo76-mode');
  let active=null,previousKey='';
@@ -76,10 +76,25 @@ function mount(){
  });
  dock.addEventListener('click',e=>{
   const button=e.target.closest('[data-v76]');if(!button||!active)return;
-  const detail={type:button.dataset.v76,id:active.id,result:{ok:false}};
-  root.dispatchEvent(new CustomEvent('lifeos-v76-activation',{detail}));
-  panel.querySelector('#lo76-mode-status').textContent=detail.result?.message||'No change saved.';
+  e.preventDefault();e.stopPropagation();
+  const action=button.dataset.v76,planId=active.id;
+  const feedback=dock.querySelector('#lo76-dock-feedback');
+  button.disabled=true;
+  const detail={type:action,id:planId,result:{ok:false,message:'The action was not confirmed.'}};
+  try{root.dispatchEvent(new CustomEvent('lifeos-v76-activation',{detail}))}
+  catch(error){detail.result={ok:false,message:'Action failed: '+String(error?.message||error)}}
+  button.disabled=false;
+  const message=detail.result?.message||'No change saved.';
+  feedback.textContent=message;
+  panel.querySelector('#lo76-mode-status').textContent=message;
   choosePlans();scan();
+  if(action==='start'&&detail.result?.ok===true){
+   dock.hidden=true;
+   document.querySelector('#lifeosNavigation [data-view="tracking"]')?.click();
+  }else if(detail.result?.ok!==true){
+   dock.hidden=false;
+   feedback.textContent=message+' Check whether the app is blocking storage or confirmation dialogs.';
+  }
  });
  const refresh=()=>{if(document.hidden)return;scan()};
  root.addEventListener('lifeos-v76-activation-changed',()=>{choosePlans();scan()});
