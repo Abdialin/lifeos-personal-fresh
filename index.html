@@ -4640,4 +4640,23 @@ document.addEventListener('pointerdown',function(e){const el=e.target.closest?.(
  }
  body.lo200-modal-open #lo200-dialog{z-index:30000!important}
 }
+</style><style id="lo-mobile-modal-access-v3">
+@media(max-width:750px){
+ /* The navigation is not interactive while a true modal is displayed. */
+ body:has(.modal:not([hidden])) .lifeos-nav,
+ body:has(#lo200-dialog:not([hidden])) .lifeos-nav,
+ body:has(#v137ActivityModal:not([hidden])) .lifeos-nav,
+ body:has(#lo255-review-drawer:not([hidden])) .lifeos-nav{
+  visibility:hidden!important;pointer-events:none!important
+ }
+ body:has(.modal:not([hidden])) .modal{z-index:31000!important}
+ body:has(.modal:not([hidden])) .modal-card{
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 28px)!important;
+  overflow-y:auto!important;overscroll-behavior:contain;
+  scroll-padding-bottom:32px;
+ }
+ body:has(.modal:not([hidden])) .modal-card :is(button,input,select,textarea){
+  scroll-margin-bottom:32px;min-height:44px
+ }
+}
 </style></body></html>
