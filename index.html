@@ -5276,4 +5276,40 @@ body[data-lifeos-view="tracking"] #loTrackWorkspaces{min-width:0;width:100%;marg
 #loTrackWorkspaces .lo-track-workspace-page{min-width:0}
 #loTrackWorkspaces .lo-track-workspace-page>.panel{margin-bottom:12px}
 @media(max-width:750px){#loTrackWorkspaces .lo-track-workspace-tabs{top:0}#loTrackWorkspaces .lo-track-workspace-tab{min-height:48px}body[data-lifeos-view="tracking"] #loTrackWorkspaces{padding-bottom:95px}}
-</style></body></html>
+</style><style id="lifeos-track-design-v300">
+/* Concept A: cohesive visual language for all Track workspaces */
+body[data-lifeos-view="tracking"] #loTrackWorkspaces{--mint:#6ce6cd;--ink:#0b1c2e;--surface:#152b40;--line:#34536a;--muted:#a9c1ce;color:#effbfc;max-width:1050px;margin:0 auto 24px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces *{box-sizing:border-box}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-workspace-tabs{position:relative;top:auto;z-index:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:6px;margin-bottom:22px;background:#0e2033;border:1px solid var(--line);border-radius:18px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-workspace-tab{min-height:52px;font-size:14px;font-weight:800;border-radius:12px;color:#b5cad5}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-workspace-tab[aria-selected="true"]{background:var(--mint);color:#092d2b;box-shadow:0 4px 15px #4bdcc033}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-workspace-page{display:grid;gap:14px;align-content:start}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-workspace-page[hidden]{display:none!important}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-workspace-page>*{min-width:0;width:100%;margin:0!important}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-design-intro{padding:4px 3px 10px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-design-intro span{display:block;font-size:11px;letter-spacing:.15em;color:var(--mint);font-weight:800;margin-bottom:7px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-design-intro h2{font-size:clamp(27px,6vw,37px);line-height:1.15;letter-spacing:-.035em;color:#f1fcfc;margin:0 0 7px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-design-intro p{color:var(--muted);font-size:13px;line-height:1.5;margin:0}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .panel{background:linear-gradient(150deg,#1a3046,#102338)!important;border:1px solid var(--line)!important;border-radius:20px!important;padding:20px!important;box-shadow:0 12px 28px #06121f26!important;color:#f0fafb}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .panel h2{color:#f2fcfc!important;font-size:18px!important;letter-spacing:-.015em}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .panel .sub,body[data-lifeos-view="tracking"] #loTrackWorkspaces .panel .note{color:var(--muted)!important}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .panel .head{margin-bottom:15px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces button:not(.lo-track-workspace-tab){border-radius:11px;min-height:43px;max-width:100%;touch-action:manipulation}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces .field{background:#0c1d30;border:1px solid #3c5b70;color:#f1fcfc;border-radius:11px;min-height:44px;max-width:100%}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackActivePanel{background:linear-gradient(145deg,#1a3c4b,#10263a)!important;border-color:#4d9187!important;padding:23px!important}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #activeCount{background:#214f49;color:#b3ffe9;border:1px solid #477d73;border-radius:99px;padding:5px 10px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions{display:grid;gap:10px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session{background:#11283c!important;border:1px solid #3a5c6b!important;border-radius:16px!important;margin:0!important;overflow:hidden}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session:first-child{background:linear-gradient(140deg,#1b414b,#102d3e)!important;border-color:#62a99b!important}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session:first-child .lo17-clock{font-size:clamp(39px,9vw,64px)!important;font-weight:800;letter-spacing:-.04em;color:#effff9;font-variant-numeric:tabular-nums}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session:not(:first-child) .lo17-clock{font-size:20px!important;color:#d5ffef}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session .controls{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session .controls button{min-width:0!important;min-height:46px!important;font-size:12px!important;font-weight:750}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #loConceptAStart{background:#152b40;border:1px solid var(--line);border-radius:16px;padding:5px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #loConceptAStart>summary{background:#1c4046!important;color:#baffec!important;border:1px solid #418779!important;border-radius:12px!important;min-height:53px!important}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackHistoryPanel .lo-history-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,180px);gap:9px 12px;padding:13px;background:#0d2235;border:1px solid #305064;border-radius:14px;margin-bottom:15px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackHistoryPanel .history{display:grid;gap:10px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #loTrackAdvanced,body[data-lifeos-view="tracking"] #loTrackWorkspaces #loTrackLegacyReview{background:#11273b;border:1px solid #35536a;border-radius:15px;padding:12px}
+@media(max-width:750px){body[data-lifeos-view="tracking"] #loTrackWorkspaces{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-workspace-page{gap:12px}body[data-lifeos-view="tracking"] #loTrackWorkspaces .panel{padding:16px!important;border-radius:17px!important}body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackActivePanel{padding:17px!important}body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackHistoryPanel .lo-history-toolbar{grid-template-columns:minmax(0,1fr)}}
+</style>
+<script id="lifeos-track-design-intros-v300">(function(){function init(){const shell=document.getElementById('loTrackWorkspaces');if(!shell)return;const copy={live:['YOUR DAY, IN MOTION','Live tracking','Your timers and activities in one place.'],history:['YOUR ACTIVITY ARCHIVE','Activity history','Find and manage what you recorded.'],review:['UNDERSTAND YOUR TIME','Time review','Review distractions and patterns.']};for(const [key,words] of Object.entries(copy)){const page=document.getElementById('loTrackPage'+key);if(!page||page.querySelector('.lo-track-design-intro'))continue;const header=document.createElement('header');header.className='lo-track-design-intro';const kicker=document.createElement('span');kicker.textContent=words[0];const title=document.createElement('h2');title.textContent=words[1];const description=document.createElement('p');description.textContent=words[2];header.append(kicker,title,description);page.prepend(header)}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();window.addEventListener('load',init,{once:true})})();</script></body></html>
