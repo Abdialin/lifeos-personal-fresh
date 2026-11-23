@@ -5121,4 +5121,49 @@ body[data-lifeos-view="tracking"] #loConceptAStart>summary::before{font-size:22p
 </style><style id="lifeos-concept-a-controls-v290">
 /* Keep primary actions legible and secondary sessions discoverable. */
 @media(max-width:750px){body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .controls button{min-height:48px!important;padding:10px 8px!important;font-size:13px!important}body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .controls button{min-height:44px!important;padding:9px 6px!important}body[data-lifeos-view="tracking"] #sessions .lo17-session .controls button{overflow-wrap:anywhere;white-space:normal!important}}
+</style><script id="lifeos-track-consolidation-v291">
+/* Consolidate duplicate live-timer presentation without replacing its data or handlers. */
+(function(){
+'use strict';
+function consolidate(){
+ if(document.body.dataset.lifeosView!=='tracking')return;
+ const canonical=document.getElementById('trackActivePanel');
+ if(!canonical)return;
+ const titles=[...document.querySelectorAll('h1,h2,h3,h4')];
+ const legacy=titles.find(el=>el.textContent.trim().toLowerCase()==='your live activity'&&!canonical.contains(el));
+ if(legacy){
+  const panel=legacy.closest('section,.panel,article')||legacy.parentElement;
+  if(panel&&!panel.closest('#loTrackLegacyReview')&&!panel.contains(canonical)){
+   let disclosure=document.getElementById('loTrackLegacyReview');
+   if(!disclosure){
+    disclosure=document.createElement('details');disclosure.id='loTrackLegacyReview';
+    const summary=document.createElement('summary');summary.textContent='Additional timer review';
+    disclosure.append(summary);
+    canonical.insertAdjacentElement('afterend',disclosure);
+   }
+   disclosure.appendChild(panel);
+  }
+ }
+ const sessions=canonical.querySelector('#sessions');
+ if(sessions){
+  const cards=[...sessions.querySelectorAll('details.lo17-session')];
+  if(cards.length&&!cards.some(el=>el.open))cards[0].open=true;
+ }
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',consolidate,{once:true});else consolidate();
+window.addEventListener('load',consolidate,{once:true});
+window.addEventListener('pageshow',consolidate);
+const nav=document.querySelector('.lifeos-nav');
+if(nav)nav.addEventListener('click',()=>requestAnimationFrame(consolidate));
+})();
+</script>
+<style id="lifeos-track-consolidation-style-v291">
+body[data-lifeos-view="tracking"] #loTrackLegacyReview{margin:8px 0 14px;border:1px solid #365166;border-radius:14px;background:#142438;overflow:hidden}
+body[data-lifeos-view="tracking"] #loTrackLegacyReview>summary{padding:13px 16px;min-height:48px;cursor:pointer;font-weight:650;color:#b6d5df}
+body[data-lifeos-view="tracking"] #loTrackLegacyReview>section,body[data-lifeos-view="tracking"] #loTrackLegacyReview>.panel{margin:0}
+@media(max-width:750px){
+ body[data-lifeos-view="tracking"]{scroll-padding-bottom:calc(95px + env(safe-area-inset-bottom,0px))}
+ body[data-lifeos-view="tracking"] .wrap{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))!important}
+ body[data-lifeos-view="tracking"] #sessions .lo17-session{scroll-margin-bottom:120px}
+}
 </style></body></html>
