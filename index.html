@@ -4525,7 +4525,7 @@ body[data-lifeos-view="tracking"] #loTrackFocusConsole{display:block}
 @media(max-width:550px){#loTrackFocusConsole .lo-focus-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#loTrackFocusConsole button{padding:9px 6px}}
 </style><script id="lo-track-focus-console">(function(){'use strict';
 let consoleEl=null,observer=null,scheduled=false;const committed=new Map();
-function getPanel(){if(consoleEl)return consoleEl;const anchor=document.getElementById('trackActivePanel');if(!anchor)return null;consoleEl=document.createElement('section');consoleEl.id='loTrackFocusConsole';consoleEl.setAttribute('aria-label','Focus and break controls');consoleEl.innerHTML='<div class="lo-focus-head"><h2>Focus & breaks</h2><span class="lo-focus-status">Connected to your live timers</span></div><div id="loFocusSessions"></div><div class="lo-focus-message" id="loFocusMessage" role="status">Pause or take a break without ending your session. Resume when you return.</div>';anchor.insertAdjacentElement('afterend',consoleEl);return consoleEl}
+function getPanel(){if(consoleEl)return consoleEl;const anchor=document.getElementById('trackActivePanel');if(!anchor)return null;consoleEl=document.createElement('section');consoleEl.id='loTrackFocusConsole';consoleEl.setAttribute('aria-label','Focus and break controls');consoleEl.innerHTML='<div class="lo-focus-head"><h2>Focus & breaks</h2><span class="lo-focus-status">Connected to your live timers</span></div><div id="loFocusSessions"></div><div class="lo-focus-message" id="loFocusMessage" role="status">Pause or take a break without ending your session. Resume when you return.</div>';const fold=document.createElement('details');fold.id='loTrackFocusDisclosure';fold.className='lo-track-focus-disclosure';const summary=document.createElement('summary');summary.textContent='Focus & break controls · all active sessions';fold.append(summary,consoleEl);anchor.insertAdjacentElement('afterend',fold);return consoleEl}
 function render(){scheduled=false;const panel=getPanel();if(!panel)return;const host=document.getElementById('sessions'),out=document.getElementById('loFocusSessions');if(!host||!out)return;
 const source=[...host.querySelectorAll('[data-act="pause"],[data-act="resume"],[data-act="break"],[data-act="finish"]')];const ids=[...new Set(source.map(b=>b.dataset.id).filter(Boolean))];out.replaceChildren();
 if(!ids.length){const p=document.createElement('p');p.className='lo-focus-message';p.textContent='No running or paused activities. Start an activity in Quick Start to use focus controls.';out.appendChild(p);return}
@@ -4923,7 +4923,7 @@ function organize(){
  if(!active||!quick)return;
  // DOM-only reordering; event listeners and stored data are preserved.
  if(active.nextElementSibling!==quick)active.insertAdjacentElement('afterend',quick);
- if(focus&&quick.nextElementSibling!==focus)quick.insertAdjacentElement('afterend',focus);
+ const focusContainer=focus?.closest('#loTrackFocusDisclosure')||focus;if(focusContainer&&quick.nextElementSibling!==focusContainer)quick.insertAdjacentElement('afterend',focusContainer);
  const heading=active.querySelector('h2');
  if(heading&&heading.textContent.trim()==='Active sessions')heading.textContent='Live activity';
  const qheading=quick.querySelector('h2');
@@ -4961,4 +4961,14 @@ body[data-lifeos-view="tracking"] #loTrackDistractionReview button{white-space:n
 function update(){const nav=document.querySelector('.lifeos-nav');if(!nav)return;const h=Math.ceil(nav.getBoundingClientRect().height);if(h>0&&h<300)document.documentElement.style.setProperty('--lifeos-nav-height',h+'px')}
 function init(){update();const nav=document.querySelector('.lifeos-nav');if(nav&&window.ResizeObserver){new ResizeObserver(update).observe(nav)}window.addEventListener('resize',update,{passive:true});window.addEventListener('orientationchange',update,{passive:true})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();</script></body></html>
+})();</script><style id="lo-track-release-hierarchy-v283">
+/* Progressive disclosure: advanced multi-session controls stay usable without duplicating a full screen of timers. */
+body[data-lifeos-view="tracking"] #loTrackFocusDisclosure{margin:12px 0 18px;border:1px solid #365267;border-radius:16px;background:#15273a;overflow:hidden}
+#loTrackFocusDisclosure>summary{cursor:pointer;list-style:none;padding:17px 18px;font-weight:700;color:#e6f6ff;min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+#loTrackFocusDisclosure>summary::-webkit-details-marker{display:none}
+#loTrackFocusDisclosure>summary::after{content:"Expand";font-size:12px;font-weight:600;color:#a4d8d2}
+#loTrackFocusDisclosure[open]>summary::after{content:"Collapse"}
+#loTrackFocusDisclosure #loTrackFocusConsole{margin:0;border:0;border-top:1px solid #365267;border-radius:0}
+#loTrackFocusDisclosure .lo-focus-card{margin:10px 0}
+@media(max-width:750px){#loTrackFocusDisclosure .lo-focus-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#loTrackFocusDisclosure .lo-focus-actions button{min-width:0;min-height:48px;white-space:normal}}
+</style></body></html>
