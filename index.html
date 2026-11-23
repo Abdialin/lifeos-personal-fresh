@@ -4932,6 +4932,8 @@ function organize(){
  if(distraction&&history&&distraction.nextElementSibling!==history)distraction.insertAdjacentElement('afterend',history);
  if(history&&past&&history.nextElementSibling!==past)history.insertAdjacentElement('afterend',past);
  if(past&&advanced&&past.nextElementSibling!==advanced)past.insertAdjacentElement('afterend',advanced);
+ // DOMContentLoaded listeners may create the focus and advanced panels later.
+ // A second idempotent pass ensures the intended order after all modules initialize.
  const heading=active.querySelector('h2');
  if(heading&&heading.textContent.trim()==='Active sessions')heading.textContent='Live activity';
  const qheading=quick.querySelector('h2');
@@ -4939,6 +4941,7 @@ function organize(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',organize,{once:true});else organize();
 window.addEventListener('pageshow',organize);
+window.addEventListener('load',organize,{once:true});
 })();</script><style id="lo-track-history-vision-v281">
 /* Activity history and distraction review: compact, touch-friendly and accessible. */
 body[data-lifeos-view="tracking"] #trackHistoryPanel{scroll-margin-top:18px}
