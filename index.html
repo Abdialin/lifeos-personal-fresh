@@ -5139,7 +5139,7 @@ function consolidate(){
     disclosure=document.createElement('details');disclosure.id='loTrackLegacyReview';
     const summary=document.createElement('summary');summary.textContent='Additional timer review';
     disclosure.append(summary);
-    canonical.insertAdjacentElement('afterend',disclosure);
+    (document.getElementById('loTrackPagelive')||canonical.parentElement).appendChild(disclosure);
    }
    disclosure.appendChild(panel);
   }
@@ -5220,7 +5220,6 @@ function setup(){
  const advanced=document.getElementById('loTrackAdvanced');
  if(advanced)pages.history.append(advanced);
  pages.review.append(distraction);
- const analytics=document.getElementById('analyticsPanel');
  // Analytics remains in its dedicated Insights navigation: never steal it from that view.
  // Review uses Track-specific distraction controls and their existing analysis.
  for(const page of Object.values(pages)){
