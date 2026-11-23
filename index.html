@@ -4904,4 +4904,31 @@ header.top .lo154-logout{min-height:42px;font-size:13px;padding:9px 12px}
  #trackActivePanel{padding-bottom:16px}
  #sessions details[open]{scroll-margin-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 }
-</style></body></html>
+</style><style id="lo-track-vision-order-v280">
+/* Keep the core Track workflow first; secondary tools remain available below. */
+@media(max-width:750px){
+ #trackQuickPanel,#loTrackFocusConsole,#trackHistoryPanel{scroll-margin-top:14px}
+ #trackQuickPanel .quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+ #trackQuickPanel .quick button{min-width:0;min-height:66px;white-space:normal;overflow-wrap:anywhere}
+ #trackQuickPanel .row{flex-wrap:wrap}
+ #trackQuickPanel #customName{flex:1 1 170px!important}
+ #trackQuickPanel #startCustom{min-height:46px}
+ #loTrackFocusConsole .lo-focus-actions button{min-height:46px}
+}
+</style>
+<script id="lo-track-vision-order-v280">(function(){
+'use strict';
+function organize(){
+ const active=document.getElementById('trackActivePanel'),quick=document.getElementById('trackQuickPanel'),focus=document.getElementById('loTrackFocusConsole');
+ if(!active||!quick)return;
+ // DOM-only reordering; event listeners and stored data are preserved.
+ if(active.nextElementSibling!==quick)active.insertAdjacentElement('afterend',quick);
+ if(focus&&quick.nextElementSibling!==focus)quick.insertAdjacentElement('afterend',focus);
+ const heading=active.querySelector('h2');
+ if(heading&&heading.textContent.trim()==='Active sessions')heading.textContent='Live activity';
+ const qheading=quick.querySelector('h2');
+ if(qheading&&qheading.textContent.trim()==='Quick start')qheading.textContent='Start a new activity';
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',organize,{once:true});else organize();
+window.addEventListener('pageshow',organize);
+})();</script></body></html>
