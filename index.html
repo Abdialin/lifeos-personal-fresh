@@ -4971,4 +4971,36 @@ body[data-lifeos-view="tracking"] #loTrackFocusDisclosure{margin:12px 0 18px;bor
 #loTrackFocusDisclosure #loTrackFocusConsole{margin:0;border:0;border-top:1px solid #365267;border-radius:0}
 #loTrackFocusDisclosure .lo-focus-card{margin:10px 0}
 @media(max-width:750px){#loTrackFocusDisclosure .lo-focus-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#loTrackFocusDisclosure .lo-focus-actions button{min-width:0;min-height:48px;white-space:normal}}
-</style></body></html>
+</style><style id="lo-distraction-progressive-v284">
+#trackDistractionPanel .lo-distraction-detail-disclosure{margin-top:16px;border:1px solid #40546a;border-radius:14px;overflow:hidden;background:#15273a}
+#trackDistractionPanel .lo-distraction-detail-disclosure>summary{cursor:pointer;padding:16px 18px;min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700;list-style:none;color:#e4f4ff}
+#trackDistractionPanel .lo-distraction-detail-disclosure>summary::-webkit-details-marker{display:none}
+#trackDistractionPanel .lo-distraction-detail-disclosure>summary::after{content:"View";color:#9ed9cd;font-size:12px}
+#trackDistractionPanel .lo-distraction-detail-disclosure[open]>summary::after{content:"Hide"}
+#trackDistractionPanel .lo-distraction-detail-content{padding:12px;border-top:1px solid #40546a}
+#trackDistractionPanel .lo-distraction-detail-content>*{max-width:100%;min-width:0}
+#trackDistractionPanel .lo-distraction-detail-content button{min-height:44px}
+@media(max-width:750px){#trackDistractionPanel .lo-distraction-detail-content{padding:10px}#trackDistractionPanel .lo-distraction-detail-content .lo-d-actions{display:grid;grid-template-columns:1fr}}
+</style>
+<script id="lo-distraction-progressive-script-v284">(function(){
+'use strict';
+function init(){
+ const panel=document.getElementById('trackDistractionPanel');if(!panel||panel.querySelector('#loDistractionMore'))return;
+ const disclosure=document.createElement('details');disclosure.id='loDistractionMore';disclosure.className='lo-distraction-detail-disclosure';
+ const summary=document.createElement('summary');summary.textContent='Review, classify & analyze distractions';
+ const content=document.createElement('div');content.className='lo-distraction-detail-content';
+ disclosure.append(summary,content);panel.append(disclosure);
+ // Existing report controls keep their original DOM nodes and event handlers.
+ const preserve=new Set([panel.querySelector('.head'),panel.querySelector('.row'),panel.querySelector('p.note'),disclosure]);
+ let moving=false;
+ function consolidate(){
+  if(moving)return;moving=true;
+  try{for(const node of [...panel.children]){if(!preserve.has(node)&&node!==disclosure)content.append(node)}}
+  finally{moving=false}
+ }
+ consolidate();
+ const observer=new MutationObserver(()=>consolidate());
+ observer.observe(panel,{childList:true});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();</script></body></html>
