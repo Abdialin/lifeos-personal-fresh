@@ -4924,6 +4924,14 @@ function organize(){
  // DOM-only reordering; event listeners and stored data are preserved.
  if(active.nextElementSibling!==quick)active.insertAdjacentElement('afterend',quick);
  const focusContainer=focus?.closest('#loTrackFocusDisclosure')||focus;if(focusContainer&&quick.nextElementSibling!==focusContainer)quick.insertAdjacentElement('afterend',focusContainer);
+ const distraction=document.getElementById('trackDistractionPanel');
+ const history=document.getElementById('trackHistoryPanel');
+ const past=document.getElementById('trackPastPanel');
+ const advanced=document.getElementById('loTrackAdvanced');
+ // Make recent records reachable before auxiliary tools, preserving original nodes and handlers.
+ if(distraction&&history&&distraction.nextElementSibling!==history)distraction.insertAdjacentElement('afterend',history);
+ if(history&&past&&history.nextElementSibling!==past)history.insertAdjacentElement('afterend',past);
+ if(past&&advanced&&past.nextElementSibling!==advanced)past.insertAdjacentElement('afterend',advanced);
  const heading=active.querySelector('h2');
  if(heading&&heading.textContent.trim()==='Active sessions')heading.textContent='Live activity';
  const qheading=quick.querySelector('h2');
