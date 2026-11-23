@@ -5220,8 +5220,25 @@ function setup(){
  const advanced=document.getElementById('loTrackAdvanced');
  if(advanced)pages.history.append(advanced);
  pages.review.append(distraction);
- const analytics=document.getElementById('trackAnalyticsPanel');
- if(analytics)pages.review.append(analytics);
+ const analytics=document.getElementById('analyticsPanel');
+ // Analytics remains in its dedicated Insights navigation: never steal it from that view.
+ // Review uses Track-specific distraction controls and their existing analysis.
+ for(const page of Object.values(pages)){
+  for(const panel of page.querySelectorAll('section.panel')){
+   panel.dataset.lifeosArea='tracking';
+  }
+ }
+ // Navigation originally snapshots panels and may hide them before Track workspace
+ // initialization. Clear stale hidden state only for panels owned by this workspace.
+ const restore=()=>{
+  if(document.body.dataset.lifeosView!=='tracking')return;
+  for(const panel of shell.querySelectorAll('section.panel')){
+   panel.hidden=false;panel.classList.remove('lifeos-hidden-panel');panel.setAttribute('aria-hidden','false');
+  }
+ };
+ const viewObserver=new MutationObserver(restore);
+ viewObserver.observe(document.body,{attributes:true,attributeFilter:['data-lifeos-view']});
+ restore();
  choose('live');
  // Maintain workspace selection across visits without touching stored activity records.
  document.querySelectorAll('.lifeos-nav button[data-view="tracking"]').forEach(button=>button.addEventListener('click',()=>choose(shell.dataset.workspace||'live')));
