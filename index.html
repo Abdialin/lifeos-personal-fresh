@@ -5155,6 +5155,22 @@ window.addEventListener('load',consolidate,{once:true});
 window.addEventListener('pageshow',consolidate);
 const nav=document.querySelector('.lifeos-nav');
 if(nav)nav.addEventListener('click',()=>requestAnimationFrame(consolidate));
+// Track is a single-page view; its DOM may be built after the initial load.
+let queued=false;
+const schedule=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;consolidate()})};
+const viewObserver=new MutationObserver(mutations=>{
+ if(mutations.some(m=>m.type==='attributes'&&m.attributeName==='data-lifeos-view'))schedule();
+});
+viewObserver.observe(document.body,{attributes:true,attributeFilter:['data-lifeos-view']});
+const trackRoot=document.getElementById('trackActivePanel')?.parentElement;
+if(trackRoot){
+ const trackObserver=new MutationObserver(mutations=>{
+  if(document.body.dataset.lifeosView!=='tracking')return;
+  if(mutations.some(m=>m.type==='childList'&&[...m.addedNodes].some(n=>n.nodeType===1&&n.id!=='loTrackLegacyReview')))schedule();
+ });
+ trackObserver.observe(trackRoot,{childList:true});
+}
+schedule();
 })();
 </script>
 <style id="lifeos-track-consolidation-style-v291">
