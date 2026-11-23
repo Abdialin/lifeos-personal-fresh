@@ -4922,8 +4922,9 @@ function organize(){
  const active=document.getElementById('trackActivePanel'),quick=document.getElementById('trackQuickPanel'),focus=document.getElementById('loTrackFocusConsole');
  if(!active||!quick)return;
  // DOM-only reordering; event listeners and stored data are preserved.
- if(active.nextElementSibling!==quick)active.insertAdjacentElement('afterend',quick);
- const focusContainer=focus?.closest('#loTrackFocusDisclosure')||focus;if(focusContainer&&quick.nextElementSibling!==focusContainer)quick.insertAdjacentElement('afterend',focusContainer);
+ const launcher=document.getElementById('loConceptAStart')||quick;
+ if(active.nextElementSibling!==launcher)active.insertAdjacentElement('afterend',launcher);
+ const focusContainer=focus?.closest('#loTrackFocusDisclosure')||focus;if(focusContainer&&launcher.nextElementSibling!==focusContainer)launcher.insertAdjacentElement('afterend',focusContainer);
  const distraction=document.getElementById('trackDistractionPanel');
  const history=document.getElementById('trackHistoryPanel');
  const past=document.getElementById('trackPastPanel');
@@ -5093,11 +5094,16 @@ function init(){
  quick.parentNode.insertBefore(wrapper,quick);
  wrapper.append(summary,quick);
  const head=quick.querySelector('.head');if(head)head.hidden=true;
- const sessions=document.getElementById('sessions');
- if(sessions) sessions.addEventListener('toggle',function(e){
-  const el=e.target;if(!el.matches||!el.matches('details.lo17-session')||!el.open)return;
-  // A selected session remains fully operable using its existing native controls.
- },true);
+
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();</script></body></html>
+})();</script><style id="lifeos-concept-a-polish-v287">
+body[data-lifeos-view="tracking"] #loConceptAStart{display:block;margin:10px 0 16px;min-width:0}
+body[data-lifeos-view="tracking"] #loConceptAStart #trackQuickPanel .head[hidden]{display:none!important}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child:not([open])>.lo17-summary{padding-bottom:18px}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .lo17-meta{display:block;line-height:1.45}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .lo17-summary-main{width:100%;min-width:0}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .lo17-summary-main{min-width:0}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .lo17-right{min-width:0}
+@media(max-width:750px){body[data-lifeos-view="tracking"] #loConceptAStart{margin-bottom:12px}body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .lo17-clock{font-size:clamp(36px,9vw,54px)}}
+</style></body></html>
