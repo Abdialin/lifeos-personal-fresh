@@ -5200,7 +5200,7 @@ function setup(){
  const buttons={};
  Object.keys(pages).forEach(key=>{
   const button=document.createElement('button');button.type='button';button.textContent=names[key];button.className='lo-track-workspace-tab';button.setAttribute('role','tab');button.setAttribute('aria-controls',pages[key].id);
-  button.addEventListener('click',()=>choose(key));buttons[key]=button;nav.append(button);
+  button.addEventListener('click',()=>{choose(key);shell.scrollIntoView({block:'start',behavior:'instant'})});buttons[key]=button;nav.append(button);
  });
  function choose(key){
   Object.entries(pages).forEach(([name,page])=>{const selected=name===key;page.hidden=!selected;buttons[name].setAttribute('aria-selected',String(selected));buttons[name].tabIndex=selected?0:-1});
@@ -5270,6 +5270,8 @@ body[data-lifeos-view="tracking"] #loTrackWorkspaces{min-width:0;width:100%;marg
 #loTrackWorkspaces .lo-track-workspace-tabs{position:sticky;top:0;z-index:8;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:5px;margin:0 0 14px;background:#101e30;border:1px solid #355267;border-radius:15px}
 #loTrackWorkspaces .lo-track-workspace-tab{font:inherit;font-weight:700;font-size:14px;border:0;border-radius:11px;background:transparent;color:#afc8d5;min-height:46px;cursor:pointer}
 #loTrackWorkspaces .lo-track-workspace-tab[aria-selected="true"]{background:#65e4ce;color:#092b28}
+#loTrackWorkspaces{scroll-margin-top:calc(12px + env(safe-area-inset-top,0px))}
+#loTrackWorkspaces .lo-track-workspace-tab:focus-visible{outline:3px solid #a4f6de;outline-offset:2px}
 #loTrackWorkspaces .lo-track-workspace-page[hidden]{display:none!important}
 #loTrackWorkspaces .lo-track-workspace-page{min-width:0}
 #loTrackWorkspaces .lo-track-workspace-page>.panel{margin-bottom:12px}
