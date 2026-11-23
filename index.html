@@ -1720,7 +1720,7 @@ function renderTodayProgress(){renderTodayTasksV277();renderTodayActiveUpcomingV
   (plans.length?'<div class="lo-bar-track" role="progressbar" aria-label="Linked plan completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+pct+'"><div class="lo-bar-fill" style="width:'+pct+'%"></div></div>':'')+
   '<p class="lo-daily-note">'+pending.length+' past plan(s) need review · '+skipped.length+' marked skipped. Plan links do not measure overall day completion. Linking a finished session is stronger evidence than matching a time slot.'+(exampleCount?' '+exampleCount+' recorded sessions are imported development examples.':'')+'</p>';
 }
-function render(){renderTodayProgress();renderTodayActivityHistory();renderHierarchy();renderSchedule();renderAnalytics();renderTodos();renderDistraction();renderStage3();let active=data.sessions.filter(s=>s.status!=='finished').sort((a,b)=>b.startAt-a.startAt);$('activeCount').textContent=`${active.length} open`;const expandedSessions=new Set([...$('sessions').querySelectorAll('details.lo17-session[open]')].map(x=>x.dataset.sessionId));if(active.length===1&&$('sessions').querySelectorAll('details.lo17-session').length===0)expandedSessions.add(String(active[0].id));$('sessions').classList.add('lo17-session-grid');$('sessions').innerHTML=active.length?active.map(s=>`<details class="session lo17-session" data-session-id="${escape(s.id)}" ${expandedSessions.has(String(s.id))?'open':''}><summary class="lo17-summary"><span class="lo17-summary-main"><strong class="session-title">${escape(s.name)}</strong><span class="lo17-meta">${s.status==='paused'?'Ⅱ Paused':'● Running'} · Started ${escape(time(s.startAt))}${s.precision!=='measured'?' · corrected':''} · Total ${fmt(elapsed(s))}</span></span><span class="lo17-right"><span class="lo17-clock clock" data-timer="${escape(s.id)}" title="Time recorded today; full session is preserved">${fmt(todaySessionMs(s,now()))}</span><span class="lo17-expand" aria-hidden="true">⌄</span></span></summary><div class="lo17-actions"><div class="controls">${s.status==='running'?`<button class="btn outline" data-act="pause" data-id="${escape(s.id)}">Ⅱ Pause</button><button class="btn outline" data-act="break" data-id="${escape(s.id)}">☕ Break</button>`:`<button class="btn primary" data-act="resume" data-id="${escape(s.id)}">▶ Resume</button>`}<button class="btn danger" data-act="finish" data-id="${escape(s.id)}">■ Finish</button><button class="btn outline" data-act="switch" data-id="${escape(s.id)}">⇄ Switch</button><button class="btn outline" data-act="edit" data-id="${escape(s.id)}">✎ Edit</button></div></div></details>`).join(''):'<div class="empty">Nothing running yet. Start an activity below.</div>';let finished=data.sessions.filter(s=>s.status==='finished').sort((a,b)=>b.endAt-a.endAt);renderGroupedHistory(finished);$('completed').textContent=finished.filter(s=>localDate(s.endAt)===localDate(now())).length;$('todayDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});tick()}function lifeosIsoWeek(dateStr){
+function render(){renderTodayProgress();renderTodayActivityHistory();renderHierarchy();renderSchedule();renderAnalytics();renderTodos();renderDistraction();renderStage3();let active=data.sessions.filter(s=>s.status!=='finished').sort((a,b)=>b.startAt-a.startAt);$('activeCount').textContent=`${active.length} open`;const expandedSessions=new Set([...$('sessions').querySelectorAll('details.lo17-session[open]')].map(x=>x.dataset.sessionId));if(active.length===1&&$('sessions').querySelectorAll('details.lo17-session').length===0)expandedSessions.add(String(active[0].id));if(active.length&&$('sessions').querySelectorAll('details.lo17-session').length===0)expandedSessions.add(String(active[0].id));$('sessions').classList.add('lo17-session-grid');$('sessions').innerHTML=active.length?active.map(s=>`<details class="session lo17-session" data-session-id="${escape(s.id)}" ${expandedSessions.has(String(s.id))?'open':''}><summary class="lo17-summary"><span class="lo17-summary-main"><strong class="session-title">${escape(s.name)}</strong><span class="lo17-meta">${s.status==='paused'?'Ⅱ Paused':'● Running'} · Started ${escape(time(s.startAt))}${s.precision!=='measured'?' · corrected':''} · Total ${fmt(elapsed(s))}</span></span><span class="lo17-right"><span class="lo17-clock clock" data-timer="${escape(s.id)}" title="Time recorded today; full session is preserved">${fmt(todaySessionMs(s,now()))}</span><span class="lo17-expand" aria-hidden="true">⌄</span></span></summary><div class="lo17-actions"><div class="controls">${s.status==='running'?`<button class="btn outline" data-act="pause" data-id="${escape(s.id)}">Ⅱ Pause</button><button class="btn outline" data-act="break" data-id="${escape(s.id)}">☕ Break</button>`:`<button class="btn primary" data-act="resume" data-id="${escape(s.id)}">▶ Resume</button>`}<button class="btn danger" data-act="finish" data-id="${escape(s.id)}">■ Finish</button><button class="btn outline" data-act="switch" data-id="${escape(s.id)}">⇄ Switch</button><button class="btn outline" data-act="edit" data-id="${escape(s.id)}">✎ Edit</button></div></div></details>`).join(''):'<div class="empty">Nothing running yet. Start an activity below.</div>';let finished=data.sessions.filter(s=>s.status==='finished').sort((a,b)=>b.endAt-a.endAt);renderGroupedHistory(finished);$('completed').textContent=finished.filter(s=>localDate(s.endAt)===localDate(now())).length;$('todayDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});tick()}function lifeosIsoWeek(dateStr){
  const date=new Date(dateStr+'T12:00:00');date.setHours(12,0,0,0);
  const dow=(date.getDay()+6)%7;date.setDate(date.getDate()-dow+3);
  const year=date.getFullYear(),first=new Date(year,0,4,12);
@@ -5039,6 +5039,65 @@ function init(){
  const ids=['trackingRecoveryPanel','activityHierarchyPanel','calendarHandoffPanel','calendarChangePanel'];
  for(const id of ids){const el=document.getElementById(id);if(el)body.appendChild(el)}
  // Keep original DOM elements, listeners, and form state. No activity or calendar records are touched.
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();</script><style id="lifeos-concept-a-live-v286">
+/* Concept A: real session controls, not a visual-only duplicate. */
+body[data-lifeos-view="tracking"] #trackActivePanel{background:transparent;border:0;box-shadow:none;padding:0;margin-bottom:12px;overflow:visible}
+body[data-lifeos-view="tracking"] #trackActivePanel>.head{margin:0 0 10px;padding:0 3px}
+body[data-lifeos-view="tracking"] #trackActivePanel>.head h2{font-size:20px}
+body[data-lifeos-view="tracking"] #trackActivePanel>.head .sub{display:none}
+body[data-lifeos-view="tracking"] #sessions.lo17-session-grid{display:flex;flex-direction:column;gap:10px}
+body[data-lifeos-view="tracking"] #sessions .lo17-session{min-width:0;margin:0;background:#12253a;border:1px solid #355a6b;border-radius:18px;box-shadow:none;overflow:hidden}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child{background:linear-gradient(140deg,#132d3d,#101b30);border-color:#458c87}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child>.lo17-summary{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:20px 18px 10px;min-height:0}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child>.lo17-summary::before{content:"ACTIVE ACTIVITY";font-size:11px;font-weight:800;letter-spacing:.12em;color:#6be4ce}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .session-title{font-size:clamp(20px,4.5vw,26px);line-height:1.25;overflow-wrap:anywhere}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .lo17-right{display:flex;width:100%;justify-content:center;align-items:center}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .lo17-clock{font-size:clamp(38px,10vw,62px);line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-.055em;white-space:nowrap}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .lo17-expand{display:none}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .lo17-actions{padding:4px 14px 16px}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .controls button{font-size:13px;min-width:0;min-height:48px;padding:9px 5px;white-space:normal}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .controls button[data-act="finish"]{background:#62dfc8;color:#062720;border-color:#62dfc8}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child)>.lo17-summary{padding:13px 14px;min-height:64px;gap:8px}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .session-title{font-size:15px;line-height:1.25}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .lo17-meta{font-size:11px}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .lo17-clock{font-size:19px;white-space:nowrap}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .lo17-actions{padding:0 12px 12px}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .controls button{min-height:44px;min-width:0;font-size:12px;padding:8px 4px}
+body[data-lifeos-view="tracking"] #trackQuickPanel{margin:10px 0;border-color:#3d817b;background:#122b39}
+body[data-lifeos-view="tracking"] #trackQuickPanel h2{color:#71e8d0}
+body[data-lifeos-view="tracking"] #loConceptAStart>summary{list-style:none;cursor:pointer;min-height:54px;display:flex;align-items:center;padding:14px 18px;font-size:18px;font-weight:750;background:#65e4ce;color:#08251f;border-radius:15px}
+body[data-lifeos-view="tracking"] #loConceptAStart>summary::-webkit-details-marker{display:none}
+body[data-lifeos-view="tracking"] #loConceptAStart>summary::before{content:"+";font-size:26px;margin-right:12px}
+body[data-lifeos-view="tracking"] #loConceptAStart[open]>summary{border-radius:15px 15px 0 0}
+body[data-lifeos-view="tracking"] #loConceptAStart #trackQuickPanel{margin:0;border-radius:0 0 15px 15px}
+@media(max-width:750px){
+ body[data-lifeos-view="tracking"] #trackActivePanel{margin-bottom:10px}
+ body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .controls{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .lifeos-nav{padding-top:5px!important;padding-bottom:calc(5px + env(safe-area-inset-bottom))!important}
+ .lifeos-nav button{min-height:48px!important;padding:5px 2px!important;border-radius:11px!important}
+ .lifeos-nav .lifeos-tab-icon{font-size:17px}
+ .lifeos-nav .lifeos-tab-label{font-size:10px}
+}
+</style>
+<script id="lifeos-concept-a-live-script-v286">(function(){
+'use strict';
+function init(){
+ const quick=document.getElementById('trackQuickPanel');
+ if(!quick||document.getElementById('loConceptAStart'))return;
+ const wrapper=document.createElement('details');wrapper.id='loConceptAStart';
+ const summary=document.createElement('summary');summary.textContent='Start activity';
+ quick.parentNode.insertBefore(wrapper,quick);
+ wrapper.append(summary,quick);
+ const head=quick.querySelector('.head');if(head)head.hidden=true;
+ const sessions=document.getElementById('sessions');
+ if(sessions) sessions.addEventListener('toggle',function(e){
+  const el=e.target;if(!el.matches||!el.matches('details.lo17-session')||!el.open)return;
+  // A selected session remains fully operable using its existing native controls.
+ },true);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();</script></body></html>
