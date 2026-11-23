@@ -4944,4 +4944,21 @@ body[data-lifeos-view="tracking"] #loTrackDistractionReview button{white-space:n
  body[data-lifeos-view="tracking"] #loTrackDistractionReview .lo-d-actions{grid-template-columns:1fr}
  body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar{grid-template-columns:minmax(0,1fr)}
 }
-</style></body></html>
+</style><style id="lifeos-mobile-nav-clearance-v282">
+/* Navigation clearance is measured rather than assuming a fixed 92px dock. */
+@media(max-width:750px){
+ html{scroll-padding-bottom:calc(var(--lifeos-nav-height,112px) + 28px)}
+ body{padding-bottom:calc(var(--lifeos-nav-height,112px) + 28px)!important}
+ .wrap{padding-bottom:calc(var(--lifeos-nav-height,112px) + 28px)!important}
+ body[data-lifeos-view="tracking"] .panel,
+ body[data-lifeos-view="tracking"] details,
+ body[data-lifeos-view="tracking"] button{scroll-margin-bottom:calc(var(--lifeos-nav-height,112px) + 24px)}
+ .lifeos-nav{z-index:1000;box-sizing:border-box}
+}
+</style>
+<script id="lifeos-mobile-nav-clearance-script-v282">(function(){
+'use strict';
+function update(){const nav=document.querySelector('.lifeos-nav');if(!nav)return;const h=Math.ceil(nav.getBoundingClientRect().height);if(h>0&&h<300)document.documentElement.style.setProperty('--lifeos-nav-height',h+'px')}
+function init(){update();const nav=document.querySelector('.lifeos-nav');if(nav&&window.ResizeObserver){new ResizeObserver(update).observe(nav)}window.addEventListener('resize',update,{passive:true});window.addEventListener('orientationchange',update,{passive:true})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();</script></body></html>
