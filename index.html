@@ -4892,6 +4892,8 @@ header.top .lo154-logout{min-height:42px;font-size:13px;padding:9px 12px}
 <script id="lo-track-vision-order-v280">(function(){
 'use strict';
 function organize(){
+ // The unified workspace owns ordering after initialization.
+ if(document.getElementById('loTrackWorkspaces'))return;
  const active=document.getElementById('trackActivePanel'),quick=document.getElementById('trackQuickPanel'),focus=document.getElementById('loTrackFocusConsole');
  if(!active||!quick)return;
  // DOM-only reordering; event listeners and stored data are preserved.
@@ -5235,6 +5237,23 @@ function setup(){
    panel.hidden=false;panel.classList.remove('lifeos-hidden-panel');panel.setAttribute('aria-hidden','false');
   }
  };
+ // Reconcile any late-loaded controls without creating duplicate copies.
+ const reconcile=()=>{
+  const placement=[
+   ['loConceptAStart',pages.live],['loTrackLegacyReview',pages.live],
+   ['trackPastPanel',pages.history],['trackHistoryPanel',pages.history],
+   ['loTrackAdvanced',pages.history],['trackDistractionPanel',pages.review]
+  ];
+  for(const [id,destination] of placement){
+   const element=document.getElementById(id);
+   if(element&&element.parentElement!==destination)destination.appendChild(element);
+  }
+  for(const panel of shell.querySelectorAll('section.panel'))panel.dataset.lifeosArea='tracking';
+  restore();
+ };
+ window.addEventListener('load',reconcile,{once:true});
+ window.addEventListener('pageshow',reconcile);
+ reconcile();
  const viewObserver=new MutationObserver(restore);
  viewObserver.observe(document.body,{attributes:true,attributeFilter:['data-lifeos-view']});
  restore();
