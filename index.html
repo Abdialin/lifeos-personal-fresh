@@ -5106,4 +5106,29 @@ body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .lo17-summ
 body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .lo17-summary-main{min-width:0}
 body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .lo17-right{min-width:0}
 @media(max-width:750px){body[data-lifeos-view="tracking"] #loConceptAStart{margin-bottom:12px}body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .lo17-clock{font-size:clamp(36px,9vw,54px)}}
+</style><style id="lifeos-track-concept-a-structure-v288">
+/* One live timer surface: secondary controls remain in the session itself. */
+body[data-lifeos-view="tracking"] #loTrackFocusDisclosure{display:none!important}
+body[data-lifeos-view="tracking"] #trackActivePanel>.head{margin-bottom:12px!important}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child)>.lo17-summary{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px!important;padding:13px 15px!important}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .lo17-right{justify-self:end}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .lo17-clock{font-size:clamp(17px,4vw,21px)!important}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:not(:first-child) .lo17-meta{font-size:11px;line-height:1.4}
+body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .lo17-actions .controls button[data-act="finish"]{background:#62dfc8;color:#062720}
+body[data-lifeos-view="tracking"] #loConceptAStart>summary{min-height:52px!important;font-size:16px!important;padding:11px 16px!important;border-radius:14px!important}
+body[data-lifeos-view="tracking"] #loConceptAStart>summary::before{font-size:22px!important}
+@media(max-width:750px){
+ html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 52px)}
+ body .wrap{padding-top:calc(20px + env(safe-area-inset-top,0px))!important}
+ body[data-lifeos-view="tracking"] #trackActivePanel{scroll-margin-top:calc(48px + env(safe-area-inset-top,0px))}
+ body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child>.lo17-summary{padding:17px 16px 8px!important}
+ body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .controls{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ body[data-lifeos-view="tracking"] #sessions .lo17-session:first-child .controls button{min-height:46px;font-size:12px}
+ .lifeos-nav{padding:4px max(6px,env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left))!important;gap:3px!important}
+ .lifeos-nav button{min-height:50px!important;padding:5px 1px!important;gap:2px!important}
+ .lifeos-nav .lifeos-tab-icon{font-size:16px!important;line-height:1.1}
+ .lifeos-nav .lifeos-tab-label{font-size:10px!important;line-height:1.15}
+ body[data-lifeos-view="tracking"] #trackHistoryPanel,
+ body[data-lifeos-view="tracking"] #trackDistractionPanel{scroll-margin-top:calc(50px + env(safe-area-inset-top,0px))}
+}
 </style></body></html>
