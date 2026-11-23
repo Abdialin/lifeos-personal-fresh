@@ -5182,4 +5182,61 @@ body[data-lifeos-view="tracking"] #loTrackLegacyReview>section,body[data-lifeos-
  body[data-lifeos-view="tracking"] .wrap{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))!important}
  body[data-lifeos-view="tracking"] #sessions .lo17-session{scroll-margin-bottom:120px}
 }
+</style><script id="lifeos-track-workspaces-v292">
+(function(){
+'use strict';
+function setup(){
+ const active=document.getElementById('trackActivePanel');
+ const history=document.getElementById('trackHistoryPanel');
+ const distraction=document.getElementById('trackDistractionPanel');
+ if(!active||!history||!distraction||document.getElementById('loTrackWorkspaces'))return;
+ const shell=document.createElement('section');shell.id='loTrackWorkspaces';shell.setAttribute('aria-label','Track workspaces');
+ const nav=document.createElement('div');nav.className='lo-track-workspace-tabs';nav.setAttribute('role','tablist');nav.setAttribute('aria-label','Track workspace');
+ const pages={live:document.createElement('div'),history:document.createElement('div'),review:document.createElement('div')};
+ Object.entries(pages).forEach(([key,page])=>{page.className='lo-track-workspace-page';page.id='loTrackPage'+key;page.setAttribute('role','tabpanel');page.setAttribute('aria-label',key)});
+ const names={live:'Live',history:'History',review:'Review'};
+ const buttons={};
+ Object.keys(pages).forEach(key=>{
+  const button=document.createElement('button');button.type='button';button.textContent=names[key];button.className='lo-track-workspace-tab';button.setAttribute('role','tab');button.setAttribute('aria-controls',pages[key].id);
+  button.addEventListener('click',()=>choose(key));buttons[key]=button;nav.append(button);
+ });
+ function choose(key){
+  Object.entries(pages).forEach(([name,page])=>{const selected=name===key;page.hidden=!selected;buttons[name].setAttribute('aria-selected',String(selected));buttons[name].tabIndex=selected?0:-1});
+  shell.dataset.workspace=key;
+ }
+ active.parentNode.insertBefore(shell,active);
+ shell.append(nav,...Object.values(pages));
+ // Reparent existing panels rather than cloning: original listeners, IDs and data survive.
+ pages.live.append(active);
+ const start=document.getElementById('loConceptAStart')||document.getElementById('trackQuickPanel');
+ if(start)pages.live.append(start);
+ const focus=document.getElementById('loTrackFocusDisclosure');
+ if(focus)pages.live.append(focus);
+ const legacy=document.getElementById('loTrackLegacyReview');
+ if(legacy)pages.live.append(legacy);
+ const past=document.getElementById('trackPastPanel');
+ if(past)pages.history.append(past);
+ pages.history.append(history);
+ const advanced=document.getElementById('loTrackAdvanced');
+ if(advanced)pages.history.append(advanced);
+ pages.review.append(distraction);
+ const analytics=document.getElementById('trackAnalyticsPanel');
+ if(analytics)pages.review.append(analytics);
+ choose('live');
+ // Maintain workspace selection across visits without touching stored activity records.
+ document.querySelectorAll('.lifeos-nav button[data-view="tracking"]').forEach(button=>button.addEventListener('click',()=>choose(shell.dataset.workspace||'live')));
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
+window.addEventListener('load',setup,{once:true});
+})();
+</script>
+<style id="lifeos-track-workspaces-style-v292">
+body[data-lifeos-view="tracking"] #loTrackWorkspaces{min-width:0;width:100%;margin:0 0 16px}
+#loTrackWorkspaces .lo-track-workspace-tabs{position:sticky;top:0;z-index:8;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:5px;margin:0 0 14px;background:#101e30;border:1px solid #355267;border-radius:15px}
+#loTrackWorkspaces .lo-track-workspace-tab{font:inherit;font-weight:700;font-size:14px;border:0;border-radius:11px;background:transparent;color:#afc8d5;min-height:46px;cursor:pointer}
+#loTrackWorkspaces .lo-track-workspace-tab[aria-selected="true"]{background:#65e4ce;color:#092b28}
+#loTrackWorkspaces .lo-track-workspace-page[hidden]{display:none!important}
+#loTrackWorkspaces .lo-track-workspace-page{min-width:0}
+#loTrackWorkspaces .lo-track-workspace-page>.panel{margin-bottom:12px}
+@media(max-width:750px){#loTrackWorkspaces .lo-track-workspace-tabs{top:0}#loTrackWorkspaces .lo-track-workspace-tab{min-height:48px}body[data-lifeos-view="tracking"] #loTrackWorkspaces{padding-bottom:95px}}
 </style></body></html>
