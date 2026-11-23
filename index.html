@@ -1308,6 +1308,21 @@ $('pastForm').reset();render()}
 function analyticsIntervals(start,end,at=now()){if(at<=start)return [];const m=window.LifeOSUnifiedAnalytics.summarize({sessions:data.sessions},{start,end:Math.min(end,at),now:at});return m.recorded.map(x=>({a:x.start,b:x.end,name:x.name,id:x.id,precision:data.sessions.find(s=>s.id===x.id)?.precision||'unknown'}))}
 function analyticsMetrics(intervals){const total=intervals.reduce((n,x)=>n+x.b-x.a,0);const unique=window.LifeOSUnifiedAnalytics.unionDuration(intervals.map(x=>({start:x.a,end:x.b})));return{total,unique,overlap:Math.max(0,total-unique)}}
 function analyticsDayBounds(dateStr){if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr))return null;const [y,m,d]=dateStr.split('-').map(Number);const start=new Date(y,m-1,d);if(start.getFullYear()!==y||start.getMonth()!==m-1||start.getDate()!==d)return null;return[start.getTime(),new Date(y,m-1,d+1).getTime()];}
+/* v278: one read-only category classifier for Today and daily analytics. */
+function lifeosActivityGroupV278(name){
+ const n=String(name||'').trim();
+ const rules=[
+ ['Prayer',/prayer|salah|salat|fajr|dhuhr|zuhr|asr|maghrib|isha|mosque|masjid|bön/i],
+ ['University',/university|lecture|seminar|assignment|course|kurs|föreläs|förelas|studying|study|exam|tentamen|lab|research|thesis|bta\\d|mdu|school|class|homework|uppgift/i],
+ ['Fitness',/gym|workout|training|exercise|running|walking|boxing|fitness|cardio|träning|promenad/i],
+ ['Nutrition',/meal|breakfast|lunch|dinner|eating|food|snack|nutrition|frukost|middag|måltid/i],
+ ['Sleep',/sleep|nap|resting|sömn|sova/i],
+ ['Quran & Arabic',/quran|qur'an|koran|hifdh|memorization|arabic|hadith|dugsi/i],
+ ['Work & business',/work|shift|business|app development|coding|job|employment|coach|security|väktare|arbete/i],
+ ['Distraction',/distraction|scrolling|social media|doomscroll|distraktion/i]
+ ];
+ return (rules.find(([label,re])=>re.test(n))||['Other / review'])[0];
+}
 /* v275: read-only, overlap-safe day audit; never mutates historical records. */
 function lifeosDayReviewV275(){
  const panel=document.getElementById('analyticsPanel'),date=document.getElementById('analyticsDate');
@@ -1325,20 +1340,10 @@ function lifeosDayReviewV275(){
  const ints=analyticsIntervals(start,end).filter(x=>Number.isFinite(x.a)&&Number.isFinite(x.b)&&x.b>x.a);
  const sum=analyticsMetrics(ints),span=Math.max(0,cutoff-start),unlogged=Math.max(0,span-sum.unique);
  const fmtMs=n=>short(Math.max(0,n));
- const categories=[
-  ['Prayer',/prayer|salah|salat|fajr|dhuhr|zuhr|asr|maghrib|isha|mosque|masjid/i],
-  ['University',/university|lecture|seminar|assignment|course|kurs|föreläs|förelas|studying|study|exam|tentamen|lab|research|thesis|bta\\d|mdu/i],
-  ['Fitness',/gym|workout|training|exercise|running|walking|boxing|fitness|cardio/i],
-  ['Nutrition',/meal|breakfast|lunch|dinner|eating|food|snack|nutrition/i],
-  ['Sleep',/sleep|nap|resting/i],
-  ['Quran & Arabic',/quran|qur'an|hifdh|arabic|hadith|dugsi/i],
-  ['Work & business',/work|shift|business|app development|coding|job|employment|coach/i],
-  ['Distraction',/distraction|scrolling|social media|doomscroll/i]
- ];
  const totals=new Map(),unknown=new Map(),flags=[];
  for(const x of ints){
   const name=String(x.name||'Unlabelled');
-  const group=(categories.find(c=>c[1].test(name))||['Other / review'])[0];
+  const group=lifeosActivityGroupV278(name);
   totals.set(group,(totals.get(group)||0)+x.b-x.a);
   if(group==='Other / review')unknown.set(name,(unknown.get(name)||0)+x.b-x.a);
   const session=data.sessions.find(y=>String(y.id)===String(x.id));
@@ -1620,7 +1625,7 @@ function renderTodayActivityHistory(){
   const endLabel=new Date(y).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
   const clipped=originalStart<a?' · continued from yesterday':originalEnd>b?' · continues into tomorrow':'';
   const status=s.status==='finished'?'Completed':s.status==='running'?'Running':'Paused';
-  const category=/prayer|salah|fajr|dhuhr|asr|maghrib|isha/i.test(s.name)?'prayer':/study|quran|memor|arabic|reading|assignment|learning/i.test(s.name)?'learning':/security|shift|work|meeting/i.test(s.name)?'work':/gym|fitness|walk|run|workout/i.test(s.name)?'fitness':/distraction/i.test(s.name)?'distraction':'other';
+  const category=({'Prayer':'prayer','University':'learning','Quran & Arabic':'learning','Work & business':'work','Fitness':'fitness','Distraction':'distraction','Nutrition':'nutrition','Sleep':'sleep'})[lifeosActivityGroupV278(s.name)]||'other';
   return '<div class="lo-today-activity lo123-ladder-item" data-lo121-category="'+category+'"><div class="lo123-rail-time"><time>'+escape(startLabel)+'</time><span class="lo123-rail-dot" aria-hidden="true"></span></div><div class="lo123-ladder-card"><div class="lo123-ladder-top"><strong>'+escape(s.name)+'</strong><span class="lo123-duration">'+fmt(y-x)+'</span></div><div class="lo123-ladder-meta"><span>'+escape(status)+' · '+escape(label)+escape(clipped)+'</span>'+(imported?'<span class="lo-today-activity-badge">Sample — not verified</span>':'')+'</div><div class="lo123-ladder-range">'+escape(startLabel)+'–'+escape(endLabel)+'</div></div></div>';
  }).join('');
 }
