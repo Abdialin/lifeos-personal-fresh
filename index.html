@@ -4571,7 +4571,7 @@ const wrap=document.createElement('div');wrap.id='loTrackDistractionReview';
 const desc=document.createElement('p');desc.textContent='Review a distraction before correcting or deleting it. Existing history controls handle edits and deletion; nothing is removed automatically.';
 const row=document.createElement('div');row.className='lo-d-actions';const review=document.createElement('button');review.type='button';review.textContent='Review distraction history';
 review.addEventListener('click',function(){const search=document.getElementById('loHistorySearch'),period=document.getElementById('loHistoryPeriod'),history=document.getElementById('trackHistoryPanel');if(!history||!search)return;if(period){period.value='all';period.dispatchEvent(new Event('change',{bubbles:true}))}search.value='Distraction';search.dispatchEvent(new Event('input',{bubbles:true}));history.scrollIntoView({behavior:'smooth',block:'start'});search.focus({preventScroll:true})});
-const all=document.createElement('button');all.type='button';all.textContent='Show all activities';all.addEventListener('click',function(){const search=document.getElementById('loHistorySearch'),history=document.getElementById('trackHistoryPanel');if(search){search.value='';search.dispatchEvent(new Event('input',{bubbles:true}))}history?.scrollIntoView({behavior:'smooth',block:'start'})});row.append(review,all);wrap.append(desc,row);panel.appendChild(wrap)}
+const all=document.createElement('button');all.type='button';all.textContent='Show all activities';all.addEventListener('click',function(){const search=document.getElementById('loHistorySearch'),history=document.getElementById('trackHistoryPanel');if(search){search.value='';search.dispatchEvent(new Event('input',{bubbles:true}))}const period=document.getElementById('loHistoryPeriod');if(period){period.value='7';period.dispatchEvent(new Event('change',{bubbles:true}))}history?.scrollIntoView({behavior:'smooth',block:'start'})});row.append(review,all);wrap.append(desc,row);panel.appendChild(wrap)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();</script><style id="lo-track-details-delete-link-style">
 #loDetailManageActions{display:flex;gap:9px;flex-wrap:wrap;margin:5px 0 16px}
@@ -4931,4 +4931,17 @@ function organize(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',organize,{once:true});else organize();
 window.addEventListener('pageshow',organize);
-})();</script></body></html>
+})();</script><style id="lo-track-history-vision-v281">
+/* Activity history and distraction review: compact, touch-friendly and accessible. */
+body[data-lifeos-view="tracking"] #trackHistoryPanel{scroll-margin-top:18px}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .history{scrollbar-width:thin;max-height:min(68dvh,620px)}
+body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-item{min-width:0;overflow-wrap:anywhere}
+body[data-lifeos-view="tracking"] #trackHistoryPanel button,
+body[data-lifeos-view="tracking"] #loTrackDistractionReview button{min-height:44px}
+body[data-lifeos-view="tracking"] #loTrackDistractionReview .lo-d-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+body[data-lifeos-view="tracking"] #loTrackDistractionReview button{white-space:normal;overflow-wrap:anywhere}
+@media(max-width:420px){
+ body[data-lifeos-view="tracking"] #loTrackDistractionReview .lo-d-actions{grid-template-columns:1fr}
+ body[data-lifeos-view="tracking"] #trackHistoryPanel .lo-history-toolbar{grid-template-columns:minmax(0,1fr)}
+}
+</style></body></html>
