@@ -5246,6 +5246,7 @@ function setup(){
   ];
   for(const [id,destination] of placement){
    const element=document.getElementById(id);
+   if(element&&document.getElementById('loTrackLauncherOverlay')?.contains(element))continue;
    if(element&&element.parentElement!==destination)destination.appendChild(element);
   }
   for(const panel of shell.querySelectorAll('section.panel'))panel.dataset.lifeosArea='tracking';
