@@ -170,7 +170,22 @@ function build(){
  });
  viewObserver.observe(document.body,{attributes:true,attributeFilter:['data-lifeos-view']});
  document.body.classList.add('lo-ca-ready');
- window.setInterval(()=>{if(document.body.dataset.lifeosView==='tracking')refresh()},1300);
+ window.addEventListener('lifeos-v221-focus-changed',()=>{
+  if(dialog?.dataset.caFocusStarting==='1'){
+   const session=readRealFocusState();
+   if(session&&session.kind==='focus'){
+    // Native focus layer is displayed after the save event. Hide that
+    // duplicate surface after it finishes and keep the real engine running.
+    window.requestAnimationFrame(()=>{
+     const native=$('lo207-focus-layer');
+     if(native){native.hidden=true;native.style.display='none'}
+     showRealFocus();
+    });
+   }
+  }else if(dialog?.dataset.caFocusLive==='1')window.setTimeout(updateRealFocusScreen,0);
+  if(state.tab==='live')renderLive();
+ });
+ window.setInterval(()=>{if(document.body.dataset.lifeosView==='tracking')refresh()},1000);
 }
 function chooseTab(name){
  if(!['live','history','review'].includes(name))return;
@@ -208,7 +223,8 @@ function liveMarkup(){
   markup+='</div>';
  }
  markup+='<button type="button" class="ca-main-button" data-ca-sheet="start">＋ &nbsp; Start Activity</button>';
- markup+='<div class="ca-quiet-actions"><button type="button" class="ca-soft-button" data-ca-sheet="focus">◎ Focus Mode</button><button type="button" class="ca-soft-button" data-ca-sheet="timer">◷ Timer settings</button></div>';
+ const focus=readRealFocusState();
+ markup+='<div class="ca-quiet-actions"><button type="button" class="ca-soft-button" data-ca-sheet="focus">'+(focus?'● Focus '+htmlEscape(focus.mode):'◎ Focus Mode')+'</button><button type="button" class="ca-soft-button" data-ca-sheet="timer">◷ Timer settings</button></div>';
  return markup;
 }
 function renderLive(){
@@ -216,8 +232,10 @@ function renderLive(){
  const target=$('caLive');if(!target)return;
  const previous=target.querySelector('#caMainClock')?.textContent;
  const next=liveMarkup();
- if(target.dataset.signature!==activeSessions().map(x=>x.id+'|'+x.name+'|'+x.status).join('|')){
-  target.innerHTML=next;target.dataset.signature=activeSessions().map(x=>x.id+'|'+x.name+'|'+x.status).join('|');
+ const focus=readRealFocusState();
+ const signature=activeSessions().map(x=>x.id+'|'+x.name+'|'+x.status).join('|')+'|focus:'+String(focus?.mode||'none')+'|'+String(focus?.label||'');
+ if(target.dataset.signature!==signature){
+  target.innerHTML=next;target.dataset.signature=signature;
  }else{
   const sessions=activeSessions();
   if(sessions[0]&&$('caMainClock'))$('caMainClock').textContent=sessions[0].clock;
@@ -347,10 +365,58 @@ function renderReview(){
  target.innerHTML=page;target.dataset.caSignature=signature;
 }
 function localKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function readRealFocusState(){
+ try{
+  const raw=window.localStorage.getItem('lifeos.personal.focus.v207');
+  const value=raw?JSON.parse(raw):null;
+  return value&&value.kind==='focus'&&['running','paused','break','ringing'].includes(value.mode)?value:null;
+ }catch{return null}
+}
+function focusRemainingMs(value){
+ return Math.max(0,value?.mode==='running'?Number(value.end)-Date.now():Number(value?.remainingMs)||0);
+}
+function focusClock(ms){
+ const sec=Math.floor(Math.max(0,ms)/1000);
+ return String(Math.floor(sec/3600)).padStart(2,'0')+':'+String(Math.floor(sec/60)%60).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+}
+function showRealFocus(){
+ const session=readRealFocusState();
+ if(!session)return;
+ const remaining=focusRemainingMs(session),label=session.label||'Focus';
+ const content='<div class="ca-focus-hero"><div class="ca-focus-icon">◎</div><h3>'+htmlEscape(label)+'</h3><p>Stay with one meaningful activity.</p></div>'
+  +'<div class="ca-focus-ring ca-focus-real-ring" id="caFocusLiveRing"><div><strong id="caFocusLiveClock">'+focusClock(remaining)+'</strong><small id="caFocusLiveMode">Focus running · saved session</small></div></div>'
+  +'<div class="ca-distraction-stats"><div><b id="caFocusProgress">'+(session.plannedMs?Math.round((1-remaining/session.plannedMs)*100):0)+'%</b><span>Focus progress</span></div>'
+  +'<div><b id="caFocusLiveStatus">'+htmlEscape(session.mode)+'</b><span>Current status</span></div></div>'
+  +'<div class="ca-preview-actions ca-focus-live-actions"><button type="button" class="ca-sheet-secondary" data-ca-focus-control="pause" id="caFocusPause">Ⅱ Pause</button>'
+  +'<button type="button" class="ca-sheet-secondary" data-ca-focus-control="break" id="caFocusBreak">☕ Break</button></div>'
+  +'<button type="button" class="ca-sheet-primary" data-ca-close>Minimize focus</button>'
+  +'<button type="button" class="ca-sheet-secondary ca-focus-end" data-ca-focus-control="end">■ End focus session</button>'
+  +'<p class="ca-feature-footnote">This is your real LifeOS Focus session. Your tracked activity timers run independently. Alerts depend on Android permissions.</p>';
+ openDialog('Focus session','Real Focus Mode · LifeOS',content);
+ dialog.dataset.caFocusLive='1';
+ delete dialog.dataset.caFocusStarting;
+ updateRealFocusScreen();
+}
+function updateRealFocusScreen(){
+ if(!dialog||dialog.hidden||dialog.dataset.caFocusLive!=='1')return;
+ const session=readRealFocusState();
+ if(!session){closeDialog();return}
+ const remaining=focusRemainingMs(session);
+ const clock=$('caFocusLiveClock');if(clock)clock.textContent=focusClock(remaining);
+ const modes={running:'Focus running',paused:'Focus paused',break:'Break in progress',ringing:'Focus complete'};
+ const status=$('caFocusLiveStatus');if(status)status.textContent=modes[session.mode]||session.mode;
+ const note=$('caFocusLiveMode');if(note)note.textContent=(modes[session.mode]||session.mode)+' · saved session';
+ const progress=session.plannedMs?Math.max(0,Math.min(100,Math.round((1-remaining/session.plannedMs)*100))):0;
+ const percent=$('caFocusProgress');if(percent)percent.textContent=progress+'%';
+ const pause=$('caFocusPause');if(pause)pause.textContent=session.mode==='running'?'Ⅱ Pause':'▷ Resume';
+ const br=$('caFocusBreak');if(br)br.textContent=session.mode==='break'?'▷ Resume focus':'☕ Break';
+ const ring=$('caFocusLiveRing');if(ring)ring.style.setProperty('--ca-focus-percent',progress+'%');
+}
 function refresh(){
  renderLive();
  if(state.tab==='history'&&Date.now()-state.lastHistory>8000)renderHistory();
  if(state.tab==='review')renderReview();
+ updateRealFocusScreen();
 }
 function openDialog(title,subtitle,content){
  previousFocus=document.activeElement;
@@ -362,6 +428,8 @@ function openDialog(title,subtitle,content){
 }
 function closeDialog(){
  if(!dialog)return;dialog.hidden=true;document.body.classList.remove('lo-ca-modal-open');
+ delete dialog.dataset.caFocusLive;
+ delete dialog.dataset.caFocusStarting;
  dialogBody.innerHTML='';
  if(previousFocus&&previousFocus.isConnected&&previousFocus.focus)previousFocus.focus();
 }
