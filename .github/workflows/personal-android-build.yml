@@ -55,32 +55,35 @@ jobs:
             echo "Stable beta signing is configured."
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Stable signing secrets are incomplete. Only disposable dev APK will be built; do not use it for long-term tracking."
+            echo "::notice::Stable signing secrets are incomplete. Preview build will stop."
           fi
 
-      - name: Build disposable side-by-side Android dev APK
+      - name: Build permanently signed side-by-side Preview APK
         working-directory: android-companion
         shell: bash
         run: |
           set -euo pipefail
-          gradle :app:assembleDebug --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v243-build.log
+          test "${{ steps.signing.outputs.ready }}" = "true"
+          # Build a separately identified, persistently signed Preview.
+          sed -i 's/applicationId = "com.lifeos.companion.beta"/applicationId = "com.lifeos.companion.beta.preview.stable"/' app/build.gradle.kts
+          gradle :app:assembleRelease --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v243-build.log
 
-      - name: Verify disposable dev APK and its independent package ID
+      - name: Verify signed Preview APK and independent package ID
         shell: bash
         run: |
           set -euo pipefail
-          apk="android-companion/app/build/outputs/apk/debug/app-debug.apk"
+          apk="android-companion/app/build/outputs/apk/release/app-release.apk"
           test -s "$apk"
           unzip -t "$apk" | tail -3
           "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$apk" | tee android-v243-dev-package.txt
-          grep -q "package: name='com.lifeos.companion.beta.preview'" android-v243-dev-package.txt
+          grep -q "package: name='com.lifeos.companion.beta.preview.stable'" android-v243-dev-package.txt
           grep -q "sdkVersion:'26'" android-v243-dev-package.txt
           grep -q "targetSdkVersion:'35'" android-v243-dev-package.txt
           "$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner" verify --print-certs "$apk" > android-v243-dev-cert.txt
-          echo "Verified isolated DEV test package. Its debug signature is NOT stable across CI runs."
+          echo "Verified separate persistently signed Preview package."
 
       - name: Build persistently signed beta APK (only when secrets exist)
-        if: steps.signing.outputs.ready == 'true'
+        if: ${{ false }}
         working-directory: android-companion
         shell: bash
         run: |
@@ -88,7 +91,7 @@ jobs:
           gradle :app:assembleRelease --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v243-signed-build.log
 
       - name: Verify stable beta APK and certificate
-        if: steps.signing.outputs.ready == 'true'
+        if: ${{ false }}
         shell: bash
         run: |
           set -euo pipefail
@@ -118,16 +121,16 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Retain disposable independent DEV test APK
+      - name: Retain permanently signed Preview APK
         uses: actions/upload-artifact@v4
         with:
-          name: lifeos-android-v243-preview-test-only
-          path: android-companion/app/build/outputs/apk/debug/app-debug.apk
+          name: lifeos-android-v243-signed-preview
+          path: android-companion/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
 
       - name: Retain stable signed BETA APK (safe future upgrades with same key)
-        if: steps.signing.outputs.ready == 'true'
+        if: ${{ false }}
         uses: actions/upload-artifact@v4
         with:
           name: lifeos-android-v243-signed-beta
