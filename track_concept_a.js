@@ -340,13 +340,13 @@ function renderHistory(){
   for(const month of months.values()){
    const monthOpen=queryActive||state.historyPeriod==='month'||openMonths.has(month.key)||(!wasMonthView&&monthIndex===0);
    page+='<details class="ca-history-month" data-ca-month="'+htmlEscape(month.key)+'" '+(monthOpen?'open':'')+'>';
-   page+='<summary class="ca-history-month-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(monthTitle(month.key))+'</strong><small>'+month.weeks.size+' '+(month.weeks.size===1?'week':'weeks')+' · '+month.items.length+' activities · '+durationLabel(total(month.items))+'</small></span><span class="ca-history-group-toggle">Show weeks <span aria-hidden="true">⌄</span></span></summary>';
+   page+='<summary class="ca-history-month-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(monthTitle(month.key))+'</strong><small>'+month.weeks.size+' '+(month.weeks.size===1?'week':'weeks')+' · '+month.items.length+' activities · '+durationLabel(total(month.items))+'</small></span><span class="ca-history-group-toggle"><span class="ca-history-group-show">Show weeks</span><span class="ca-history-group-hide">Hide weeks</span><span class="ca-history-group-arrow" aria-hidden="true">⌄</span></span></summary>';
    page+='<div class="ca-history-month-body">';
    for(const week of month.weeks.values()){
     const weekKey=month.key+'|'+week.key;
     page+='<details class="ca-history-week" data-ca-week="'+htmlEscape(weekKey)+'" '+(queryActive||openWeeks.has(weekKey)?'open':'')+'>';
     page+='<summary class="ca-history-week-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(week.label)+'</strong><small>'+week.days.length+' '+(week.days.length===1?'day':'days')+' · '+week.items.length+' activities · '+durationLabel(total(week.items))+'</small></span>';
-    page+='<span class="ca-history-group-toggle">Show days <span aria-hidden="true">⌄</span></span></summary>';
+    page+='<span class="ca-history-group-toggle"><span class="ca-history-group-show">Show days</span><span class="ca-history-group-hide">Hide days</span><span class="ca-history-group-arrow" aria-hidden="true">⌄</span></span></summary>';
     page+='<div class="ca-history-week-body">';
     for(const day of week.days)page+=dayMarkup(day);
     page+='</div></details>';
