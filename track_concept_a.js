@@ -30,7 +30,7 @@ function activeSessions(){
  const rows=Array.from(document.querySelectorAll('#sessions details.lo17-session')).map(node=>{
   const meta=node.querySelector('.lo17-meta')?.textContent.trim()||'';
   return {id:node.dataset.sessionId||'',name:node.querySelector('.session-title')?.textContent.trim()||'Activity',
-    clock:(meta.match(/Total\s+([0-9]+:[0-9]{2}:[0-9]{2})/i)?.[1]||node.querySelector('.lo17-clock')?.textContent.trim()||'00:00:00'),
+    clock:(node.querySelector('.lo17-clock')?.title.match(/Full activity:\s+([0-9]+:[0-9]{2}:[0-9]{2})/i)?.[1]||meta.match(/Total\s+([0-9]+:[0-9]{2}:[0-9]{2})/i)?.[1]||node.querySelector('.lo17-clock')?.textContent.trim()||'00:00:00'),
     meta,status:/paused/i.test(meta)?'paused':'running'};
  });
  // Honor the existing primary timer choice if the original Live activity panel identifies it.
