@@ -437,3 +437,107 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
  #loCADialog .ca-focus-real-ring{width:min(198px,55vw);height:min(198px,55vw)}
  #loCADialog .ca-focus-real-ring strong{font-size:35px}
 }
+
+/* Concept A v10 — Month → ISO Week → Day → Activities. All levels collapse independently. */
+#loTrackConceptA .ca-month-navigation{
+ display:grid;grid-template-columns:46px minmax(0,1fr) 46px;align-items:center;
+ gap:9px;margin:0 0 17px;padding:7px;
+ border:1px solid #355b6b;background:#112a3e;border-radius:17px;
+}
+#loTrackConceptA .ca-month-navigation strong{
+ color:#eafbf7;text-align:center;font-size:15px;font-weight:810;white-space:nowrap;
+}
+#loTrackConceptA .ca-month-navigation button{
+ min-height:43px;border:1px solid #48736d;border-radius:12px;
+ background:#204945;color:#b7ffe1;font-size:24px;line-height:1;
+ font-weight:650;cursor:pointer;
+}
+#loTrackConceptA .ca-month-navigation button[disabled]{opacity:.38;cursor:default}
+#loTrackConceptA details.ca-history-month{
+ border:1px solid #355469;background:#102539;border-radius:19px;
+ margin:0 0 15px;overflow:hidden;
+}
+#loTrackConceptA .ca-history-month-summary,
+#loTrackConceptA .ca-history-week-summary{
+ cursor:pointer;list-style:none;display:flex;gap:12px;justify-content:space-between;
+ align-items:center;-webkit-tap-highlight-color:transparent;
+}
+#loTrackConceptA .ca-history-month-summary{
+ background:linear-gradient(145deg,#21443e,#173648);padding:16px 14px;
+ border-bottom:1px solid transparent;min-height:80px;
+}
+#loTrackConceptA .ca-history-week-summary{
+ padding:14px 12px;min-height:72px;background:linear-gradient(145deg,#1d3850,#173147);
+ border-bottom:1px solid transparent;
+}
+#loTrackConceptA .ca-history-month-summary::-webkit-details-marker,
+#loTrackConceptA .ca-history-week-summary::-webkit-details-marker{display:none}
+#loTrackConceptA .ca-history-month-summary::marker,
+#loTrackConceptA .ca-history-week-summary::marker{content:""}
+#loTrackConceptA .ca-history-month[open]>.ca-history-month-summary,
+#loTrackConceptA .ca-history-week[open]>.ca-history-week-summary{border-bottom-color:#34596b}
+#loTrackConceptA .ca-history-group-main{
+ display:flex;flex-direction:column;gap:6px;min-width:0;flex:1;
+}
+#loTrackConceptA .ca-history-month-summary strong{
+ font-size:16px;color:#b7ffe0;font-weight:830;line-height:1.25;
+}
+#loTrackConceptA .ca-history-week-summary strong{
+ font-size:14px;color:#f3fffe;font-weight:820;line-height:1.35;
+}
+#loTrackConceptA .ca-history-group-main small{
+ font-size:11px;line-height:1.5;color:#bfd0d9;font-weight:520;
+}
+#loTrackConceptA .ca-history-group-toggle{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ flex:none;min-width:90px;padding:9px 10px;border-radius:12px;
+ background:#254f49;color:#b8ffe3;border:1px solid #437b73;
+ font-size:11px;font-weight:750;white-space:nowrap;
+}
+#loTrackConceptA .ca-history-week-summary .ca-history-group-toggle{
+ min-width:84px;background:#264657;border-color:#45718a;
+}
+#loTrackConceptA .ca-history-group-toggle .ca-history-group-hide{display:none}
+#loTrackConceptA .ca-history-group-arrow{
+ font-size:15px;display:inline-block;transition:transform .2s;
+}
+#loTrackConceptA details.ca-history-month[open]>.ca-history-month-summary .ca-history-group-show,
+#loTrackConceptA details.ca-history-week[open]>.ca-history-week-summary .ca-history-group-show{display:none}
+#loTrackConceptA details.ca-history-month[open]>.ca-history-month-summary .ca-history-group-hide,
+#loTrackConceptA details.ca-history-week[open]>.ca-history-week-summary .ca-history-group-hide{display:inline}
+#loTrackConceptA details.ca-history-month[open]>.ca-history-month-summary .ca-history-group-arrow,
+#loTrackConceptA details.ca-history-week[open]>.ca-history-week-summary .ca-history-group-arrow{transform:rotate(180deg)}
+#loTrackConceptA .ca-history-month-body{display:grid;gap:9px;padding:11px}
+#loTrackConceptA .ca-history-week{
+ border:1px solid #38536a;background:#132b40;border-radius:14px;
+ overflow:hidden;min-width:0;
+}
+#loTrackConceptA .ca-history-week-body{display:grid;gap:8px;padding:9px}
+#loTrackConceptA .ca-history-week-body .ca-day{
+ margin:0!important;border-radius:13px;
+}
+#loTrackConceptA .ca-history-week-body .ca-day-summary{
+ min-height:68px;padding:11px;background:#1e3a4f;
+}
+#loTrackConceptA .ca-history-week-body .ca-day-toggle{
+ padding:9px 7px;gap:5px;font-size:10px;
+}
+#loTrackConceptA .ca-history-week-body .ca-day-main strong{font-size:14px}
+#loTrackConceptA .ca-history-week-body .ca-day-main small{font-size:11px}
+#loTrackConceptA .ca-history-month-summary:focus-visible,
+#loTrackConceptA .ca-history-week-summary:focus-visible{
+ outline:3px solid #9cffdb;outline-offset:-4px;
+}
+@media(max-width:410px){
+ #loTrackConceptA .ca-history-month-body{padding:7px;gap:7px}
+ #loTrackConceptA .ca-history-week-body{padding:6px}
+ #loTrackConceptA .ca-history-month-summary,
+ #loTrackConceptA .ca-history-week-summary{padding:12px 9px;gap:7px}
+ #loTrackConceptA .ca-history-group-toggle{min-width:75px;padding:8px 6px;font-size:10px}
+ #loTrackConceptA .ca-history-week-summary .ca-history-group-toggle{min-width:69px}
+ #loTrackConceptA .ca-history-week-body .ca-day-summary{padding:10px 8px}
+ #loTrackConceptA .ca-history-week-body .ca-day-toggle{font-size:9px;padding:8px 5px}
+}
+@media(prefers-reduced-motion:reduce){
+ #loTrackConceptA .ca-history-group-arrow{transition:none}
+}
