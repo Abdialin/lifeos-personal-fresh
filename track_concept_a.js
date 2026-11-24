@@ -354,22 +354,47 @@ function sheet(type,id){
   return;
  }
  if(type==='break'){
-  openDialog('Break Mode','Take a short break from your current activity.',
-   '<div style="font-size:66px;color:#9bffcb;text-align:center;margin:15px">◷</div><p style="color:#c0d8da;text-align:center">Your timer records the break separately where supported.</p>'
-   +'<button class="ca-sheet-primary" data-ca-act="break" data-ca-id="'+htmlEscape(id||current?.id||'')+'">☕ Start break</button>');return;
+  const activity=live.find(x=>x.id===id)||current;
+  const content='<div class="ca-focus-hero"><div class="ca-focus-icon">☕</div><h3>Time to recharge</h3><p>Pause briefly, then return to what matters.</p></div>'
+   +'<div class="ca-focus-ring"><div><strong>10:00</strong><small>Suggested break · design preview</small></div></div>'
+   +'<div class="ca-sheet-metric"><span>Activity</span><strong>'+htmlEscape(activity?.name||'No active activity')+'</strong></div>'
+   +'<div class="ca-break-tips"><strong>Break suggestions</strong><span>Get some fresh air</span><span>Stretch and move your body</span><span>Hydrate and rest your eyes</span></div>'
+   +(activity?'<button class="ca-sheet-primary" data-ca-act="break" data-ca-id="'+htmlEscape(activity.id)+'">☕ Start break</button>':'');
+  openDialog('Break Mode','Take a short break and recharge.',content);return;
  }
  if(type==='focus'){
-  openDialog('Focus Mode','Minimize distractions and stay on track.',
-   '<div class="ca-panel" style="padding:15px;background:#11283b"><div style="font-size:38px;text-align:center;color:#90f3ca">◎</div><p style="text-align:center;color:#d8efed">Choose a focus session for your activity.</p>'
-   +'<div class="ca-sheet-metric"><span>Focus activity</span><strong>'+htmlEscape(current?.name||'Studying')+'</strong></div>'
-   +'<label class="ca-form-label">Focus duration</label><select id="caFocusDuration" class="ca-input"><option value="25">25 minutes</option><option value="45" selected>45 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option></select>'
-   +'<button class="ca-sheet-primary" data-ca-focus-preview>Start focus preview</button><p class="ca-inline-error" style="color:#a6c6cc">Visual preview only; existing Focus Mode timer is unchanged.</p></div>');return;
+  const choices=live.length?live:[{id:'',name:'Studying'}];
+  let content='<div class="ca-focus-hero"><div class="ca-focus-icon">◎</div><h3>Focus on what matters</h3><p>A calmer screen for deliberate work, study, and reading.</p></div>';
+  content+='<div class="ca-focus-feature"><div class="ca-focus-feature-copy"><b>◷ &nbsp; Focus session</b><small>Choose the activity and duration</small></div><span class="ca-feature-tag">Preview</span></div>';
+  content+='<label class="ca-form-label" for="caFocusActivity">Focus activity</label><select class="ca-input" id="caFocusActivity">';
+  for(const row of choices)content+='<option value="'+htmlEscape(row.id)+'">'+htmlEscape(row.name)+'</option>';
+  content+='</select><label class="ca-form-label" for="caFocusDuration">Focus duration</label>';
+  content+='<select id="caFocusDuration" class="ca-input"><option value="25">25 minutes</option><option value="45" selected>45 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option></select>';
+  content+='<div class="ca-focus-settings"><div class="ca-focus-setting"><span>♧</span><div><b>Quiet notifications</b><small>Device setting · preview only</small></div><input type="checkbox" aria-label="Preview quiet notifications" checked></div>';
+  content+='<div class="ca-focus-setting"><span>▣</span><div><b>Limit distractions</b><small>Device permission required</small></div><input type="checkbox" aria-label="Preview distraction limiting"></div>';
+  content+='<div class="ca-focus-setting"><span>☾</span><div><b>Do Not Disturb</b><small>Controlled by Android</small></div><span class="ca-feature-tag">System</span></div></div>';
+  content+='<button class="ca-sheet-primary" data-ca-focus-preview>▷ &nbsp; View Focus Session</button>';
+  content+='<p class="ca-feature-footnote">Focus appearance preview. Device settings and stored timers are not changed.</p>';
+  openDialog('Focus Mode','Minimize distractions and stay on track.',content);return;
  }
  if(type==='timer'){
-  openDialog('Timer preferences','Advanced controls are available without crowding Live.',
-   '<div class="ca-sheet-metric"><span>Active timers</span><strong>'+activeSessions().length+'</strong></div>'
-   +'<div class="ca-sheet-metric"><span>Timer recovery</span><strong>Available in existing settings</strong></div>'
-   +'<p style="color:#aec9d1;line-height:1.6">Duration reminders, activity estimates, and recovery diagnostics remain stored in the original LifeOS controls. The new streamlined screen can be connected to them in the functionality phase.</p>');return;
+  const choices=live.length?live:[{id:'',name:'No active timer'}];
+  let content='<div class="ca-focus-hero"><div class="ca-focus-icon">◷</div><h3>Keep your time intentional</h3><p>Set a reminder when an activity reaches its expected duration.</p></div>';
+  content+='<label class="ca-form-label" for="caLimitActivity">Running activity</label><select class="ca-input" id="caLimitActivity">';
+  for(const row of choices)content+='<option value="'+htmlEscape(row.id)+'">'+htmlEscape(row.name)+'</option>';
+  content+='</select><label class="ca-form-label" for="caExpectedMinutes">Expected duration</label>';
+  content+='<input type="number" id="caExpectedMinutes" class="ca-input" min="1" max="1440" value="60" inputmode="numeric">';
+  content+='<div class="ca-preset-grid">';
+  for(const val of [15,30,45,60])content+='<button type="button" class="ca-preset" data-ca-limit="'+val+'" aria-pressed="'+(val===60)+'">'+val+' min</button>';
+  content+='</div><label class="ca-form-label" for="caLimitAction">When the limit is reached</label>';
+  content+='<select class="ca-input" id="caLimitAction"><option>Remind me: Finish or Extend</option><option>Ask me to review the timer</option></select>';
+  content+='<button class="ca-sheet-primary" data-ca-timer-preview>◷ &nbsp; Preview duration reminder</button>';
+  content+='<p class="ca-feature-footnote">Visual preview; no duration setting is saved yet.</p>';
+  content+='<details class="ca-more-settings"><summary>More timer preferences</summary>';
+  content+='<div class="ca-sheet-metric"><span>Duration profiles</span><strong>Saved in original LifeOS</strong></div>';
+  content+='<div class="ca-sheet-metric"><span>Forgotten timer reviews</span><strong>Existing data retained</strong></div>';
+  content+='<div class="ca-sheet-metric"><span>Pause and resume timeline</span><strong>Available in session details</strong></div></details>';
+  openDialog('Timer preferences','Duration limits, reminders and recovery.',content);return;
  }
  if(type==='distraction'){
   const status=readOverview().distraction;
@@ -412,10 +437,33 @@ function handleDialogClick(event){
   return;
  }
  if(event.target.closest('[data-ca-focus-preview]')){
-  const minutes=Number($('caFocusDuration')?.value||45),stamp=e('div',null,'Focus session selected: '+minutes+' minutes. Connect the existing Focus timer in the functionality phase.');
-  stamp.style.cssText='text-align:center;color:#b7f6db;font-size:13px;padding:15px';
-  dialogBody.append(stamp);return;
+  const minutes=Math.max(1,Number($('caFocusDuration')?.value||45));
+  const chosen=$('caFocusActivity');
+  const activity=chosen?.selectedOptions?.[0]?.textContent||'Focus session';
+  dialog.dataset.caPreview='focus';
+  const content='<div class="ca-focus-hero"><div class="ca-focus-icon">◎</div><h3>'+htmlEscape(activity)+'</h3><p>Stay with one meaningful activity.</p></div>'
+   +'<div class="ca-focus-ring"><div><strong>'+minutes+':00</strong><small>Focus session · visual preview</small></div></div>'
+   +'<div class="ca-preview-actions"><button class="ca-sheet-secondary" data-ca-preview-back="focus">‹ &nbsp; Settings</button><button class="ca-sheet-primary" data-ca-close>End preview</button></div>';
+  openDialog('Focus session','Concept A Focus layout',content);return;
  }
+ const limit=event.target.closest('[data-ca-limit]');
+ if(limit){
+  const input=$('caExpectedMinutes');if(input)input.value=limit.dataset.caLimit;
+  for(const preset of dialogBody.querySelectorAll('[data-ca-limit]'))
+   preset.setAttribute('aria-pressed',String(preset===limit));
+  return;
+ }
+ if(event.target.closest('[data-ca-timer-preview]')){
+  const minutes=Math.max(1,Math.min(1440,Number($('caExpectedMinutes')?.value||60)));
+  const timer=$('caLimitActivity')?.selectedOptions?.[0]?.textContent||'Activity';
+  dialog.dataset.caPreview='timer';
+  const content='<div class="ca-focus-hero"><div class="ca-focus-icon">◷</div><h3>Duration reached</h3><p>'+htmlEscape(timer)+' · '+minutes+' min target</p></div>'
+   +'<div class="ca-timer-reminder"><strong>Time to check in</strong><p>Would you like to finish, extend, or review this activity?</p></div>'
+   +'<div class="ca-preview-actions"><button class="ca-sheet-secondary" data-ca-preview-back="timer">‹ &nbsp; Settings</button><button class="ca-sheet-primary" data-ca-close>Close preview</button></div>';
+  openDialog('Timer check-in','Reminder appearance · preview only',content);return;
+ }
+ const back=event.target.closest('[data-ca-preview-back]');
+ if(back){sheet(back.dataset.caPreviewBack);return;}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build,{once:true});else build();
 window.addEventListener('load',build,{once:true});
