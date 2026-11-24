@@ -283,6 +283,7 @@ function renderHistory(){
  const filtered=state.history.filter(x=>
   (state.historyPeriod==='month'?x.dateKey?.slice(0,7)===state.historyMonth:matchesPeriod(x,state.historyPeriod))
   &&(x.name+' '+x.time+' '+x.day).toLowerCase().includes(state.query.toLowerCase()));
+ filtered.sort((a,b)=>(b.dateKey||'').localeCompare(a.dateKey||''));
  const signature=state.historyPeriod+'|'+state.historyMonth+'|'+state.query+'|'+filtered.map(x=>[x.id,x.dateKey,x.duration,x.time,x.name].join(':')).join('|');
  if(target.dataset.caSignature===signature){state.lastHistory=Date.now();return}
  const openDays=new Set(Array.from(target.querySelectorAll('details.ca-day[open]')).map(el=>el.dataset.caDay));
