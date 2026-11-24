@@ -100,7 +100,7 @@ function build(){
   if(event.key==='Escape'){closeDialog();return}
   if(event.key==='Tab'){const focusable=Array.from(dialog.querySelectorAll('button,input,select,textarea')).filter(x=>!x.disabled&&x.getClientRects().length);if(focusable.length){if(event.shiftKey&&document.activeElement===focusable[0]){event.preventDefault();focusable[focusable.length-1].focus()}else if(!event.shiftKey&&document.activeElement===focusable[focusable.length-1]){event.preventDefault();focusable[0].focus()}}}
  });
- chooseTab('live');renderLive();renderHistory();renderReview();
+ updateHistorySource();chooseTab('live');renderLive();renderHistory();renderReview();
  const historyEl=$('history');
  if(historyEl)new MutationObserver(()=>{state.lastHistory=0;if(state.tab==='history')renderHistory();if(state.tab==='review')renderReview()}).observe(historyEl,{childList:true,subtree:true});
  const viewObserver=new MutationObserver(()=>{
@@ -129,7 +129,7 @@ function liveMarkup(){
   markup+='<div class="ca-panel ca-primary"><div class="ca-overline"><span>◎ Active activity</span><span class="ca-pill">'+htmlEscape(first.status==='running'?'● Running':'Ⅱ Paused')+'</span></div>';
   markup+='<div class="ca-activity-name">'+htmlEscape(first.name)+'</div>';
   markup+='<div class="ca-clock" id="caMainClock">'+htmlEscape(first.clock)+'</div><p class="ca-timer-meta">Your recorded time today · '+htmlEscape(first.status)+'</p>';
-  markup+='<div class="ca-progress"><i style="width:42%"></i></div>';
+  // No goal percentage is displayed unless a real goal source is available.
   markup+='<div class="ca-control-grid">';
   markup+='<button type="button" data-ca-act="'+(first.status==='running'?'pause':'resume')+'" data-ca-id="'+htmlEscape(first.id)+'" class="ca-emphasis"><span>'+(first.status==='running'?'Ⅱ':'▷')+'</span>'+(first.status==='running'?'Pause':'Resume')+'</button>';
   markup+='<button type="button" data-ca-act="break" data-ca-id="'+htmlEscape(first.id)+'"><span>☕</span>Break</button>';
