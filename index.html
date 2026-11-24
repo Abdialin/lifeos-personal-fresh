@@ -5375,4 +5375,47 @@ function init(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 window.addEventListener('load',init,{once:true});
 })();
-</script></body></html>
+</script><style id="lifeos-track-review-history-design-v302">
+/* Design-matched history archive and review metrics, using actual stored records */
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-day,
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-item{
+ background:linear-gradient(145deg,#172e43,#102438)!important;border:1px solid #36536a!important;border-radius:14px!important;color:#eafafa;
+}
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-day{overflow:hidden;margin:0 0 10px}
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-day>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:58px;padding:12px 15px;font-weight:750;color:#f3fffc;background:#1b3549}
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-day>summary small{color:#a9c5cd;font-weight:500;text-align:right}
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-item{padding:13px 14px;margin:9px!important}
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-entry{display:flex;justify-content:space-between;gap:12px;align-items:center}
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-entry strong{font-size:15px;color:#f2fdfc}
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-entry span{font-weight:800;color:#9cf8dc;font-variant-numeric:tabular-nums}
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-foot{display:flex;flex-wrap:wrap;gap:9px;justify-content:space-between;align-items:center;margin-top:9px}
+body[data-lifeos-view="tracking"] #loTrackPagehistory #trackHistoryPanel .lo-history-actions{display:flex;gap:7px;flex-wrap:wrap}
+body[data-lifeos-view="tracking"] #loTrackPagereview #todayLegacyOverviewPanel .statrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body[data-lifeos-view="tracking"] #loTrackPagereview #todayLegacyOverviewPanel .statrow .stat{min-width:0;background:#10273a;border:1px solid #355a6c;border-radius:14px;padding:15px 12px}
+body[data-lifeos-view="tracking"] #loTrackPagereview #todayLegacyOverviewPanel .statrow strong{display:block;color:#a1ffe2;font-size:clamp(22px,5.5vw,30px);font-variant-numeric:tabular-nums;line-height:1.3}
+body[data-lifeos-view="tracking"] #loTrackPagereview #todayLegacyOverviewPanel .statrow span{display:block;color:#b7cbd4;font-size:12px;line-height:1.4}
+body[data-lifeos-view="tracking"] #loTrackPagereview #todayLegacyOverviewPanel .note{font-size:11px;line-height:1.5}
+@media(min-width:800px){body[data-lifeos-view="tracking"] #loTrackPagereview #todayLegacyOverviewPanel .statrow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<script id="lifeos-track-review-history-design-v302">(function(){
+function init(){
+ const review=document.getElementById('loTrackPagereview');
+ const history=document.getElementById('loTrackPagehistory');
+ if(!review||!history)return;
+ const summary=document.getElementById('todayLegacyOverviewPanel');
+ if(summary&&summary.parentElement!==review){
+  summary.dataset.lifeosArea='tracking';
+  const distraction=document.getElementById('trackDistractionPanel');
+  if(distraction&&distraction.parentElement===review)review.insertBefore(summary,distraction);
+  else review.append(summary);
+  const heading=summary.querySelector('h2');if(heading)heading.textContent='Your recorded time';
+ }
+ const tools=document.getElementById('sessionToolsPanel');
+ if(tools&&tools.parentElement!==history){
+  tools.dataset.lifeosArea='tracking';
+  history.append(tools);
+ }
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+window.addEventListener('load',init,{once:true});
+})();</script></body></html>
