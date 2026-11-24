@@ -41,8 +41,8 @@ android {
         getByName("debug") {
             // Disposable CI debug signature; not upgrade-safe across runners.
             // Use a stable signed release for subsequent persistent beta updates.
-            applicationIdSuffix = ".isolated"
-            versionNameSuffix = "-isolated-test"
+            applicationIdSuffix = ".preview"
+            versionNameSuffix = "-preview"
         }
         getByName("release") {
             isMinifyEnabled = false
