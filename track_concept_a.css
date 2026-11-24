@@ -359,3 +359,44 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
 #loCADialog .ca-record-delete:focus-visible{
  background:#4a303f!important;border-color:#e29ca8!important;
 }
+
+/* Concept A v8 — independently collapsible History day cards */
+#loTrackConceptA details.ca-day{
+ border:1px solid #36566c;border-radius:17px;
+ background:#11283c;overflow:hidden;margin-bottom:11px;
+}
+#loTrackConceptA .ca-day-summary{
+ display:flex;justify-content:space-between;align-items:center;gap:12px;
+ padding:14px 14px 14px 15px;min-height:77px;
+ list-style:none;cursor:pointer;background:linear-gradient(140deg,#213b4f,#173247);
+ -webkit-tap-highlight-color:transparent;
+}
+#loTrackConceptA .ca-day-summary::-webkit-details-marker{display:none}
+#loTrackConceptA .ca-day-summary::marker{content:""}
+#loTrackConceptA .ca-day-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+#loTrackConceptA .ca-day-main strong{font-size:15px;line-height:1.15;color:#f2fcfa;font-weight:810}
+#loTrackConceptA .ca-day-main small{font-size:12px;color:#bed2da;line-height:1.2;font-weight:530}
+#loTrackConceptA .ca-day-toggle{
+ display:inline-flex;align-items:center;gap:7px;flex:none;
+ border:1px solid #408578;border-radius:11px;background:#225144;
+ padding:9px 10px;color:#b8ffe1;font-size:11px;font-weight:760;white-space:nowrap;
+}
+#loTrackConceptA .ca-day-toggle .ca-day-hide{display:none}
+#loTrackConceptA .ca-day-arrow{font-size:15px;line-height:1;transition:transform .2s ease}
+#loTrackConceptA details.ca-day[open] .ca-day-summary{
+ border-bottom:1px solid #395b6c;background:linear-gradient(140deg,#244354,#19384a)
+}
+#loTrackConceptA details.ca-day[open] .ca-day-show{display:none}
+#loTrackConceptA details.ca-day[open] .ca-day-hide{display:inline}
+#loTrackConceptA details.ca-day[open] .ca-day-arrow{transform:rotate(180deg)}
+#loTrackConceptA .ca-day-activities{padding:0}
+#loTrackConceptA .ca-day-summary:focus-visible{outline:3px solid #92f8ca;outline-offset:-4px}
+#loTrackConceptA .ca-history-item{min-height:64px}
+@media(max-width:385px){
+ #loTrackConceptA .ca-day-summary{padding:12px 10px;gap:8px}
+ #loTrackConceptA .ca-day-toggle{font-size:10px;padding:9px 7px}
+ #loTrackConceptA .ca-day-main strong{font-size:14px}
+}
+@media(prefers-reduced-motion:reduce){
+ #loTrackConceptA .ca-day-arrow{transition:none}
+}
