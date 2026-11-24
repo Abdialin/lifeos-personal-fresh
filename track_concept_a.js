@@ -190,7 +190,7 @@ function renderLive(){
 }
 function updateHistorySource(){
  const select=$('loHistoryPeriod');
- if(select&&select.value!=='all'){select.value='all';select.dispatchEvent(new Event('change',{bubbles:true}))}
+ if(select&&select.value!=='all'){select.value='all';select.dispatchEvent(new Event('input',{bubbles:true}));select.dispatchEvent(new Event('change',{bubbles:true}))}
 }
 function renderHistory(){
  if(!shell)return;
