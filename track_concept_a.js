@@ -30,7 +30,7 @@ function activeSessions(){
  const rows=Array.from(document.querySelectorAll('#sessions details.lo17-session')).map(node=>{
   const meta=node.querySelector('.lo17-meta')?.textContent.trim()||'';
   return {id:node.dataset.sessionId||'',name:node.querySelector('.session-title')?.textContent.trim()||'Activity',
-    clock:(meta.match(/Total\\s+([0-9]+:[0-9]{2}:[0-9]{2})/i)?.[1]||node.querySelector('.lo17-clock')?.textContent.trim()||'00:00:00'),
+    clock:(meta.match(/Total\s+([0-9]+:[0-9]{2}:[0-9]{2})/i)?.[1]||node.querySelector('.lo17-clock')?.textContent.trim()||'00:00:00'),
     meta,status:/paused/i.test(meta)?'paused':'running'};
  });
  // Honor the existing primary timer choice if the original Live activity panel identifies it.
@@ -58,7 +58,7 @@ function readHistory(){
  for(const group of document.querySelectorAll('#history .lo11-history-day, #history .lo-history-day')){
   const day=group.querySelector(':scope > summary strong, :scope > summary span')?.textContent.trim()||'Recorded day';
   const monthText=group.closest('.lo11-history-month')?.querySelector(':scope > summary strong')?.textContent||'';
-  const year=monthText.match(/\\b(20\\d{2})\\b/)?.[1];
+  const year=monthText.match(/\b(20\d{2})\b/)?.[1];
   const parsed=new Date(day+(year?' '+year:' '+new Date().getFullYear()));
   const dateKey=Number.isFinite(parsed.getTime())?parsed.getFullYear()+'-'+String(parsed.getMonth()+1).padStart(2,'0')+'-'+String(parsed.getDate()).padStart(2,'0'):'';
   for(const item of group.querySelectorAll('.lo-history-item')){
