@@ -350,3 +350,12 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
  #loCADialog .ca-detail-hero{padding:17px 13px}
  #loCADialog .ca-record-hero{padding:14px 12px}
 }
+
+#loCADialog .ca-record-delete{
+ color:#ffd2d6!important;background:#352d3a!important;
+ border-color:#9f6372!important;
+}
+#loCADialog .ca-record-delete:hover,
+#loCADialog .ca-record-delete:focus-visible{
+ background:#4a303f!important;border-color:#e29ca8!important;
+}
