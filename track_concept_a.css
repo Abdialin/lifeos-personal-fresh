@@ -205,3 +205,17 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
 #loTrackConceptA .ca-insight-row:first-of-type{border:0}
 #loTrackConceptA .ca-insight-icon{width:23px;height:23px;display:grid;place-items:center;flex:none;border-radius:50%;background:#73eab6;color:#062a25;font-weight:900}
 #loTrackConceptA .ca-insight-row strong{color:#aff7dc}
+
+/* Concept A v6: data-driven distraction review */
+#loCADialog .ca-distraction-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:13px 0}
+#loCADialog .ca-distraction-stats>div{background:#122c40;border:1px solid #35556a;border-radius:14px;text-align:center;padding:16px 9px}
+#loCADialog .ca-distraction-stats b{display:block;color:#9cffd8;font-size:clamp(22px,6vw,29px);font-weight:850;font-variant-numeric:tabular-nums}
+#loCADialog .ca-distraction-stats span{display:block;color:#b9d1da;font-size:11px;margin-top:7px;line-height:1.4}
+#loCADialog .ca-distraction-title{font-size:15px;font-weight:780;margin:20px 0 12px;color:#efffff}
+#loCADialog .ca-distraction-list{border:1px solid #37556b;border-radius:15px;background:#10283b;overflow:hidden}
+#loCADialog .ca-distraction-row{display:flex;align-items:center;gap:12px;justify-content:space-between;border-top:1px solid #2d4d61;padding:12px 13px}
+#loCADialog .ca-distraction-row:first-child{border-top:0}
+#loCADialog .ca-distraction-row>span{flex:1;min-width:0}
+#loCADialog .ca-distraction-row b{display:block;font-size:13px;color:#e9f9f9;overflow:hidden;text-overflow:ellipsis}
+#loCADialog .ca-distraction-row small{display:block;font-size:11px;color:#abc4ce;margin-top:4px}
+#loCADialog .ca-distraction-row strong{font-size:13px;color:#a9f8de;white-space:nowrap}
