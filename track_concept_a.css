@@ -108,3 +108,25 @@ body.lo-ca-modal-open{overflow:hidden!important}
 }
 @media(max-width:430px){#loTrackConceptA .ca-donut{width:107px;height:107px}#loTrackConceptA .ca-donut-inner{width:69px;height:69px}#loTrackConceptA .ca-legend-row{font-size:11px}#loTrackConceptA .ca-control-grid button{font-size:11px}}
 body[data-lifeos-view="tracking"] #lifeosNavigation{position:fixed!important;z-index:100!important;bottom:0!important;left:0!important;right:0!important;margin:0!important;border-radius:16px 16px 0 0!important;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;box-shadow:0 -12px 30px #030b1766}
+
+/* New Track has one compact, unobstructed navigation bar. */
+body[data-lifeos-view="tracking"] #lifeosNavigation{
+ top:auto!important;height:auto!important;min-height:69px!important;max-height:88px!important;
+ display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;
+ gap:3px!important;align-items:center!important;overflow:visible!important;
+ padding:6px max(7px,env(safe-area-inset-right,0px)) calc(7px + env(safe-area-inset-bottom,0px)) max(7px,env(safe-area-inset-left,0px))!important;
+ background:#102035f7!important;border-top:1px solid #35536a!important;border-bottom:0!important;
+}
+body[data-lifeos-view="tracking"] #lifeosNavigation button{
+ min-width:0!important;max-width:none!important;min-height:53px!important;
+ padding:5px 0!important;margin:0!important;border:0!important;
+ border-radius:12px!important;background:transparent!important;
+ display:flex!important;flex-direction:column!important;gap:3px!important;
+ color:#c0d4db!important;align-items:center!important;justify-content:center!important
+}
+body[data-lifeos-view="tracking"] #lifeosNavigation button[aria-current="page"]{
+ background:#17483f!important;color:#93f8c7!important;
+}
+body[data-lifeos-view="tracking"] #lifeosNavigation .lifeos-tab-icon{font-size:19px!important;line-height:1.05!important}
+body[data-lifeos-view="tracking"] #lifeosNavigation .lifeos-tab-label{font-size:10px!important;line-height:1.15!important}
+body.lo-ca-modal-open #lifeosNavigation{display:none!important}
