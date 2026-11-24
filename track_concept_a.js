@@ -30,7 +30,7 @@ function activeSessions(){
  const rows=Array.from(document.querySelectorAll('#sessions details.lo17-session')).map(node=>{
   const meta=node.querySelector('.lo17-meta')?.textContent.trim()||'';
   return {id:node.dataset.sessionId||'',name:node.querySelector('.session-title')?.textContent.trim()||'Activity',
-    clock:node.querySelector('.lo17-clock')?.textContent.trim()||'00:00:00',
+    clock:(meta.match(/Total\\s+([0-9]+:[0-9]{2}:[0-9]{2})/i)?.[1]||node.querySelector('.lo17-clock')?.textContent.trim()||'00:00:00'),
     meta,status:/paused/i.test(meta)?'paused':'running'};
  });
  // Honor the existing primary timer choice if the original Live activity panel identifies it.
@@ -53,26 +53,36 @@ function originalHistory(id,action){
 }
 function readHistory(){
  const result=[];
- for(const group of document.querySelectorAll('#history .lo-history-day')){
-  const day=group.querySelector(':scope > summary span')?.textContent.trim()||'Recorded day';
+ // LifeOS V11 groups recorded day-portions inside month/week/day details.
+ // Older builds use lo-history-day. Support both without modifying stored records.
+ for(const group of document.querySelectorAll('#history .lo11-history-day, #history .lo-history-day')){
+  const day=group.querySelector(':scope > summary strong, :scope > summary span')?.textContent.trim()||'Recorded day';
+  const monthText=group.closest('.lo11-history-month')?.querySelector(':scope > summary strong')?.textContent||'';
+  const year=monthText.match(/\\b(20\\d{2})\\b/)?.[1];
+  const parsed=new Date(day+(year?' '+year:' '+new Date().getFullYear()));
+  const dateKey=Number.isFinite(parsed.getTime())?parsed.getFullYear()+'-'+String(parsed.getMonth()+1).padStart(2,'0')+'-'+String(parsed.getDate()).padStart(2,'0'):'';
   for(const item of group.querySelectorAll('.lo-history-item')){
    const id=item.querySelector('[data-id]')?.dataset.id||'';
-   result.push({id,day,name:item.querySelector('.lo-history-entry strong')?.textContent.trim()||'Activity',
+   result.push({id,day,dateKey,name:item.querySelector('.lo-history-entry strong')?.textContent.trim()||'Activity',
     duration:item.querySelector('.lo-history-entry span')?.textContent.trim()||'—',
     time:item.querySelector('.lo-history-foot small')?.textContent.trim()||''});
   }
  }
  return result;
 }
-function dayDate(day){
- const current=new Date();let d=new Date(day+' '+current.getFullYear());
+function dayDate(record){
+ if(record.dateKey){
+  const d=new Date(record.dateKey+'T12:00:00');
+  if(Number.isFinite(d.getTime()))return d;
+ }
+ const current=new Date();let d=new Date(record.day+' '+current.getFullYear());
  if(!Number.isFinite(d.getTime()))return null;
  if(d.getTime()>current.getTime()+86400000)d.setFullYear(d.getFullYear()-1);
  return d;
 }
 function matchesPeriod(record,period){
  if(period==='all')return true;
- const d=dayDate(record.day);if(!d)return true;
+ const d=dayDate(record);if(!d)return true;
  const now=new Date();now.setHours(0,0,0,0);d.setHours(0,0,0,0);
  const delta=Math.round((now-d)/86400000);
  if(period==='today')return delta===0;
@@ -144,7 +154,7 @@ function liveMarkup(){
  if(first){
   markup+='<div class="ca-panel ca-primary"><div class="ca-overline"><span>◎ Active activity</span><span class="ca-pill">'+htmlEscape(first.status==='running'?'● Running':'Ⅱ Paused')+'</span></div>';
   markup+='<div class="ca-activity-name">'+htmlEscape(first.name)+'</div>';
-  markup+='<div class="ca-clock" id="caMainClock">'+htmlEscape(first.clock)+'</div><p class="ca-timer-meta">Your recorded time today · '+htmlEscape(first.status)+'</p>';
+  markup+='<div class="ca-clock" id="caMainClock">'+htmlEscape(first.clock)+'</div><p class="ca-timer-meta">Total recorded session time · '+htmlEscape(first.status)+'</p>';
   // No goal percentage is displayed unless a real goal source is available.
   markup+='<div class="ca-control-grid">';
   markup+='<button type="button" data-ca-act="'+(first.status==='running'?'pause':'resume')+'" data-ca-id="'+htmlEscape(first.id)+'" class="ca-emphasis"><span>'+(first.status==='running'?'Ⅱ':'▷')+'</span>'+(first.status==='running'?'Pause':'Resume')+'</button>';
