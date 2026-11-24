@@ -120,6 +120,14 @@ function build(){
   }
  });
  dialog.addEventListener('click',handleDialogClick);
+ dialog.addEventListener('input',event=>{
+  if(event.target.id!=='caStartSearch')return;
+  const value=event.target.value.trim().toLocaleLowerCase();
+  for(const option of dialogBody.querySelectorAll('[data-ca-quick]')){
+   option.hidden=!option.textContent.toLocaleLowerCase().includes(value);
+  }
+ });
+
  dialog.addEventListener('click',event=>{if(event.target===dialog)closeDialog()});
  dialog.addEventListener('keydown',event=>{
   if(event.key==='Escape'){closeDialog();return}
@@ -335,18 +343,51 @@ function sheet(type,id){
   return;
  }
  if(type==='activity'&&current){
-  const content='<div class="ca-activity-name" style="margin-bottom:14px">'+htmlEscape(current.name)+'</div><div class="ca-clock">'+htmlEscape(current.clock)+'</div>'
-   +'<div class="ca-sheet-metric"><span>Status</span><strong>'+htmlEscape(current.status)+'</strong></div>'
-   +'<div class="ca-sheet-metric"><span>Session details</span><strong>'+htmlEscape(current.meta)+'</strong></div>'
-   +'<div class="ca-sheet-grid"><button class="ca-choice" data-ca-act="'+(current.status==='running'?'pause':'resume')+'" data-ca-id="'+htmlEscape(current.id)+'">'+(current.status==='running'?'Ⅱ Pause':'▷ Resume')+'</button><button class="ca-choice" data-ca-act="break" data-ca-id="'+htmlEscape(current.id)+'">☕ Break</button><button class="ca-choice" data-ca-act="switch" data-ca-id="'+htmlEscape(current.id)+'">⇄ Switch</button><button class="ca-choice" data-ca-act="edit" data-ca-id="'+htmlEscape(current.id)+'">✎ Edit</button></div>'
-   +'<button class="ca-sheet-primary" data-ca-act="finish" data-ca-id="'+htmlEscape(current.id)+'">■ Finish activity</button>';
-  openDialog('Activity details','Your current timer and available actions.',content);return;
+  let content='<div class="ca-detail-hero"><span class="ca-detail-kicker">◎ &nbsp; ACTIVE ACTIVITY</span>'
+   +'<div class="ca-detail-title">'+htmlEscape(current.name)+'</div>'
+   +'<div class="ca-detail-big-clock">'+htmlEscape(current.clock)+'</div>'
+   +'<div class="ca-detail-status"><i></i>'+htmlEscape(current.status==='running'?'Currently running':'Currently paused')+'</div></div>';
+  content+='<div class="ca-detail-metrics"><div><span>Current status</span><strong>'+htmlEscape(current.status)+'</strong></div>'
+   +'<div><span>Recorded time</span><strong>'+htmlEscape(current.clock)+'</strong></div></div>';
+  content+='<div class="ca-detail-information"><div class="ca-detail-line"><span>Session information</span><strong>'+htmlEscape(current.meta)+'</strong></div></div>';
+  content+='<h3 class="ca-detail-heading">Activity controls</h3><div class="ca-detail-actions">'
+   +'<button class="ca-detail-action ca-detail-action-mint" data-ca-act="'+(current.status==='running'?'pause':'resume')+'" data-ca-id="'+htmlEscape(current.id)+'"><b>'+(current.status==='running'?'Ⅱ':'▷')+'</b><span>'+(current.status==='running'?'Pause':'Resume')+'</span></button>'
+   +'<button class="ca-detail-action" data-ca-act="break" data-ca-id="'+htmlEscape(current.id)+'"><b>☕</b><span>Break</span></button>'
+   +'<button class="ca-detail-action" data-ca-act="switch" data-ca-id="'+htmlEscape(current.id)+'"><b>⇄</b><span>Switch</span></button>'
+   +'<button class="ca-detail-action" data-ca-act="edit" data-ca-id="'+htmlEscape(current.id)+'"><b>✎</b><span>Edit</span></button></div>';
+  content+='<button class="ca-detail-finish" data-ca-act="finish" data-ca-id="'+htmlEscape(current.id)+'">■ &nbsp; Finish activity</button>';
+  openDialog('Activity in progress','Timer details and advanced controls',content);return;
  }
  if(type==='record'){
   const rec=readHistory().find(x=>x.id===id);if(!rec)return;
-  const content='<div class="ca-activity-name">'+htmlEscape(rec.name)+'</div><div class="ca-sheet-metric"><span>Date</span><strong>'+htmlEscape(rec.day)+'</strong></div><div class="ca-sheet-metric"><span>Duration</span><strong>'+htmlEscape(rec.duration)+'</strong></div><div class="ca-sheet-metric"><span>Recorded times</span><strong>'+htmlEscape(rec.time)+'</strong></div>'
-   +'<button type="button" class="ca-sheet-primary" data-ca-history-act="edit" data-ca-id="'+htmlEscape(rec.id)+'">✎ Edit activity</button><button type="button" class="ca-sheet-secondary" data-ca-history-act="details" data-ca-id="'+htmlEscape(rec.id)+'">More record details</button>';
-  openDialog('Activity Details','Saved session',content);return;
+  const label=(rec.time||'').includes('Development example')?'Development example':(rec.time||'').includes('Estimated')?'Estimated':'Recorded';
+  let content='<div class="ca-record-hero"><div class="ca-record-icon">▣</div><div><h3>'+htmlEscape(rec.name)+'</h3><p>'+htmlEscape(rec.day)+' · '+htmlEscape(label)+'</p></div></div>';
+  content+='<div class="ca-record-stats"><div><small>Duration</small><strong>'+htmlEscape(rec.duration)+'</strong></div>'
+   +'<div><small>Record type</small><strong>'+htmlEscape(label)+'</strong></div></div>';
+  content+='<div class="ca-record-detail"><span>Activity</span><strong>'+htmlEscape(rec.name)+'</strong></div>'
+   +'<div class="ca-record-detail"><span>Date</span><strong>'+htmlEscape(rec.day)+'</strong></div>'
+   +'<div class="ca-record-detail"><span>Time and source</span><strong>'+htmlEscape(rec.time)+'</strong></div>';
+  content+='<div class="ca-record-foot"><button type="button" class="ca-sheet-primary" data-ca-edit-record="'+htmlEscape(rec.id)+'">✎ &nbsp; Edit activity</button>'
+   +'<button type="button" class="ca-sheet-secondary" data-ca-close>Close details</button></div>';
+  openDialog('Activity Details','Your saved activity record',content);return;
+ }
+ if(type==='editRecord'){
+  // The original Edit dialog is the existing source of truth for stored records.
+  // Capture those populated values, keeping the new visual editor separate.
+  const form='<label for="caEditName" class="ca-form-label">Activity name</label>'
+   +'<input id="caEditName" class="ca-input" maxlength="80" value="'+htmlEscape($('editName')?.value||'')+'">'
+   +'<label for="caEditStart" class="ca-form-label">Start time</label>'
+   +'<input id="caEditStart" type="datetime-local" class="ca-input" value="'+htmlEscape($('editStart')?.value||'')+'">'
+   +'<label for="caEditEnd" class="ca-form-label">End time</label>'
+   +'<input id="caEditEnd" type="datetime-local" class="ca-input" value="'+htmlEscape($('editEnd')?.value||'')+'" '+($('editEnd')?.disabled?'disabled':'')+'>'
+   +'<label for="caEditNote" class="ca-form-label">Notes</label>'
+   +'<textarea id="caEditNote" class="ca-input ca-edit-textarea" rows="4" placeholder="What did you work on?">'+htmlEscape($('editNote')?.value||'')+'</textarea>'
+   +'<div class="ca-editor-footnote">Your saved activity times and any pause/resume segments are preserved unless you explicitly save changes.</div>'
+   +'<p class="ca-inline-error" id="caEditError" role="alert"></p>'
+   +'<div class="ca-record-foot"><button class="ca-sheet-primary" type="button" data-ca-save-edit>Save changes</button>'
+   +'<button class="ca-sheet-secondary" type="button" data-ca-close>Cancel</button></div>';
+  dialog.dataset.caEditRecord=id;
+  openDialog('Edit Activity','Update an existing activity',form);return;
  }
  if(type==='past'){
   openDialog('Log a past activity','Add time that was not recorded live.',
@@ -448,6 +489,32 @@ function handleDialogClick(event){
  if(act){const ok=originalAction(act.dataset.caId,act.dataset.caAct);if(ok){closeDialog();setTimeout(refresh,100)}return}
  const edit=event.target.closest('[data-ca-history-act]');
  if(edit){const ok=originalHistory(edit.dataset.caId,edit.dataset.caHistoryAct);if(ok)closeDialog();return}
+ const editRecord=event.target.closest('[data-ca-edit-record]');
+ if(editRecord){
+  const id=editRecord.dataset.caEditRecord;
+  if(originalHistory(id,'edit')){
+   const originalModal=$('editModal');
+   if(originalModal)originalModal.hidden=true;
+   sheet('editRecord',id);
+  }
+  return;
+ }
+ if(event.target.closest('[data-ca-save-edit]')){
+  const name=$('caEditName')?.value.trim()||'';
+  const start=$('caEditStart')?.value||'';
+  const end=$('caEditEnd')?.value||'';
+  const endLocked=$('caEditEnd')?.disabled;
+  const alert=$('caEditError');
+  if(!name||name.length>80||!start||(!endLocked&&(!end||new Date(end)<=new Date(start)))){
+   if(alert)alert.textContent='Enter a name and valid start/end times.';return;
+  }
+  for(const [source,target] of [['caEditName','editName'],['caEditStart','editStart'],['caEditNote','editNote'],['caEditEnd','editEnd']]){
+   if($(source)&&$(target))$(target).value=$(source).value;
+  }
+  const save=$('saveEdit');
+  if(save){save.click();closeDialog();setTimeout(()=>{state.lastHistory=0;renderHistory();renderReview()},120)}
+  return;
+ }
  if(event.target.closest('[data-ca-distraction]')){$('distractionToggle')?.click();closeDialog();return}
  if(event.target.closest('[data-ca-save-past]')){
   const original=$('pastForm'),a=$('caPastStart')?.value,b=$('caPastEnd')?.value,n=$('caPastName')?.value.trim();
