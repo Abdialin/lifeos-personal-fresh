@@ -148,7 +148,7 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
   align-items:end!important
  }
  #loCADialog .ca-sheet{
-  max-height:calc(100dvh - max(150px,env(safe-area-inset-top,0px) + 125px))!important;
+  max-height:calc(100dvh - 170px)!important;
   padding-bottom:22px!important;
   border-radius:22px!important
  }
