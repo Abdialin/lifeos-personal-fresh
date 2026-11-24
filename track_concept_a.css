@@ -557,3 +557,65 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
 #loTrackConceptA #caHistory[data-ca-period="month"] .ca-history-month-body{
  padding:0;background:transparent;
 }
+
+/* Concept A v11 — connected Focus device options and verified manual activity save */
+#loCADialog .ca-focus-device-panel{
+ border:1px solid #395d6b;border-radius:16px;background:#10283c;
+ overflow:hidden;margin:13px 0;
+}
+#loCADialog .ca-focus-device-row,
+#loCADialog .ca-focus-dnd>summary{
+ display:flex;align-items:center;gap:11px;padding:13px;
+ color:#e7f8f8;min-height:64px;
+}
+#loCADialog .ca-focus-device-row{border-bottom:1px solid #35546a}
+#loCADialog .ca-focus-device-icon{
+ flex:none;width:32px;height:32px;display:grid;place-items:center;
+ color:#8ff6c8;font-size:23px;
+}
+#loCADialog .ca-focus-device-copy{flex:1;min-width:0}
+#loCADialog .ca-focus-device-copy strong{
+ display:block;color:#f1fbfc;font-size:13px;line-height:1.35;font-weight:770;
+}
+#loCADialog .ca-focus-device-copy small{
+ display:block;color:#aac8d0;font-size:10px;line-height:1.45;margin-top:4px;
+}
+#loCADialog .ca-focus-device-buttons{flex:none;display:flex;gap:5px}
+#loCADialog .ca-focus-device-buttons button{
+ background:#205049;border:1px solid #53867c;color:#c4ffe5;
+ font-size:10px;font-weight:760;min-height:34px;border-radius:9px;padding:6px 8px;
+}
+#loCADialog .ca-focus-dnd>summary{cursor:pointer;list-style:none}
+#loCADialog .ca-focus-dnd>summary::-webkit-details-marker{display:none}
+#loCADialog .ca-focus-dnd>summary::marker{content:""}
+#loCADialog .ca-focus-device-link{
+ font-size:10px;font-weight:770;color:#a8f6d4;
+ flex:none;white-space:nowrap;
+}
+#loCADialog .ca-focus-dnd p,
+#loCADialog .ca-focus-settings-help{
+ font-size:11px;line-height:1.65;color:#bdd5dc;
+ margin:0 13px 13px;padding:12px;border:1px solid #3b586a;
+ background:#172f43;border-radius:11px;
+}
+#loCADialog .ca-focus-dnd p strong{color:#f0fcfd}
+#loCADialog .ca-focus-dnd[open]>summary{background:#1d394c}
+#loCADialog .ca-focus-settings-help{margin-top:12px}
+#loCADialog .ca-past-success{
+ padding:22px 14px;text-align:center;background:linear-gradient(150deg,#19483f,#123349);
+ border:1px solid #4d9180;border-radius:17px;margin:12px 0 17px;
+}
+#loCADialog .ca-past-success>span{
+ width:49px;height:49px;border-radius:50%;display:grid;place-items:center;
+ background:#76eab6;color:#0b3028;font-size:27px;font-weight:850;
+ margin:0 auto 14px;
+}
+#loCADialog .ca-past-success>strong{display:block;font-size:20px;color:#d9fff0}
+#loCADialog .ca-past-success>p{font-size:13px;color:#bdd7d5;margin:7px 0 0}
+@media(max-width:405px){
+ #loCADialog .ca-focus-device-row,#loCADialog .ca-focus-dnd>summary{gap:7px;padding:11px 8px}
+ #loCADialog .ca-focus-device-buttons{gap:3px}
+ #loCADialog .ca-focus-device-buttons button{font-size:9px;padding:5px 6px}
+ #loCADialog .ca-focus-device-copy strong{font-size:12px}
+ #loCADialog .ca-focus-device-link{font-size:9px}
+}
