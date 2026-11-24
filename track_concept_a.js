@@ -198,6 +198,8 @@ function renderHistory(){
  const target=$('caHistory');if(!target)return;
  state.history=readHistory();
  const filtered=state.history.filter(x=>matchesPeriod(x,state.historyPeriod)&&((x.name+' '+x.time+' '+x.day).toLowerCase().includes(state.query.toLowerCase())));
+ const signature=state.historyPeriod+'|'+state.query+'|'+filtered.map(x=>[x.id,x.dateKey,x.duration,x.time,x.name].join(':')).join('|');
+ if(target.dataset.caSignature===signature){state.lastHistory=Date.now();return}
  const byDay=new Map();
  for(const x of filtered){if(!byDay.has(x.day))byDay.set(x.day,[]);byDay.get(x.day).push(x)}
  let page='<div class="ca-section-head"><span class="ca-section-icon">▣</span><div><h2>Activity History</h2><p>Your recorded activities and sessions</p></div></div>';
@@ -216,7 +218,7 @@ function renderHistory(){
   page+='</section>';
  }
  page+='<button type="button" class="ca-compact-link" data-ca-sheet="past">＋ Log a past activity</button>';
- target.innerHTML=page;state.lastHistory=Date.now();
+ target.innerHTML=page;target.dataset.caSignature=signature;state.lastHistory=Date.now();
 }
 function readOverview(){
  return {total:$('tracked')?.textContent.trim()||'—',unique:$('uniqueTime')?.textContent.trim()||'—',
@@ -228,6 +230,8 @@ function renderReview(){
  const target=$('caReview');if(!target)return;
  const stats=readOverview();
  const records=readHistory().filter(x=>matchesPeriod(x,state.reviewPeriod));
+ const signature=state.reviewPeriod+'|'+records.map(x=>[x.id,x.dateKey,x.duration,x.name].join(':')).join('|')+'|'+stats.unique+'|'+stats.overlap+'|'+stats.distraction;
+ if(target.dataset.caSignature===signature)return;
  const groups=new Map(),dates=new Map(),ids=new Set();
  let recordedMs=0;
  for(const x of records){
@@ -297,7 +301,7 @@ function renderReview(){
   page+='<div class="ca-panel ca-insights-panel"><h3 class="ca-card-heading">Your activity insights</h3><div class="ca-insight-row"><span class="ca-insight-icon">✓</span><span><strong>'+htmlEscape(sorted[0][0])+'</strong> is your most tracked finished activity in this period.</span></div>';
   page+='<div class="ca-insight-row"><span class="ca-insight-icon">✓</span><span>'+sessionCount+' finished session'+(sessionCount===1?'':'s')+' · '+durationLabel(recordedMs)+' recorded.</span></div></div>';
  }
- target.innerHTML=page;
+ target.innerHTML=page;target.dataset.caSignature=signature;
 }
 function localKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function refresh(){
