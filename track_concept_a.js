@@ -27,12 +27,21 @@ function durationLabel(ms){
  return (mins>=60?Math.floor(mins/60)+'h ':'')+(mins%60?mins%60+'m':mins<60?'0m':'').trim();
 }
 function activeSessions(){
- return Array.from(document.querySelectorAll('#sessions details.lo17-session')).map(node=>{
+ const rows=Array.from(document.querySelectorAll('#sessions details.lo17-session')).map(node=>{
   const meta=node.querySelector('.lo17-meta')?.textContent.trim()||'';
   return {id:node.dataset.sessionId||'',name:node.querySelector('.session-title')?.textContent.trim()||'Activity',
     clock:node.querySelector('.lo17-clock')?.textContent.trim()||'00:00:00',
     meta,status:/paused/i.test(meta)?'paused':'running'};
  });
+ // Honor the existing primary timer choice if the original Live activity panel identifies it.
+ const heading=Array.from(document.querySelectorAll('h1,h2,h3')).find(node=>node.textContent.trim().toLowerCase()==='your live activity');
+ const container=heading?.closest('section,.panel,article');
+ if(container){
+  const content=container.textContent||'';
+  const matches=rows.filter(row=>content.includes(row.name));
+  if(matches.length===1){const pos=rows.indexOf(matches[0]);if(pos>0)rows.unshift(rows.splice(pos,1)[0])}
+ }
+ return rows;
 }
 function originalAction(id,action){
  const control=Array.from(document.querySelectorAll('#sessions [data-act]')).find(b=>b.dataset.id===id&&b.dataset.act===action);
@@ -93,7 +102,13 @@ function build(){
  dialog.innerHTML='<div class="ca-sheet" role="document"><div class="ca-sheet-head"><div><h2 id="caDialogTitle">Details</h2><p id="caDialogSubtitle"></p></div><button type="button" class="ca-x" data-ca-close aria-label="Close">×</button></div><div id="caDialogBody"></div></div>';
  document.body.append(dialog);dialogBody=$('caDialogBody');
  shell.addEventListener('click',handleClick);
- shell.addEventListener('input',event=>{if(event.target.id==='caHistorySearch'){state.query=event.target.value;renderHistory()}});
+ shell.addEventListener('input',event=>{
+  if(event.target.id==='caHistorySearch'){
+   state.query=event.target.value;const caret=event.target.selectionStart;
+   renderHistory();const replacement=$('caHistorySearch');
+   if(replacement){replacement.focus();if(caret!==null)replacement.setSelectionRange(caret,caret)}
+  }
+ });
  dialog.addEventListener('click',handleDialogClick);
  dialog.addEventListener('click',event=>{if(event.target===dialog)closeDialog()});
  dialog.addEventListener('keydown',event=>{
