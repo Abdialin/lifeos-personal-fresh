@@ -5312,4 +5312,66 @@ body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackHistoryPanel .history
 body[data-lifeos-view="tracking"] #loTrackWorkspaces #loTrackAdvanced,body[data-lifeos-view="tracking"] #loTrackWorkspaces #loTrackLegacyReview{background:#11273b;border:1px solid #35536a;border-radius:15px;padding:12px}
 @media(max-width:750px){body[data-lifeos-view="tracking"] #loTrackWorkspaces{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}body[data-lifeos-view="tracking"] #loTrackWorkspaces .lo-track-workspace-page{gap:12px}body[data-lifeos-view="tracking"] #loTrackWorkspaces .panel{padding:16px!important;border-radius:17px!important}body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackActivePanel{padding:17px!important}body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackHistoryPanel .lo-history-toolbar{grid-template-columns:minmax(0,1fr)}}
 </style>
-<script id="lifeos-track-design-intros-v300">(function(){function init(){const shell=document.getElementById('loTrackWorkspaces');if(!shell)return;const copy={live:['YOUR DAY, IN MOTION','Live tracking','Your timers and activities in one place.'],history:['YOUR ACTIVITY ARCHIVE','Activity history','Find and manage what you recorded.'],review:['UNDERSTAND YOUR TIME','Time review','Review distractions and patterns.']};for(const [key,words] of Object.entries(copy)){const page=document.getElementById('loTrackPage'+key);if(!page||page.querySelector('.lo-track-design-intro'))continue;const header=document.createElement('header');header.className='lo-track-design-intro';const kicker=document.createElement('span');kicker.textContent=words[0];const title=document.createElement('h2');title.textContent=words[1];const description=document.createElement('p');description.textContent=words[2];header.append(kicker,title,description);page.prepend(header)}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();window.addEventListener('load',init,{once:true})})();</script></body></html>
+<script id="lifeos-track-design-intros-v300">(function(){function init(){const shell=document.getElementById('loTrackWorkspaces');if(!shell)return;const copy={live:['YOUR DAY, IN MOTION','Live tracking','Your timers and activities in one place.'],history:['YOUR ACTIVITY ARCHIVE','Activity history','Find and manage what you recorded.'],review:['UNDERSTAND YOUR TIME','Time review','Review distractions and patterns.']};for(const [key,words] of Object.entries(copy)){const page=document.getElementById('loTrackPage'+key);if(!page||page.querySelector('.lo-track-design-intro'))continue;const header=document.createElement('header');header.className='lo-track-design-intro';const kicker=document.createElement('span');kicker.textContent=words[0];const title=document.createElement('h2');title.textContent=words[1];const description=document.createElement('p');description.textContent=words[2];header.append(kicker,title,description);page.prepend(header)}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();window.addEventListener('load',init,{once:true})})();</script><style id="lifeos-track-concept-a-subsections-v301">
+body[data-lifeos-view="tracking"] #loTrackPageLive .lo-track-launch-button{width:100%;min-height:58px;background:#79edb5;color:#082b2a;border:0;border-radius:16px;font-size:17px;font-weight:800;display:flex;justify-content:center;align-items:center;gap:10px;box-shadow:0 9px 25px #52e9ad22}
+#loTrackLauncherOverlay[hidden]{display:none!important}
+#loTrackLauncherOverlay{position:fixed;inset:0;z-index:99990;display:grid;place-items:end center;background:#020a12c9;padding:16px 12px calc(18px + env(safe-area-inset-bottom,0px));overflow-y:auto}
+#loTrackLauncherOverlay .lo-track-launch-sheet{width:min(100%,560px);max-height:min(90dvh,850px);overflow-y:auto;overscroll-behavior:contain;background:linear-gradient(145deg,#172d42,#091b2d);color:#f0fbfb;border:1px solid #456b77;border-radius:23px;padding:18px;box-shadow:0 20px 70px #0008}
+#loTrackLauncherOverlay .lo-track-launch-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
+#loTrackLauncherOverlay .lo-track-launch-head h2{margin:0;color:#f1fffb;font-size:23px}
+#loTrackLauncherOverlay .lo-track-launch-head p{margin:4px 0 0;color:#aac5ce;font-size:12px}
+#loTrackLauncherOverlay #loTrackLauncherClose{background:#20384a;color:#f0ffff;border:1px solid #456575;border-radius:12px;min-height:42px;min-width:42px;font-size:22px}
+#loTrackLauncherOverlay #loConceptAStart{display:block!important;border:0!important;padding:0!important;background:transparent!important}
+#loTrackLauncherOverlay #loConceptAStart>summary{display:none!important}
+#loTrackLauncherOverlay #trackQuickPanel{display:block!important;margin:0!important;background:#142b40!important;border:1px solid #38566c!important;border-radius:16px!important;padding:15px!important;color:#efffff}
+#loTrackLauncherOverlay #trackQuickPanel .field{background:#091b2d;color:#fff;border:1px solid #456575;border-radius:10px;min-height:44px}
+#loTrackLauncherOverlay #trackQuickPanel button{min-height:44px;border-radius:11px}
+body.lo-track-dialog-open{overflow:hidden}
+@media(min-width:700px){#loTrackLauncherOverlay{place-items:center;padding:24px}#loTrackLauncherOverlay .lo-track-launch-sheet{max-height:85dvh}}
+</style>
+<script id="lifeos-track-concept-a-subsections-v301">
+(function(){
+'use strict';
+function init(){
+ const live=document.getElementById('loTrackPagelive');
+ const quick=document.getElementById('trackQuickPanel');
+ if(!live||!quick||document.getElementById('loTrackLauncherOverlay'))return;
+ const overlay=document.createElement('div');overlay.id='loTrackLauncherOverlay';overlay.hidden=true;
+ overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-labelledby','loTrackLauncherTitle');
+ const sheet=document.createElement('div');sheet.className='lo-track-launch-sheet';
+ const head=document.createElement('header');head.className='lo-track-launch-head';
+ const titleBox=document.createElement('div');
+ const title=document.createElement('h2');title.id='loTrackLauncherTitle';title.textContent='Start Activity';
+ const description=document.createElement('p');description.textContent='Choose an activity or start a custom timer.';
+ titleBox.append(title,description);
+ const close=document.createElement('button');close.type='button';close.id='loTrackLauncherClose';close.textContent='×';close.setAttribute('aria-label','Close activity launcher');
+ head.append(titleBox,close);sheet.append(head);
+ const launcher=document.getElementById('loConceptAStart')||quick;
+ // Preserve the original controls, IDs, and event handlers by moving, never cloning.
+ if(launcher.tagName==='DETAILS')launcher.open=true;
+ sheet.append(launcher);overlay.append(sheet);document.body.append(overlay);
+ const openButton=document.createElement('button');openButton.type='button';openButton.className='lo-track-launch-button';openButton.textContent='+  Start Activity';
+ const active=document.getElementById('trackActivePanel');
+ if(active&&active.parentElement===live)active.insertAdjacentElement('afterend',openButton);else live.append(openButton);
+ let previousFocus=null;
+ function open(){previousFocus=document.activeElement;overlay.hidden=false;document.body.classList.add('lo-track-dialog-open');close.focus()}
+ function dismiss(){overlay.hidden=true;document.body.classList.remove('lo-track-dialog-open');if(previousFocus&&previousFocus.focus)previousFocus.focus()}
+ openButton.addEventListener('click',open);close.addEventListener('click',dismiss);
+ overlay.addEventListener('click',event=>{if(event.target===overlay)dismiss()});
+ overlay.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){dismiss();return}
+  if(event.key!=='Tab')return;
+  const controls=[...overlay.querySelectorAll('button,input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(el=>!el.disabled&&el.getClientRects().length);
+  if(!controls.length)return;
+  if(event.shiftKey&&document.activeElement===controls[0]){event.preventDefault();controls[controls.length-1].focus()}
+  else if(!event.shiftKey&&document.activeElement===controls[controls.length-1]){event.preventDefault();controls[0].focus()}
+ });
+ // The original Start buttons remain responsible for activity creation.
+ overlay.addEventListener('click',event=>{
+  if(event.target.closest('#startCustom')||event.target.closest('#quick button'))setTimeout(dismiss,120);
+ });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+window.addEventListener('load',init,{once:true});
+})();
+</script></body></html>
