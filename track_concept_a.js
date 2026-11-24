@@ -575,12 +575,14 @@ function sheet(type,id){
   openDialog('Edit Activity','Update an existing activity',form);return;
  }
  if(type==='past'){
-  openDialog('Log a past activity','Add time that was not recorded live.',
-   '<label class="ca-form-label">Activity name</label><input id="caPastName" class="ca-input" placeholder="Activity" required>'
-   +'<label class="ca-form-label">Start time</label><input id="caPastStart" type="datetime-local" class="ca-input" required>'
-   +'<label class="ca-form-label">End time</label><input id="caPastEnd" type="datetime-local" class="ca-input" required>'
-   +'<label class="ca-form-label">Notes</label><input id="caPastNotes" class="ca-input" placeholder="Optional details"><p id="caPastError" class="ca-inline-error" aria-live="polite"></p>'
-   +'<button class="ca-sheet-primary" data-ca-save-past>Save activity</button>');
+  openDialog('Log a past activity','Record an activity that already happened.',
+   '<label class="ca-form-label" for="caPastName">Activity name</label><input id="caPastName" maxlength="80" class="ca-input" placeholder="e.g. Studying, travelling, prayer" required>'
+   +'<label class="ca-form-label" for="caPastStart">Started</label><input id="caPastStart" type="datetime-local" class="ca-input" required>'
+   +'<label class="ca-form-label" for="caPastEnd">Finished</label><input id="caPastEnd" type="datetime-local" class="ca-input" required>'
+   +'<label class="ca-form-label" for="caPastNotes">Notes (optional)</label><textarea id="caPastNotes" rows="3" class="ca-input ca-edit-textarea" placeholder="Any relevant details"></textarea>'
+   +'<p class="ca-editor-footnote">Only past times can be saved. Activities may overlap; overlapping time is not unique time.</p>'
+   +'<p id="caPastError" class="ca-inline-error" role="alert" aria-live="polite"></p>'
+   +'<button type="button" class="ca-sheet-primary" data-ca-save-past>Save past activity</button>');
   return;
  }
  if(type==='break'){
@@ -739,10 +741,62 @@ function handleDialogClick(event){
   return;
  }
  if(event.target.closest('[data-ca-distraction]')){$('distractionToggle')?.click();closeDialog();return}
+ const viewPast=event.target.closest('[data-ca-view-past]');
+ if(viewPast){
+  const dayKey=viewPast.dataset.caViewPast;
+  const date=new Date(dayKey+'T12:00:00');
+  state.historyPeriod='month';state.historyMonth=localMonthKey(date);
+  closeDialog();
+  const history=$('caHistory');if(history)delete history.dataset.caSignature;
+  chooseTab('history');
+  const day=Array.from($('caHistory')?.querySelectorAll('details.ca-day')||[]).find(x=>x.dataset.caDay===dayKey);
+  if(day){for(let p=day;p;p=p.parentElement?.closest('details'))p.open=true;day.scrollIntoView({block:'center',behavior:'smooth'})}
+  return;
+ }
  if(event.target.closest('[data-ca-save-past]')){
-  const original=$('pastForm'),a=$('caPastStart')?.value,b=$('caPastEnd')?.value,n=$('caPastName')?.value.trim();
-  if(!n||!a||!b||new Date(b)<=new Date(a)){$('caPastError').textContent='Enter an activity and a valid start/end time.';return}
-  if(original){$('pastName').value=n;$('pastStart').value=a;$('pastEnd').value=b;$('pastNotes').value=$('caPastNotes')?.value||'';if(original.requestSubmit)original.requestSubmit();else original.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));closeDialog();setTimeout(renderHistory,150)}
+  const error=$('caPastError');
+  const original=$('pastForm'),name=$('caPastName')?.value.trim()||'';
+  const startString=$('caPastStart')?.value||'',endString=$('caPastEnd')?.value||'';
+  const start=new Date(startString).getTime(),end=new Date(endString).getTime();
+  if(!name||name.length>80||!Number.isFinite(start)||!Number.isFinite(end)||start>=end||end>Date.now()){
+   if(error)error.textContent='Enter an activity name and valid past start/end times. The end must not be in the future.';
+   return;
+  }
+  if(!original||typeof window.lifeosReadOnlyWorkspace!=='function'){
+   if(error)error.textContent='The original LifeOS save system is unavailable. No record was added.';
+   return;
+  }
+  try{
+   const prior=window.lifeosReadOnlyWorkspace();
+   const oldIds=new Set((prior.sessions||[]).map(x=>String(x.id)));
+   for(const [id,value] of [['pastName',name],['pastStart',startString],['pastEnd',endString],['pastNotes',$('caPastNotes')?.value||'']]){
+    const input=$(id);
+    if(!input)throw Error('Missing save field: '+id);
+    input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));
+   }
+   if(!original.checkValidity()){
+    if(error)error.textContent='Some activity fields are invalid. Please review the dates and name.';
+    return;
+   }
+   // The native submit handler persists the session and rolls back on failure.
+   // Dispatching a validated submit event avoids focus errors in the hidden original form.
+   original.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+   const after=window.lifeosReadOnlyWorkspace();
+   const newRecord=(after.sessions||[]).find(x=>!oldIds.has(String(x.id))&&x.source==='manual-past-entry'&&x.name===name&&x.startAt===start&&x.endAt===end);
+   if(!newRecord){
+    if(error)error.textContent='The activity could not be confirmed as saved. Your entries remain here for correction or retry.';
+    return;
+   }
+   state.lastHistory=0;
+   const hist=$('caHistory');if(hist)delete hist.dataset.caSignature;
+   renderHistory();renderReview();
+   const dateKey=localKey(new Date(start));
+   dialogBody.innerHTML='<div class="ca-past-success"><span aria-hidden="true">✓</span><strong>Activity saved</strong><p>'+htmlEscape(name)+' · '+htmlEscape(durationLabel(end-start))+'</p></div>'
+     +'<button type="button" class="ca-sheet-primary" data-ca-view-past="'+htmlEscape(dateKey)+'">View in History</button>'
+     +'<button type="button" class="ca-sheet-secondary" data-ca-close>Close</button>';
+  }catch(ex){
+   if(error)error.textContent='Unable to confirm this activity was saved. '+String(ex?.message||ex);
+  }
   return;
  }
  if(event.target.closest('[data-ca-focus-notifications]')){
