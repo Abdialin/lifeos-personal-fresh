@@ -130,3 +130,12 @@ body[data-lifeos-view="tracking"] #lifeosNavigation button[aria-current="page"]{
 body[data-lifeos-view="tracking"] #lifeosNavigation .lifeos-tab-icon{font-size:19px!important;line-height:1.05!important}
 body[data-lifeos-view="tracking"] #lifeosNavigation .lifeos-tab-label{font-size:10px!important;line-height:1.15!important}
 body.lo-ca-modal-open #lifeosNavigation{display:none!important}
+
+/* Native Android status strip stays opaque while scrolling; dialogs sit above navigation. */
+body.lo-ca-ready[data-lifeos-view="tracking"]::before{
+ content:"";position:fixed;left:0;right:0;top:0;height:max(34px,env(safe-area-inset-top,0px));
+ background:#0a1728;pointer-events:none;z-index:155
+}
+body.lo-ca-modal-open:not(.v137-modal-open):not(.lo-mobile-edit-open):not(.lo-mobile-detail-open) #lifeosNavigation{
+ display:none!important;visibility:hidden!important;pointer-events:none!important
+}
