@@ -398,11 +398,26 @@ function sheet(type,id){
  }
  if(type==='distraction'){
   const status=readOverview().distraction;
-  openDialog('Distraction Review','Understand and manage interruptions.',
-    '<div class="ca-panel"><div class="ca-overline">Current status</div><div style="font-size:19px;font-weight:780;color:#eefdfa">'+htmlEscape(status)+'</div></div>'
-    +'<button class="ca-sheet-primary" data-ca-distraction>Toggle distraction tracker</button>'
-    +'<p style="color:#b2cbd3;line-height:1.5;font-size:13px">Unlogged time is not automatically a distraction. Detailed classification remains available in the existing tracking data.</p>');return;
+  const records=readHistory().filter(x=>/distraction/i.test(x.name)&&matchesPeriod(x,state.reviewPeriod));
+  const unique=new Set(records.filter(x=>x.id).map(x=>x.id));
+  const sessions=unique.size||records.length,total=records.reduce((n,x)=>n+durationMs(x.duration),0);
+  let content='<div class="ca-focus-hero"><div class="ca-focus-icon">△</div><h3>Understand your distractions</h3><p>Review confirmed interruptions without treating unlogged time as distraction.</p></div>';
+  content+='<div class="ca-distraction-stats"><div><b>'+sessions+'</b><span>Recorded sessions</span></div><div><b>'+durationLabel(total)+'</b><span>Recorded time</span></div></div>';
+  content+='<div class="ca-focus-feature"><div class="ca-focus-feature-copy"><b>Current tracker</b><small>'+htmlEscape(status)+'</small></div><span class="ca-feature-tag">'+(status.toLowerCase().includes('no distraction')?'Inactive':'Active')+'</span></div>';
+  if(records.length){
+   content+='<h3 class="ca-distraction-title">Recent interruptions</h3><div class="ca-distraction-list">';
+   for(const x of records.slice(0,6)){
+    content+='<div class="ca-distraction-row"><span><b>'+htmlEscape(x.name)+'</b><small>'+htmlEscape(x.day)+'</small></span><strong>'+htmlEscape(x.duration)+'</strong></div>';
+   }
+   content+='</div>';
+  }else{
+   content+='<div class="ca-empty">No finished distraction sessions found in the selected Review period.</div>';
+  }
+  content+='<button class="ca-sheet-primary" data-ca-distraction>'+($('distractionToggle')?.textContent?.includes('Finish')?'■ Finish distraction':'▷ Start distraction')+'</button>';
+  content+='<p class="ca-feature-footnote">Details are based on saved activity records. Unlogged time is not classified automatically.</p>';
+  openDialog('Distraction Review','Recorded interruptions and their duration.',content);return;
  }
+
 }
 function handleClick(event){
  const tab=event.target.closest('[data-ca-tab]');if(tab){chooseTab(tab.dataset.caTab);return}
