@@ -107,6 +107,7 @@ function build(){
   if(document.body.dataset.lifeosView==='tracking'){refresh();if(!dialog.hidden)closeDialog()}
  });
  viewObserver.observe(document.body,{attributes:true,attributeFilter:['data-lifeos-view']});
+ document.body.classList.add('lo-ca-ready');
  window.setInterval(()=>{if(document.body.dataset.lifeosView==='tracking')refresh()},1300);
 }
 function chooseTab(name){
