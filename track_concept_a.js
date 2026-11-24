@@ -228,40 +228,78 @@ function renderReview(){
  const target=$('caReview');if(!target)return;
  const stats=readOverview();
  const records=readHistory().filter(x=>matchesPeriod(x,state.reviewPeriod));
- const groups=new Map();
- for(const x of records)groups.set(x.name,(groups.get(x.name)||0)+durationMs(x.duration));
+ const groups=new Map(),dates=new Map(),ids=new Set();
+ let recordedMs=0;
+ for(const x of records){
+  const ms=durationMs(x.duration);
+  recordedMs+=ms;
+  groups.set(x.name,(groups.get(x.name)||0)+ms);
+  const date=x.dateKey||(dayDate(x)?localKey(dayDate(x)):'');
+  if(date)dates.set(date,(dates.get(date)||0)+ms);
+  if(x.id)ids.add(x.id);
+ }
+ const sessionCount=ids.size||records.length;
  const sorted=[...groups].sort((a,b)=>b[1]-a[1]);
- const top=sorted.slice(0,3);if(sorted.length>3)top.push(['Other',sorted.slice(3).reduce((n,x)=>n+x[1],0)]);
- const sum=top.reduce((n,x)=>n+x[1],0);
- const colors=['#78efb9','#76bbff','#b790ff','#b8c8d8'];
+ const top=sorted.slice(0,3);
+ if(sorted.length>3)top.push(['Other activities',sorted.slice(3).reduce((n,x)=>n+x[1],0)]);
+ const sum=top.reduce((n,x)=>n+x[1],0),colors=['#78efb9','#76bbff','#b790ff','#b8c8d8'];
  let angle=0;const parts=[];
- for(let i=0;i<top.length;i++){const next=angle+100*top[i][1]/(sum||1);parts.push(colors[i]+' '+angle.toFixed(2)+'% '+next.toFixed(2)+'%');angle=next}
+ for(let i=0;i<top.length;i++){
+  const next=angle+100*top[i][1]/(sum||1);
+  parts.push(colors[i]+' '+angle.toFixed(2)+'% '+next.toFixed(2)+'%');
+  angle=next;
+ }
+ const scope={today:'Today',week:'Last 7 days',month:'Last 30 days',all:'All saved history'}[state.reviewPeriod]||'Recorded time';
  let page='<div class="ca-section-head"><span class="ca-section-icon">▥</span><div><h2>Review & Insights</h2><p>Understand your time, focus and distractions</p></div></div>';
  page+='<div class="ca-filter-row">';
  for(const [key,label] of [['today','Today'],['week','This Week'],['month','This Month'],['all','All']])
   page+='<button type="button" class="ca-chip" data-ca-review-period="'+key+'" aria-pressed="'+(state.reviewPeriod===key)+'">'+label+'</button>';
- page+='</div>';
+ page+='</div><p class="ca-review-scope">'+scope+' · confirmed finished activity portions</p>';
+ const average=sessionCount?durationLabel(recordedMs/sessionCount):'—';
+ const mainMetrics=[
+  ['◎',sessionCount?durationLabel(recordedMs):'0m','Finished activity time'],
+  ['▱',String(sessionCount),'Finished sessions'],
+  ['◷',average,'Average per session'],
+  ['◇',sorted.length?sorted[0][0]:'—','Most tracked activity']
+ ];
  page+='<div class="ca-metrics">';
- for(const [icon,value,title] of [['◎',stats.total,'Recorded today'],['◷',stats.unique,'Unique time today'],['▱',stats.completed,'Finished today'],['⇄',stats.overlap,'Overlapping time']])
+ for(const [icon,value,title] of mainMetrics)
   page+='<div class="ca-metric"><div class="ca-micon">'+icon+'</div><b>'+htmlEscape(value)+'</b><span>'+title+'</span></div>';
  page+='</div>';
- page+='<div class="ca-panel"><h3 class="ca-card-heading">Time by Activity <small style="color:#9ebdca;font-size:11px;font-weight:500">· '+(state.reviewPeriod==='all'?'all saved':state.reviewPeriod==='week'?'last 7 days':state.reviewPeriod==='month'?'last 30 days':'today')+'</small></h3>';
- if(!top.length)page+='<div class="ca-empty">Record activities to see your breakdown here.</div>';
+ if(state.reviewPeriod==='today')
+  page+='<div class="ca-inline-note">Today’s ongoing activities are shown separately in Live. Current unique time: <b>'+htmlEscape(stats.unique)+'</b>; overlap: <b>'+htmlEscape(stats.overlap)+'</b>.</div>';
+ page+='<div class="ca-panel"><h3 class="ca-card-heading">Time by Activity</h3>';
+ if(!top.length)page+='<div class="ca-empty">No finished activities in this period. Your historical data remains available under All.</div>';
  else {
-  page+='<div class="ca-donut-area"><div class="ca-donut" style="background:conic-gradient('+parts.join(',')+')"><div class="ca-donut-inner"><strong>'+durationLabel(sum)+'</strong><small>Recorded</small></div></div><div class="ca-legend">';
-  top.forEach((item,i)=>page+='<div class="ca-legend-row"><span class="ca-legend-label"><i class="ca-dot" style="background:'+colors[i]+'"></i><span>'+htmlEscape(item[0])+'</span></span><b>'+Math.round(item[1]*100/(sum||1))+'%</b></div>');
+  page+='<div class="ca-donut-area"><div class="ca-donut" style="background:conic-gradient('+parts.join(',')+')"><div class="ca-donut-inner"><strong>'+durationLabel(sum)+'</strong><small>Finished</small></div></div><div class="ca-legend">';
+  top.forEach((item,i)=>{
+   page+='<div class="ca-legend-row"><span class="ca-legend-label"><i class="ca-dot" style="background:'+colors[i]+'"></i><span>'+htmlEscape(item[0])+'</span></span><b>'+Math.round(item[1]*100/(sum||1))+'%</b></div>';
+  });
   page+='</div></div>';
  }
- page+='</div>';
- page+='<div class="ca-panel"><h3 class="ca-card-heading">Recorded sessions by day</h3>';
- const byDay=new Map();records.forEach(x=>byDay.set(x.day,(byDay.get(x.day)||0)+durationMs(x.duration)));
- const series=[...byDay].slice(0,7).reverse(),max=Math.max(1,...series.map(x=>x[1]));
- if(series.length){page+='<div class="ca-bars">';for(const [day,ms] of series)page+='<div class="ca-bar" style="height:'+Math.max(3,Math.round(ms/max*100))+'%" title="'+htmlEscape(day)+': '+durationLabel(ms)+'"><span>'+htmlEscape(day.replace(/,.*/, '').slice(0,3))+'</span></div>';page+='</div><div style="height:24px"></div>';}
- else page+='<div class="ca-empty">Daily activity totals will appear here.</div>';
+ page+='</div><div class="ca-panel"><h3 class="ca-card-heading">Recorded time by day</h3>';
+ const count=state.reviewPeriod==='today'?1:state.reviewPeriod==='month'?14:state.reviewPeriod==='all'?14:7;
+ let days=[];
+ for(let i=count-1;i>=0;i--){
+  const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);
+  const key=localKey(d);
+  days.push({key,label:d.toLocaleDateString(undefined,{weekday:'short'}),ms:dates.get(key)||0});
+ }
+ const max=Math.max(1,...days.map(x=>x.ms));
+ if(days.some(x=>x.ms>0)){
+  page+='<div class="ca-bars" aria-label="Time by day">';
+  for(const item of days)page+='<div class="ca-bar" style="height:'+Math.max(3,Math.round(item.ms/max*100))+'%" title="'+htmlEscape(item.key)+' · '+durationLabel(item.ms)+'"><span>'+htmlEscape(item.label)+'</span></div>';
+  page+='</div><div class="ca-chart-caption">Total recorded time from saved finished activities · simultaneous activities may overlap.</div>';
+ }else page+='<div class="ca-empty">No completed activity time found for the displayed days.</div>';
  page+='</div>';
  page+='<div class="ca-panel ca-distraction-band"><div><b>△ &nbsp; Distraction review</b><p>'+htmlEscape(stats.distraction)+'</p></div><button type="button" class="ca-soft-button" data-ca-sheet="distraction">Review ›</button></div>';
+ if(sorted.length){
+  page+='<div class="ca-panel ca-insights-panel"><h3 class="ca-card-heading">Your activity insights</h3><div class="ca-insight-row"><span class="ca-insight-icon">✓</span><span><strong>'+htmlEscape(sorted[0][0])+'</strong> is your most tracked finished activity in this period.</span></div>';
+  page+='<div class="ca-insight-row"><span class="ca-insight-icon">✓</span><span>'+sessionCount+' finished session'+(sessionCount===1?'':'s')+' · '+durationLabel(recordedMs)+' recorded.</span></div></div>';
+ }
  target.innerHTML=page;
 }
+function localKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function refresh(){
  renderLive();
  if(state.tab==='history'&&Date.now()-state.lastHistory>8000)renderHistory();
