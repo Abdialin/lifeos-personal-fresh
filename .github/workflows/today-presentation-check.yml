@@ -1,0 +1,36 @@
+name: Today presentation verification
+on:
+  push:
+    paths:
+      - index.html
+      - .github/workflows/today-presentation-check.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse inline scripts and check Today structure
+        run: |
+          node <<'JS'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const assert = require('node:assert/strict');
+          const html = fs.readFileSync('index.html','utf8');
+          let count = 0;
+          for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+            if (/\bsrc\s*=/.test(m[1]) || /type\s*=\s*["'](?:application\/json|application\/ld\+json|module)/i.test(m[1])) continue;
+            new vm.Script(m[2], {filename:'inline-'+(++count)+'.js'});
+          }
+          for (const id of ['ctTodayTabs','ctDemoToggle','ctOverviewGauge','conceptTodayDailyMap','conceptTodayDistribution','ctAgendaList','ctReviewSummary']) {
+            assert.equal(html.split('id="'+id+'"').length-1,1,'Expected one '+id);
+          }
+          for (const tab of ['Overview','Timeline','Agenda','Review']) assert.ok(html.includes('data-ct-tab="'+tab+'"'));
+          assert.ok(html.includes('EXAMPLE DATA · NOT SAVED'));
+          console.log('Parsed '+count+' inline scripts; Today structure checks passed.');
+          JS
