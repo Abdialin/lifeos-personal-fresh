@@ -1,7 +1,7 @@
 
 /* LifeOS Concept A — independent Track presentation. Legacy Track DOM is retained as a data/action adapter. */
 body[data-lifeos-view="tracking"] main.wrap{padding-top:calc(48px + env(safe-area-inset-top,0px))!important;max-width:100%!important;overflow:visible}
-body[data-lifeos-view="tracking"] main.wrap > :not(#loTrackConceptA):not(#lifeosNavigation){display:none!important}
+body.lo-ca-ready[data-lifeos-view="tracking"] main.wrap > :not(#loTrackConceptA):not(#lifeosNavigation){display:none!important}
 body:not([data-lifeos-view="tracking"]) #loTrackConceptA{display:none!important}
 body[data-lifeos-view="tracking"] #loTrackConceptA{display:block!important;width:min(100%,1100px);margin:0 auto;padding:0 14px calc(150px + env(safe-area-inset-bottom,0px));color:#f4fbfc;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
 #loTrackConceptA *,#loCADialog *{box-sizing:border-box}
