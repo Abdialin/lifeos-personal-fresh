@@ -58,9 +58,35 @@ function readHistory(){
  for(const group of document.querySelectorAll('#history .lo11-history-day, #history .lo-history-day')){
   const day=group.querySelector(':scope > summary strong, :scope > summary span')?.textContent.trim()||'Recorded day';
   const monthText=group.closest('.lo11-history-month')?.querySelector(':scope > summary strong')?.textContent||'';
-  const year=monthText.match(/\b(20\d{2})\b/)?.[1];
-  const parsed=new Date(day+(year?' '+year:' '+new Date().getFullYear()));
-  const dateKey=Number.isFinite(parsed.getTime())?parsed.getFullYear()+'-'+String(parsed.getMonth()+1).padStart(2,'0')+'-'+String(parsed.getDate()).padStart(2,'0'):'';
+  // The V11 day heading contains weekday + day number, while month/year
+  // lives on an ancestor (e.g. "Monday 23" inside "November 2026").
+  // Parsing the day heading alone silently included old records in This Week
+  // while producing no matching daily bars. Reconstruct the true local date.
+  const year=Number(monthText.match(/\b(20\d{2})\b/)?.[1]);
+  const dayNumber=Number(day.match(/\b(\d{1,2})\b/)?.[1]);
+  let parsed=null;
+  if(Number.isInteger(year)&&Number.isInteger(dayNumber)&&dayNumber>=1&&dayNumber<=31){
+   const monthLabel=monthText.replace(/\b20\d{2}\b/,'').trim().toLocaleLowerCase();
+   const names=new Intl.DateTimeFormat(undefined,{month:'long'});
+   let monthIndex=Array.from({length:12},(_,i)=>i).find(i=>names.format(new Date(year,i,1)).toLocaleLowerCase()===monthLabel);
+   if(monthIndex===undefined){
+    const englishNames=new Intl.DateTimeFormat('en',{month:'long'});
+    monthIndex=Array.from({length:12},(_,i)=>i).find(i=>englishNames.format(new Date(year,i,1)).toLocaleLowerCase()===monthLabel);
+   }
+   if(monthIndex!==undefined){
+    const date=new Date(year,monthIndex,dayNumber,12);
+    if(date.getMonth()===monthIndex&&date.getDate()===dayNumber)parsed=date;
+   }
+  }
+  // The older History format contains its own month and day.
+  if(!parsed&&!monthText){
+   const oldDate=new Date(day+' '+new Date().getFullYear());
+   if(Number.isFinite(oldDate.getTime())){
+    if(oldDate.getTime()>Date.now()+86400000)oldDate.setFullYear(oldDate.getFullYear()-1);
+    parsed=oldDate;
+   }
+  }
+  const dateKey=parsed?localKey(parsed):'';
   for(const item of group.querySelectorAll('.lo-history-item')){
    const id=item.querySelector('[data-id]')?.dataset.id||'';
    result.push({id,day,dateKey,name:item.querySelector('.lo-history-entry strong')?.textContent.trim()||'Activity',
@@ -82,7 +108,10 @@ function dayDate(record){
 }
 function matchesPeriod(record,period){
  if(period==='all')return true;
- const d=dayDate(record);if(!d)return true;
+ // Unknown dates are excluded from date-scoped summaries rather than
+ // silently counted in the wrong week or month.
+ if(!record.dateKey)return false;
+ const d=dayDate(record);if(!d)return false;
  const now=new Date();now.setHours(0,0,0,0);d.setHours(0,0,0,0);
  const delta=Math.round((now-d)/86400000);
  if(period==='today')return delta===0;
