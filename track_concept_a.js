@@ -444,18 +444,23 @@ function sheet(type,id){
   openDialog('Break Mode','Take a short break and recharge.',content);return;
  }
  if(type==='focus'){
+  const running=readRealFocusState();
+  if(running&&running.kind==='focus'&&running.mode!=='ringing'){
+   showRealFocus();
+   return;
+  }
   const choices=live.length?live:[{id:'',name:'Studying'}];
   let content='<div class="ca-focus-hero"><div class="ca-focus-icon">◎</div><h3>Focus on what matters</h3><p>A calmer screen for deliberate work, study, and reading.</p></div>';
-  content+='<div class="ca-focus-feature"><div class="ca-focus-feature-copy"><b>◷ &nbsp; Focus session</b><small>Choose the activity and duration</small></div><span class="ca-feature-tag">Preview</span></div>';
+  content+='<div class="ca-focus-feature"><div class="ca-focus-feature-copy"><b>◷ &nbsp; Focus session</b><small>Uses your saved LifeOS focus timer</small></div><span class="ca-feature-tag">Ready</span></div>';
   content+='<label class="ca-form-label" for="caFocusActivity">Focus activity</label><select class="ca-input" id="caFocusActivity">';
   for(const row of choices)content+='<option value="'+htmlEscape(row.id)+'">'+htmlEscape(row.name)+'</option>';
   content+='</select><label class="ca-form-label" for="caFocusDuration">Focus duration</label>';
   content+='<select id="caFocusDuration" class="ca-input"><option value="25">25 minutes</option><option value="45" selected>45 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option></select>';
-  content+='<div class="ca-focus-settings"><div class="ca-focus-setting"><span>♧</span><div><b>Quiet notifications</b><small>Device setting · preview only</small></div><input type="checkbox" aria-label="Preview quiet notifications" checked></div>';
-  content+='<div class="ca-focus-setting"><span>▣</span><div><b>Limit distractions</b><small>Device permission required</small></div><input type="checkbox" aria-label="Preview distraction limiting"></div>';
-  content+='<div class="ca-focus-setting"><span>☾</span><div><b>Do Not Disturb</b><small>Controlled by Android</small></div><span class="ca-feature-tag">System</span></div></div>';
-  content+='<button class="ca-sheet-primary" data-ca-focus-preview>▷ &nbsp; View Focus Session</button>';
-  content+='<p class="ca-feature-footnote">Focus appearance preview. Device settings and stored timers are not changed.</p>';
+  content+='<div class="ca-focus-settings"><div class="ca-focus-setting"><span>♫</span><div><b>Sound and vibration</b><small>Controlled by existing LifeOS alert settings and device permissions</small></div></div>';
+  content+='<div class="ca-focus-setting"><span>♧</span><div><b>Notifications</b><small>Android may restrict background alerts</small></div><button type="button" class="ca-feature-tag ca-focus-notify" data-ca-focus-notifications>Allow</button></div>';
+  content+='<div class="ca-focus-setting"><span>☾</span><div><b>Do Not Disturb</b><small>Managed separately in Android settings</small></div><span class="ca-feature-tag">System</span></div></div>';
+  content+='<p id="caFocusError" role="alert" class="ca-inline-error"></p><button class="ca-sheet-primary" data-ca-focus-start>▷ &nbsp; Start Focus</button>';
+  content+='<p class="ca-feature-footnote">Runs the real LifeOS focus timer. Your activity timers continue separately. Sound, vibration and background notifications depend on device support.</p>';
   openDialog('Focus Mode','Minimize distractions and stay on track.',content);return;
  }
  if(type==='timer'){
@@ -581,15 +586,43 @@ function handleDialogClick(event){
   if(original){$('pastName').value=n;$('pastStart').value=a;$('pastEnd').value=b;$('pastNotes').value=$('caPastNotes')?.value||'';if(original.requestSubmit)original.requestSubmit();else original.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));closeDialog();setTimeout(renderHistory,150)}
   return;
  }
- if(event.target.closest('[data-ca-focus-preview]')){
-  const minutes=Math.max(1,Number($('caFocusDuration')?.value||45));
-  const chosen=$('caFocusActivity');
-  const activity=chosen?.selectedOptions?.[0]?.textContent||'Focus session';
-  dialog.dataset.caPreview='focus';
-  const content='<div class="ca-focus-hero"><div class="ca-focus-icon">◎</div><h3>'+htmlEscape(activity)+'</h3><p>Stay with one meaningful activity.</p></div>'
-   +'<div class="ca-focus-ring"><div><strong>'+minutes+':00</strong><small>Focus session · visual preview</small></div></div>'
-   +'<div class="ca-preview-actions"><button class="ca-sheet-secondary" data-ca-preview-back="focus">‹ &nbsp; Settings</button><button class="ca-sheet-primary" data-ca-close>End preview</button></div>';
-  openDialog('Focus session','Concept A Focus layout',content);return;
+ if(event.target.closest('[data-ca-focus-notifications]')){
+  const native=$('lo207-notify-permission');
+  if(native)native.click();
+  else {const msg=$('caFocusError');if(msg)msg.textContent='Notification permission controls are unavailable on this device.'}
+  return;
+ }
+ if(event.target.closest('[data-ca-focus-start]')){
+  const label=$('caFocusActivity')?.selectedOptions?.[0]?.textContent?.trim()||'Focus';
+  const minutes=Number($('caFocusDuration')?.value||45);
+  const nativeLabel=$('lo207-focus-label'),nativeMinutes=$('lo207-focus-minutes'),nativeStart=$('lo207-start-focus');
+  const err=$('caFocusError');
+  if(!nativeLabel||!nativeMinutes||!nativeStart){
+   if(err)err.textContent='The LifeOS focus engine is unavailable. No session was started.';
+   return;
+  }
+  if(!Number.isSafeInteger(minutes)||minutes<1||minutes>240){
+   if(err)err.textContent='Choose a valid focus duration (1–240 minutes).';
+   return;
+  }
+  nativeLabel.value=label;nativeMinutes.value=String(minutes);
+  nativeLabel.dispatchEvent(new Event('input',{bubbles:true}));
+  nativeMinutes.dispatchEvent(new Event('input',{bubbles:true}));
+  dialog.dataset.caFocusStarting='1';
+  nativeStart.click();
+  const button=event.target.closest('button');
+  if(button){button.textContent='Starting focus…';button.disabled=true}
+  return;
+ }
+ const focusControl=event.target.closest('[data-ca-focus-control]');
+ if(focusControl){
+  const map={pause:'lo221-layer-pause',break:'lo221-layer-break',end:'lo207-cancel-focus'};
+  const control=$(map[focusControl.dataset.caFocusControl]);
+  if(!control)return;
+  control.click();
+  if(focusControl.dataset.caFocusControl==='end'){closeDialog();return}
+  window.setTimeout(updateRealFocusScreen,50);
+  return;
  }
  const limit=event.target.closest('[data-ca-limit]');
  if(limit){
