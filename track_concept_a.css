@@ -541,3 +541,19 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
 @media(prefers-reduced-motion:reduce){
  #loTrackConceptA .ca-history-group-arrow{transition:none}
 }
+
+/* Concept A v11: single month heading and truthful summed-time labels. */
+#loTrackConceptA .ca-history-time-note{
+ margin:0 2px 14px;padding:10px 12px;border-radius:12px;
+ border:1px solid #355c60;background:#102b38;color:#bdd7d5;
+ font-size:11px;line-height:1.55;
+}
+/* In the single-month view the selector already names that month;
+   keep the hierarchy but don't repeat its parent card title. */
+#loTrackConceptA #caHistory[data-ca-period="month"] .ca-history-month{
+ border:0;background:transparent;margin:0 0 14px;border-radius:0;overflow:visible;
+}
+#loTrackConceptA #caHistory[data-ca-period="month"] .ca-history-month-summary{display:none}
+#loTrackConceptA #caHistory[data-ca-period="month"] .ca-history-month-body{
+ padding:0;background:transparent;
+}
