@@ -217,13 +217,19 @@ function renderHistory(){
   page+='<button type="button" class="ca-chip" data-ca-period="'+key+'" aria-pressed="'+(state.historyPeriod===key)+'">'+label+'</button>';
  page+='</div>';
  if(!filtered.length)page+='<div class="ca-panel ca-empty">No recorded sessions match these filters.</div>';
+ // Preserve only days the user intentionally expanded when filters or records change.
+ const openDays=new Set(Array.from(target.querySelectorAll('details.ca-day[open]')).map(el=>el.dataset.caDay));
  for(const [day,items] of byDay){
   const total=items.reduce((n,x)=>n+durationMs(x.duration),0);
-  page+='<section class="ca-day"><h3>'+htmlEscape(day)+'<span>'+items.length+' sessions · '+durationLabel(total)+'</span></h3>';
+  const dayKey=items[0]?.dateKey||day;
+  page+='<details class="ca-day" data-ca-day="'+htmlEscape(dayKey)+'" '+(openDays.has(dayKey)?'open':'')+'>';
+  page+='<summary class="ca-day-summary"><span class="ca-day-main"><strong>'+htmlEscape(day)+'</strong><small>'+items.length+' '+(items.length===1?'activity':'activities')+' · '+durationLabel(total)+'</small></span>';
+  page+='<span class="ca-day-toggle"><span class="ca-day-show">Show activities</span><span class="ca-day-hide">Hide activities</span><span class="ca-day-arrow" aria-hidden="true">⌄</span></span></summary>';
+  page+='<div class="ca-day-activities">';
   for(const record of items){
    page+='<button type="button" class="ca-history-item" data-ca-sheet="record" data-ca-id="'+htmlEscape(record.id)+'"><i class="ca-dot"></i><span class="ca-h-text"><strong>'+htmlEscape(record.name)+'</strong><small>'+htmlEscape(record.time)+'</small></span><span class="ca-h-duration">'+htmlEscape(record.duration)+'</span><span aria-hidden="true">⋮</span></button>';
   }
-  page+='</section>';
+  page+='</div></details>';
  }
  page+='<button type="button" class="ca-compact-link" data-ca-sheet="past">＋ Log a past activity</button>';
  target.innerHTML=page;target.dataset.caSignature=signature;state.lastHistory=Date.now();
