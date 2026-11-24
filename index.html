@@ -5418,4 +5418,91 @@ function init(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 window.addEventListener('load',init,{once:true});
-})();</script></body></html>
+})();</script><style id="lifeos-track-concept-a-final-subsections-v303">
+/* Complete visual treatment of the existing interactive subsections. */
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session[open]{
+ border-color:#64bcaa!important;box-shadow:0 0 0 1px #56c8ad30,0 10px 28px #05152155;
+}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session[open] .lo17-actions{
+ padding:13px!important;background:#0b2032;border-top:1px solid #345b69;
+}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session .lo17-meta{color:#b8d4d6!important}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session summary{cursor:pointer}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session button[data-act="pause"],
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session button[data-act="resume"]{
+ background:#7cf0b9!important;color:#062e29!important;border-color:#7cf0b9!important;font-weight:800;
+}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session button[data-act="finish"]{
+ border-color:#70c9b7!important;color:#9df5dc!important;
+}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session button[data-act="break"]{
+ background:#1c3c49!important;color:#9af0db!important;border:1px solid #4d8b8b!important;
+}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #loDistractionMore{
+ margin-top:13px;padding:10px 12px;border:1px solid #3e6071;background:#0c2336;border-radius:14px;
+}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #loDistractionMore>summary{
+ min-height:46px;display:flex;align-items:center;color:#aaf3df;font-weight:750;
+}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackDistractionPanel #distractionToggle{
+ background:#28464e;border:1px solid #5a9b91;color:#b7ffeb;font-weight:800;min-height:48px;
+}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #loTrackAdvanced>summary,
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #loTrackLegacyReview>summary{
+ min-height:46px;display:flex;align-items:center;font-weight:750;color:#b7f9e6;
+}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackPastPanel form{display:grid;gap:10px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackPastPanel form .statrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackPastPanel form textarea{width:100%;resize:vertical}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackHistoryPanel .lo-history-item .lo-history-actions button{
+ min-height:38px!important;padding:7px 12px!important;
+}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessionToolsPanel{border-color:#304c5e!important}
+body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessionToolsPanel .btn{width:100%}
+#loTrackFocusConsole,#loTrackDurationReview{
+ background:linear-gradient(150deg,#172f44,#0a2033)!important;color:#f1fcfc!important;
+ border:1px solid #42746e!important;border-radius:19px!important;box-shadow:0 16px 36px #03132166;
+}
+#loTrackFocusConsole .lo-focus-card{background:#102a3c!important;border:1px solid #3b6c70!important;border-radius:16px!important}
+#loTrackFocusConsole .lo-focus-time{font-size:clamp(32px,9vw,62px)!important;color:#b4ffdf!important;font-variant-numeric:tabular-nums}
+#loTrackFocusConsole button,#loTrackDurationReview button{min-height:44px;border-radius:12px}
+#loTrackDurationReview .lo-duration-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#loTrackLauncherOverlay .lo-track-launch-sheet .quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#loTrackLauncherOverlay .lo-track-launch-sheet .quick button{min-width:0;width:100%;min-height:50px}
+@media(max-width:600px){
+ body[data-lifeos-view="tracking"] #loTrackWorkspaces #trackPastPanel form .statrow{grid-template-columns:minmax(0,1fr)}
+ body[data-lifeos-view="tracking"] #loTrackWorkspaces #sessions .lo17-session[open] .lo17-actions{padding:11px!important}
+ #loTrackLauncherOverlay .lo-track-launch-sheet{padding:16px}
+ #loTrackLauncherOverlay .lo-track-launch-sheet .quick{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+<script id="lifeos-track-concept-a-final-subsections-v303">
+(function(){
+ function init(){
+  const live=document.getElementById('loTrackPagelive');
+  const review=document.getElementById('loTrackPagereview');
+  if(!live||!review)return;
+  // Existing live Focus/Break controls stay functional and appear only on demand.
+  const focus=document.getElementById('loTrackFocusConsole');
+  if(focus&&!document.getElementById('loTrackFocusSection')){
+   const holder=document.createElement('details');holder.id='loTrackFocusSection';
+   holder.className='lo-track-focus-section';
+   const summary=document.createElement('summary');summary.textContent='Focus & breaks';
+   holder.append(summary);live.append(holder);
+   holder.append(focus);
+  }
+  // Keep the original distraction controls and analytics together in Review.
+  const distraction=document.getElementById('trackDistractionPanel');
+  if(distraction&&distraction.parentElement!==review)review.append(distraction);
+  const details=document.getElementById('loDistractionMore');
+  if(details)details.open=false;
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+ window.addEventListener('load',init,{once:true});
+})();
+</script>
+<style id="lifeos-track-focus-section-style-v303">
+body[data-lifeos-view="tracking"] #loTrackFocusSection{background:#13293d;border:1px solid #36596d;border-radius:16px;padding:10px 14px}
+body[data-lifeos-view="tracking"] #loTrackFocusSection>summary{display:flex;align-items:center;min-height:48px;font-weight:800;color:#b1f8e2;cursor:pointer}
+body[data-lifeos-view="tracking"] #loTrackFocusSection[open]>summary{border-bottom:1px solid #36596d;margin-bottom:12px}
+</style></body></html>
