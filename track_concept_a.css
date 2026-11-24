@@ -400,3 +400,40 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
 @media(prefers-reduced-motion:reduce){
  #loTrackConceptA .ca-day-arrow{transition:none}
 }
+
+/* Concept A v9 — the actual LifeOS focus session inside the approved design. */
+#loCADialog .ca-focus-real-ring{
+ --ca-focus-percent:0%;
+ background:conic-gradient(#7cf1ba 0 var(--ca-focus-percent),#35596a var(--ca-focus-percent) 100%);
+ border:5px solid #1d4251;
+ width:min(228px,58vw);height:min(228px,58vw);
+ padding:12px;box-shadow:0 0 0 1px #477d73,0 0 30px #4dd5a534;
+}
+#loCADialog .ca-focus-real-ring>div{
+ display:flex;align-items:center;justify-content:center;flex-direction:column;
+ width:100%;height:100%;border-radius:50%;background:#10283b;
+ padding:8px;
+}
+#loCADialog .ca-focus-real-ring strong{
+ font-size:clamp(36px,9vw,53px);font-variant-numeric:tabular-nums;
+ white-space:nowrap;letter-spacing:-.04em;
+}
+#loCADialog .ca-focus-real-ring small{
+ font-size:11px;line-height:1.5;max-width:155px;
+}
+#loCADialog .ca-focus-live-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+#loCADialog .ca-focus-live-actions button{
+ min-height:51px;margin:0!important;font-size:14px;font-weight:800;
+}
+#loCADialog .ca-focus-notify{
+ border:1px solid #477e75;cursor:pointer;min-height:37px;
+}
+#loCADialog .ca-focus-end{
+ background:#2d3241!important;border-color:#88566b!important;
+ color:#f7d6dd!important;
+}
+#loCADialog .ca-focus-end:hover{background:#3e3042!important}
+@media(max-width:420px){
+ #loCADialog .ca-focus-real-ring{width:min(198px,55vw);height:min(198px,55vw)}
+ #loCADialog .ca-focus-real-ring strong{font-size:35px}
+}
