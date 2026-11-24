@@ -219,3 +219,134 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
 #loCADialog .ca-distraction-row b{display:block;font-size:13px;color:#e9f9f9;overflow:hidden;text-overflow:ellipsis}
 #loCADialog .ca-distraction-row small{display:block;font-size:11px;color:#abc4ce;margin-top:4px}
 #loCADialog .ca-distraction-row strong{font-size:13px;color:#a9f8de;white-space:nowrap}
+
+/* Concept A v7 — finish the detailed session and record-edit screens.
+   All selectors are isolated to the new Concept A dialog, not the old application panels. */
+#loCADialog .ca-detail-hero{
+ background:linear-gradient(146deg,#184043 0%,#122b3f 65%,#102235 100%);
+ border:1px solid #4b9588;border-radius:19px;padding:20px 16px 18px;
+ margin-bottom:13px;text-align:center;
+}
+#loCADialog .ca-detail-kicker{
+ display:block;text-transform:uppercase;color:#99f6d5;letter-spacing:.14em;
+ font-size:10px;font-weight:820;text-align:left;margin-bottom:18px;
+}
+#loCADialog .ca-detail-title{
+ color:#a0f6d5;font-size:clamp(22px,5vw,29px);line-height:1.21;
+ font-weight:850;letter-spacing:-.035em;overflow-wrap:anywhere;text-align:left;
+}
+#loCADialog .ca-detail-big-clock{
+ font-size:clamp(43px,11vw,70px);font-weight:850;color:#f8fffe;
+ letter-spacing:-.065em;line-height:1.25;font-variant-numeric:tabular-nums;
+ margin:17px 0 14px;white-space:nowrap;
+}
+#loCADialog .ca-detail-status{
+ display:inline-flex;align-items:center;gap:8px;color:#b2d9d3;
+ font-size:12px;font-weight:730;
+}
+#loCADialog .ca-detail-status i{
+ width:7px;height:7px;display:block;flex:none;border-radius:50%;background:#7af2bf;
+}
+#loCADialog .ca-detail-metrics{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:14px;
+}
+#loCADialog .ca-detail-metrics>div{
+ border:1px solid #35566a;background:#142d41;border-radius:14px;
+ text-align:center;min-width:0;padding:15px 9px;
+}
+#loCADialog .ca-detail-metrics span{display:block;color:#a9c7d0;font-size:11px;margin-bottom:9px}
+#loCADialog .ca-detail-metrics strong{
+ display:block;color:#b4fbe0;font-size:clamp(14px,4.5vw,21px);
+ text-transform:capitalize;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;
+}
+#loCADialog .ca-detail-information{
+ border:1px solid #365569;background:#102638;border-radius:14px;
+ padding:0 13px;margin-bottom:17px;
+}
+#loCADialog .ca-detail-line{
+ display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+ padding:13px 0;font-size:12px;
+}
+#loCADialog .ca-detail-line span{color:#a7c2cd;flex:none}
+#loCADialog .ca-detail-line strong{color:#e9f9fa;text-align:right;line-height:1.5;font-weight:630}
+#loCADialog .ca-detail-heading{
+ font-size:14px;font-weight:820;color:#f1fffc;margin:18px 0 11px;
+}
+#loCADialog .ca-detail-actions{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:13px;
+}
+#loCADialog .ca-detail-action{
+ border:1px solid #3c5d6f;border-radius:13px;min-height:64px;
+ background:#1a3546;color:#d7f0f1;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:5px;min-width:0;padding:8px 4px;
+}
+#loCADialog .ca-detail-action b{font-size:20px;line-height:1.1;font-weight:780;color:#a6f5db}
+#loCADialog .ca-detail-action span{font-size:11px;font-weight:760;white-space:nowrap}
+#loCADialog .ca-detail-action.ca-detail-action-mint{
+ background:#7aefb8;border-color:#7aefb8;color:#072b27;
+}
+#loCADialog .ca-detail-action.ca-detail-action-mint b{color:#07312b}
+#loCADialog .ca-detail-finish{
+ display:block;width:100%;min-height:51px;border-radius:14px;
+ background:#273d4c;color:#f0dce2;border:1px solid #775765;
+ font-size:14px;font-weight:800;
+}
+#loCADialog .ca-record-hero{
+ display:flex;align-items:center;gap:14px;padding:17px 15px;
+ background:linear-gradient(140deg,#193748,#13293e);border:1px solid #45716f;
+ border-radius:17px;margin-bottom:13px;
+}
+#loCADialog .ca-record-icon{
+ display:grid;place-items:center;flex:none;width:51px;height:51px;
+ border-radius:14px;background:#244f4c;border:1px solid #4a8675;
+ color:#9af4d2;font-size:27px;
+}
+#loCADialog .ca-record-hero h3{
+ margin:0 0 6px;color:#f0fffd;line-height:1.25;font-size:18px;
+ letter-spacing:-.02em;overflow-wrap:anywhere;
+}
+#loCADialog .ca-record-hero p{
+ margin:0;color:#bbd2d8;font-size:12px;line-height:1.5;
+}
+#loCADialog .ca-record-stats{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0 0 13px;
+}
+#loCADialog .ca-record-stats>div{
+ border:1px solid #375a6a;border-radius:14px;background:#112b3e;padding:18px 12px;
+ text-align:center;min-width:0;
+}
+#loCADialog .ca-record-stats small{display:block;color:#adc7ce;font-size:11px;margin-bottom:8px}
+#loCADialog .ca-record-stats strong{
+ display:block;color:#a9ffdc;font-size:clamp(17px,5vw,25px);
+ font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+#loCADialog .ca-record-detail{
+ display:flex;justify-content:space-between;align-items:flex-start;gap:11px;
+ padding:13px 3px;border-bottom:1px solid #324c60;font-size:13px;
+}
+#loCADialog .ca-record-detail span{color:#aec6cf;min-width:84px}
+#loCADialog .ca-record-detail strong{
+ color:#f1fcfa;text-align:right;overflow-wrap:anywhere;font-weight:660;
+ line-height:1.48;max-width:68%;
+}
+#loCADialog .ca-record-foot{margin-top:17px}
+#loCADialog .ca-record-foot .ca-sheet-primary,
+#loCADialog .ca-record-foot .ca-sheet-secondary{min-height:49px;margin-top:8px}
+#loCADialog .ca-edit-textarea{
+ min-height:110px;resize:vertical;padding:13px 12px;line-height:1.45;
+ font-family:inherit;
+}
+#loCADialog .ca-editor-footnote{
+ background:#132f40;border:1px solid #365469;border-radius:12px;
+ padding:11px 13px;margin-top:16px;color:#adcad1;font-size:11px;line-height:1.55;
+}
+#loCADialog .ca-inline-error:not(:empty){margin:10px 0;color:#ffbdc1;font-size:12px}
+#loCADialog button:focus-visible{outline:3px solid #93fbd4;outline-offset:2px}
+@media(max-width:440px){
+ #loCADialog .ca-detail-actions{gap:6px}
+ #loCADialog .ca-detail-action{min-height:61px}
+ #loCADialog .ca-detail-action span{font-size:10px}
+ #loCADialog .ca-detail-hero{padding:17px 13px}
+ #loCADialog .ca-record-hero{padding:14px 12px}
+}
