@@ -6,7 +6,7 @@ const assert=require('node:assert/strict');
  fs.mkdirSync('today-verification',{recursive:true});
  try{
  const html=fs.readFileSync('index.html','utf8');
- const css=[...html.matchAll(/<style[^>]*id="(?:today-a-plus-foundation|ap-verification-fixes)"[^>]*>[\s\S]*?<\/style>/g)].map(x=>x[0]);
+ const css=[...html.matchAll(/<style[^>]*id="(?:today-a-plus-foundation|ap-verification-fixes|ap-visual-refinements)"[^>]*>[\s\S]*?<\/style>/g)].map(x=>x[0]);
  const scripts=['today-a-plus-foundation-script','today-a-plus-visual-components'].map(id=>{const start=html.indexOf('<script id="'+id+'">');assert(start>=0,id);return html.slice(start,html.indexOf('</script>',start)+9)});
  const visualStyle=html.slice(html.lastIndexOf('<style>',html.indexOf(scripts[1])),html.indexOf(scripts[1]));
  for(const width of [360,393,412]){
