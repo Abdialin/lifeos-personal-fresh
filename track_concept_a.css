@@ -139,3 +139,18 @@ body.lo-ca-ready[data-lifeos-view="tracking"]::before{
 body.lo-ca-modal-open:not(.v137-modal-open):not(.lo-mobile-edit-open):not(.lo-mobile-detail-open) #lifeosNavigation{
  display:none!important;visibility:hidden!important;pointer-events:none!important
 }
+
+/* Android bottom-sheet and top-scroll clearance derived from real handset screenshots. */
+body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top:calc(48px + env(safe-area-inset-top,0px))}
+@media(max-width:779px){
+ #loCADialog{
+  padding:12px 10px max(88px,calc(18px + env(safe-area-inset-bottom,0px)))!important;
+  align-items:end!important
+ }
+ #loCADialog .ca-sheet{
+  max-height:calc(100dvh - max(150px,env(safe-area-inset-top,0px) + 125px))!important;
+  padding-bottom:22px!important;
+  border-radius:22px!important
+ }
+ body.lo-ca-modal-open #lifeosNavigation{visibility:hidden!important;pointer-events:none!important}
+}
