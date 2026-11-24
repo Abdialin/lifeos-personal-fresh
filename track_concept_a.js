@@ -11,7 +11,7 @@ const e=(tag,cls,textValue)=>{
  if(textValue!==undefined)node.textContent=textValue;
  return node;
 };
-const state={tab:'live',historyPeriod:'week',reviewPeriod:'week',query:'',history:[],lastHistory:0};
+const state={tab:'live',historyPeriod:'week',historyMonth:localMonthKey(new Date()),reviewPeriod:'week',query:'',history:[],lastHistory:0};
 let shell,dialog,dialogBody,previousFocus;
 function htmlEscape(value){return String(value==null?'':value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function durationMs(text){
@@ -247,39 +247,118 @@ function updateHistorySource(){
  const select=$('loHistoryPeriod');
  if(select&&select.value!=='all'){select.value='all';select.dispatchEvent(new Event('input',{bubbles:true}));select.dispatchEvent(new Event('change',{bubbles:true}))}
 }
+// Calendar months contain ISO weeks (Monday–Sunday), then individual days.
+// A day portion is assigned to the week of its own date; historical data is never altered.
+function localMonthKey(date){
+ return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0');
+}
+function monthTitle(monthKey){
+ const parts=/^(\d{4})-(\d{2})$/.exec(monthKey||'');
+ if(!parts)return 'Unknown month';
+ const date=new Date(Number(parts[1]),Number(parts[2])-1,1,12);
+ return date.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+}
+function isoWeekInfo(dateKey){
+ const parts=/^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey||'');
+ if(!parts)return {key:'undated',label:'Date needs review'};
+ const current=new Date(Date.UTC(Number(parts[1]),Number(parts[2])-1,Number(parts[3])));
+ if(current.getUTCFullYear()!==Number(parts[1])||current.getUTCMonth()!==Number(parts[2])-1||current.getUTCDate()!==Number(parts[3]))return {key:'undated',label:'Date needs review'};
+ const monday=new Date(current);
+ monday.setUTCDate(monday.getUTCDate()-(monday.getUTCDay()+6)%7);
+ const thursday=new Date(monday);thursday.setUTCDate(thursday.getUTCDate()+3);
+ const year=thursday.getUTCFullYear();
+ const first=new Date(Date.UTC(year,0,4));
+ first.setUTCDate(first.getUTCDate()-(first.getUTCDay()+6)%7);
+ const week=1+Math.round((monday-first)/604800000);
+ const sunday=new Date(monday);sunday.setUTCDate(sunday.getUTCDate()+6);
+ const fmt=date=>date.toLocaleDateString(undefined,{month:'short',day:'numeric',timeZone:'UTC'});
+ const key=year+'-W'+String(week).padStart(2,'0');
+ return {key,label:'Week '+week+' · '+fmt(monday)+' – '+fmt(sunday)};
+}
 function renderHistory(){
  if(!shell)return;
  if(state.tab==='history')updateHistorySource();
  const target=$('caHistory');if(!target)return;
  state.history=readHistory();
- const filtered=state.history.filter(x=>matchesPeriod(x,state.historyPeriod)&&((x.name+' '+x.time+' '+x.day).toLowerCase().includes(state.query.toLowerCase())));
- const signature=state.historyPeriod+'|'+state.query+'|'+filtered.map(x=>[x.id,x.dateKey,x.duration,x.time,x.name].join(':')).join('|');
+ const filtered=state.history.filter(x=>
+  (state.historyPeriod==='month'?x.dateKey?.slice(0,7)===state.historyMonth:matchesPeriod(x,state.historyPeriod))
+  &&(x.name+' '+x.time+' '+x.day).toLowerCase().includes(state.query.toLowerCase()));
+ const signature=state.historyPeriod+'|'+state.historyMonth+'|'+state.query+'|'+filtered.map(x=>[x.id,x.dateKey,x.duration,x.time,x.name].join(':')).join('|');
  if(target.dataset.caSignature===signature){state.lastHistory=Date.now();return}
- const byDay=new Map();
- for(const x of filtered){if(!byDay.has(x.day))byDay.set(x.day,[]);byDay.get(x.day).push(x)}
+ const openDays=new Set(Array.from(target.querySelectorAll('details.ca-day[open]')).map(el=>el.dataset.caDay));
+ const openWeeks=new Set(Array.from(target.querySelectorAll('details.ca-history-week[open]')).map(el=>el.dataset.caWeek));
+ const openMonths=new Set(Array.from(target.querySelectorAll('details.ca-history-month[open]')).map(el=>el.dataset.caMonth));
+ // Opening the monthly or all-history view starts with its most recent month visible.
+ const wasMonthView=target.dataset.caPeriod==='month'||target.dataset.caPeriod==='all';
+ const queryActive=Boolean(state.query.trim());
  let page='<div class="ca-section-head"><span class="ca-section-icon">▣</span><div><h2>Activity History</h2><p>Your recorded activities and sessions</p></div></div>';
  page+='<div class="ca-toolbar"><input id="caHistorySearch" class="ca-search" type="search" placeholder="⌕  Search activities..." aria-label="Search activity history" value="'+htmlEscape(state.query)+'"></div>';
  page+='<div class="ca-filter-row">';
- for(const [key,label] of [['today','Today'],['week','This Week'],['month','This Month'],['all','All']])
+ for(const [key,label] of [['today','Today'],['week','This Week'],['month','Month'],['all','All']])
   page+='<button type="button" class="ca-chip" data-ca-period="'+key+'" aria-pressed="'+(state.historyPeriod===key)+'">'+label+'</button>';
  page+='</div>';
+ if(state.historyPeriod==='month'){
+  const parts=state.historyMonth.split('-').map(Number);
+  const current=localMonthKey(new Date());
+  page+='<div class="ca-month-navigation"><button type="button" data-ca-month-move="-1" aria-label="Previous month">‹</button>';
+  page+='<strong>'+htmlEscape(monthTitle(state.historyMonth))+'</strong>';
+  page+='<button type="button" data-ca-month-move="1" '+(state.historyMonth>=current?'disabled':'')+' aria-label="Next month">›</button></div>';
+ }
  if(!filtered.length)page+='<div class="ca-panel ca-empty">No recorded sessions match these filters.</div>';
- // Preserve only days the user intentionally expanded when filters or records change.
- const openDays=new Set(Array.from(target.querySelectorAll('details.ca-day[open]')).map(el=>el.dataset.caDay));
- for(const [day,items] of byDay){
-  const total=items.reduce((n,x)=>n+durationMs(x.duration),0);
-  const dayKey=items[0]?.dateKey||day;
-  page+='<details class="ca-day" data-ca-day="'+htmlEscape(dayKey)+'" '+(openDays.has(dayKey)?'open':'')+'>';
-  page+='<summary class="ca-day-summary"><span class="ca-day-main"><strong>'+htmlEscape(day)+'</strong><small>'+items.length+' '+(items.length===1?'activity':'activities')+' · '+durationLabel(total)+'</small></span>';
-  page+='<span class="ca-day-toggle"><span class="ca-day-show">Show activities</span><span class="ca-day-hide">Hide activities</span><span class="ca-day-arrow" aria-hidden="true">⌄</span></span></summary>';
-  page+='<div class="ca-day-activities">';
+ // Each row is a recorded day portion. It belongs to exactly one day and week.
+ const dayGroups=new Map();
+ for(const rec of filtered){
+  const dayKey=rec.dateKey||rec.day;
+  if(!dayGroups.has(dayKey))dayGroups.set(dayKey,{key:dayKey,label:rec.day,items:[]});
+  dayGroups.get(dayKey).items.push(rec);
+ }
+ function total(items){return items.reduce((acc,r)=>acc+durationMs(r.duration),0)}
+ function dayMarkup(group){
+  const items=group.items;
+  const dayOpen=queryActive||openDays.has(group.key);
+  let out='<details class="ca-day" data-ca-day="'+htmlEscape(group.key)+'" '+(dayOpen?'open':'')+'>';
+  out+='<summary class="ca-day-summary"><span class="ca-day-main"><strong>'+htmlEscape(group.label)+'</strong><small>'+items.length+' '+(items.length===1?'activity':'activities')+' · '+durationLabel(total(items))+'</small></span>';
+  out+='<span class="ca-day-toggle"><span class="ca-day-show">Show activities</span><span class="ca-day-hide">Hide activities</span><span class="ca-day-arrow" aria-hidden="true">⌄</span></span></summary>';
+  out+='<div class="ca-day-activities">';
   for(const record of items){
-   page+='<button type="button" class="ca-history-item" data-ca-sheet="record" data-ca-id="'+htmlEscape(record.id)+'"><i class="ca-dot"></i><span class="ca-h-text"><strong>'+htmlEscape(record.name)+'</strong><small>'+htmlEscape(record.time)+'</small></span><span class="ca-h-duration">'+htmlEscape(record.duration)+'</span><span aria-hidden="true">⋮</span></button>';
+   out+='<button type="button" class="ca-history-item" data-ca-sheet="record" data-ca-id="'+htmlEscape(record.id)+'"><i class="ca-dot"></i><span class="ca-h-text"><strong>'+htmlEscape(record.name)+'</strong><small>'+htmlEscape(record.time)+'</small></span><span class="ca-h-duration">'+htmlEscape(record.duration)+'</span><span aria-hidden="true">⋮</span></button>';
   }
-  page+='</div></details>';
+  return out+'</div></details>';
+ }
+ if(state.historyPeriod==='month'||state.historyPeriod==='all'){
+  const months=new Map();
+  for(const day of dayGroups.values()){
+   const monthKey=/^\d{4}-\d{2}-\d{2}$/.test(day.key)?day.key.slice(0,7):'undated';
+   const week=isoWeekInfo(day.key);
+   if(!months.has(monthKey))months.set(monthKey,{key:monthKey,weeks:new Map(),items:[]});
+   const month=months.get(monthKey);month.items.push(...day.items);
+   if(!month.weeks.has(week.key))month.weeks.set(week.key,{...week,days:[],items:[]});
+   const weekGroup=month.weeks.get(week.key);
+   weekGroup.days.push(day);weekGroup.items.push(...day.items);
+  }
+  let monthIndex=0;
+  for(const month of months.values()){
+   const monthOpen=queryActive||state.historyPeriod==='month'||openMonths.has(month.key)||(!wasMonthView&&monthIndex===0);
+   page+='<details class="ca-history-month" data-ca-month="'+htmlEscape(month.key)+'" '+(monthOpen?'open':'')+'>';
+   page+='<summary class="ca-history-month-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(monthTitle(month.key))+'</strong><small>'+month.weeks.size+' '+(month.weeks.size===1?'week':'weeks')+' · '+month.items.length+' activities · '+durationLabel(total(month.items))+'</small></span><span class="ca-history-group-toggle">Show weeks <span aria-hidden="true">⌄</span></span></summary>';
+   page+='<div class="ca-history-month-body">';
+   for(const week of month.weeks.values()){
+    const weekKey=month.key+'|'+week.key;
+    page+='<details class="ca-history-week" data-ca-week="'+htmlEscape(weekKey)+'" '+(queryActive||openWeeks.has(weekKey)?'open':'')+'>';
+    page+='<summary class="ca-history-week-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(week.label)+'</strong><small>'+week.days.length+' '+(week.days.length===1?'day':'days')+' · '+week.items.length+' activities · '+durationLabel(total(week.items))+'</small></span>';
+    page+='<span class="ca-history-group-toggle">Show days <span aria-hidden="true">⌄</span></span></summary>';
+    page+='<div class="ca-history-week-body">';
+    for(const day of week.days)page+=dayMarkup(day);
+    page+='</div></details>';
+   }
+   page+='</div></details>';
+   monthIndex++;
+  }
+ }else{
+  for(const day of dayGroups.values())page+=dayMarkup(day);
  }
  page+='<button type="button" class="ca-compact-link" data-ca-sheet="past">＋ Log a past activity</button>';
- target.innerHTML=page;target.dataset.caSignature=signature;state.lastHistory=Date.now();
+ target.innerHTML=page;target.dataset.caSignature=signature;target.dataset.caPeriod=state.historyPeriod;state.lastHistory=Date.now();
 }
 function readOverview(){
  return {total:$('tracked')?.textContent.trim()||'—',unique:$('uniqueTime')?.textContent.trim()||'—',
@@ -575,7 +654,17 @@ function sheet(type,id){
 }
 function handleClick(event){
  const tab=event.target.closest('[data-ca-tab]');if(tab){chooseTab(tab.dataset.caTab);return}
- const period=event.target.closest('[data-ca-period]');if(period){state.historyPeriod=period.dataset.caPeriod;renderHistory();return}
+ const period=event.target.closest('[data-ca-period]');if(period){
+  state.historyPeriod=period.dataset.caPeriod;renderHistory();return
+ }
+ const monthMove=event.target.closest('[data-ca-month-move]');
+ if(monthMove&&!monthMove.disabled){
+  const parts=state.historyMonth.split('-').map(Number);
+  const date=new Date(parts[0],parts[1]-1+Number(monthMove.dataset.caMonthMove),1,12);
+  const next=localMonthKey(date);
+  if(next<=localMonthKey(new Date())){state.historyMonth=next;renderHistory()}
+  return
+ }
  const review=event.target.closest('[data-ca-review-period]');if(review){state.reviewPeriod=review.dataset.caReviewPeriod;renderReview();return}
  const act=event.target.closest('[data-ca-act]');if(act){
   if(act.dataset.caAct==='break'){sheet('break',act.dataset.caId);return}
