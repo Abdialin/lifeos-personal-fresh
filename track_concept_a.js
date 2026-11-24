@@ -368,6 +368,7 @@ function sheet(type,id){
    +'<div class="ca-record-detail"><span>Date</span><strong>'+htmlEscape(rec.day)+'</strong></div>'
    +'<div class="ca-record-detail"><span>Time and source</span><strong>'+htmlEscape(rec.time)+'</strong></div>';
   content+='<div class="ca-record-foot"><button type="button" class="ca-sheet-primary" data-ca-edit-record="'+htmlEscape(rec.id)+'">✎ &nbsp; Edit activity</button>'
+   +'<button type="button" class="ca-sheet-secondary ca-record-delete" data-ca-delete-record="'+htmlEscape(rec.id)+'">Delete activity</button>'
    +'<button type="button" class="ca-sheet-secondary" data-ca-close>Close details</button></div>';
   openDialog('Activity Details','Your saved activity record',content);return;
  }
@@ -476,6 +477,8 @@ function handleClick(event){
 }
 function handleDialogClick(event){
  if(event.target.closest('[data-ca-close]')){closeDialog();return}
+ const sheetBack=event.target.closest('[data-ca-sheet]');
+ if(sheetBack){sheet(sheetBack.dataset.caSheet,sheetBack.dataset.caId);return}
  const quick=event.target.closest('[data-ca-quick]');
  if(quick){const original=dialog._choices?.[Number(quick.dataset.caQuick)];if(original){original.click();closeDialog();setTimeout(refresh,100)}return}
  if(event.target.closest('[data-ca-custom-start]')){
@@ -489,6 +492,27 @@ function handleDialogClick(event){
  if(act){const ok=originalAction(act.dataset.caId,act.dataset.caAct);if(ok){closeDialog();setTimeout(refresh,100)}return}
  const edit=event.target.closest('[data-ca-history-act]');
  if(edit){const ok=originalHistory(edit.dataset.caId,edit.dataset.caHistoryAct);if(ok)closeDialog();return}
+ const deleteRecord=event.target.closest('[data-ca-delete-record]');
+ if(deleteRecord){
+  const rec=readHistory().find(x=>x.id===deleteRecord.dataset.caDeleteRecord);
+  if(!rec)return;
+  const prompt='<div class="ca-record-hero"><div class="ca-record-icon">!</div><div><h3>Delete this activity?</h3><p>'+htmlEscape(rec.name)+' · '+htmlEscape(rec.day)+'</p></div></div>'
+   +'<div class="ca-editor-footnote">Deleting this saved record affects its history and analytics. You will be asked to confirm before any deletion.</div>'
+   +'<button class="ca-sheet-secondary ca-record-delete" data-ca-confirm-delete="'+htmlEscape(rec.id)+'">Continue to deletion confirmation</button>'
+   +'<button class="ca-sheet-primary" data-ca-sheet="record" data-ca-id="'+htmlEscape(rec.id)+'">Keep activity</button>';
+  openDialog('Delete Activity','Review before making permanent changes',prompt);return;
+ }
+ const confirmedDelete=event.target.closest('[data-ca-confirm-delete]');
+ if(confirmedDelete){
+  const id=confirmedDelete.dataset.caConfirmDelete;
+  if(originalHistory(id,'edit')){
+   const native=$('editModal');if(native)native.hidden=true;
+   closeDialog();
+   // Original LifeOS deletion continues to require its existing explicit consent.
+   $('deleteEdit')?.click();
+  }
+  return;
+ }
  const editRecord=event.target.closest('[data-ca-edit-record]');
  if(editRecord){
   const id=editRecord.dataset.caEditRecord;
