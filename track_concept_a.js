@@ -305,6 +305,7 @@ function renderHistory(){
   page+='<strong>'+htmlEscape(monthTitle(state.historyMonth))+'</strong>';
   page+='<button type="button" data-ca-month-move="1" '+(state.historyMonth>=current?'disabled':'')+' aria-label="Next month">›</button></div>';
  }
+ page+='<p class="ca-history-time-note">Time totals are summed activity time. Simultaneous activities can overlap, so these totals may exceed the hours on a clock.</p>';
  if(!filtered.length)page+='<div class="ca-panel ca-empty">No recorded sessions match these filters.</div>';
  // Each row is a recorded day portion. It belongs to exactly one day and week.
  const dayGroups=new Map();
@@ -318,7 +319,7 @@ function renderHistory(){
   const items=group.items;
   const dayOpen=queryActive||openDays.has(group.key);
   let out='<details class="ca-day" data-ca-day="'+htmlEscape(group.key)+'" '+(dayOpen?'open':'')+'>';
-  out+='<summary class="ca-day-summary"><span class="ca-day-main"><strong>'+htmlEscape(group.label)+'</strong><small>'+items.length+' '+(items.length===1?'activity':'activities')+' · '+durationLabel(total(items))+'</small></span>';
+  out+='<summary class="ca-day-summary"><span class="ca-day-main"><strong>'+htmlEscape(group.label)+'</strong><small>'+items.length+' '+(items.length===1?'activity':'activities')+' · '+' summed '+durationLabel(total(items))+'</small></span>';
   out+='<span class="ca-day-toggle"><span class="ca-day-show">Show activities</span><span class="ca-day-hide">Hide activities</span><span class="ca-day-arrow" aria-hidden="true">⌄</span></span></summary>';
   out+='<div class="ca-day-activities">';
   for(const record of items){
@@ -341,12 +342,12 @@ function renderHistory(){
   for(const month of months.values()){
    const monthOpen=queryActive||state.historyPeriod==='month'||openMonths.has(month.key)||(!wasMonthView&&monthIndex===0);
    page+='<details class="ca-history-month" data-ca-month="'+htmlEscape(month.key)+'" '+(monthOpen?'open':'')+'>';
-   page+='<summary class="ca-history-month-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(monthTitle(month.key))+'</strong><small>'+month.weeks.size+' '+(month.weeks.size===1?'week':'weeks')+' · '+month.items.length+' activities · '+durationLabel(total(month.items))+'</small></span><span class="ca-history-group-toggle"><span class="ca-history-group-show">Show weeks</span><span class="ca-history-group-hide">Hide weeks</span><span class="ca-history-group-arrow" aria-hidden="true">⌄</span></span></summary>';
+   page+='<summary class="ca-history-month-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(monthTitle(month.key))+'</strong><small>'+month.weeks.size+' '+(month.weeks.size===1?'week':'weeks')+' · '+month.items.length+' activities · '+' summed '+durationLabel(total(month.items))+'</small></span><span class="ca-history-group-toggle"><span class="ca-history-group-show">Show weeks</span><span class="ca-history-group-hide">Hide weeks</span><span class="ca-history-group-arrow" aria-hidden="true">⌄</span></span></summary>';
    page+='<div class="ca-history-month-body">';
    for(const week of month.weeks.values()){
     const weekKey=month.key+'|'+week.key;
     page+='<details class="ca-history-week" data-ca-week="'+htmlEscape(weekKey)+'" '+(queryActive||openWeeks.has(weekKey)?'open':'')+'>';
-    page+='<summary class="ca-history-week-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(week.label)+'</strong><small>'+week.days.length+' '+(week.days.length===1?'day':'days')+' · '+week.items.length+' activities · '+durationLabel(total(week.items))+'</small></span>';
+    page+='<summary class="ca-history-week-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(week.label)+'</strong><small>'+week.days.length+' '+(week.days.length===1?'day':'days')+' · '+week.items.length+' activities · '+' summed '+durationLabel(total(week.items))+'</small></span>';
     page+='<span class="ca-history-group-toggle"><span class="ca-history-group-show">Show days</span><span class="ca-history-group-hide">Hide days</span><span class="ca-history-group-arrow" aria-hidden="true">⌄</span></span></summary>';
     page+='<div class="ca-history-week-body">';
     for(const day of week.days)page+=dayMarkup(day);
