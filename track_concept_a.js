@@ -460,6 +460,17 @@ function focusClock(ms){
  const sec=Math.floor(Math.max(0,ms)/1000);
  return String(Math.floor(sec/3600)).padStart(2,'0')+':'+String(Math.floor(sec/60)%60).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
 }
+function focusDeviceControls(){
+ const status=typeof window.Notification==='function'&&window.Notification.permission==='granted'?'Permission granted':'Manage notification permission';
+ const native=Boolean(window.LifeOSNative&&typeof window.LifeOSNative.postMessage==='function');
+ return '<section class="ca-focus-device-panel" aria-label="Focus notifications and Do Not Disturb">'
+  +'<div class="ca-focus-device-row"><span class="ca-focus-device-icon" aria-hidden="true">♧</span>'
+  +'<div class="ca-focus-device-copy"><strong>Notifications</strong><small>'+status+' · Android may restrict background delivery</small></div>'
+  +'<div class="ca-focus-device-buttons"><button type="button" data-ca-focus-notifications>Allow</button><button type="button" data-ca-focus-notification-settings>'+ (native?'Settings':'Help')+'</button></div></div>'
+  +'<details class="ca-focus-dnd"><summary><span class="ca-focus-device-icon" aria-hidden="true">☾</span><span class="ca-focus-device-copy"><strong>Do Not Disturb</strong><small>Controlled by Android, not by LifeOS</small></span><span class="ca-focus-device-link">How to enable ⌄</span></summary>'
+  +'<p>On Android, swipe down twice from the top to open Quick Settings. Tap <strong>Do Not Disturb</strong> to turn it on or off. Touch and hold the tile to choose which calls and notifications may interrupt you. LifeOS does not change this setting automatically.</p></details>'
+  +'</section>';
+}
 function showRealFocus(){
  const session=readRealFocusState();
  if(!session)return;
@@ -470,6 +481,7 @@ function showRealFocus(){
   +'<div><b id="caFocusLiveStatus">'+htmlEscape(session.mode)+'</b><span>Current status</span></div></div>'
   +'<div class="ca-preview-actions ca-focus-live-actions"><button type="button" class="ca-sheet-secondary" data-ca-focus-control="pause" id="caFocusPause">Ⅱ Pause</button>'
   +'<button type="button" class="ca-sheet-secondary" data-ca-focus-control="break" id="caFocusBreak">☕ Break</button></div>'
+  +focusDeviceControls()
   +'<button type="button" class="ca-sheet-primary" data-ca-close>Minimize focus</button>'
   +'<button type="button" class="ca-sheet-secondary ca-focus-end" data-ca-focus-control="end">■ End focus session</button>'
   +'<p class="ca-feature-footnote">This is your real LifeOS Focus session. Your tracked activity timers run independently. Alerts depend on Android permissions.</p>';
@@ -607,9 +619,8 @@ function sheet(type,id){
   for(const row of choices)content+='<option value="'+htmlEscape(row.id)+'">'+htmlEscape(row.name)+'</option>';
   content+='</select><label class="ca-form-label" for="caFocusDuration">Focus duration</label>';
   content+='<select id="caFocusDuration" class="ca-input"><option value="25">25 minutes</option><option value="45" selected>45 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option></select>';
-  content+='<div class="ca-focus-settings"><div class="ca-focus-setting"><span>♫</span><div><b>Sound and vibration</b><small>Controlled by existing LifeOS alert settings and device permissions</small></div></div>';
-  content+='<div class="ca-focus-setting"><span>♧</span><div><b>Notifications</b><small>Android may restrict background alerts</small></div><button type="button" class="ca-feature-tag ca-focus-notify" data-ca-focus-notifications>Allow</button></div>';
-  content+='<div class="ca-focus-setting"><span>☾</span><div><b>Do Not Disturb</b><small>Managed separately in Android settings</small></div><span class="ca-feature-tag">System</span></div></div>';
+  content+='<div class="ca-focus-settings"><div class="ca-focus-setting"><span>♫</span><div><b>Sound and vibration</b><small>Uses existing LifeOS alert settings and Android permissions</small></div></div></div>';
+  content+=focusDeviceControls();
   content+='<p id="caFocusError" role="alert" class="ca-inline-error"></p><button class="ca-sheet-primary" data-ca-focus-start>▷ &nbsp; Start Focus</button>';
   content+='<p class="ca-feature-footnote">Runs the real LifeOS focus timer. Your activity timers continue separately. Sound, vibration and background notifications depend on device support.</p>';
   openDialog('Focus Mode','Minimize distractions and stay on track.',content);return;
@@ -801,8 +812,22 @@ function handleDialogClick(event){
  }
  if(event.target.closest('[data-ca-focus-notifications]')){
   const native=$('lo207-notify-permission');
-  if(native)native.click();
-  else {const msg=$('caFocusError');if(msg)msg.textContent='Notification permission controls are unavailable on this device.'}
+  if(native){native.click();return}
+  const msg=$('caFocusError');
+  if(msg)msg.textContent='Notification permission controls are unavailable on this device.';
+  return;
+ }
+ if(event.target.closest('[data-ca-focus-notification-settings]')){
+  const native=$('lo224-native-notifications');
+  if(native&&window.LifeOSNative&&typeof window.LifeOSNative.postMessage==='function'){
+   native.click();
+  }else{
+   const info=document.createElement('p');
+   info.className='ca-focus-settings-help';
+   info.textContent='Open Android Settings → Apps → LifeOS Beta → Notifications to review notification permissions. Browser notification permissions are managed in your browser settings.';
+   const panel=dialogBody.querySelector('.ca-focus-device-panel');
+   if(panel&&!panel.querySelector('.ca-focus-settings-help'))panel.append(info);
+  }
   return;
  }
  if(event.target.closest('[data-ca-focus-start]')){
