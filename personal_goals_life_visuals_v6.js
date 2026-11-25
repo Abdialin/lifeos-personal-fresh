@@ -85,8 +85,9 @@ function renderLife(ws){
  '<div class="lo-life-rhythm-detail" role="status" aria-live="polite"><strong>'+escapeHtml(selected.dateLabel)+' · '+selected.entries.length+' entries</strong>'+
  (selected.entries.length?'<p>'+escapeHtml([...new Set(selected.entries.map(x=>String(x.category||'Other')))].join(' · '))+'</p>':'<p>No personal entries recorded on this date. Missing logs are unknown.</p>')+'</div>';
 
+ const quick='<div class="lo-goal-card"><h3>Quick logging</h3><div class="lo-kpi-row lo-kpi-actions" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">'+[['fitness','fitnessForm','Log workout'],['nutrition','mealForm','Log meal'],['nutrition','lo25WaterForm','Log water'],['routines','personalLogForm','Log routine']].map(([key,id,label])=>'<button type="button" data-lo-life-jump="'+key+'" data-lo-life-target="'+id+'">'+label+'</button>').join('')+'</div></div>';
  target.innerHTML='<div class="lo-visual-head"><div><span class="lo-eyebrow">Personal wellbeing</span><h2>My Life overview</h2><p>Last seven calendar days</p></div><span class="lo-soft-chip">Recorded evidence</span></div>'+
- overviewCards+'<div class="lo-kpi-row lo-kpi-actions"><button type="button" data-lo-life-jump="routines" aria-label="Open your routine records"><span>Personal logs</span><strong>'+logs.length+'</strong><small>View routines ↗</small></button><div><span>Days with logs</span><strong>'+uniqueDays+' <small>/ 7</small></strong></div><div><span>'+sleepLabel+'</span><strong>'+avg(measuredSleep)+'</strong></div></div>'+
+ overviewCards+quick+'<div class="lo-kpi-row lo-kpi-actions"><button type="button" data-lo-life-jump="routines" aria-label="Open your routine records"><span>Personal logs</span><strong>'+logs.length+'</strong><small>View routines ↗</small></button><div><span>Days with logs</span><strong>'+uniqueDays+' <small>/ 7</small></strong></div><div><span>'+sleepLabel+'</span><strong>'+avg(measuredSleep)+'</strong></div></div>'+
  '<div class="lo-goal-card">'+rhythm+'<h3>Recorded routines by category</h3>'+(bar||'<p class="lo-no-data">No personal routine logs in the last seven dates. Add an entry below to populate this view.</p>')+
  '<p class="lo-small-note">Bars count log entries, not minutes or consistency. '+(estimatedSleep.length?'Estimated sleep average: '+avg(estimatedSleep)+'. ':'')+'Missing logs are unknown; this is not a recovery score.</p></div>';
 }
@@ -124,7 +125,7 @@ function init(){
   if(life){
    const tab=document.querySelector('[data-lo-life-section="'+life.dataset.loLifeJump+'"]');
    tab?.click();
-   tab?.scrollIntoView({behavior:'smooth',block:'center'});
+   if(life.dataset.loLifeTarget){setTimeout(()=>{window.LifeOSLifeNavigationV76?.choose(life.dataset.loLifeJump);window.LifeOSMyLifeV190?.openTarget(life.dataset.loLifeTarget)},180)}else tab?.scrollIntoView({behavior:'smooth',block:'center'});
   }
  });
  document.addEventListener('click',event=>{if(event.target.closest('[data-lo-life-section]'))setTimeout(refresh,80)});
