@@ -67,6 +67,9 @@ function renderLife(ws){
  const avg=arr=>arr.length?short(arr.reduce((sum,x)=>sum+x.minutes,0)/arr.length/60)+' h':'—';
  const uniqueDays=new Set(logs.map(x=>x.date)).size;
  const sleepLabel='Measured sleep average';
+ const recent=items=>(items||[]).filter(x=>x&&x.date>=sevenStart&&x.date<=sevenEnd);
+ const cards=[['fitness','Fitness & body',recent(ws.workouts).length,'Workout records'],['nutrition','Nutrition & meals',recent(ws.meals).length,'Meal records'],['routines','Routines & habits',logs.length,'Routine records'],['friends','Friends & challenges','↗','Manage challenges']];
+ const overviewCards='<div class="lo-kpi-row lo-kpi-actions" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">'+cards.map(([key,label,count,unit])=>'<button type="button" data-lo-life-jump="'+key+'"><span>'+label+'</span><strong>'+count+'</strong><small>'+unit+'</small></button>').join('')+'</div>';
  const today=new Date(),daily=[];
  for(let daysAgo=6;daysAgo>=0;daysAgo--){
   const date=new Date(today.getFullYear(),today.getMonth(),today.getDate()-daysAgo);
@@ -82,8 +85,8 @@ function renderLife(ws){
  '<div class="lo-life-rhythm-detail" role="status" aria-live="polite"><strong>'+escapeHtml(selected.dateLabel)+' · '+selected.entries.length+' entries</strong>'+
  (selected.entries.length?'<p>'+escapeHtml([...new Set(selected.entries.map(x=>String(x.category||'Other')))].join(' · '))+'</p>':'<p>No personal entries recorded on this date. Missing logs are unknown.</p>')+'</div>';
 
- target.innerHTML='<div class="lo-visual-head"><div><span class="lo-eyebrow">Your routines</span><h2>My Life overview</h2><p>Last seven calendar dates · Personal logs, separate from tracked sessions</p></div><span class="lo-soft-chip">Recorded evidence</span></div>'+
- '<div class="lo-kpi-row lo-kpi-actions"><button type="button" data-lo-life-jump="routines" aria-label="Open your routine records"><span>Personal logs</span><strong>'+logs.length+'</strong><small>View routines ↗</small></button><div><span>Days with logs</span><strong>'+uniqueDays+' <small>/ 7</small></strong></div><div><span>'+sleepLabel+'</span><strong>'+avg(measuredSleep)+'</strong></div></div>'+
+ target.innerHTML='<div class="lo-visual-head"><div><span class="lo-eyebrow">Personal wellbeing</span><h2>My Life overview</h2><p>Last seven calendar days</p></div><span class="lo-soft-chip">Recorded evidence</span></div>'+
+ overviewCards+'<div class="lo-kpi-row lo-kpi-actions"><button type="button" data-lo-life-jump="routines" aria-label="Open your routine records"><span>Personal logs</span><strong>'+logs.length+'</strong><small>View routines ↗</small></button><div><span>Days with logs</span><strong>'+uniqueDays+' <small>/ 7</small></strong></div><div><span>'+sleepLabel+'</span><strong>'+avg(measuredSleep)+'</strong></div></div>'+
  '<div class="lo-goal-card">'+rhythm+'<h3>Recorded routines by category</h3>'+(bar||'<p class="lo-no-data">No personal routine logs in the last seven dates. Add an entry below to populate this view.</p>')+
  '<p class="lo-small-note">Bars count log entries, not minutes or consistency. '+(estimatedSleep.length?'Estimated sleep average: '+avg(estimatedSleep)+'. ':'')+'Missing logs are unknown; this is not a recovery score.</p></div>';
 }
@@ -99,7 +102,7 @@ function init(){
   const view=document.body.dataset.lifeosView;
   for(const id of ['loGoalsVisual','loLifeVisual']){
    const card=byId(id);if(!card)continue;
-   card.hidden=card.dataset.view!==view||(id==='loLifeVisual'&&(document.body.dataset.loLifeSection||'routines')!=='routines');
+   card.hidden=card.dataset.view!==view||(id==='loLifeVisual'&&(document.body.dataset.loLifeSection||'overview')!=='overview');
   }
   if(view!=='goals'&&view!=='life')return;
   const ws=read();if(!ws)return;
@@ -124,6 +127,7 @@ function init(){
    tab?.scrollIntoView({behavior:'smooth',block:'center'});
   }
  });
+ document.addEventListener('click',event=>{if(event.target.closest('[data-lo-life-section]'))setTimeout(refresh,80)});
  nav.addEventListener('click',()=>setTimeout(refresh,0));window.addEventListener('hashchange',()=>setTimeout(refresh,0));
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
  window.addEventListener('focus',refresh);
