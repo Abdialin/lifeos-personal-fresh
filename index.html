@@ -5010,7 +5010,7 @@ function init(){
  let moving=false;
  function consolidate(){
   if(moving)return;moving=true;
-  try{for(const node of [...panel.children]){if(!preserve.has(node)&&node!==disclosure)content.append(node)}}
+  try{for(const node of [...panel.children]){if(!preserve.has(node)&&node!==disclosure&&node!==content&&!node.contains(content)&&panel.contains(content))content.append(node)}}
   finally{moving=false}
  }
  consolidate();
