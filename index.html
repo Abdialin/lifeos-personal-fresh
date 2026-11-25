@@ -1308,6 +1308,17 @@ $('pastForm').reset();render()}
 function analyticsIntervals(start,end,at=now()){if(at<=start)return [];const m=window.LifeOSUnifiedAnalytics.summarize({sessions:data.sessions},{start,end:Math.min(end,at),now:at});return m.recorded.map(x=>({a:x.start,b:x.end,name:x.name,id:x.id,precision:data.sessions.find(s=>s.id===x.id)?.precision||'unknown'}))}
 function analyticsMetrics(intervals){const total=intervals.reduce((n,x)=>n+x.b-x.a,0);const unique=window.LifeOSUnifiedAnalytics.unionDuration(intervals.map(x=>({start:x.a,end:x.b})));return{total,unique,overlap:Math.max(0,total-unique)}}
 /* Today A+ functional foundation: read-only shared day model. */
+window.lifeosSeedTodayPreview=function(){
+ if(location.hostname!=='lifeos-today-aplus-preview.onrender.com')return false;
+ if((data.sessions||[]).length||(data.schedule||[]).length||(data.todos||[]).length)return false;
+ const t=Date.now(),mid=new Date(t);mid.setHours(0,0,0,0);const elapsed=t-+mid;if(elapsed<600000)return false;
+ const f=x=>Math.round(+mid+elapsed*x),id=()=>uid();
+ return trackingCommit(()=>{data.sessions.push(...[['Sleep',0,.40],['Prayer',.45,.52],['University',.57,.76],['App development',.65,.82],['Eating',.85,.91]].map(([name,a,b])=>({id:id(),name,status:'finished',createdAt:f(a),startAt:f(a),endAt:f(b),segments:[{start:f(a),end:f(b)}],notes:'Synthetic Preview test record',precision:'measured'})));
+ const end=new Date(mid);end.setDate(end.getDate()+1);const remaining=+end-t;
+ data.schedule.push(...[['Arabic practice',.15,.23],['Gym',.45,.53]].map(([name,a,b])=>({id:id(),name,startAt:Math.round(t+remaining*a),endAt:Math.round(t+remaining*b),createdAt:t,status:'planned',sessionId:null,reminder:false,notes:'Synthetic Preview test record'})));
+ const yesterday=new Date(mid);yesterday.setDate(yesterday.getDate()-1);const date=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+ data.todos.push({id:id(),name:'Complete assignment preparation (test)',due:date(yesterday),priority:'high',done:false,createdAt:t},{id:id(),name:'Review lecture notes (test)',due:date(end),priority:'medium',done:false,createdAt:t});});
+};
 window.lifeosTodayAPlusSnapshot=function(at=Date.now()){
  const day=new Date(at);day.setHours(0,0,0,0);const start=day.getTime(),end=new Date(day.getFullYear(),day.getMonth(),day.getDate()+1).getTime();
  const recorded=analyticsIntervals(start,end,at).filter(x=>Number.isFinite(x.a)&&Number.isFinite(x.b)&&x.b>x.a).sort((a,b)=>a.a-b.a);
@@ -5674,7 +5685,7 @@ const pct=(a,b)=>b>0?Math.round(a/b*100):0;
 function render(force=false){
  if(!document.body.classList.contains('ap-today'))return;
  let d;try{d=window.lifeosTodayAPlusSnapshot()}catch(e){note.hidden=false;note.textContent='Live data unavailable. No records changed.';return}
- snapshot=d;note.hidden=true;root.dataset.apDataMode='live';
+ snapshot=d;note.hidden=location.hostname!=='lifeos-today-aplus-preview.onrender.com';if(!note.hidden){note.textContent='Isolated Preview · test records only';if(!d.recorded.length&&!d.active.length&&!d.plans.length&&!d.todos.length){const b=document.createElement('button');b.textContent='Load synthetic test records';b.onclick=()=>{if(confirm('Add synthetic records to this empty Preview?')&&window.lifeosSeedTodayPreview())render(true)};note.append(' ',b)}}root.dataset.apDataMode='live';
  document.getElementById('apDate').textContent=new Date(d.at).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});document.getElementById('apClock').textContent=clock(d.at);
  const m=d.metrics,p=pct(m.unique,m.dayLength),q=pct(m.unique,m.elapsed),elapsed=pct(m.elapsed,m.dayLength),active=d.active,first=active[0],future=d.plans.filter(x=>x.startAt>d.at&&x.status==='planned'&&!x.sessionId),next=future[0],tasks=d.todos.filter(x=>!x.done).sort((a,b)=>(b.priority==='high')-(a.priority==='high')||String(a.due||'9999').localeCompare(String(b.due||'9999'))),longest=d.gaps.reduce((a,b)=>!a||b.b-b.a>a.b-a.a?b:a,null),long=d.gaps.filter(g=>g.b-g.a>=15*60000),earlier=d.plans.filter(x=>x.endAt<=d.at&&x.endAt>d.start&&!['completed','finished','cancelled'].includes(x.status)&&!x.sessionId);
  const sig=JSON.stringify([d.recorded.map(x=>[x.id,x.a,Math.floor(x.b/60000)]),d.plans,d.todos,active.map(x=>[x.id,x.status]),Math.floor(d.at/60000),period,part,day,selected,free]);
