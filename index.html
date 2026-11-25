@@ -5636,4 +5636,8 @@ const theme=root.querySelector('.ap-header button');if(theme){theme.textContent=
 const measure=()=>{const h=nav.getBoundingClientRect().height;if(h>0)document.documentElement.style.setProperty('--ap-nav-measured',Math.ceil(h)+'px')};
 if(window.ResizeObserver)new ResizeObserver(measure).observe(nav);window.addEventListener('resize',measure);measure();root.dataset.apDataMode='illustrative';
 })();
-</script></body></html>
+</script><style id="ap-final-clearance">
+@media(max-width:750px){body.ap-today{padding-bottom:0!important}body.ap-today[data-lifeos-view="dashboard"] .wrap,body.ap-today .wrap{padding-bottom:calc(var(--ap-nav-measured,70px) + 20px)!important;margin-bottom:0!important}body.ap-today #todayAPlus{margin-bottom:0!important;padding-bottom:0!important}}
+body.ap-today .ap-compact-brand button{display:grid;place-items:center;background:#142b38;color:#76e4d0;border:1px solid #304155;border-radius:12px;font-size:20px;box-shadow:none}
+body.ap-today:has(#todayAPlus.ap-light) .ap-compact-brand button{background:#e0f3ef;color:#087f73;border-color:#a4cfc6}
+</style></body></html>
