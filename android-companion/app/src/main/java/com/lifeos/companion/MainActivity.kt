@@ -57,6 +57,7 @@ class MainActivity : Activity() {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 220)
         }
         web = WebView(this)
+        window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         applyPreviewBars(false)
         // Android 15+ may draw WebView content beneath system bars. Reserve
         // only native system-bar insets; do not change persisted web layout.
@@ -66,9 +67,11 @@ class MainActivity : Activity() {
                 val bars = insets.getInsets(
                     WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars()
                 )
+                val ime = insets.getInsets(WindowInsets.Type.ime())
+                val bottom = maxOf(bars.bottom, ime.bottom)
                 val lp = view.layoutParams as? android.widget.FrameLayout.LayoutParams
-                if (lp != null && (lp.topMargin != bars.top || lp.bottomMargin != bars.bottom || lp.leftMargin != bars.left || lp.rightMargin != bars.right)) {
-                    lp.setMargins(bars.left, bars.top, bars.right, bars.bottom)
+                if (lp != null && (lp.topMargin != bars.top || lp.bottomMargin != bottom || lp.leftMargin != bars.left || lp.rightMargin != bars.right)) {
+                    lp.setMargins(bars.left, bars.top, bars.right, bottom)
                     view.layoutParams = lp
                 }
                 WindowInsets.CONSUMED
@@ -85,7 +88,7 @@ class MainActivity : Activity() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
                 if (trustedPage(url)) {
-                    view.evaluateJavascript("window.LifeOSNativeBackupV234=true;window.dispatchEvent(new Event(\'lifeos-native-ready\'));(function(){const sync=()=>{const root=document.getElementById('todayAPlus');window.LifeOSNative?.postMessage(JSON.stringify({kind:'preview-theme',light:!!root?.classList.contains('ap-light')}))};const root=document.getElementById('todayAPlus');if(root)new MutationObserver(sync).observe(root,{attributes:true,attributeFilter:['class']});sync()})()", null)
+                    view.evaluateJavascript("window.LifeOSNativeBackupV234=true;window.dispatchEvent(new Event(\'lifeos-native-ready\'));(function(){const sync=()=>{const root=document.getElementById('todayAPlus');window.LifeOSNative?.postMessage(JSON.stringify({kind:'preview-theme',light:!!root?.classList.contains('ap-light')}))};const root=document.getElementById('todayAPlus');new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class'],subtree:true});sync()})()", null)
                 }
                 reconcileNativeSnooze()
                 view.postDelayed({ reconcileNativeSnooze() }, 1400L)
@@ -172,7 +175,7 @@ class MainActivity : Activity() {
         setContentView(web)
         if (Build.VERSION.SDK_INT >= 30) web.requestApplyInsets()
         receiveNativeTimerAction(intent)
-        web.loadUrl("$lifeOsOrigin/?v=246#dashboard")
+        web.loadUrl("$lifeOsOrigin/?v=248#dashboard")
         if (!getPreferences(Context.MODE_PRIVATE).getBoolean("native_permissions_explained", false)) {
             getPreferences(Context.MODE_PRIVATE).edit()
                 .putBoolean("native_permissions_explained", true).apply()
@@ -262,6 +265,7 @@ class MainActivity : Activity() {
     private fun applyPreviewBars(light: Boolean) {
         val color = android.graphics.Color.parseColor(if (light) "#F1F5F9" else "#101B2E")
         window.decorView.setBackgroundColor(color)
+        if (::web.isInitialized) (web.parent as? android.view.View)?.setBackgroundColor(color)
         window.statusBarColor = color
         window.navigationBarColor = color
         if (Build.VERSION.SDK_INT >= 29) {
