@@ -1,4 +1,4 @@
-name: LifeOS Android beta APK verification (V244)
+name: LifeOS Android beta APK verification (V245)
 on:
   push:
     branches: [today-a-plus-rebuild]
@@ -66,7 +66,7 @@ jobs:
           test "${{ steps.signing.outputs.ready }}" = "true"
           # Build a separately identified, persistently signed Preview.
           sed -i 's/applicationId = "com.lifeos.companion.beta"/applicationId = "com.lifeos.companion.beta.preview.stable"/' app/build.gradle.kts
-          gradle :app:assembleRelease --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v244-build.log
+          gradle :app:assembleRelease --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v245-build.log
 
       - name: Verify signed Preview APK and independent package ID
         shell: bash
@@ -75,11 +75,11 @@ jobs:
           apk="android-companion/app/build/outputs/apk/release/app-release.apk"
           test -s "$apk"
           unzip -t "$apk" | tail -3
-          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$apk" | tee android-v244-dev-package.txt
-          grep -q "package: name='com.lifeos.companion.beta.preview.stable'" android-v244-dev-package.txt
-          grep -q "sdkVersion:'26'" android-v244-dev-package.txt
-          grep -q "targetSdkVersion:'35'" android-v244-dev-package.txt
-          "$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner" verify --print-certs "$apk" > android-v244-dev-cert.txt
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$apk" | tee android-v245-dev-package.txt
+          grep -q "package: name='com.lifeos.companion.beta.preview.stable'" android-v245-dev-package.txt
+          grep -q "sdkVersion:'26'" android-v245-dev-package.txt
+          grep -q "targetSdkVersion:'35'" android-v245-dev-package.txt
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner" verify --print-certs "$apk" > android-v245-dev-cert.txt
           echo "Verified separate persistently signed Preview package."
 
       - name: Build persistently signed beta APK (only when secrets exist)
@@ -88,7 +88,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gradle :app:assembleRelease --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v244-signed-build.log
+          gradle :app:assembleRelease --no-daemon --stacktrace --console=plain 2>&1 | tee ../android-v245-signed-build.log
 
       - name: Verify stable beta APK and certificate
         if: ${{ false }}
@@ -98,25 +98,25 @@ jobs:
           apk="android-companion/app/build/outputs/apk/release/app-release.apk"
           test -s "$apk"
           unzip -t "$apk" | tail -3
-          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$apk" | tee android-v244-beta-package.txt
-          grep -q "package: name='com.lifeos.companion.beta'" android-v244-beta-package.txt
-          grep -q "sdkVersion:'26'" android-v244-beta-package.txt
-          grep -q "targetSdkVersion:'35'" android-v244-beta-package.txt
-          "$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner" verify --print-certs "$apk" | tee android-v244-beta-cert.txt
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt" dump badging "$apk" | tee android-v245-beta-package.txt
+          grep -q "package: name='com.lifeos.companion.beta'" android-v245-beta-package.txt
+          grep -q "sdkVersion:'26'" android-v245-beta-package.txt
+          grep -q "targetSdkVersion:'35'" android-v245-beta-package.txt
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner" verify --print-certs "$apk" | tee android-v245-beta-cert.txt
           echo "Verified stable-signature beta package. Compare this certificate SHA-256 across future releases."
 
       - name: Retain build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lifeos-android-v244-build-diagnostics
+          name: lifeos-android-v245-build-diagnostics
           path: |
-            android-v244-build.log
-            android-v244-signed-build.log
-            android-v244-dev-package.txt
-            android-v244-dev-cert.txt
-            android-v244-beta-package.txt
-            android-v244-beta-cert.txt
+            android-v245-build.log
+            android-v245-signed-build.log
+            android-v245-dev-package.txt
+            android-v245-dev-cert.txt
+            android-v245-beta-package.txt
+            android-v245-beta-cert.txt
             android-companion/app/build/outputs/logs/
           if-no-files-found: warn
           retention-days: 14
@@ -124,7 +124,7 @@ jobs:
       - name: Retain permanently signed Preview APK
         uses: actions/upload-artifact@v4
         with:
-          name: lifeos-android-v244-signed-preview
+          name: lifeos-android-v245-signed-preview
           path: android-companion/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
@@ -133,7 +133,7 @@ jobs:
         if: ${{ false }}
         uses: actions/upload-artifact@v4
         with:
-          name: lifeos-android-v244-signed-beta
+          name: lifeos-android-v245-signed-beta
           path: android-companion/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
