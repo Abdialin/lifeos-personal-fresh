@@ -141,6 +141,8 @@ function build(){
  dialog.innerHTML='<div class="ca-sheet" role="document"><div class="ca-sheet-head"><div><h2 id="caDialogTitle">Details</h2><p id="caDialogSubtitle"></p></div><button type="button" class="ca-x" data-ca-close aria-label="Close">×</button></div><div id="caDialogBody"></div></div>';
  document.body.append(dialog);dialogBody=$('caDialogBody');
  shell.addEventListener('click',handleClick);
+ // Handle manual entry before legacy document-level bubbling handlers.
+ shell.addEventListener('click',event=>{const button=event.target.closest('[data-ca-sheet="past"]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();sheet('past');},true);
  shell.addEventListener('input',event=>{
   if(event.target.id==='caHistorySearch'){
    state.query=event.target.value;const caret=event.target.selectionStart;
@@ -517,6 +519,8 @@ function refresh(){
  updateRealFocusScreen();
 }
 function openDialog(title,subtitle,content){
+ delete dialog.dataset.caFocusLive;
+ delete dialog.dataset.caFocusStarting;
  previousFocus=document.activeElement;
  $('caDialogTitle').textContent=title;
  $('caDialogSubtitle').textContent=subtitle||'';
@@ -532,6 +536,18 @@ function closeDialog(){
  if(previousFocus&&previousFocus.isConnected&&previousFocus.focus)previousFocus.focus();
 }
 function sheet(type,id){
+ if(type==='past'){
+  openDialog('Log a past activity','Record an activity that already happened.',
+   '<label class="ca-form-label" for="caPastName">Activity name</label><input id="caPastName" maxlength="80" class="ca-input" placeholder="e.g. Studying, travelling, prayer" required>'
+   +'<label class="ca-form-label" for="caPastStart">Started</label><input id="caPastStart" type="datetime-local" class="ca-input" required>'
+   +'<label class="ca-form-label" for="caPastEnd">Finished</label><input id="caPastEnd" type="datetime-local" class="ca-input" required>'
+   +'<label class="ca-form-label" for="caPastNotes">Notes (optional)</label><textarea id="caPastNotes" rows="3" class="ca-input ca-edit-textarea" placeholder="Any relevant details"></textarea>'
+   +'<p class="ca-editor-footnote">Only past times can be saved. Activities may overlap; overlapping time is not unique time.</p>'
+   +'<p id="caPastError" class="ca-inline-error" role="alert" aria-live="polite"></p>'
+   +'<button type="button" class="ca-sheet-primary" data-ca-save-past>Save past activity</button>');
+  return;
+ }
+ 
  const live=activeSessions();
  const current=live.find(x=>x.id===id)||live[0];
  if(type==='start'){
@@ -590,17 +606,6 @@ function sheet(type,id){
    +'<button class="ca-sheet-secondary" type="button" data-ca-close>Cancel</button></div>';
   dialog.dataset.caEditRecord=id;
   openDialog('Edit Activity','Update an existing activity',form);return;
- }
- if(type==='past'){
-  openDialog('Log a past activity','Record an activity that already happened.',
-   '<label class="ca-form-label" for="caPastName">Activity name</label><input id="caPastName" maxlength="80" class="ca-input" placeholder="e.g. Studying, travelling, prayer" required>'
-   +'<label class="ca-form-label" for="caPastStart">Started</label><input id="caPastStart" type="datetime-local" class="ca-input" required>'
-   +'<label class="ca-form-label" for="caPastEnd">Finished</label><input id="caPastEnd" type="datetime-local" class="ca-input" required>'
-   +'<label class="ca-form-label" for="caPastNotes">Notes (optional)</label><textarea id="caPastNotes" rows="3" class="ca-input ca-edit-textarea" placeholder="Any relevant details"></textarea>'
-   +'<p class="ca-editor-footnote">Only past times can be saved. Activities may overlap; overlapping time is not unique time.</p>'
-   +'<p id="caPastError" class="ca-inline-error" role="alert" aria-live="polite"></p>'
-   +'<button type="button" class="ca-sheet-primary" data-ca-save-past>Save past activity</button>');
-  return;
  }
  if(type==='break'){
   const activity=live.find(x=>x.id===id)||current;
