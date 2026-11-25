@@ -94,7 +94,7 @@ function history(finished){
    items.map(({s,start,end})=>{
     const duration=end-start,provenance=s.seedBatch||s.source==='development-starter'?'Development example':s.precision==='retrospective-approximate'?'Estimated':'Recorded';
     const clock=x=>new Date(x).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
-    return '<article class="lo-history-item"><div class="lo-history-entry"><strong>'+esc(s.name)+'</strong><span>'+short(duration)+'</span></div><div class="lo-history-foot"><small>'+esc(clock(start))+'–'+esc(clock(end))+' · '+provenance+' · Day portion</small><span class="lo-history-actions"><button class="btn outline tiny" data-act="details" data-id="'+esc(s.id)+'">Details</button><button class="btn outline tiny" data-act="edit" data-id="'+esc(s.id)+'">Edit full session</button></span></div></article>';
+    return '<article class="lo-history-item" data-duration-ms="'+duration+'"><div class="lo-history-entry"><strong>'+esc(s.name)+'</strong><span>'+short(duration)+'</span></div><div class="lo-history-foot"><small>'+esc(clock(start))+'–'+esc(clock(end))+' · '+provenance+' · Day portion</small><span class="lo-history-actions"><button class="btn outline tiny" data-act="details" data-id="'+esc(s.id)+'">Details</button><button class="btn outline tiny" data-act="edit" data-id="'+esc(s.id)+'">Edit full session</button></span></div></article>';
    }).join('')+'</details>';
  };
  let idx=0;
