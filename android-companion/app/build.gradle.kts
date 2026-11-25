@@ -20,8 +20,8 @@ android {
         applicationId = "com.lifeos.companion.beta"
         minSdk = 26
         targetSdk = 35
-        versionCode = 11
-        versionName = "0.11-v244-today-aplus"
+        versionCode = 12
+        versionName = "0.12-v245-today-aplus"
     }
 
     signingConfigs {
