@@ -165,8 +165,13 @@ function build(){
  updateHistorySource();chooseTab('live');renderLive();renderHistory();renderReview();
  const historyEl=$('history');
  if(historyEl)new MutationObserver(()=>{state.lastHistory=0;if(state.tab==='history')renderHistory();if(state.tab==='review')renderReview()}).observe(historyEl,{childList:true,subtree:true});
+ let previousView=document.body.dataset.lifeosView;
  const viewObserver=new MutationObserver(()=>{
-  if(document.body.dataset.lifeosView==='tracking'){refresh();if(!dialog.hidden)closeDialog()}
+  const nextView=document.body.dataset.lifeosView;
+  if(nextView===previousView)return;
+  previousView=nextView;
+  if(nextView==='tracking')refresh();
+  else if(!dialog.hidden)closeDialog();
  });
  viewObserver.observe(document.body,{attributes:true,attributeFilter:['data-lifeos-view']});
  document.body.classList.add('lo-ca-ready');
