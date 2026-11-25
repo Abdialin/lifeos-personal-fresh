@@ -31,7 +31,7 @@ import org.json.JSONObject
 
 /** Origin-scoped postMessage bridge; never use addJavascriptInterface. */
 class MainActivity : Activity() {
-    private val lifeOsOrigin = "https://lifeos-personal-test.onrender.com"
+    private val lifeOsOrigin = "https://lifeos-today-aplus-preview.onrender.com"
     private lateinit var web: WebView
     private var pendingNativeAction: Pair<String,String>? = null
     private var pendingNativeReceivedAt = 0L
@@ -45,7 +45,7 @@ class MainActivity : Activity() {
         return try {
             val parsed = Uri.parse(url)
             parsed.scheme == "https" &&
-                parsed.host == "lifeos-personal-test.onrender.com" &&
+                parsed.host == "lifeos-today-aplus-preview.onrender.com" &&
                 parsed.port == -1
         } catch (_: Exception) { false }
     }
@@ -91,7 +91,7 @@ class MainActivity : Activity() {
                 view: WebView, handler: HttpAuthHandler, host: String, realm: String
             ) {
                 // Display the challenge only for the expected HTTPS staging host.
-                if (host != "lifeos-personal-test.onrender.com" || !trustedPage(view.url)) {
+                if (host != "lifeos-today-aplus-preview.onrender.com" || !trustedPage(view.url)) {
                     handler.cancel()
                     return
                 }
@@ -125,7 +125,7 @@ class MainActivity : Activity() {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val url = request.url
-                if (url.scheme == "https" && url.host == "lifeos-personal-test.onrender.com") return false
+                if (url.scheme == "https" && url.host == "lifeos-today-aplus-preview.onrender.com") return false
                 try { startActivity(Intent(Intent.ACTION_VIEW, url)) } catch (_: Exception) {}
                 return true
             }
@@ -165,7 +165,7 @@ class MainActivity : Activity() {
         }
         setContentView(web)
         receiveNativeTimerAction(intent)
-        web.loadUrl("$lifeOsOrigin/?v=233#dashboard")
+        web.loadUrl("$lifeOsOrigin/?v=244#dashboard")
         if (!getPreferences(Context.MODE_PRIVATE).getBoolean("native_permissions_explained", false)) {
             getPreferences(Context.MODE_PRIVATE).edit()
                 .putBoolean("native_permissions_explained", true).apply()
