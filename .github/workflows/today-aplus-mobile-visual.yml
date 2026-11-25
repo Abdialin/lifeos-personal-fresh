@@ -82,6 +82,77 @@ jobs:
               }catch(e){results.push({width,mode:'populated',pass:false,errors:[...errors,String(e)]})}
               await page.close();
             }
+            for(const width of [360,393,412]){
+              const context=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,timezoneId:'Europe/Stockholm'});
+              let page=await context.newPage(),errors=[],checks=[];
+              const watch=p=>{p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.type()==='prompt'?d.accept('CI gap resolution'):d.accept())};
+              const check=(name,ok)=>{checks.push({name,pass:!!ok});if(!ok)throw Error(name)};
+              const url='http://127.0.0.1:8765/index.html';
+              const snapshot=()=>page.evaluate(()=>window.lifeosTodayAPlusSnapshot());
+              const workspace=()=>page.evaluate(()=>window.lifeosReadOnlyWorkspace());
+              const action=(a,id)=>page.evaluate(([a,id])=>window.lifeosTodayAPlusAction(a,id),[a,id]);
+              const tab=i=>page.locator('#apTab'+i).click();
+              const nav=v=>page.locator('#lifeosNavigation [data-view="'+v+'"]').click();
+              try{
+                watch(page);
+                await page.clock.install({time:new Date('2026-11-24T16:00:00+01:00')});
+                await page.addInitScript(()=>{
+                  if(localStorage.getItem('ci-integration-seeded'))return;
+                  const t=h=>new Date('2026-11-24T00:00:00+01:00').getTime()+h*3600000;
+                  const sessions=[['Sleep',0,7],['Prayer',7,7.5],['Breakfast',8,8.5],['University',9,12],['App development',11,12.5],['Lunch',12.5,13],['Security shift',14,15]].map(([name,a,b],i)=>({id:'ci-s'+i,name,status:'finished',startAt:t(a),endAt:t(b),createdAt:t(a),segments:[{start:t(a),end:t(b)}],precision:'measured',notes:''}));
+                  const schedule=[['Isha',17.75,18.25],['Arabic practice',19.5,20.5],['Gym',21,21.75]].map(([name,a,b],i)=>({id:'ci-p'+i,name,startAt:t(a),endAt:t(b),createdAt:t(0),status:'planned',sessionId:null,reminder:false,notes:''}));
+                  const todos=[{id:'ci-task',name:'Complete assignment preparation',due:'2026-11-24',dueTime:'15:00',timingType:'deadline',priority:'high',category:'University',done:false,createdAt:t(0)}];
+                  localStorage.setItem('lifeos-live-v1',JSON.stringify({version:1,sessions,events:[],schedule,todos}));
+                  localStorage.setItem('ci-integration-seeded','1');
+                });
+                await page.goto(url);await page.waitForTimeout(1500);
+                let d=await snapshot(),m=d.metrics;
+                check('fixture accounting',m.total===14*3600000&&m.unique===13*3600000&&m.overlap===3600000);
+                check('gap accounting',Math.abs(m.unlogged-3*3600000)<10000);
+                await tab(2);await page.waitForTimeout(1100);
+                check('agenda populated',(await page.locator('#apPage2').innerText()).includes('Isha'));
+                check('overdue task visible',(await page.locator('#apPage2').innerText()).includes('Complete assignment preparation'));
+                check('reminder saved',await action('reminder','ci-p0'));
+                check('reminder state',(await workspace()).schedule.find(x=>x.id==='ci-p0').reminder===true);
+                check('start planned timer',await action('start-plan','ci-p0'));
+                check('start alongside',await action('start-plan','ci-p1'));
+                d=await snapshot();const a=d.active.find(x=>x.name==='Isha').id,b=d.active.find(x=>x.name==='Arabic practice').id;
+                check('two running timers',d.active.filter(x=>x.status==='running').length===2);
+                await page.clock.fastForward(60000);
+                check('pause',await action('pause',a));
+                const paused=(await snapshot()).active.find(x=>x.id===a).elapsedMs;
+                await page.clock.fastForward(60000);
+                check('paused clock stable',(await snapshot()).active.find(x=>x.id===a).elapsedMs===paused);
+                check('resume',await action('resume',a));
+                await page.clock.fastForward(60000);
+                await nav('tracking');await page.waitForTimeout(1100);
+                check('Track shows active timer',(await page.locator('#loTrackConceptA').innerText()).includes('Isha'));
+                const switched=await page.evaluate(id=>{const btn=[...document.querySelectorAll('#sessions [data-act]')].find(x=>x.dataset.id===id&&x.dataset.act==='switch');if(!btn)return false;btn.click();return true},b);
+                check('switch control exists',switched);
+                await page.waitForTimeout(1100);
+                check('switch creates new timer',(await snapshot()).active.some(x=>x.name==='CI gap resolution'));
+                await nav('dashboard');
+                check('finish',await action('finish',a));
+                await page.keyboard.press('Escape');
+                const before=await snapshot(),g=before.gaps.find(x=>x.b-x.a>=1800000);
+                check('resolve gap',await action('gap',g.a+':'+(g.a+1800000)));
+                const after=await snapshot();
+                check('gap increases unique time',after.metrics.unique-before.metrics.unique>=1800000);
+                check('gap accounting recalculated',Math.abs(after.metrics.unique+after.metrics.unlogged-after.metrics.elapsed)<2);
+                await page.reload();await page.waitForTimeout(1500);
+                check('refresh persists gap',(await snapshot()).recorded.some(x=>x.name==='CI gap resolution'));
+                check('refresh persists reminder',(await workspace()).schedule.find(x=>x.id==='ci-p0').reminder===true);
+                const saved=(await workspace()).sessions.map(x=>[x.id,x.status]);
+                await page.close();page=await context.newPage();watch(page);
+                await page.clock.install({time:new Date('2026-11-24T16:05:00+01:00')});
+                await page.goto(url);await page.waitForTimeout(1500);
+                check('reopen preserves session identities and states',JSON.stringify((await workspace()).sessions.map(x=>[x.id,x.status]))===JSON.stringify(saved));
+                for(let i=0;i<4;i++){await tab(i);await page.screenshot({path:'visual-results/'+width+'-integration-'+i+'.png',fullPage:true});}
+                check('no runtime errors',errors.length===0);
+              }catch(e){errors.push(String(e))}
+              results.push({width,mode:'integration',checks,errors,pass:errors.length===0&&checks.length>=19&&checks.every(x=>x.pass)});
+              await context.close();
+            }
             await browser.close();
             fs.writeFileSync('visual-results/layout-report.json',JSON.stringify(results,null,2));
             console.log(JSON.stringify(results,null,2));
