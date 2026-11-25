@@ -63,6 +63,25 @@ jobs:
               results.push({width,mode:'live',model,errors,pass:errors.length===0&&model.mode==='live'&&!model.warning&&model.accounting&&model.gaps});
               await page.close();
             }
+            for(const width of [360,393,412]){
+              const page=await browser.newPage({viewport:{width,height:844},isMobile:true,hasTouch:true});
+              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              page.on('dialog',d=>d.type()==='prompt'?d.accept('CI gap activity'):d.accept());
+              await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
+              await page.waitForTimeout(2000);
+              try{
+                await page.clock.install({time:new Date(2026,10,24,16,0)});
+                const seeded=await page.evaluate(()=>{const f=window.lifeosTodayAPlusAction;const d=window.lifeosTodayAPlusSnapshot();const g=d.gaps.find(g=>g.b-g.a>600000);return g?f('gap',g.a+':'+(g.a+600000)):false});
+                if(!seeded)throw Error('Gap seed failed');
+                await page.locator('#lifeosNavigation [data-view="tracking"]').click();
+                await page.locator('#lifeosNavigation [data-view="dashboard"]').click();
+                await page.reload();await page.waitForTimeout(1500);
+                const persisted=await page.evaluate(()=>window.lifeosTodayAPlusSnapshot().recorded.some(x=>x.name==='CI gap activity'));
+                for(let i=0;i<4;i++){await page.locator('#apTab'+i).click();await page.screenshot({path:'visual-results/'+width+'-populated-'+i+'.png',fullPage:true});}
+                results.push({width,mode:'populated',seeded,persisted,errors,pass:seeded&&persisted&&errors.length===0});
+              }catch(e){results.push({width,mode:'populated',pass:false,errors:[...errors,String(e)]})}
+              await page.close();
+            }
             await browser.close();
             fs.writeFileSync('visual-results/layout-report.json',JSON.stringify(results,null,2));
             console.log(JSON.stringify(results,null,2));
