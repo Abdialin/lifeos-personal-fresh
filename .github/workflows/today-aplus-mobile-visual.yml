@@ -73,6 +73,10 @@ jobs:
                 await page.clock.install({time:new Date(2026,10,24,16,0)});
                 const seeded=await page.evaluate(()=>{const f=window.lifeosTodayAPlusAction;const d=window.lifeosTodayAPlusSnapshot();const g=d.gaps.find(g=>g.b-g.a>600000);return g?f('gap',g.a+':'+(g.a+600000)):false});
                 if(!seeded)throw Error('Gap seed failed');
+                await page.locator('#caPastName').fill('CI gap activity');
+                await page.locator('[data-ca-save-past]').click();
+                await page.getByText('Activity saved',{exact:true}).waitFor({state:'visible'});
+                await page.locator('[data-ca-close]').last().click();
                 await page.locator('#lifeosNavigation [data-view="tracking"]').click();
                 await page.locator('#lifeosNavigation [data-view="dashboard"]').click();
                 await page.reload();await page.waitForTimeout(1500);
@@ -137,7 +141,11 @@ jobs:
                 check('finish',await action('finish',a));
                 await page.keyboard.press('Escape');
                 const before=await snapshot(),g=before.gaps.find(x=>x.b-x.a>=1800000);
-                check('resolve gap',await action('gap',g.a+':'+(g.a+1800000)));
+                check('open gap form',await action('gap',g.a+':'+(g.a+1800000)));
+                await page.locator('#caPastName').fill('CI gap resolution');
+                await page.locator('[data-ca-save-past]').click();
+                await page.getByText('Activity saved',{exact:true}).waitFor({state:'visible'});
+                await page.locator('[data-ca-close]').last().click();
                 const after=await snapshot();
                 check('gap increases unique time',after.metrics.unique-before.metrics.unique>=1800000);
                 check('gap accounting recalculated',Math.abs(after.metrics.unique+after.metrics.unlogged-after.metrics.elapsed)<2);

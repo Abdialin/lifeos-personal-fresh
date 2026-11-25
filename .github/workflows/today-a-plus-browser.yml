@@ -17,6 +17,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: node tests/today-a-plus-browser.cjs
       - run: node tests/today-a-plus-integration.cjs
+      - run: node tests/today-v250.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
