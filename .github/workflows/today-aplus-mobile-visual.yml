@@ -23,32 +23,33 @@ jobs:
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const results=[];
-            for(const width of [360,393,412]){
+            for(const width of [360,393,412]) for(const theme of ['dark','light']){
               const page=await browser.newPage({viewport:{width,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
-              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              const errors=[];page.on('pageerror',e=>errors.push(e.stack||e.message));
               await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
               await page.waitForTimeout(2500);
+              if(theme==='light')await page.locator('#todayAPlus .ap-header button').click();
               for(const [i,name] of ['Overview','Timeline','Agenda','Review','Track'].entries()){
                 if(i===4)await page.locator('#lifeosNavigation [data-view="tracking"]').click();
                 else await page.locator('#apTab'+i).click();
                 await page.evaluate(()=>window.scrollTo(0,0));
                 await page.waitForTimeout(250);
-                await page.screenshot({path:'visual-results/'+width+'-'+name+'-top.png'});
+                await page.screenshot({path:'visual-results/'+width+'-'+theme+'-'+name+'-top.png'});
                 const metrics=await page.evaluate(({i})=>{
                   const root=document.querySelector('#todayAPlus'),nav=document.querySelector('#lifeosNavigation'),panel=document.querySelector('#apPage'+i);
                   const visible=e=>!!e&&e.getClientRects().length>0&&getComputedStyle(e).visibility!=='hidden';
                   return {horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,rootVisible:visible(root),visibleTodayPanels:[...document.querySelectorAll('#todayAPlus .ap-page')].filter(visible).length,trackVisible:visible(document.querySelector('#loTrackConceptA')),warningVisible:visible(root?.querySelector('.ap-note')),navHeight:nav?.getBoundingClientRect().height,headerHeight:document.querySelector('header.top')?.getBoundingClientRect().height,panelHeight:panel?.getBoundingClientRect().height};
                 },{i});
-                await page.screenshot({path:'visual-results/'+width+'-'+name+'-full.png',fullPage:true});
+                await page.screenshot({path:'visual-results/'+width+'-'+theme+'-'+name+'-full.png',fullPage:true});
                 await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
                 await page.waitForTimeout(200);
-                await page.screenshot({path:'visual-results/'+width+'-'+name+'-bottom.png'});
+                await page.screenshot({path:'visual-results/'+width+'-'+theme+'-'+name+'-bottom.png'});
                 const bottom=await page.evaluate(({i})=>{
                   const panel=document.querySelector('#apPage'+i),nav=document.querySelector('#lifeosNavigation');
                   return panel&&nav?{panelBottom:panel.getBoundingClientRect().bottom,navTop:nav.getBoundingClientRect().top}:null;
                 },{i});
-                const pass=!metrics.horizontalOverflow&&(i===4?!metrics.rootVisible:metrics.rootVisible&&metrics.visibleTodayPanels===1&&!metrics.trackVisible&&metrics.warningVisible&&bottom.panelBottom<=bottom.navTop+2);
-                results.push({width,name,metrics,bottom,pass,errors:[...errors]});
+                const pass=errors.length===0&&!metrics.horizontalOverflow&&(i===4?!metrics.rootVisible:metrics.rootVisible&&metrics.visibleTodayPanels===1&&!metrics.trackVisible&&metrics.warningVisible&&bottom.panelBottom<=bottom.navTop+2&&bottom.navTop-bottom.panelBottom<=32);
+                results.push({width,theme,name,metrics,bottom,pass,errors:[...errors]});
               }
               await page.close();
             }
