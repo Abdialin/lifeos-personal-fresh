@@ -28,7 +28,12 @@ jobs:
               const page=await browser.newPage({viewport:{width:393,height:780},isMobile:true,hasTouch:true});
               const errors=[];
               page.on('pageerror',e=>errors.push(e.message));
-              await page.route('https://lifeos-today-aplus-preview.onrender.com/**',r=>new URL(r.request().url()).pathname==='/'?r.fulfill({contentType:'text/html',body:fs.readFileSync('index.html','utf8')}):r.fulfill({status:404,body:'offline fixture'}));
+              await page.route('**/*',r=>{
+                const u=new URL(r.request().url());
+                const p=u.pathname==='/'?'index.html':u.pathname.slice(1);
+                if(u.hostname==='lifeos-today-aplus-preview.onrender.com' && r.request().method()==='GET' && !p.includes('..') && /\.(html|js|css|png|svg|json|webmanifest|ico)$/.test(p) && fs.existsSync(p) && fs.statSync(p).isFile()) return r.fulfill({path:p});
+                return r.fulfill({status:404,body:'offline fixture'});
+              });
               await page.goto('https://lifeos-today-aplus-preview.onrender.com/');
               await page.waitForTimeout(1500);
               assert.equal(await page.locator('#pastForm').count(),1);
@@ -38,11 +43,24 @@ jobs:
               assert.equal(await nav.evaluate(e=>getComputedStyle(e).bottom),'0px');
               const track=nav.locator('[data-view="tracking"]');
               await track.click();
-              const past=page.getByText(/^\+?\s*Log a past activity$/i).filter({visible:true}).first();
-              await past.click({timeout:5000});
-              await page.locator('#pastForm').waitFor({state:'visible',timeout:5000});
+              await page.locator('[data-ca-tab="history"]').click();
+              await page.locator('[data-ca-sheet="past"]').click();
+              await page.locator('#caPastName').fill('Runtime manual test');
+              const local=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+              await page.locator('#caPastStart').fill(local(new Date(Date.now()-3600000)));
+              await page.locator('#caPastEnd').fill(local(new Date(Date.now()-1800000)));
+              await page.locator('[data-ca-save-past]').click();
+              await page.getByText('Activity saved',{exact:true}).waitFor({state:'visible'});
+              assert.equal(await page.evaluate(()=>window.lifeosReadOnlyWorkspace().sessions.filter(x=>x.name==='Runtime manual test').length),1);
+              await page.reload();
+              await page.waitForFunction(()=>typeof window.lifeosReadOnlyWorkspace==='function' && window.lifeosReadOnlyWorkspace().sessions.some(x=>x.name==='Runtime manual test'));
               assert.deepEqual(errors,[]);
-              console.log('PASS: browser startup, mobile nav CSS, Track navigation, manual form opening');
-            } finally {await browser.close()}
+              console.log('PASS: manual entry, save confirmation and reload persistence in isolated browser');
+            } catch(e) { for(const p of browser.contexts().flatMap(c=>c.pages())) { await p.screenshot({path:'runtime-failure.png',fullPage:true}).catch(()=>{}); fs.writeFileSync('runtime-failure.txt',await p.locator('body').innerText().catch(()=>'')); } throw e; } finally {await browser.close()}
           })().catch(e=>{console.error(e);process.exitCode=1});
           JS
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: preview-runtime-failure
+          path: runtime-failure.*
