@@ -26,7 +26,12 @@ jobs:
             const browser=await chromium.launch({headless:true});
             try {
               const page=await browser.newPage({viewport:{width:393,height:780},isMobile:true,hasTouch:true});
-              const errors=[];
+              const errors=[]; const diagnostics=[];
+              page.on('console',m=>diagnostics.push({type:m.type(),text:m.text()}));
+              page.on('requestfailed',r=>diagnostics.push({url:r.url(),failure:r.failure()}));
+              page.on('response',r=>{if(r.status()>=400)diagnostics.push({url:r.url(),status:r.status()})});
+              page.on('pageerror',e=>diagnostics.push({error:e.stack}));
+              page._runtimeDiagnostics=diagnostics;
               page.on('pageerror',e=>errors.push(e.message));
               await page.route('**/*',r=>{
                 const u=new URL(r.request().url());
@@ -35,7 +40,9 @@ jobs:
                 return r.fulfill({status:404,body:'offline fixture'});
               });
               await page.goto('https://lifeos-today-aplus-preview.onrender.com/');
-              await page.waitForTimeout(1500);
+              await page.waitForFunction(()=>location.hostname==='lifeos-today-aplus-preview.onrender.com' && document.body.classList.contains('ap-preview-viewport') && document.body.classList.contains('lo-ca-ready'));
+              assert.equal(new URL(page.url()).hostname,'lifeos-today-aplus-preview.onrender.com');
+              console.log('Preview origin verified; all requests intercepted, no live server writes');
               assert.equal(await page.locator('#pastForm').count(),1);
               assert.equal(await page.locator('#ap-v248-viewport-script').count(),1);
               assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('ap-preview-viewport')),true);
@@ -45,6 +52,8 @@ jobs:
               await track.click();
               await page.locator('[data-ca-tab="history"]').click();
               await page.locator('[data-ca-sheet="past"]').click();
+              await page.locator('#caPastName').waitFor({state:'visible',timeout:5000});
+              await page.waitForTimeout(1200);
               await page.locator('#caPastName').fill('Runtime manual test');
               const local=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
               await page.locator('#caPastStart').fill(local(new Date(Date.now()-3600000)));
@@ -56,7 +65,7 @@ jobs:
               await page.waitForFunction(()=>typeof window.lifeosReadOnlyWorkspace==='function' && window.lifeosReadOnlyWorkspace().sessions.some(x=>x.name==='Runtime manual test'));
               assert.deepEqual(errors,[]);
               console.log('PASS: manual entry, save confirmation and reload persistence in isolated browser');
-            } catch(e) { for(const p of browser.contexts().flatMap(c=>c.pages())) { await p.screenshot({path:'runtime-failure.png',fullPage:true}).catch(()=>{}); fs.writeFileSync('runtime-failure.txt',await p.locator('body').innerText().catch(()=>'')); } throw e; } finally {await browser.close()}
+            } catch(e) { for(const p of browser.contexts().flatMap(c=>c.pages())) { await p.screenshot({path:'runtime-failure.png',fullPage:true}).catch(()=>{}); fs.writeFileSync('runtime-failure.json',JSON.stringify(p._runtimeDiagnostics||[],null,2)); fs.writeFileSync('runtime-failure.txt',await p.locator('body').innerText().catch(()=>'')); } throw e; } finally {await browser.close()}
           })().catch(e=>{console.error(e);process.exitCode=1});
           JS
       - uses: actions/upload-artifact@v4
