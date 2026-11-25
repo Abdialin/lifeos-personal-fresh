@@ -129,8 +129,10 @@ jobs:
                 check('Track shows active timer',(await page.locator('#loTrackConceptA').innerText()).includes('Isha'));
                 const switched=await page.evaluate(id=>{const btn=[...document.querySelectorAll('#sessions [data-act]')].find(x=>x.dataset.id===id&&x.dataset.act==='switch');if(!btn)return false;btn.click();return true},b);
                 check('switch control exists',switched);
+                const submitted=await page.evaluate(()=>{const form=document.getElementById('lifeosInlineSwitch');if(!form)return false;const input=form.querySelector('input');if(!input)return false;input.value='CI switched activity';form.requestSubmit();return true});
+                check('switch confirmation submitted',submitted);
                 await page.waitForTimeout(1100);
-                check('switch creates new timer',(await snapshot()).active.some(x=>x.name==='CI gap resolution'));
+                check('switch creates new timer',(await snapshot()).active.some(x=>x.name==='CI switched activity'));
                 await nav('dashboard');
                 check('finish',await action('finish',a));
                 await page.keyboard.press('Escape');
