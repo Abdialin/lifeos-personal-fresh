@@ -90,6 +90,7 @@ function readHistory(){
   for(const item of group.querySelectorAll('.lo-history-item')){
    const id=item.querySelector('[data-id]')?.dataset.id||'';
    result.push({id,day,dateKey,name:item.querySelector('.lo-history-entry strong')?.textContent.trim()||'Activity',
+    rawDurationMs:item.hasAttribute('data-duration-ms')?Number(item.dataset.durationMs):null,
     duration:item.querySelector('.lo-history-entry span')?.textContent.trim()||'—',
     time:item.querySelector('.lo-history-foot small')?.textContent.trim()||''});
   }
@@ -321,7 +322,7 @@ function renderHistory(){
   if(!dayGroups.has(dayKey))dayGroups.set(dayKey,{key:dayKey,label:rec.day,items:[]});
   dayGroups.get(dayKey).items.push(rec);
  }
- function total(items){return items.reduce((acc,r)=>acc+durationMs(r.duration),0)}
+ function total(items){return items.reduce((acc,r)=>acc+(r.rawDurationMs??durationMs(r.duration)),0)}
  function dayMarkup(group){
   const items=group.items;
   const dayOpen=queryActive||openDays.has(group.key);
@@ -384,7 +385,7 @@ function renderReview(){
  const groups=new Map(),dates=new Map(),ids=new Set();
  let recordedMs=0;
  for(const x of records){
-  const ms=durationMs(x.duration);
+  const ms=(x.rawDurationMs??durationMs(x.duration));
   recordedMs+=ms;
   groups.set(x.name,(groups.get(x.name)||0)+ms);
   const date=x.dateKey||(dayDate(x)?localKey(dayDate(x)):'');
@@ -658,7 +659,7 @@ function sheet(type,id){
   const status=readOverview().distraction;
   const records=readHistory().filter(x=>/distraction/i.test(x.name)&&matchesPeriod(x,state.reviewPeriod));
   const unique=new Set(records.filter(x=>x.id).map(x=>x.id));
-  const sessions=unique.size||records.length,total=records.reduce((n,x)=>n+durationMs(x.duration),0);
+  const sessions=unique.size||records.length,total=records.reduce((n,x)=>n+(x.rawDurationMs??durationMs(x.duration)),0);
   let content='<div class="ca-focus-hero"><div class="ca-focus-icon">△</div><h3>Understand your distractions</h3><p>Review confirmed interruptions without treating unlogged time as distraction.</p></div>';
   content+='<div class="ca-distraction-stats"><div><b>'+sessions+'</b><span>Recorded sessions</span></div><div><b>'+durationLabel(total)+'</b><span>Recorded time</span></div></div>';
   content+='<div class="ca-focus-feature"><div class="ca-focus-feature-copy"><b>Current tracker</b><small>'+htmlEscape(status)+'</small></div><span class="ca-feature-tag">'+(status.toLowerCase().includes('no distraction')?'Inactive':'Active')+'</span></div>';
