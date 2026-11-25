@@ -587,7 +587,7 @@ window.lifeosTrackOpenTodayItem=function(kind,key,at){
  }else{
   const original=window.lifeosReadOnlyWorkspace?.().sessions.find(z=>String(z.id)===String(x.id));
   const locked=original&&(original.seedBatch||['development-starter','assumed-demo'].includes(original.source));
-  const categories=['Other / review','Prayer','University','Fitness','Nutrition','Sleep','Quran & Arabic','Work & business','Distraction'];
+  const categories=['Other / review','Prayer','University','Study','Fitness','Nutrition','Sleep','Quran & Arabic','Work & business','Distraction'];
   content+='<label class="ca-form-label" for="caTodayCategory">Review category</label><select id="caTodayCategory" class="ca-input" '+(locked?'disabled':'')+'>'+categories.map(c=>'<option '+(c===x.category?'selected':'')+'>'+htmlEscape(c)+'</option>').join('')+'</select>';
   content+=locked?'<p class="ca-editor-footnote">Example records cannot be edited here.</p>':'<button type="button" class="ca-sheet-secondary" data-ca-category-save="'+htmlEscape(x.id)+'">Save category</button><p id="caCategoryMessage" class="ca-editor-footnote" role="status"></p>';
   content+='<button type="button" class="ca-sheet-primary" data-ca-today-record="'+htmlEscape(x.id)+'" data-ca-today-status="'+htmlEscape(status)+'">'+(status==='finished'?'Open in History / edit':'Open in Track')+'</button>';

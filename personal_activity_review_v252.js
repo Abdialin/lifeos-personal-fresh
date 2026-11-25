@@ -52,12 +52,17 @@ function mount(){
  function current(){return get().find(s=>String(s.id)===pick.value)}
  function render(selectedCategory){
   const s=current();body.replaceChildren();if(!s){del.hidden=true;status.textContent='No completed editable activity available.';return}
-  const fields=s.activityDetailsV252||{},all=root.LifeOSActivityIntelligenceV251?.catalog||[],found=category(s.name),
-   cat=all.some(x=>x.id===selectedCategory)?selectedCategory:all.some(x=>x.id===fields.category)?fields.category:found,schema=schemas[cat]||[];
+  const fields=s.activityDetailsV252||{},all=root.LifeOSActivityIntelligenceV251?.catalog||[],found=category(s.name);
+  // Today stores display labels; resolve them to the existing Track review IDs
+  // without changing the saved record until the user explicitly saves it.
+  const todayIds={'Prayer':'prayer','University':'study','Study':'study','Fitness':'fitness','Nutrition':'nutrition','Sleep':'sleep','Quran & Arabic':'quran','Work & business':'work','Distraction':'distraction','Other / review':'other'};
+  const stored=Object.prototype.hasOwnProperty.call(todayIds,fields.category)?todayIds[fields.category]:fields.category;
+  const known=x=>x==='other'||all.some(item=>item.id===x);
+  const cat=known(selectedCategory)?selectedCategory:known(stored)?stored:found,schema=schemas[cat]||[];
   // Only offer deletion as a distraction when the saved record is classified
   // as a distraction, not just because the user changed a draft category.
-  del.hidden=!(fields.category==='distraction'||found==='distraction');
-  body.append(inputField(doc,'category','Activity category','select',['',...all.map(x=>x.id)],cat));
+  del.hidden=!(stored==='distraction'||(!stored&&found==='distraction'));
+  body.append(inputField(doc,'category','Activity category','select',['',...all.map(x=>x.id),'other'],cat));
   body.querySelector('[data-key="category"]')?.addEventListener('change',e=>render(e.target.value));
   for(const [key,label,type,options] of schema)body.append(inputField(doc,key,label,type,options,fields[key]));
   for(const [key,label] of [['preparationMinutes','Preparation minutes'],['travelMinutes','Travel minutes']])body.append(inputField(doc,key,label,'number',null,fields[key]));
