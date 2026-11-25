@@ -1307,6 +1307,17 @@ $('pastForm').reset();render()}
 // Stage 4 analytics are derived exclusively from existing sessions; no new persisted schema.
 function analyticsIntervals(start,end,at=now()){if(at<=start)return [];const m=window.LifeOSUnifiedAnalytics.summarize({sessions:data.sessions},{start,end:Math.min(end,at),now:at});return m.recorded.map(x=>({a:x.start,b:x.end,name:x.name,id:x.id,precision:data.sessions.find(s=>s.id===x.id)?.precision||'unknown'}))}
 function analyticsMetrics(intervals){const total=intervals.reduce((n,x)=>n+x.b-x.a,0);const unique=window.LifeOSUnifiedAnalytics.unionDuration(intervals.map(x=>({start:x.a,end:x.b})));return{total,unique,overlap:Math.max(0,total-unique)}}
+/* Today A+ functional foundation: read-only shared day model. */
+window.lifeosTodayAPlusSnapshot=function(at=Date.now()){
+ const day=new Date(at);day.setHours(0,0,0,0);const start=day.getTime(),end=new Date(day.getFullYear(),day.getMonth(),day.getDate()+1).getTime();
+ const recorded=analyticsIntervals(start,end,at).filter(x=>Number.isFinite(x.a)&&Number.isFinite(x.b)&&x.b>x.a).sort((a,b)=>a.a-b.a);
+ const metrics=analyticsMetrics(recorded),gaps=[],categories=new Map();let cursor=start;
+ for(const x of recorded){if(x.a>cursor)gaps.push({a:cursor,b:x.a});cursor=Math.max(cursor,x.b);const category=lifeosActivityGroupV278(x.name);categories.set(category,(categories.get(category)||0)+x.b-x.a);}
+ if(cursor<at)gaps.push({a:cursor,b:at});
+ const active=(data.sessions||[]).filter(x=>x.status==='running'||x.status==='paused').map(x=>({id:x.id,name:x.name,status:x.status,startAt:x.startAt,elapsedMs:elapsed(x)}));
+ const plans=(data.schedule||[]).filter(x=>Number.isFinite(Number(x.startAt))&&Number.isFinite(Number(x.endAt))&&Number(x.endAt)>Number(x.startAt)&&x.status!=='skipped').map(x=>({id:x.id,name:x.name,startAt:Number(x.startAt),endAt:Number(x.endAt),status:x.status,sessionId:x.sessionId})).sort((a,b)=>a.startAt-b.startAt);
+ return JSON.parse(JSON.stringify({at,start,end,recorded,active,plans,gaps,categories:Array.from(categories,([name,durationMs])=>({name,durationMs})).sort((a,b)=>b.durationMs-a.durationMs),metrics:{...metrics,unlogged:Math.max(0,at-start-metrics.unique),remaining:Math.max(0,end-at),elapsed:at-start,dayLength:end-start},todos:data.todos||[]}));
+};
 function analyticsDayBounds(dateStr){if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr))return null;const [y,m,d]=dateStr.split('-').map(Number);const start=new Date(y,m-1,d);if(start.getFullYear()!==y||start.getMonth()!==m-1||start.getDate()!==d)return null;return[start.getTime(),new Date(y,m-1,d+1).getTime()];}
 /* v278: one read-only category classifier for Today and daily analytics. */
 function lifeosActivityGroupV278(name){
