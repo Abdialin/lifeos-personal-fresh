@@ -288,6 +288,10 @@ class MainActivity : Activity() {
                 runOnUiThread { applyPreviewBars(p.optBoolean("light")) }
                 return
             }
+            if (p.optString("kind") == "preview-notification-history") {
+                sendNativeReply("window.lifeosPreviewNotificationHistory?.(" + PlannedReminder.history(this) + ")")
+                return
+            }
             if (p.optString("kind") == "native-capabilities") {
                 sendNativeReply("window.LifeOSNativeBackupV234=true;window.dispatchEvent(new Event('lifeos-native-ready'))")
                 return
