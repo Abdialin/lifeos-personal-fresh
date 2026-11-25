@@ -57,6 +57,7 @@ class MainActivity : Activity() {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 220)
         }
         web = WebView(this)
+        applyPreviewBars(false)
         // Android 15+ may draw WebView content beneath system bars. Reserve
         // only native system-bar insets; do not change persisted web layout.
         if (Build.VERSION.SDK_INT >= 30) {
@@ -84,7 +85,7 @@ class MainActivity : Activity() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
                 if (trustedPage(url)) {
-                    view.evaluateJavascript("window.LifeOSNativeBackupV234=true;window.dispatchEvent(new Event(\'lifeos-native-ready\'))", null)
+                    view.evaluateJavascript("window.LifeOSNativeBackupV234=true;window.dispatchEvent(new Event(\'lifeos-native-ready\'));(function(){const sync=()=>{const root=document.getElementById('todayAPlus');window.LifeOSNative?.postMessage(JSON.stringify({kind:'preview-theme',light:!!root?.classList.contains('ap-light')}))};const root=document.getElementById('todayAPlus');if(root)new MutationObserver(sync).observe(root,{attributes:true,attributeFilter:['class']});sync()})()", null)
                 }
                 reconcileNativeSnooze()
                 view.postDelayed({ reconcileNativeSnooze() }, 1400L)
@@ -171,7 +172,7 @@ class MainActivity : Activity() {
         setContentView(web)
         if (Build.VERSION.SDK_INT >= 30) web.requestApplyInsets()
         receiveNativeTimerAction(intent)
-        web.loadUrl("$lifeOsOrigin/?v=245#dashboard")
+        web.loadUrl("$lifeOsOrigin/?v=246#dashboard")
         if (!getPreferences(Context.MODE_PRIVATE).getBoolean("native_permissions_explained", false)) {
             getPreferences(Context.MODE_PRIVATE).edit()
                 .putBoolean("native_permissions_explained", true).apply()
@@ -258,10 +259,31 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun applyPreviewBars(light: Boolean) {
+        val color = android.graphics.Color.parseColor(if (light) "#F1F5F9" else "#101B2E")
+        window.decorView.setBackgroundColor(color)
+        window.statusBarColor = color
+        window.navigationBarColor = color
+        if (Build.VERSION.SDK_INT >= 29) {
+            window.isStatusBarContrastEnforced = false
+            window.isNavigationBarContrastEnforced = false
+        }
+        if (Build.VERSION.SDK_INT >= 30) {
+            val mask = android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            window.insetsController?.setSystemBarsAppearance(if (light) mask else 0, mask)
+        } else {
+            window.decorView.systemUiVisibility = if (light) android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR else 0
+        }
+    }
+
     private fun handleTimerState(raw: String) {
         try {
             if (raw.length > 10_500_000) return
             val p = JSONObject(raw)
+            if (p.optString("kind") == "preview-theme") {
+                runOnUiThread { applyPreviewBars(p.optBoolean("light")) }
+                return
+            }
             if (p.optString("kind") == "native-capabilities") {
                 sendNativeReply("window.LifeOSNativeBackupV234=true;window.dispatchEvent(new Event('lifeos-native-ready'))")
                 return
