@@ -97,6 +97,7 @@ const local=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*6
   const format=ms=>{const mins=Math.round(ms/60000);return (mins>=60?Math.floor(mins/60)+'h ':'')+(mins%60?mins%60+'m':mins<60?'0m':'').trim()};
   assert(trackText.includes('total recorded '+format(d.metrics.total)));assert(trackText.includes('unique tracked '+format(d.metrics.unique)));assert(trackText.includes('additional overlap '+format(d.metrics.overlap)));
   await page.locator('[data-ca-tab="history"]').click();await page.locator('[data-ca-sheet="past"]').click();await page.setViewportSize({width:393,height:460});
+  await page.waitForFunction(()=>{const sheet=document.querySelector('#loCADialog .ca-sheet');return sheet&&sheet.getBoundingClientRect().bottom<=(window.visualViewport?.height||innerHeight)+2});
   const box=await page.locator('#loCADialog .ca-sheet').boundingBox();assert(box.y+box.height<=462);await page.locator('#caPastName').fill('Manual past check');
   const first=d.gaps.find(g=>g.b-g.a>120000);await page.locator('#caPastStart').fill(await page.evaluate(local,first.a));await page.locator('#caPastEnd').fill(await page.evaluate(local,first.a+60000));await page.locator('[data-ca-save-past]').click();await page.getByText('Activity saved',{exact:true}).waitFor({state:'visible'});await close();
   await page.setViewportSize({width:393,height:780});
