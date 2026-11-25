@@ -51,19 +51,33 @@ object PlannedReminder {
             schedule(context, id, label, at)
         } else cancel(context)
     }
+    @Synchronized
+    private fun record(context: Context, label: String, status: String) {
+        val prefs = context.getSharedPreferences("lifeos_preview_notification_history", Context.MODE_PRIVATE)
+        val old = try { org.json.JSONArray(prefs.getString("events", "[]")) } catch (_: Exception) { org.json.JSONArray() }
+        val events = org.json.JSONArray()
+        events.put(org.json.JSONObject().put("name", label.take(80)).put("status", status).put("at", System.currentTimeMillis()))
+        for (i in 0 until minOf(old.length(), 99)) events.put(old.getJSONObject(i))
+        prefs.edit().putString("events", events.toString()).apply()
+    }
+    fun history(context: Context): String =
+        context.getSharedPreferences("lifeos_preview_notification_history", Context.MODE_PRIVATE).getString("events", "[]") ?: "[]"
     fun deliver(context: Context) {
         val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val label = p.getString("label", "Planned activity") ?: "Planned activity"
         cancel(context)
         if (Build.VERSION.SDK_INT >= 33 &&
-            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) { record(context, label, "Permission denied"); return }
         val manager = context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel(CHANNEL, "Planned LifeOS activities",
             NotificationManager.IMPORTANCE_HIGH).apply { enableVibration(true) })
+        if (!manager.areNotificationsEnabled() || manager.getNotificationChannel(CHANNEL)?.importance == NotificationManager.IMPORTANCE_NONE) {
+            record(context, label, "Notifications blocked"); return
+        }
         val open = PendingIntent.getActivity(context, REQUEST,
             Intent(context, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        manager.notify(2288, Notification.Builder(context, CHANNEL)
+        try { manager.notify(2288, Notification.Builder(context, CHANNEL)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle("LifeOS · Starting soon")
             .setContentText(label.take(80))
@@ -71,6 +85,8 @@ object PlannedReminder {
             .setAutoCancel(true)
             .setCategory(Notification.CATEGORY_REMINDER)
             .setVisibility(Notification.VISIBILITY_PRIVATE).build())
+            record(context, label, "Posted to Android")
+        } catch (_: Exception) { record(context, label, "Posting failed") }
     }
 }
 class PlannedReminderReceiver : BroadcastReceiver() {
