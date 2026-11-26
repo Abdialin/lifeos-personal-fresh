@@ -21,7 +21,9 @@ const serve=route=>{
    habitDefinitions:[{id:'read',title:'Read',startDate:'2026-11-24',everyDays:1,targetMode:'completion'},{id:'not-due',title:'Not due',startDate:'2026-11-23',everyDays:2}],
    habitChecks:[{id:'check-read',habitId:'read',date:'2026-11-24',done:true,createdAt:start,checkSource:'linked-evidence',evidenceType:'session',evidenceSourceId:'study',note:'preserve evidence'}]}));
  });
- const openAgenda=async()=>{await page.locator('#lifeosNavigation [data-view="dashboard"]').click();await page.locator('#apTab2').click()};
+ // The shell schedules one post-navigation Today render; let that render finish
+ // before interacting with or measuring nodes that it replaces.
+ const openAgenda=async()=>{await page.locator('#lifeosNavigation [data-view="dashboard"]').click();await page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,200)));await page.locator('#apTab2').click()};
  const getCheck=()=>page.evaluate(()=>window.lifeosSocialHabitBridge.read().habitChecks.find(x=>x.id==='check-read'));
  const capture=async name=>{if(process.env.TODAY_AGENDA_CAPTURE==='1'){fs.mkdirSync('docs/design/today/current',{recursive:true});await page.screenshot({path:'docs/design/today/current/release-agenda-habits-'+name+'.png'})}};
  try{
