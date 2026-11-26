@@ -10,7 +10,8 @@ const context={
 vm.runInNewContext(fs.readFileSync(require.resolve('./personal_goals_visual_v161.js'),'utf8'),context);
 const api=context.window.LifeOSGoalEvidenceV175;
 assert.ok(api,'Goals evidence API mounted');
-const a=api.monday(0),b=api.monday(1),start=a+12*3600000;
+// Use a completed week so the synthetic finished sessions are never future-dated.
+const a=api.monday(-1),b=api.monday(0),start=a+12*3600000;
 const timer=(id,name,source)=>({id,name,source,status:'finished',startAt:start,endAt:start+3600000,segments:[{start,end:start+3600000}]});
 const w={
  sessions:[timer('gym-1','Träning'),timer('walk-1','Promenad'),timer('demo-1','Gym','assumed-demo')],

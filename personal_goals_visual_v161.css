@@ -31,10 +31,12 @@
 .gv164-reading{margin-top:8px;border-top:1px solid #2f495c;padding-top:8px}
 .gv164-reading>strong{display:block;font-size:11px;color:#d4f3eb;margin-bottom:5px}
 .gv164-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
-.gv164-day{display:grid;justify-items:center;gap:4px;min-width:0}.gv164-day small{font-size:9px;color:#a4c6cb}
+.gv164-day{display:grid;justify-items:center;gap:4px;min-width:0}.gv164-day small{font-size:10px;color:#a4c6cb}
 .gv164-day i{height:26px;width:10px;background:linear-gradient(to top,#5acda7 var(--fill),#1b3445 var(--fill));border-radius:8px}
-.gv164-day b{font-size:9px;color:#ddf9ee}
+.gv164-day b{font-size:10px;color:#ddf9ee}
 .gv164-reading>small{display:block;margin-top:7px;font-size:10px;color:#94b1bd}
+html[data-lifeos-theme="light"] #gv161-app .gv165-heading h3{color:#173246}
+html[data-lifeos-theme="light"] #gv161-app .gv165-heading button{color:#066757;min-height:44px}
 body:not([data-lifeos-view="tracking"]) #lo32ActiveTimer{display:none!important}
 #lo86-timer{width:min(222px,calc(100vw - 22px))!important;max-width:222px!important;right:10px!important;padding:5px 7px!important;border-radius:12px!important}
 #lo86-timer #lo86-summary{gap:5px!important}

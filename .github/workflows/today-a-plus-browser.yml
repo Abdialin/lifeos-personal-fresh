@@ -35,6 +35,9 @@ jobs:
       - run: node --test test_track_design_v126.test.cjs test_track_focus_v127.test.cjs test_track_polish_v128.test.cjs test_track_visual_v129.test.cjs
       - run: node test_plan_evidence_v250.cjs
       - run: node test_personal_goals_integration.cjs
+      - run: node test_goal_fitness_cross_section_v204.cjs
+      - run: node test_cross_section_integrity_v206.cjs
+      - run: GOALS_READING_CAPTURE=1 node tests/goals-reading-evidence.cjs
       - run: node tests/plan-overview-model.cjs
       - run: PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
       - run: node tests/plan-concept-a-model.cjs
@@ -48,3 +51,4 @@ jobs:
             plan-verification/
             docs/design/today/current/release-*.png
             docs/design/track/current/v1-*.png
+            docs/design/goals/current/release-reading*.png

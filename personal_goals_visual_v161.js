@@ -7,6 +7,12 @@ const monday=n=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(d
 const time=x=>{const n=Number(x?.endAt);if(Number.isFinite(n)&&n>0)return n;const d=x?.date||x?.completedAt;return typeof d==='string'?Date.parse(d.length===10?d+'T12:00:00':d):NaN};
 const interval=(x,a,b)=>{const t=time(x);return Number.isFinite(t)&&t>=a&&t<b};
 const dur=x=>(x?.segments||[]).reduce((sum,z)=>{const a=Number(z.start),b=Number(z.end);return sum+(Number.isFinite(a)&&Number.isFinite(b)&&b>a?(b-a)/60000:0)},0);
+function finishedBy(s,at){
+ if(s?.status!=='finished')return false;
+ if(Number.isFinite(s.endAt))return s.endAt<=at;
+ const segments=Array.isArray(s.segments)?s.segments:[];
+ return segments.length>0&&segments.every(part=>Number.isFinite(part.end)&&part.end<=at);
+}
 function sessionParts(s,a,b){
  const raw=Array.isArray(s?.segments)&&s.segments.length?s.segments:[{start:s?.startAt,end:s?.endAt}];
  return raw.flatMap(z=>{
@@ -31,10 +37,10 @@ function activeDays(s,a,b){
 }
 const within=(s,a,b)=>sessionParts(s,a,b).length>0;
 const norm=x=>String(x||'').toLowerCase().trim(),unit=g=>g.unit==='quantity'?g.quantityUnit||'units':g.unit==='hours'?'hours':'sessions';
-function measure(g,w,a,b){let all=[],good=[],minutes=0,value=0,src='finished timers';const cat=norm(g.category);
+function measure(g,w,a,b){let all=[],good=[],minutes=0,value=0,src='finished timers';const cat=norm(g.category),now=Date.now(),today=new Date(now),endOfToday=new Date(today.getFullYear(),today.getMonth(),today.getDate()+1).getTime();b=Math.min(b,endOfToday);
 if(cat==='fitness'){
  src='workout records + qualifying finished timers';
- const sessions=(w.sessions||[]).filter(x=>x?.status==='finished'&&within(x,a,b));
+ const sessions=(w.sessions||[]).filter(x=>finishedBy(x,now)&&within(x,a,b));
  // Use the same activity classification as My Life so Gym/Training in different
  // languages contributes to Goals exactly once (linked workout IDs are deduplicated below).
  const isWorkoutSession=x=>{
@@ -62,7 +68,7 @@ else if(cat==='personal'){src='personal logs';all=(w.personalLogs||[]).filter(x=
 else if(cat==='habit'){
  src='finished timers + explicit personal logs';
  const keyword=norm(g.match||'');
- const timers=(w.sessions||[]).filter(x=>{const name=norm(x?.name);return x?.status==='finished'&&within(x,a,b)&&keyword&&name.includes(keyword)&&!(keyword==='reading'&&/quran|qur’an|qur'an|koran/.test(name))});
+ const timers=(w.sessions||[]).filter(x=>{const name=norm(x?.name);return finishedBy(x,now)&&within(x,a,b)&&keyword&&name.includes(keyword)&&!(keyword==='reading'&&/quran|qur’an|qur'an|koran/.test(name))});
  const logs=(w.personalLogs||[]).filter(x=>interval(x,a,b)&&keyword&&norm(x.category).includes(keyword));
  const validTimers=timers.filter(x=>!sample(x)),validLogs=logs.filter(x=>!sample(x));
  const timerIds=new Set(validTimers.map(x=>String(x.id)));
@@ -79,7 +85,7 @@ else if(cat==='habit'){
   good=[...validTimers,...uniqueLogs];value=validTimers.reduce((n,x)=>n+activeDays(x,a,b).size,0)+uniqueLogs.length;
  }
 }
-else {all=(w.sessions||[]).filter(x=>x.status==='finished'&&within(x,a,b)&&norm(g.match||g.name).length>0&&norm(x.name).includes(norm(g.match||g.name)));good=all.filter(x=>!sample(x));minutes=good.reduce((v,x)=>v+activeMinutes(x,a,b),0);value=g.unit==='hours'?minutes/60:good.reduce((v,x)=>v+activeDays(x,a,b).size,0)}
+else {all=(w.sessions||[]).filter(x=>finishedBy(x,now)&&within(x,a,b)&&norm(g.match||g.name).length>0&&norm(x.name).includes(norm(g.match||g.name)));good=all.filter(x=>!sample(x));minutes=good.reduce((v,x)=>v+activeMinutes(x,a,b),0);value=g.unit==='hours'?minutes/60:good.reduce((v,x)=>v+activeDays(x,a,b).size,0)}
 return {value,records:good.length,minutes,excluded:cat==='habit'?all.filter(sample).length:all.length-good.length,src}};
 const weekday=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const dayBreakdown=(g,w,from)=>weekday.map((day,i)=>{const a=new Date(from);a.setDate(a.getDate()+i);const b=new Date(a);b.setDate(b.getDate()+1);return {day,date:a.toLocaleDateString(undefined,{month:'short',day:'numeric'}),...measure(g,w,a.getTime(),b.getTime())}});
@@ -91,7 +97,22 @@ const bar=(v,t)=>'<div class="gv161-bar"><i style="width:'+progress(v,t)+'%"></i
 const rows=w=>(w.goals||[]).map(g=>({g,t:Number(g.target)||0,cur:measure(g,w,monday(0),monday(1)),prev:measure(g,w,monday(-1),monday(0)),old:measure(g,w,monday(-2),monday(-1))}));
 window.LifeOSGoalEvidenceV175=Object.freeze({measure,rows,sample,unit,monday,sessionParts,activeMinutes,activeDays});
 let root,legacy,tab='overview',expanded='',selected='',weeks=4;
-function dailyReading(r,w){const name=norm(r.g.name||''),match=norm(r.g.match||'');if(!(name.includes('quran')&&name.includes('read'))&&!(match.includes('quran')&&match.includes('read')))return '';const start=monday(0),days=weekday;let reached=0;const cells=days.map((day,i)=>{const from=start+i*86400000,to=from+86400000;const entries=(w.sessions||[]).filter(s=>s?.status==='finished'&&!sample(s)&&within(s,from,to)&&norm(s.name).includes(match||'quran reading'));const mins=entries.reduce((a,s)=>a+activeMinutes(s,from,to),0);if(mins>=90)reached++;const fraction=Math.min(100,mins/90*100);return '<div class="gv164-day" title="'+day+' '+Math.round(mins)+' of 90 minutes"><small>'+day+'</small><i style="--fill:'+fraction+'%"></i><b>'+Math.round(mins)+'</b></div>'}).join('');return '<div class="gv164-reading"><strong>Daily reading · 90 min goal</strong><div class="gv164-weekdays">'+cells+'</div><small>'+reached+'/7 days have 90 recorded minutes. Minutes are based on saved finished timers; missing days are unlogged, not missed.</small></div>'}
+function dailyReading(r,w){
+ const name=norm(r.g.name||''),match=norm(r.g.match||'');
+ if(!(name.includes('quran')&&name.includes('read'))&&!(match.includes('quran')&&match.includes('read')))return '';
+ if(r.g.unit!=='hours'||!['habit','sessions'].includes(norm(r.g.category)))return '';
+ const start=new Date(monday(0)),now=Date.now();
+ // Use the same goal-evidence rules as the weekly total.
+ const days=weekday.map((day,i)=>{
+  const from=new Date(start);from.setDate(from.getDate()+i);
+  const end=new Date(from);end.setDate(end.getDate()+1);
+  const minutes=from.getTime()<=now?measure(r.g,w,from.getTime(),end.getTime()).minutes:0;
+  return {day,minutes};
+ });
+ const highest=Math.max(0,...days.map(day=>day.minutes)),recorded=days.filter(day=>day.minutes>0).length;
+ const cells=days.map(({day,minutes})=>'<div class="gv164-day" title="'+H(day+' · '+(minutes?fmt(minutes)+' recorded minutes':'No recorded time'))+'"><small>'+day+'</small><i style="--fill:'+(highest?minutes/highest*100:0)+'%"></i><b>'+(minutes?fmt(minutes):'—')+'</b></div>').join('');
+ return '<div class="gv164-reading"><strong>Recorded minutes by day</strong><div class="gv164-weekdays">'+cells+'</div><small>'+recorded+' days with records · Bars compare recorded time. Empty days are unlogged.</small></div>';
+}
 function card(r,w){const id=String(r.g.id??r.g.name),p=progress(r.cur.value,r.t);return '<article class="gv161-card gv161-'+tone(r.g)+'"><div class="gv161-top"><div><small>'+H(r.g.category||'Goal')+'</small><h3>'+H(r.g.name)+'</h3></div><div class="gv161-ring" style="--progress:'+p+'"><b>'+Math.round(p)+'%</b></div></div><div class="gv161-metrics"><div><b>'+fmt(r.cur.value)+' / '+fmt(r.t)+'</b><small>'+H(unit(r.g))+'</small></div><div><b>'+r.cur.records+'</b><small>saved entries</small></div><div><b>'+(r.cur.minutes?Math.round(r.cur.minutes)+' min':'—')+'</b><small>recorded time</small></div></div>'+bar(r.cur.value,r.t)+dailyReading(r,w)+'<div class="gv161-foot"><span>'+(r.cur.records?'Recorded progress':'Awaiting evidence')+'</span><button data-v161-detail="'+H(id)+'">'+(expanded===id?'Less −':'Details ↗')+'</button></div>'+(expanded===id?'<div class="gv161-expand">'+dayStrip(r,w)+'<div><span>Previous week<b>'+fmt(r.prev.value)+' '+H(unit(r.g))+'</b></span><span>Average duration<b>'+(r.cur.records&&r.cur.minutes?Math.round(r.cur.minutes/r.cur.records)+' min':'Unavailable')+'</b></span><span>Counted from<b>'+H(r.cur.src)+'</b></span><span>Excluded examples<b>'+r.cur.excluded+'</b></span></div><p>Only qualifying records count; development examples and plans are not verified completions.</p><button data-v161-edit="1">Edit goal and counting rule →</button></div>':'')+'</article>'}
 function plot(r,w){if(!r)return '<p>Create a goal to inspect trends.</p>';const data=Array.from({length:weeks},(_,i)=>measure(r.g,w,monday(i-weeks),monday(i-weeks+1)).value);const max=Math.max(1,r.t,...data);if(!data.some(v=>v>0))return '<div class="gv168-emptystate" role="status"><span class="gv168-emptyicon" aria-hidden="true">▥</span><strong>No qualifying records in these weeks</strong><p>The selected goal has no matching completed entries in this period. This does not mean no activity took place.</p><small>Check the activity name, counting rule, or tracking history.</small></div>';return '<div class="gv161-plot" role="img" aria-label="Weekly recorded history">'+data.map((v,i)=>'<div class="gv161-col"><b>'+fmt(v)+'</b><span><i style="height:'+(v/max*100)+'%"></i></span><small>W'+(i-weeks)+'</small></div>').join('')+'</div><p class="gv161-muted">Completed weeks only · target '+fmt(r.t)+' '+H(unit(r.g))+'/week. Example data excluded.</p>'}
 function render(){if(!root||document.body.dataset.lifeosView!=='goals')return;const w=read(),rs=rows(w),put=(k,s)=>E('gv161-'+k).innerHTML=s;

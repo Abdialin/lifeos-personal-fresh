@@ -31,6 +31,8 @@ PLAN_CAPTURE=1 node tests/plan-concept-a.cjs
 node scripts/capture-design-baselines.cjs
 node test_goal_fitness_cross_section_v204.cjs
 node test_personal_goals_integration.cjs
+node test_cross_section_integrity_v206.cjs
+GOALS_READING_CAPTURE=1 node tests/goals-reading-evidence.cjs
 node test_unified_analytics.cjs
 node test_tracking_recovery.cjs
 node test_android_bridge_v231.cjs
@@ -53,6 +55,8 @@ The Today V1 fixture checks record-based overview values and navigation into exi
 The Today Agenda habit fixture checks scheduled and unscheduled habits, completion and undo from Today and My Life, retention of linked evidence, opt-in automatic-check dismissal, stale and duplicate checks, failed checkpoint writes, reload persistence, light-mode controls and reduced browser heights. It uses only synthetic, offline records. `TODAY_AGENDA_CAPTURE=1` saves dark and light browser screenshots; it does not verify Android input or system insets.
 
 The synthetic Review category fixture checks an empty day and a ten-category day, including disclosure labels, raw-duration bar widths and individual category drill-down. The fixture does not connect to a real Preview account.
+
+The synthetic Goals reading fixture checks that the daily chart uses the same goal evidence rules as weekly totals, does not infer a daily target, excludes assumed and future-dated entries, preserves date-only logs entered today, deduplicates linked sessions, and handles pauses, overnight sessions and a daylight-saving change. It also checks the affected light-mode heading contrast. Capture mode writes browser screenshots; it does not establish completion or approval of the Goals redesign.
 
 The historical Today timeline test covers date-picker and previous/next-day navigation, future-date rejection, overnight session identity, full and partial gap logging on earlier days, a second writer invalidating a selected gap, exact local-midnight boundaries, reload persistence, restored Track History record clicks and correct overnight day-portion details, and 23-/25-hour days. Requests are intercepted and storage is synthetic.
 
