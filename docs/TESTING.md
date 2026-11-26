@@ -11,6 +11,7 @@ node tests/today-v250.cjs
 node tests/today-v250-colors.cjs
 node tests/today-v250-precision.cjs
 node tests/today-v250-volume.cjs
+node test_plan_evidence_v250.cjs
 node scripts/capture-design-baselines.cjs
 node test_goal_fitness_cross_section_v204.cjs
 node test_unified_analytics.cjs
