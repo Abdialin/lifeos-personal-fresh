@@ -1,6 +1,6 @@
 # Development status
 
-Last reviewed: 25 November 2026. Use `git rev-parse HEAD` and GitHub Actions for the exact current revision and run status; do not infer deployment from this file.
+Last reviewed: 26 November 2026. Use `git rev-parse HEAD` and GitHub Actions for the exact current revision and run status; do not infer deployment from this file.
 
 ## Today: current work
 
@@ -9,6 +9,10 @@ The V250 foundation added interactive recorded, planned, active and gap details,
 This follow-up addresses category aliases and explicit-category precedence, compact details, minute-level gap controls with exact untouched boundaries, live remaining-time guidance, local-day timeline boundaries on daylight-saving transitions, and a superseded Track presentation leaking into other sections. Automated checks and synthetic screenshots are documented in `docs/TESTING.md` and `docs/design/today/`. Device and user acceptance remain pending.
 
 The remote branch also received independent My Life overview changes in commits `68504fe`, `de1bfb8` and `67ea9fb`; these are retained. The user supplied five Plan references and explicitly requested that development proceed, starting with Overview. Those references authorize the Plan visual direction; each subsection still requires its own visual and functional checks before the next.
+
+The Today follow-up and activity-loader cache correction are in commits `8a69849584ebd0ffef1031157b886814000432b5` and `f3327e5b023478cced779462f1ac0890dcd8703c`. The four Today workflows passed for both commits, and Render reported the latter live on 26 November 2026. The authenticated deployed experience and Samsung device acceptance have not been independently checked.
+
+The current Plan work introduces the shared navigation and Overview, with synthetic browser screenshots and functional checks. Calendar, Tasks, Compare and Improve retain their previous presentations and do not yet implement the newly supplied references. Review Overview on the user's device before treating its visual design as accepted or advancing the subsection gate. The user's original reference image files were shown in chat but were not available as workspace files for a pixel comparison.
 
 ## Still open
 

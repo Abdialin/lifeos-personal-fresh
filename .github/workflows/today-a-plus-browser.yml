@@ -22,8 +22,12 @@ jobs:
       - run: node tests/today-v250-precision.cjs
       - run: node tests/today-v250-volume.cjs
       - run: node test_plan_evidence_v250.cjs
+      - run: node tests/plan-overview-model.cjs
+      - run: PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: today-a-plus-mobile-screenshots
-          path: today-verification/
+          path: |
+            today-verification/
+            plan-verification/

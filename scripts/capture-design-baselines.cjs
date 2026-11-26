@@ -40,7 +40,8 @@ const output='docs/design';
   await page.waitForTimeout(150);await shot('today','gap-entry');await page.locator('#loCADialog [data-ca-close]').last().click();
   await nav('tracking');for(const name of ['live','history','review']){await page.locator('[data-ca-tab="'+name+'"]').click();await page.waitForTimeout(250);await page.evaluate(()=>window.scrollTo(0,0));await shot('track',name)}
   await nav('schedule');await shot('plan','overview');
-  for(const name of ['calendar','tasks','compare','improve','review','more']){await page.locator('.v136-nav [data-v136-tab="'+name+'"]').click();await page.waitForTimeout(200);await page.evaluate(()=>window.scrollTo(0,0));await shot('plan',name)}
+  for(const name of ['calendar','tasks','compare','improve']){await page.locator('.v136-nav [data-v136-tab="'+name+'"]').click();await page.waitForTimeout(200);await page.evaluate(()=>window.scrollTo(0,0));await shot('plan',name)}
+  for(const name of ['review','more']){await page.locator('.pov-settings summary').click();await page.locator('.pov-settings [data-v136-tab="'+name+'"]').click();await page.waitForTimeout(200);await page.evaluate(()=>window.scrollTo(0,0));await shot('plan',name)}
   await nav('goals');for(const name of ['overview','improve','history']){await page.locator('#gv161-app [role="tab"][data-v161-tab="'+name+'"]').click();await page.waitForTimeout(200);await page.evaluate(()=>window.scrollTo(0,0));await shot('goals',name)}
   await nav('analytics');await shot('insights','overview');
   await nav('life');for(const name of ['Overview','Routines','Fitness','Nutrition','Friends']){await page.locator('#loLifeSectionTabs').getByRole('button',{name,exact:true}).click();await page.waitForTimeout(200);await page.evaluate(()=>window.scrollTo(0,0));await shot('my-life',name.toLowerCase())}

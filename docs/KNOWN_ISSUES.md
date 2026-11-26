@@ -17,3 +17,5 @@ Preview startup reports SQLite and no persistent disk is visible in service meta
 ## Remaining evidence
 
 Authenticated deployed-app behavior, real Samsung keyboard/gesture navigation, notification delivery, long-term background tracking, cross-device sync and user acceptance are not established by the offline browser suite. Some goal rules intentionally match a specific name/keyword; full taxonomy consistency across every historical analytics path remains to be audited.
+
+Plan Overview has browser evidence only and awaits user device acceptance. The supplied Plan reference images are visible in the conversation but their source files are not present in the workspace, so automated pixel comparison is unavailable. Plan Calendar, Tasks, Compare and Improve have not yet been redesigned or verified against those references; the existing task editor and other legacy tools remain accessible.

@@ -1,0 +1,91 @@
+/* Shared Plan shell and Overview; existing Calendar/Compare/Improve remain intact. */
+body[data-lifeos-view="schedule"] .wrap>header.top,
+body[data-lifeos-view="schedule"] #lifeosViewTitle,
+body[data-lifeos-view="schedule"] #lifeosViewIntro,
+body[data-lifeos-view="schedule"] #lo12PlanIntro,
+body[data-lifeos-view="schedule"] #lo253-activity-analytics,
+body[data-lifeos-view="schedule"] .wrap>footer.footer{display:none!important}
+body[data-lifeos-view="schedule"] main.wrap{max-width:1100px;padding-top:12px}
+#v136Workspace{--pov-bg:#071729;--pov-card:#10263b;--pov-card2:#0b1d31;--pov-line:#315365;--pov-text:#eef7ff;--pov-muted:#b2c7d7;--pov-accent:#79eac5;--pov-blue:#a0c5ff;color:var(--pov-text)}
+#v136Workspace .v136-header{position:relative;align-items:flex-start;flex-wrap:wrap;padding:4px 2px 12px;border:0;border-radius:0;background:none;gap:0 8px}
+#v136Workspace .pov-title{min-width:0;flex:1}
+#v136Workspace .pov-title>span{font-size:12px;letter-spacing:0;color:var(--pov-muted);font-weight:500}
+#v136Workspace .pov-title>span b{color:var(--pov-accent)}
+#v136Workspace .pov-title i{font-style:normal;color:#74e5c3}
+#v136Workspace .pov-title h2{font-size:31px!important;line-height:1.05;letter-spacing:-.04em;margin:6px 0 3px}
+#v136Workspace .pov-subtitle{flex:0 0 100%;font-size:12px;line-height:1.35;margin:0;color:var(--pov-muted)}
+#v136Workspace .pov-header-actions{display:flex;align-items:center;gap:5px;padding-top:9px;flex:none}
+#v136Workspace .pov-icon-button,#v136Workspace .pov-settings>summary{width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--pov-line);border-radius:12px;background:#102b40;color:#d9eaf7;font-size:24px;list-style:none;cursor:pointer}
+#v136Workspace .pov-icon-button svg{display:block;width:20px;height:20px}
+#v136Workspace .pov-settings>summary::-webkit-details-marker{display:none}
+#v136Workspace .v136-add{min-height:44px;padding:8px 12px;border:0;background:var(--pov-accent);color:#073427;font-size:13px}
+#v136Workspace .pov-settings{position:relative}
+#v136Workspace .pov-settings>div{position:absolute;right:0;top:49px;z-index:30;width:220px;display:grid;padding:7px;border:1px solid var(--pov-line);border-radius:12px;background:#10263b;box-shadow:0 12px 30px #0008}
+#v136Workspace .pov-settings button,#v136Workspace .pov-settings a{display:block;width:100%;min-height:42px;padding:9px;border:0;border-radius:7px;background:transparent;color:#eaf8ff;text-align:left;text-decoration:none;font-size:13px}
+#v136Workspace .pov-settings button:hover,#v136Workspace .pov-settings a:hover{background:#214357}
+#v136Workspace .pov-search{padding:0 2px 8px}
+#v136Workspace .pov-search label{display:block;color:var(--pov-muted);font-size:12px;margin-bottom:4px}
+#v136Workspace .pov-search input{width:100%;min-height:44px;padding:8px 12px;border:1px solid var(--pov-line);border-radius:10px;background:var(--pov-card2);color:var(--pov-text)}
+#v136Workspace .v136-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:3px;margin-bottom:10px;overflow:visible;border:1px solid var(--pov-line);border-radius:999px;background:var(--pov-card2)}
+#v136Workspace .v136-nav button{min-width:0;min-height:44px;padding:7px 1px;border:0;border-radius:999px;color:var(--pov-text);font-size:12px;font-weight:650;white-space:nowrap}
+#v136Workspace .v136-nav button[aria-selected=true]{background:var(--pov-accent);color:#073427}
+#v136Workspace .v136-screen[data-v136-screen="overview"]{display:block;padding:0;border:0;border-radius:0;background:none}
+#lifeosPlanOverview{display:grid;gap:8px}
+#lifeosPlanOverview .pov-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#lifeosPlanOverview .pov-card{min-width:0;padding:10px;border:1px solid var(--pov-line);border-radius:14px;background:linear-gradient(140deg,var(--pov-card),var(--pov-card2))}
+#lifeosPlanOverview .pov-card-head{display:flex;align-items:center;gap:5px;min-width:0;margin-bottom:7px}
+#lifeosPlanOverview .pov-card-head h3{flex:1;min-width:0;margin:0;color:var(--pov-text);font-size:13px;line-height:1.22;font-weight:750;letter-spacing:-.02em;overflow-wrap:normal;word-break:normal}
+#lifeosPlanOverview .pov-icon{display:grid;place-items:center;width:20px;height:20px;flex:none;color:var(--pov-accent)}
+#lifeosPlanOverview .pov-icon svg{width:100%;height:100%}
+#lifeosPlanOverview .pov-row-icon{width:31px;height:31px;padding:6px;border-radius:8px;background:#1a3d4b}
+#lifeosPlanOverview .pov-muted,#lifeosPlanOverview .pov-card-head .pov-text-button{color:var(--pov-muted);font-size:11px;line-height:1.2;text-align:right;white-space:nowrap}
+#lifeosPlanOverview .pov-text-button{padding:3px;border:0;background:none;color:var(--pov-accent);font-size:11px;min-width:44px;min-height:44px}
+#lifeosPlanOverview .pov-card-head .pov-text-button{margin:-6px -3px}
+#lifeosPlanOverview .pov-plan-row,#lifeosPlanOverview .pov-deadline-row{display:flex;align-items:center;gap:6px;width:100%;min-height:45px;padding:4px 0;border:0;border-top:1px solid #365166;background:transparent;color:var(--pov-text);text-align:left}
+#lifeosPlanOverview .pov-plan-row:first-of-type,#lifeosPlanOverview .pov-deadline-row:first-of-type{border-top:0}
+#lifeosPlanOverview .pov-plan-row>span:not(.pov-icon),#lifeosPlanOverview .pov-deadline-row>span:not(.pov-icon){display:grid;flex:1;min-width:0;gap:2px}
+#lifeosPlanOverview .pov-plan-row strong,#lifeosPlanOverview .pov-deadline-row strong,#lifeosPlanOverview .pov-conflict-row strong{font-size:12px;line-height:1.2;overflow-wrap:anywhere}
+#lifeosPlanOverview .pov-plan-row small,#lifeosPlanOverview .pov-deadline-row small,#lifeosPlanOverview .pov-conflict-row small,#lifeosPlanOverview .pov-conflict-row span{color:var(--pov-muted);font-size:11px;line-height:1.2}
+#lifeosPlanOverview .pov-plan-row em{padding:4px 5px;border-radius:8px;background:var(--pov-accent);color:#083529;font-size:9px;font-style:normal;white-space:nowrap}
+#lifeosPlanOverview .pov-task-row{display:flex;align-items:center;gap:7px;min-height:44px;font-size:12px;line-height:1.2;overflow-wrap:anywhere}
+#lifeosPlanOverview .pov-task-row input{width:19px;height:19px;flex:none;margin:0;accent-color:#65e4b6}
+#lifeosPlanOverview .pov-task-row .is-done{text-decoration:line-through;color:var(--pov-muted)}
+#lifeosPlanOverview .pov-progress-row{display:flex;align-items:center;gap:6px;margin-top:7px;color:var(--pov-text);font-size:11px}
+#lifeosPlanOverview .pov-progress{height:7px;flex:1;border-radius:9px;overflow:hidden;background:#29485b}
+#lifeosPlanOverview .pov-progress i{display:block;height:100%;background:var(--pov-accent);border-radius:9px}
+#lifeosPlanOverview .pov-task-link{float:right}
+#lifeosPlanOverview .pov-empty{margin:8px 0;color:var(--pov-muted);font-size:12px;line-height:1.4}
+#lifeosPlanOverview .pov-chart{display:grid;grid-template-columns:minmax(0,1fr) 99px;gap:8px;align-items:end}
+#lifeosPlanOverview .pov-week-bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;align-items:end}
+#lifeosPlanOverview .pov-bar-day{display:grid;justify-items:center;gap:3px;min-width:0;padding:4px 0;border:1px solid transparent;border-radius:9px}
+#lifeosPlanOverview .pov-bar-day.is-today{border-color:#45b995;background:#0b4b45}
+#lifeosPlanOverview .pov-bar-day small,#lifeosPlanOverview .pov-bar-day span{font-size:11px;color:var(--pov-text);white-space:nowrap}
+#lifeosPlanOverview .pov-bars{display:flex;justify-content:center;align-items:end;gap:2px;width:100%;height:48px}
+#lifeosPlanOverview .pov-bars i{width:min(11px,36%);min-height:0;background:var(--pov-accent);border-radius:3px 3px 0 0}
+#lifeosPlanOverview .pov-bars i+ i{background:var(--pov-blue)}
+#lifeosPlanOverview .pov-legend{display:grid;gap:6px;padding-left:7px;border-left:1px solid var(--pov-line);font-size:11px}
+#lifeosPlanOverview .pov-legend div{display:flex;align-items:center;gap:4px;white-space:nowrap}
+#lifeosPlanOverview .pov-legend b{margin-left:auto}
+#lifeosPlanOverview .pov-legend i{width:8px;height:8px;border-radius:50%;background:var(--pov-accent)}
+#lifeosPlanOverview .pov-legend div+div i{background:var(--pov-blue)}
+#lifeosPlanOverview .pov-legend small{color:var(--pov-muted);font-size:11px}
+#lifeosPlanOverview .pov-badge{display:grid;place-items:center;min-width:24px;height:22px;border-radius:12px;background:#663846;color:#ffe2e4;font-size:11px}
+#lifeosPlanOverview .pov-conflict-row{display:grid;gap:3px;width:100%;min-height:66px;padding:8px;border:1px solid #704959;border-left:4px solid #ef8f9b;border-radius:9px;background:#152b40;color:var(--pov-text);text-align:left}
+#lifeosPlanOverview .pov-deadline-row b{font-size:19px;color:var(--pov-muted)}
+#lifeosPlanOverview .pov-summary{background:linear-gradient(130deg,#0b4543,var(--pov-card2))}
+#lifeosPlanOverview .pov-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:9px}
+#lifeosPlanOverview .pov-summary-grid>div{padding:0 6px;border-left:1px solid var(--pov-line);min-width:0}
+#lifeosPlanOverview .pov-summary-grid>div:first-child{padding-left:0;border-left:0}
+#lifeosPlanOverview .pov-summary-grid strong{display:block;font-size:16px;line-height:1.2;white-space:nowrap}
+#lifeosPlanOverview .pov-summary-grid small{display:block;margin-top:3px;color:var(--pov-muted);font-size:11px;line-height:1.25}
+html[data-lifeos-theme="light"] #v136Workspace{--pov-bg:#f2f6f9;--pov-card:#fff;--pov-card2:#edf4f7;--pov-line:#b3cbd3;--pov-text:#173246;--pov-muted:#4e6c7a;--pov-accent:#0c8d70;--pov-blue:#4d7ed4}
+html[data-lifeos-theme="light"] #v136Workspace .v136-add,html[data-lifeos-theme="light"] #v136Workspace .v136-nav button[aria-selected=true]{color:#fff}
+html[data-lifeos-theme="light"] #v136Workspace .pov-icon-button,html[data-lifeos-theme="light"] #v136Workspace .pov-settings>summary{background:#e5f1f1;color:#173246}
+html[data-lifeos-theme="light"] #v136Workspace .pov-settings>div{background:#fff}
+html[data-lifeos-theme="light"] #v136Workspace .pov-settings :is(button,a){color:#173246}
+html[data-lifeos-theme="light"] #lifeosPlanOverview .pov-row-icon{background:#dcefea}
+html[data-lifeos-theme="light"] #lifeosPlanOverview .pov-bar-day.is-today{background:#ddf4ed}
+html[data-lifeos-theme="light"] #lifeosPlanOverview .pov-conflict-row{background:#fff3f3}
+html[data-lifeos-theme="light"] #lifeosPlanOverview .pov-summary{background:#e1f4ee}
+@media(max-width:750px){body[data-lifeos-view="schedule"]{padding-bottom:0!important}html body[data-lifeos-view="schedule"] main.wrap{padding:10px 10px calc(var(--ap-nav-height,80px) + 18px)!important}}
+@media(max-width:365px){#v136Workspace .pov-title h2{font-size:27px!important}#v136Workspace .pov-subtitle{font-size:11px}#v136Workspace .v136-add{padding:8px}#lifeosPlanOverview .pov-card{padding:8px}#lifeosPlanOverview .pov-card-head h3{font-size:12px}}
