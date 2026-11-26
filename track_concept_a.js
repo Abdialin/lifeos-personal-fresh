@@ -11,7 +11,7 @@ const e=(tag,cls,textValue)=>{
  if(textValue!==undefined)node.textContent=textValue;
  return node;
 };
-const state={tab:'live',historyPeriod:'week',historyMonth:localMonthKey(new Date()),historyAnchor:localKey(new Date()),historyCategory:'',historyActivity:'',historyOrder:'newest',reviewPeriod:'week',query:'',history:[],lastHistory:0};
+const state={tab:'live',historyPeriod:'week',historyMonth:localMonthKey(new Date()),historyAnchor:localKey(new Date()),historyFrom:localKey(new Date()),historyTo:localKey(new Date()),historyDraftFrom:localKey(new Date()),historyDraftTo:localKey(new Date()),historyCategory:'',historyActivity:'',historyOrder:'newest',reviewPeriod:'week',query:'',history:[],lastHistory:0};
 let shell,dialog,dialogBody,previousFocus,selectedGap=null;
 const finishPending=new Map();
 const localInput=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*60000).toISOString().slice(0,23)};
@@ -180,6 +180,8 @@ function build(){
  // Handle manual entry before legacy document-level bubbling handlers.
  shell.addEventListener('click',event=>{const button=event.target.closest('[data-ca-sheet="past"]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();sheet('past');},true);
  shell.addEventListener('input',event=>{
+  if(event.target.id==='caHistoryFrom'){state.historyDraftFrom=event.target.value;return}
+  if(event.target.id==='caHistoryTo'){state.historyDraftTo=event.target.value;return}
   if(event.target.id==='caHistorySearch'){
    state.query=event.target.value;const caret=event.target.selectionStart;
    renderHistory();const replacement=$('caHistorySearch');
@@ -353,6 +355,7 @@ function historyWindow(period){
  const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate(),12);
  let anchor=historyDate(state.historyAnchor)||today;
  if(period==='month')anchor=historyDate(state.historyMonth+'-01')||today;
+ if(period==='custom')anchor=historyDate(state.historyFrom)||today;
  const start=new Date(anchor),end=new Date(anchor);
  if(period==='week'){
   start.setDate(start.getDate()-(start.getDay()+6)%7);end.setTime(start.getTime());end.setDate(end.getDate()+7);
@@ -360,6 +363,8 @@ function historyWindow(period){
   start.setDate(1);end.setTime(start.getTime());end.setMonth(end.getMonth()+1);
  }else if(period==='year'){
   start.setMonth(0,1);end.setFullYear(start.getFullYear()+1,0,1);
+ }else if(period==='custom'){
+  end.setTime((historyDate(state.historyTo)||today).getTime());end.setDate(end.getDate()+1);
  }else{end.setDate(end.getDate()+1)}
  const futureLimit=new Date(today);futureLimit.setDate(futureLimit.getDate()+1);
  return {start,end,limit:end<futureLimit?end:futureLimit,today};
@@ -385,29 +390,49 @@ function historyColor(name){
 function historyChart(records,period,window){
  const bins=new Map();
  function bin(key,label){if(!bins.has(key))bins.set(key,{key,label,groups:new Map(),total:0});return bins.get(key)}
+ const span=historyDaySpan(window.start,window.end);
+ const unit=period==='all'?'year':period==='year'?'month':period==='month'?'week':period==='custom'?(span<=7?'day':span<=77?'week':span<=365?'month':'year'):'day';
+ function keyFor(date){
+  if(unit==='year')return String(date.getFullYear());
+  if(unit==='month')return localMonthKey(date);
+  if(unit==='week'){const monday=new Date(date);monday.setDate(monday.getDate()-(monday.getDay()+6)%7);return localKey(monday)}
+  return localKey(date);
+ }
+ function labelFor(date){
+  if(unit==='year')return String(date.getFullYear());
+  if(unit==='month')return date.toLocaleDateString(undefined,{month:'short',...(period==='custom'?{year:'2-digit'}:{})});
+  if(unit==='week'){const monday=new Date(date);monday.setDate(monday.getDate()-(monday.getDay()+6)%7);return monday.toLocaleDateString(undefined,{day:'numeric',month:'short'})}
+  return date.toLocaleDateString(undefined,{weekday:'short',...(['today','custom'].includes(period)?{day:'numeric'}:{})});
+ }
  if(period==='all'){
   for(const record of records){const d=historyDate(record.dateKey);if(d)bin(String(d.getFullYear()),String(d.getFullYear()))}
- }else if(period==='year'){
-  for(let i=0;i<12;i++){const d=new Date(window.start.getFullYear(),i,1,12);bin(localMonthKey(d),d.toLocaleDateString(undefined,{month:'short'}))}
  }else{
-  for(const d=new Date(window.start);d<window.end;d.setDate(d.getDate()+1)){
-   if(period==='month'){
-    const monday=new Date(d);monday.setDate(monday.getDate()-(monday.getDay()+6)%7);
-    bin(localKey(monday),monday.toLocaleDateString(undefined,{day:'numeric',month:'short'}));
-   }else bin(localKey(d),d.toLocaleDateString(undefined,{weekday:'short',...(period==='today'?{day:'numeric'}:{})}));
+  const d=new Date(window.start);
+  if(unit==='year')d.setMonth(0,1);
+  else if(unit==='month')d.setDate(1);
+  else if(unit==='week')d.setDate(d.getDate()-(d.getDay()+6)%7);
+  for(;d<window.end;){
+   bin(keyFor(d),labelFor(d));
+   if(unit==='year')d.setFullYear(d.getFullYear()+1);
+   else if(unit==='month')d.setMonth(d.getMonth()+1);
+   else d.setDate(d.getDate()+(unit==='week'?7:1));
   }
  }
- const categories=new Map();
  for(const record of records){
   const d=historyDate(record.dateKey);if(!d)continue;
-  let key=period==='all'?String(d.getFullYear()):period==='year'?localMonthKey(d):record.dateKey;
-  if(period==='month'){const monday=new Date(d);monday.setDate(monday.getDate()-(monday.getDay()+6)%7);key=localKey(monday)}
+  const key=keyFor(d);
   const value=historyDuration(record),group=record.category||'Other / review',bucket=bins.get(key);
   if(!bucket)continue;
-  bucket.total+=value;bucket.groups.set(group,(bucket.groups.get(group)||0)+value);categories.set(group,(categories.get(group)||0)+value);
+  bucket.total+=value;bucket.groups.set(group,(bucket.groups.get(group)||0)+value);
  }
  let displayed=Array.from(bins.values()).sort((a,b)=>a.key.localeCompare(b.key));
- const truncated=displayed.length>12;if(truncated)displayed=displayed.slice(-12);
+ const groupedEarlier=displayed.length>12;
+ if(groupedEarlier){
+  const old=displayed.slice(0,-11),earlier={key:'earlier',label:'Earlier',details:'Earlier '+old[0].label+' – '+old[old.length-1].label,groups:new Map(),total:0};
+  for(const bucket of old){earlier.total+=bucket.total;for(const [name,ms] of bucket.groups)earlier.groups.set(name,(earlier.groups.get(name)||0)+ms)}
+  displayed=[earlier,...displayed.slice(-11)];
+ }
+ const categories=new Map();for(const bucket of displayed)for(const [name,ms] of bucket.groups)categories.set(name,(categories.get(name)||0)+ms);
  const groups=Array.from(categories).sort((a,b)=>b[1]-a[1]).map(([name])=>name),max=Math.max(1,...displayed.map(b=>b.total));
  let html='<div class="ca-history-chart" aria-label="Recorded time by category">';
  if(!displayed.some(b=>b.total>0))html+='<p class="ca-history-chart-empty">No recorded time in this period.</p>';
@@ -415,7 +440,8 @@ function historyChart(records,period,window){
   const axis=ms=>ms>0&&ms<60000?exactDuration(ms):durationLabel(ms);
   html+='<div class="ca-history-chart-plot"><div class="ca-history-axis" aria-hidden="true"><span>'+htmlEscape(axis(max))+'</span><span>'+htmlEscape(axis(max/2))+'</span><span>0m</span></div><div class="ca-history-bars">';
   for(const b of displayed){
-   html+='<div class="ca-history-bar-column"><div class="ca-history-bar" role="img" aria-label="'+htmlEscape(b.label+' · '+durationLabel(b.total))+'">';
+   const description=(b.details||b.label)+' · '+durationLabel(b.total)+Array.from(b.groups).map(([name,ms])=>' · '+name+' '+durationLabel(ms)).join('');
+   html+='<div class="ca-history-bar-column"><div class="ca-history-bar" role="img" aria-label="'+htmlEscape(description)+'">';
    for(const [name,ms] of b.groups)html+='<span title="'+htmlEscape(name+' · '+durationLabel(ms))+'" style="height:'+Math.max(0,ms/max*100)+'%;background:'+historyColor(name)+'"></span>';
    html+='</div><small>'+htmlEscape(b.label)+'</small></div>';
   }
@@ -424,7 +450,7 @@ function historyChart(records,period,window){
   html+='</div>';
  }
  const undated=records.filter(r=>!historyDate(r.dateKey)).length;
- return html+'<small class="ca-history-chart-note">'+(truncated?'Most recent 12 years shown · ':'')+'Recorded duration, including concurrent time.'+(undated?' '+undated+' undated '+(undated===1?'entry':'entries')+' excluded from chart.':'')+'</small></div>';
+ return html+'<small class="ca-history-chart-note">'+(groupedEarlier?'Earlier '+unit+'s grouped · ':'')+'Recorded duration, including concurrent time.'+(undated?' '+undated+' undated '+(undated===1?'entry':'entries')+' excluded from chart.':'')+'</small></div>';
 }
 function renderHistory(){
  if(!shell)return;
@@ -442,26 +468,29 @@ function renderHistory(){
   const first=Number(originals.get(String(a.id))?.startAt)||0,second=Number(originals.get(String(b.id))?.startAt)||0;
   return direction*(day||(first-second));
  });
- const signature=[state.historyPeriod,state.historyMonth,state.historyAnchor,state.historyCategory,state.historyActivity,state.historyOrder,state.query,localKey(range.today),periodItems.map(x=>[x.id,x.dateKey,x.duration,x.rawDurationMs,x.time,x.name,x.category].join(':')).join('|')].join('|');
+ const signature=[state.historyPeriod,state.historyMonth,state.historyAnchor,state.historyFrom,state.historyTo,state.historyCategory,state.historyActivity,state.historyOrder,state.query,localKey(range.today),periodItems.map(x=>[x.id,x.dateKey,x.duration,x.rawDurationMs,x.time,x.name,x.category].join(':')).join('|')].join('|');
  if(target.dataset.caSignature===signature){state.lastHistory=Date.now();return}
  const openDays=new Set(Array.from(target.querySelectorAll('details.ca-day[open]')).map(el=>el.dataset.caDay));
  const openWeeks=new Set(Array.from(target.querySelectorAll('details.ca-history-week[open]')).map(el=>el.dataset.caWeek));
  const openMonths=new Set(Array.from(target.querySelectorAll('details.ca-history-month[open]')).map(el=>el.dataset.caMonth));
  // Opening the monthly or all-history view starts with its most recent month visible.
- const wasMonthView=['month','year','all'].includes(target.dataset.caPeriod);
+ const wasMonthView=['month','year','all','custom'].includes(target.dataset.caPeriod);
+ const customPanel=target.querySelector('#caHistoryCustom'),customOpen=(!!customPanel&&!customPanel.hidden)||state.historyPeriod==='custom';
  const queryActive=Boolean(state.query.trim());
  let page='<div class="ca-section-head"><span class="ca-section-icon">▣</span><div><h2>Activity History</h2><p>Your recorded activities and sessions</p></div></div>';
  page+='<div class="ca-toolbar"><input id="caHistorySearch" class="ca-search" type="search" placeholder="⌕  Search activities..." aria-label="Search activity history" value="'+htmlEscape(state.query)+'"></div>';
  page+='<div class="ca-filter-row">';
- for(const [key,label] of [['today','Day'],['week','Week'],['month','Month'],['year','Year'],['all','All time']])
-  page+='<button type="button" class="ca-chip" data-ca-period="'+key+'" aria-pressed="'+(state.historyPeriod===key)+'">'+label+'</button>';
+ for(const [key,label] of [['today','Day'],['week','Week'],['month','Month'],['year','Year'],['all','All']])
+  page+='<button type="button" class="ca-chip" data-ca-period="'+key+'" aria-pressed="'+(state.historyPeriod===key)+'" '+(key==='all'?'aria-label="All time"':'')+'>'+label+'</button>';
+ page+='<button type="button" class="ca-chip" data-ca-history-custom-toggle aria-controls="caHistoryCustom" aria-expanded="'+customOpen+'" aria-pressed="'+(state.historyPeriod==='custom')+'">Custom</button>';
  page+='</div>';
- if(state.historyPeriod!=='all'){
+ if(!['all','custom'].includes(state.historyPeriod)){
   const atCurrent=range.end>range.today;
   page+='<div class="ca-month-navigation"><button type="button" data-ca-history-move="-1" aria-label="Previous '+htmlEscape(state.historyPeriod==='today'?'day':state.historyPeriod)+'">‹</button>';
   page+='<strong>'+htmlEscape(historyWindowLabel(state.historyPeriod,range))+'</strong>';
   page+='<button type="button" data-ca-history-move="1" '+(atCurrent?'disabled':'')+' aria-label="Next '+htmlEscape(state.historyPeriod==='today'?'day':state.historyPeriod)+'">›</button></div>';
- }else page+='<p class="ca-history-range">All saved history</p>';
+ }else page+='<p class="ca-history-range">'+htmlEscape(state.historyPeriod==='all'?'All saved history':historyWindowLabel('custom',range))+'</p>';
+ page+='<div id="caHistoryCustom" class="ca-history-custom" '+(customOpen?'':'hidden')+'><div><label>From<input id="caHistoryFrom" type="date" max="'+htmlEscape(localKey(range.today))+'" value="'+htmlEscape(state.historyDraftFrom)+'"></label><label>To<input id="caHistoryTo" type="date" max="'+htmlEscape(localKey(range.today))+'" value="'+htmlEscape(state.historyDraftTo)+'"></label><button type="button" data-ca-history-apply>View</button></div><p role="status" id="caHistoryRangeError"></p></div>';
  const total=items=>items.reduce((acc,r)=>acc+historyDuration(r),0),sum=total(filtered),dates=new Set(filtered.map(r=>r.dateKey).filter(Boolean));
  const first=Array.from(dates).sort()[0],avgStart=state.historyPeriod==='all'?historyDate(first):range.start;
  const days=avgStart?historyDaySpan(avgStart,state.historyPeriod==='all'?new Date(range.today.getFullYear(),range.today.getMonth(),range.today.getDate()+1,12):range.limit):0;
@@ -482,9 +511,10 @@ function renderHistory(){
   dayGroups.get(dayKey).items.push(rec);
  }
  const firstDay=dayGroups.keys().next().value,initialPeriod=!target.dataset.caSignature||target.dataset.caPeriod!==state.historyPeriod;
+ const groupedHistory=['month','year','all'].includes(state.historyPeriod)||(state.historyPeriod==='custom'&&historyDaySpan(range.start,range.end)>31);
  function dayMarkup(group){
   const items=group.items;
-  const dayOpen=queryActive||openDays.has(group.key)||(initialPeriod&&!['month','year','all'].includes(state.historyPeriod)&&group.key===firstDay);
+  const dayOpen=queryActive||openDays.has(group.key)||(initialPeriod&&!groupedHistory&&group.key===firstDay);
   let out='<details class="ca-day" data-ca-day="'+htmlEscape(group.key)+'" '+(dayOpen?'open':'')+'>';
   out+='<summary class="ca-day-summary"><span class="ca-day-main"><strong>'+htmlEscape(group.label)+'</strong><small>'+items.length+' '+(items.length===1?'activity':'activities')+' · '+' summed '+durationLabel(total(items))+'</small></span>';
   out+='<span class="ca-day-toggle"><span class="ca-day-show">Show activities</span><span class="ca-day-hide">Hide activities</span><span class="ca-day-arrow" aria-hidden="true">⌄</span></span></summary>';
@@ -494,7 +524,7 @@ function renderHistory(){
   }
   return out+'</div></details>';
  }
- if(['month','year','all'].includes(state.historyPeriod)){
+ if(groupedHistory){
   const months=new Map();
   for(const day of dayGroups.values()){
    const monthKey=/^\d{4}-\d{2}-\d{2}$/.test(day.key)?day.key.slice(0,7):'undated';
@@ -935,10 +965,20 @@ function sheet(type,id,dayKey){
 function handleClick(event){
  const tab=event.target.closest('[data-ca-tab]');if(tab){chooseTab(tab.dataset.caTab);return}
  const quick=event.target.closest('[data-ca-quick-start]');if(quick){const source=Array.from(document.querySelectorAll('#quick button[data-name]')).find(b=>b.dataset.name===quick.dataset.caQuickStart);if(source){source.click();setTimeout(refresh,60)}return}
+ const customToggle=event.target.closest('[data-ca-history-custom-toggle]');
+ if(customToggle){const panel=$('caHistoryCustom');if(panel){panel.hidden=!panel.hidden;customToggle.setAttribute('aria-expanded',String(!panel.hidden))}return}
+ if(event.target.closest('[data-ca-history-apply]')){
+  const from=$('caHistoryFrom')?.value||'',to=$('caHistoryTo')?.value||'',today=localKey(new Date());
+  const error=$('caHistoryRangeError');
+  if(!historyDate(from)||!historyDate(to)||from>to||to>today){if(error)error.textContent='Choose valid dates in order, ending no later than today.';return}
+  state.historyFrom=state.historyDraftFrom=from;state.historyTo=state.historyDraftTo=to;
+  state.historyAnchor=to;state.historyMonth=to.slice(0,7);state.historyPeriod='custom';state.historyCategory='';state.historyActivity='';renderHistory();return;
+ }
  const period=event.target.closest('button[data-ca-period]');if(period){
   const previous=state.historyPeriod,next=period.dataset.caPeriod;
   if(previous==='month'&&next!=='month')state.historyAnchor=state.historyMonth+'-01';
   if(next==='month'&&previous!=='month')state.historyMonth=state.historyAnchor.slice(0,7);
+  const custom=$('caHistoryCustom');if(custom)custom.hidden=true;
   state.historyPeriod=next;state.historyCategory='';state.historyActivity='';renderHistory();return
  }
  const move=event.target.closest('[data-ca-history-move]');
