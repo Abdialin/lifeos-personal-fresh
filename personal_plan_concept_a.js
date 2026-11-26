@@ -98,6 +98,36 @@ function chartScale(series){
  const hours=Math.max(1,...series.flatMap(d=>['reality','planned','predicted','ideal'].map(k=>(d[k]||0)/3600000))),raw=hours/4,power=10**Math.floor(Math.log10(raw)),step=[1,2,2.5,5,10].find(n=>n*power>=raw)*power;
  return {maxMs:step*4*3600000,ticks:[4,3,2,1,0].map(n=>Number((step*n).toPrecision(8)))};
 }
+/* Compare active durations only with earlier finished sessions of the same
+ * explicitly named activity. The latest 20 eligible sessions in the previous
+ * 60 days bound both the evidence window and the cost for large histories. */
+function durationFlags(workspace,now){
+ const records=(Array.isArray(workspace?.sessions)?workspace.sessions:[]).filter(s=>s&&s.id&&s.status==='finished'&&!sample(s)),counts=new Map();
+ for(const s of records)counts.set(String(s.id),(counts.get(String(s.id))||0)+1);
+ const groups=new Map(),rows=[];
+ for(const s of records){
+  const start=Number(s.startAt),end=Number(s.endAt),name=String(s.name||'').trim().replace(/\s+/g,' ').toLocaleLowerCase();
+  if(counts.get(String(s.id))!==1||!name||s.startAt==null||s.endAt==null||!Number.isFinite(start)||!Number.isFinite(end)||end<=start||end>now)continue;
+  const intervals=analytics().sessionIntervals(s,now).slice().sort((a,b)=>a.start-b.start);
+  if(!intervals.length||(Array.isArray(s.segments)&&intervals.length!==s.segments.length)||intervals.some((x,i)=>x.start<start||x.end>end||(i>0&&x.start<intervals[i-1].end)))continue;
+  const ms=intervals.reduce((sum,x)=>sum+x.end-x.start,0);if(ms<=0)continue;
+  const row={session:s,start,end,ms};rows.push(row);if(!groups.has(name))groups.set(name,[]);groups.get(name).push(row);
+ }
+ for(const group of groups.values())group.sort((a,b)=>a.end-b.end);
+ const found=[],recentBoundary=new Date(now);recentBoundary.setDate(recentBoundary.getDate()-14);
+ for(const row of rows){
+  if(row.end<=recentBoundary.getTime())continue;
+  const name=String(row.session.name).trim().replace(/\s+/g,' ').toLocaleLowerCase(),group=groups.get(name);let lo=0,hi=group.length;
+  while(lo<hi){const mid=(lo+hi)>>1;if(group[mid].end<=row.start)lo=mid+1;else hi=mid}
+  const boundary=new Date(row.start);boundary.setDate(boundary.getDate()-60);
+  const prior=group.slice(Math.max(0,lo-20),lo).filter(x=>x.end>=boundary.getTime()).map(x=>x.ms).sort((a,b)=>a-b);
+  const median=prior.length<3?null:prior.length%2?prior[(prior.length-1)/2]:(prior[prior.length/2-1]+prior[prior.length/2])/2;
+  const unusual=median!==null&&Math.abs(row.ms-median)>=15*60000&&(row.ms<=median/2||row.ms>=median*2);
+  if(unusual||row.ms>24*3600000)found.push({session:row.session,durationMs:row.ms,medianMs:unusual?median:null,baselineCount:unusual?prior.length:0,kind:unusual?'relative':'long'});
+ }
+ return found.sort((a,b)=>Number(b.session.endAt)-Number(a.session.endAt));
+}
+function durationFlagDetail(flag){const show=ms=>ms>0&&ms<60000?'<1m':dur(ms);return flag.kind==='relative'?show(flag.durationMs)+' recorded · median '+show(flag.medianMs)+' across '+flag.baselineCount+' earlier sessions':show(flag.durationMs)+' recorded · over 24h';}
 let host,state={anchor:key(Date.now()),range:'week',compareDays:7,compareAnchor:week(Date.now()),taskAnchor:week(Date.now())};
 function title(text,meta=''){return '<div class="pa-heading"><h3>'+text+'</h3>'+meta+'</div>'}
 function card(content,extra=''){return '<section class="pa-card '+extra+'">'+content+'</section>'}
@@ -191,16 +221,17 @@ function compare(){
  target.innerHTML='<div class="pa-section-heading"><div><h3>Compare</h3><p>Reality, planned, predicted and ideal schedules.</p></div></div>'+card('<div class="pa-period"><button type="button" data-pa-compare-move="-1" aria-label="Previous period">‹</button><strong>'+labelPeriod(m.from,m.end)+'</strong><button type="button" data-pa-compare-move="1" aria-label="Next period">›</button></div><div class="pa-segments">'+[7,14,30].map(n=>'<button type="button" data-pa-days="'+n+'" aria-pressed="'+(state.compareDays===n)+'">'+n+' days</button>').join('')+'</div>')+comparison+'<div class="pa-pair pa-compare-pair">'+categoryCard+overall+'</div>'+(m.totals.ideal!==null?'<p class="pa-footnote">Ideal values use your current routines; historical target changes are not available.</p>':'')+card(title('Key insights')+insights+'<p class="pa-footnote">'+(m.forecast.available?'Predictions are observed patterns, not bookings or proof of future activity.':esc(m.forecast.reason)+'. Predictions need at least 14 tracked days and three matching weekday observations.')+'</p><button class="pa-link" type="button" data-v136-tab="improve">Review opportunities ›</button>');
 }
 function improve(){
- const target=$('paImprove');if(!target)return;const w=read(),now=Date.now(),ws=normalized(w),report=(()=>{try{return root.LifeOSDebtRecoveryV75?.outstanding?.({...w,...ws},now)||{open:[],unverified:[]}}catch{return {open:[],unverified:[]}}})(),unknown=report.unverified||[],open=report.open||[],recent=ws.sessions.filter(s=>s.status==='finished'&&+s.endAt>shift(now,-14)),flag=recent.filter(s=>{const duration=analytics().sessionIntervals(s,now).reduce((n,x)=>n+x.end-x.start,0);return duration>24*3600000||(duration>=3*3600000&&/prayer|fajr|dhuhr|asr|maghrib|isha/i.test(s.name||''))||(duration>=8*3600000&&/quran|memorization|arabic/i.test(s.name||''))});
+ const target=$('paImprove');if(!target)return;const w=read(),now=Date.now(),ws=normalized(w),report=(()=>{try{return root.LifeOSDebtRecoveryV75?.outstanding?.({...w,sessions:ws.sessions,schedule:w.schedule||[]},now)||null}catch{return null}})(),recoveryAvailable=!!report&&!report.error,unknown=recoveryAvailable?report.unverified||[]:[],open=recoveryAvailable?report.open||[]:[],hasDurations=typeof analytics()?.sessionIntervals==='function',flag=hasDurations?durationFlags(w,now):[];
  const future=ws.schedule.filter(p=>+p.endAt>now).sort((a,b)=>+a.startAt-+b.startAt),conflicts=[];for(let i=0;i<future.length;i++)for(let j=i+1;j<future.length;j++)if(overlap(+future[i].startAt,+future[i].endAt,+future[j].startAt,+future[j].endAt))conflicts.push([future[i],future[j]]);
  const ideas=[];if(conflicts.length)ideas.push({title:'Review schedule conflicts',detail:conflicts.length+' overlapping plan '+(conflicts.length===1?'pair':'pairs'),action:'calendar'});if(flag.length)ideas.push({title:'Check unusual durations',detail:flag.length+' recorded '+(flag.length===1?'activity':'activities')+' may need review',review:'durations'});if(open.length)ideas.push({title:'Review recovery options',detail:open.length+' confirmed '+(open.length===1?'shortfall':'shortfalls')+' to consider',review:'shortfalls'});
  const recommendations=ideas.length?ideas.map(x=>'<div class="pa-recommendation"><span class="pa-recommend-icon">✦</span><div><strong>'+esc(x.title)+'</strong><small>'+esc(x.detail)+'</small></div><button type="button" '+(x.review?'data-pa-review="'+x.review+'"':'data-v136-tab="'+x.action+'"')+'>Review</button></div>').join(''):empty('No evidence-backed recommendations yet.');
  const unverified=unknown.slice(0,4).map(x=>'<button class="pa-compact-row" type="button" data-v137-activity="plan" data-v137-id="'+esc(x.id)+'"><span><strong>'+esc(x.name||x.planName||'Unverified plan')+'</strong><small>Attendance not confirmed</small></span><b>›</b></button>').join('');
- const unusual=flag.slice(0,4).map(x=>'<button class="pa-compact-row" type="button" data-v137-activity="record" data-v137-id="'+esc(x.id)+'"><span><strong>'+esc(x.name||'Activity')+'</strong><small>'+dur(analytics().sessionIntervals(x,now).reduce((n,z)=>n+z.end-z.start,0))+' recorded · review</small></span><b>›</b></button>').join('');
+ const unusual=flag.slice(0,4).map(x=>'<button class="pa-compact-row" type="button" data-v137-activity="record" data-v137-id="'+esc(x.session.id)+'"><span><strong>'+esc(x.session.name||'Activity')+'</strong><small>'+esc(durationFlagDetail(x))+'</small></span><b>›</b></button>').join('');
+ const recovery=!recoveryAvailable?'<p class="pa-sub">Recovery review is unavailable. '+esc(report?.error||'Your records have not changed.')+'</p>':open.length?'<label class="pa-recovery-select">Choose a commitment<select data-pa-recovery-select><option value="">Select…</option>'+open.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name||'Commitment')+' · '+esc(dur(x.outstandingMs))+'</option>').join('')+'</select></label><div class="pa-recovery-actions">'+[['recover','Schedule recovery'],['carry','Carry forward'],['adjust','Adjust'],['forgive','Forgive']].map(([mode,label])=>'<button type="button" data-v136-recovery="" data-pa-recovery-mode="'+mode+'" disabled>'+label+'</button>').join('')+'</div><p class="pa-footnote">Preview and approval are required.</p>':'<p class="pa-sub">No confirmed shortfalls. Unverified plans remain unknown.</p>';
  target.innerHTML='<div class="pa-section-heading"><div><h3>Improve</h3><p>Review, recover and make your plan work better.</p></div><span class="pa-week-badge">Week '+fmtWeek(now)+'</span></div>'+
- '<div class="pa-kpis pa-three"><div><b>'+unknown.length+'</b><small>Unverified commitments</small></div><div><b>'+flag.length+'</b><small>Duration checks</small></div><div><b>'+conflicts.length+'</b><small>Plan conflicts</small></div></div>'+
- card(title('Scheduling recommendations')+recommendations,'pa-improve-lead')+'<div class="pa-pair">'+card(title('Unverified ('+unknown.length+')')+(unverified||empty('No unverified commitments.')))+' '+card(title('Duration checks ('+flag.length+')')+(unusual||empty('No unusual durations.')))+'</div>'+
- '<div class="pa-pair">'+card(title('Recovery options')+'<p class="pa-sub">Review confirmed shortfalls and choose a response.</p><button class="pa-outline" type="button" data-pa-review="shortfalls">Review recovery ›</button>')+card(title('Proposed improvements')+(ideas.length?'<p class="pa-sub">Review the evidence before choosing a change.</p>':empty('No proposed changes.'))+'<button class="pa-outline" type="button" data-v136-tab="more">Planning tools ›</button>')+'</div>'+
+ '<div class="pa-kpis pa-three"><div><b>'+(recoveryAvailable?unknown.length:'—')+'</b><small>Unverified commitments</small></div><div><b>'+(hasDurations?flag.length:'—')+'</b><small>Duration checks</small></div><div><b>'+conflicts.length+'</b><small>Plan conflicts</small></div></div>'+
+ card(title('Scheduling recommendations')+recommendations,'pa-improve-lead')+'<div class="pa-pair">'+card(title('Unverified ('+(recoveryAvailable?unknown.length:'—')+')')+(unverified||empty(recoveryAvailable?'No unverified commitments.':'Commitment review is unavailable.'))+(unknown.length>4?'<button class="pa-link" type="button" data-pa-review="unknown">Review all ›</button>':''))+' '+card(title('Duration checks ('+(hasDurations?flag.length:'—')+')')+(unusual||empty(hasDurations?'No duration checks identified. Repeated activities need at least three earlier sessions.':'Duration review is unavailable.'))+(flag.length>4?'<button class="pa-link" type="button" data-pa-review="durations">Review all ›</button>':''))+'</div>'+
+ '<div class="pa-pair">'+card(title('Recovery options')+recovery+'<button class="pa-link" type="button" data-pa-review="shortfalls">Review commitments ›</button>')+card(title('Proposed improvements')+(ideas.length?'<p class="pa-sub">Review the evidence before choosing a change.</p>':empty('No proposed changes.'))+'<button class="pa-outline" type="button" data-v136-tab="more">Planning tools ›</button>')+'</div>'+
  card('<div class="pa-approval"><span>✓</span><div><strong>Changes need your approval</strong><small>Nothing is added or changed automatically.</small></div></div>','pa-improve-lead');
 }
 function render(tab){if(!host)init();if(!host)return;if(tab==='calendar')calendar();if(tab==='tasks')tasks();if(tab==='compare')compare();if(tab==='improve')improve()}
@@ -227,12 +258,12 @@ function init(){
   if(b.dataset.paCompareMove){state.compareAnchor=shift(state.compareAnchor,+b.dataset.paCompareMove*state.compareDays);compare();return}
   if(b.dataset.paReview){host.querySelector('[data-v136-tab="review"]')?.click();host.querySelector('[data-v138-review="'+b.dataset.paReview+'"]')?.click();return}
  });
- host.addEventListener('change',e=>{const input=e.target.closest('[data-pa-task-toggle]');if(!input)return;const native=nativeTask(input.dataset.paTaskToggle,'toggle');if(native){native.checked=input.checked;native.dispatchEvent(new Event('change',{bubbles:true}))}tasks()});
+ host.addEventListener('change',e=>{const choice=e.target.closest('[data-pa-recovery-select]');if(choice){host.querySelectorAll('[data-pa-recovery-mode]').forEach(button=>{button.dataset.v136Recovery=choice.value;button.disabled=!choice.value});return}const input=e.target.closest('[data-pa-task-toggle]');if(!input)return;const native=nativeTask(input.dataset.paTaskToggle,'toggle');if(native){native.checked=input.checked;native.dispatchEvent(new Event('change',{bubbles:true}))}tasks()});
  const refresh=()=>{const tab=activeTab();if(['calendar','tasks','compare','improve'].includes(tab))render(tab)};
  for(const id of ['todoList','scheduleList']){const node=$(id);if(node)new MutationObserver(refresh).observe(node,{childList:true,subtree:true})}
  for(const event of ['lifeos-v77-tracking-changed','lifeos-v74-records-changed','lifeos-v65-plan-committed','lifeos-v75-changed','lifeos-v76-activation-changed'])root.addEventListener(event,refresh);
  return true;
 }
 if(root.document){const boot=()=>{if(!init())root.setTimeout(boot,250)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',boot,{once:true});else boot()}
-return {init,render,calendar,tasks,compare,improve,taskEditor,taskGroups,compareModel,chartScale,rowsForDay,lanes,ideal,forecasts,series,day,shift,week};
+return {init,render,calendar,tasks,compare,improve,taskEditor,taskGroups,compareModel,chartScale,durationFlags,durationFlagDetail,rowsForDay,lanes,ideal,forecasts,series,day,shift,week};
 });

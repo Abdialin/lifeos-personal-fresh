@@ -9,11 +9,12 @@ const actions=[['recover','Recover time','Find an available slot'],['carry','Nex
 function source(){try{return window.lifeosReadOnlyWorkspace?.()||{}}catch{return {}}}
 function chosen(){try{return window.LifeOSDebtRecoveryV75?.outstanding(source())?.open?.find(x=>String(x.id)===String(openId))}catch{return null}}
 function sync(){
- const item=chosen(),name=$('v140Name'),time=$('v140Time');
+ const item=chosen(),name=$('v140Name'),time=$('v140Time'),reason=$('v140Reason');
  if(!name)return;
  name.textContent=item?.name||'Commitment review';
  const amount=Math.max(0,item?.outstandingMs||0),mins=Math.round(amount/60000);
- time.textContent=item?((mins>=60?Math.floor(mins/60)+'h ':'')+(mins%60)+'m calculated difference'):'Current record needs refreshing';
+ time.textContent=item?((mins>=60?Math.floor(mins/60)+'h ':'')+(mins%60)+'m '+(item.reason==='explicitly-skipped'?'marked skipped':'calculated difference')):'Current record needs refreshing';
+ if(reason)reason.textContent=item?.reason==='explicitly-skipped'?'This commitment is marked as skipped. Choose how to handle the planned time; no tracked time is created automatically.':item?.reason==='tracked-shortfall'?'A shorter linked timer does not necessarily mean the commitment was missed. Choose what should happen next.':'Review the source record before deciding how to handle this commitment.';
  const sel=$('lo75-item');if(sel&&item&&String(sel.value)!==String(item.id)){sel.value=String(item.id);sel.dispatchEvent(new Event('change',{bubbles:true}))}
  renderModes();
 }
@@ -38,6 +39,8 @@ function open(id,trigger){
  sheet.hidden=false;document.body.classList.add('v140-open');
  const review=$('v136RecoveryDrawer');if(review)review.open=false;
  sync();
+ const requested=trigger?.dataset.paRecoveryMode,control=$('lo75-action');
+ if(control&&actions.some(([mode])=>mode===requested)){control.value=requested;control.dispatchEvent(new Event('change',{bubbles:true}));renderModes()}
  sheet.querySelector('[data-v140-close]')?.focus({preventScroll:true});
  return true;
 }
@@ -52,7 +55,7 @@ function setup(){
  const sheet=document.createElement('section');
  sheet.id='v140Dialog';sheet.hidden=true;sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('aria-labelledby','v140Name');
  sheet.innerHTML='<div class="v140-screen-dim" data-v140-dismiss></div><div class="v140-panel"><div class="v140-grip"></div><header class="v140-header"><div><span>COMMITMENT REVIEW</span><h2 id="v140Name">Review commitment</h2><p id="v140Time"></p></div><button type="button" data-v140-close aria-label="Close review">✕</button></header>'+
- '<div class="v140-guide"><strong>What happened?</strong><p>A shorter linked timer does not necessarily mean the commitment was missed. Choose what should happen next.</p></div>'+
+ '<div class="v140-guide"><strong>What happened?</strong><p id="v140Reason">Review the source record before deciding how to handle this commitment.</p></div>'+
  '<div class="v140-modes" role="group" aria-label="Choose decision">'+actions.map(([k,n,d])=>'<button type="button" data-v140-mode="'+k+'" aria-pressed="'+(k==='recover')+'"><strong>'+n+'</strong><small>'+d+'</small></button>').join('')+'</div>'+
  '<p class="v140-explanation" id="v140Explanation"></p><div id="v140NativeForm"></div><footer class="v140-footnote">Nothing changes until you preview and explicitly approve. A recovery is a plan, not recorded activity.</footer></div>';
  document.body.append(sheet);
@@ -71,7 +74,7 @@ function setup(){
   const control=$('lo75-action');if(!control)return;
   control.value=m.dataset.v140Mode;control.dispatchEvent(new Event('change',{bubbles:true}));renderModes();
  });
- document.addEventListener('keydown',e=>{if(sheet.hidden)return;if(e.key==='Escape'){e.preventDefault();close()}});
+ document.addEventListener('keydown',e=>{if(sheet.hidden)return;if(e.key==='Escape'&&!document.querySelector('[role="dialog"][aria-label="Approve recovery decision?"]')){e.preventDefault();close()}});
  root.addEventListener('click',event=>{
   const btn=event.target.closest('button[data-v136-recovery]');if(!btn)return;
   if(open(btn.dataset.v136Recovery,btn)){event.preventDefault();event.stopImmediatePropagation()}

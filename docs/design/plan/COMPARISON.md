@@ -28,4 +28,13 @@ Compare now includes a labeled, data-scaled daily-hours axis and averages. The r
 
 Full-page captures are also available in `current/v1-compare-dark-full.png` and `current/v1-compare-light-full.png`. A stitched full-page browser capture places the fixed bottom navigation partway down the image; it is not a screenshot of the navigation's position after scrolling.
 
+Improve's duration cards now show the actual active duration and the median and sample count for eligible earlier same-named sessions. They do not infer a missed commitment or automatically change a record. The visible Review action opens the original activity, with a separate full list for larger volumes. For a confirmed shortfall, a commitment selector and four recovery choices open the existing reviewed-commitment sheet; preview and in-app consent remain mandatory. This is a longer flow than the reference's single-screen layout, and the illustrative percentage recommendations are not fabricated.
+
+![Improve, dark browser capture](current/v1-improve-dark.png)
+![Improve, light browser capture](current/v1-improve-light.png)
+![Improve recovery choices, dark browser capture](current/v1-improve-dark-recovery.png)
+![Recovery decision, dark browser capture](current/v1-improve-dark-decision.png)
+![Recovery decision, light browser capture](current/v1-improve-light-decision.png)
+![Recovery confirmation, light browser capture](current/v1-improve-light-consent.png)
+
 The screenshots intentionally differ in content and numbers, may require scrolling, and omit unsupported ratios and suggestions. Calendar bulk editing of an entire recurring series is not implemented; each generated occurrence remains an ordinary plan. Device rendering, native system insets, keyboard behavior and final visual acceptance remain unverified.

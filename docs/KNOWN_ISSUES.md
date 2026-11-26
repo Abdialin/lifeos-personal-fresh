@@ -26,6 +26,10 @@ All five supplied Plan reference images are now in `docs/design/plan/reference/`
 
 Plan's task editor is now an integrated sheet with browser coverage. Its full-page reference includes repeating tasks, which the existing task data model does not support; no repeat control is presented until it can be implemented safely. Completion remains available in the task list. Compare has labeled chart axes, data-based averages, factual insight cards and separate available ratios. Its ideal values use currently configured routines for past periods; historical ideal targets are not versioned. Native keyboard and insets have not been tested.
 
+Improve's duration checks disclose the history and thresholds used, rather than treating a named activity's duration as inherently abnormal. Recovery choices open the existing reviewed-commitment sheet after a commitment is selected, and require a preview and explicit in-app consent. This differs from the reference's single-screen arrangement. Visual and device acceptance remain open. A duration check is not evidence that a timer is wrong.
+
+If a plan in the review period has a missing or unsupported identifier, or shares its identifier with another plan, recovery review is deliberately unavailable and explains that a recovery backup and review of the affected records are needed. No records are removed or changed automatically; a safe in-app repair workflow for those plan identifiers has not been verified.
+
 ## Track V1 comparison
 
 The History “This Week” filter and Review's “This Week” and “This Month” filters now use the local calendar week or month through today. The Review chart states when it displays only the latest portion of a month. These behaviors have synthetic browser regression coverage, including overnight portions and daylight-saving boundaries; they have not been verified on a device.

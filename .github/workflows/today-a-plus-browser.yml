@@ -33,6 +33,7 @@ jobs:
       - run: TRACK_TIMER_CAPTURE=1 node tests/track-timer-settings.cjs
       - run: TRACK_DISTRACTION_CAPTURE=1 node tests/track-distraction-review.cjs
       - run: node test_stage74_accountability.cjs
+      - run: node test_stage75_debt_recovery.cjs
       - run: node test_stage78_duration.cjs
       - run: node test_stage80_duration_profiles.cjs
       - run: node --test test_track_design_v126.test.cjs test_track_focus_v127.test.cjs test_track_polish_v128.test.cjs test_track_visual_v129.test.cjs
@@ -47,6 +48,8 @@ jobs:
       - run: PLAN_CAPTURE=1 node tests/plan-concept-a.cjs
       - run: PLAN_TASK_CAPTURE=1 node tests/plan-task-editor.cjs
       - run: PLAN_COMPARE_CAPTURE=1 node tests/plan-compare-chart.cjs
+      - run: node tests/plan-duration-evidence.cjs
+      - run: PLAN_IMPROVE_CAPTURE=1 node tests/plan-improve-evidence.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -59,3 +62,4 @@ jobs:
             docs/design/goals/current/release-reading*.png
             docs/design/plan/current/v1-task-editor-*.png
             docs/design/plan/current/v1-compare-*.png
+            docs/design/plan/current/v1-improve-*.png

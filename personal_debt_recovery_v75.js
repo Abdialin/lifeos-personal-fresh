@@ -12,11 +12,11 @@ const ACTIONS=['recover','carry','adjust','forgive'];
 const HISTORY_ACTIONS=[...ACTIONS,'cancel'];
 function outstanding(workspace,at=Date.now(),engine=root.LifeOSAccountabilityV74){
  const report=engine?.debtReport?.(workspace,at,28);
- if(!report)return {open:[],resolved:[],unverified:[],openMs:0,error:'Debt report unavailable'};
- const plans=new Map((workspace?.schedule||[]).map(p=>[String(p.id),p]));
+ if(!report||report.error)return {open:[],resolved:[],unverified:[],openMs:0,error:report?.error||'Debt report unavailable'};
+ const plans=new Map((Array.isArray(workspace?.schedule)?workspace.schedule:[]).filter(p=>p&&typeof p==='object'&&p.id!=null).map(p=>[String(p.id),p]));
  const open=[],resolved=[];
  let scheduledMs=0,recoveredMs=0,originalConfirmedMs=0;
- const realSessions=new Map((workspace?.sessions||[]).filter(x=>x&&x.source!=='development-starter'&&x.source!=='assumed-demo'&&!x.seedBatch).map(x=>[String(x.id),x]));
+ const realSessions=typeof engine?.eligibleSessions==='function'?engine.eligibleSessions(workspace?.sessions,at):new Map();
  for(const item of report.confirmed){
   const original=plans.get(String(item.id));
   if(!original)continue;
@@ -67,6 +67,7 @@ function suggest(workspace,item,at=Date.now(),mode='recover'){
 function review(workspace,input,at=Date.now(),engine=root.LifeOSAccountabilityV74){
  if(!input||!ACTIONS.includes(input.action))return {ok:false,reason:'Choose a recovery decision.'};
  const report=outstanding(workspace,at,engine);
+ if(report.error)return {ok:false,reason:report.error};
  const debt=report.open.find(x=>String(x.id)===String(input.id));
  if(!debt)return {ok:false,reason:'The original debt is no longer open or its records changed. Refresh the Debt Chamber.'};
  const origin=(workspace?.schedule||[]).find(p=>String(p.id)===String(debt.id));
@@ -121,6 +122,7 @@ function mount(){
   const w=workspace();if(!w)return;
   const report=outstanding(w),old=selection.value;
   selection.replaceChildren(new Option('Select outstanding commitment',''));
+  if(report.error){invalidate();notice.textContent=report.error;$('lo75-resolved').textContent=report.error;return}
   for(const item of report.open)selection.add(new Option(String(item.name)+' · '+(root.LifeOSAccountabilityV74?.fmt?.(item.outstandingMs)||Math.round(item.outstandingMs/60000)+' minutes'),String(item.id)));
   selection.value=[...selection.options].some(o=>o.value===old)?old:'';
   $('lo75-resolved').textContent='Allocated to approved recovery plans (not necessarily completed): '+Math.round(report.scheduledMs/60000)+' minutes. Verified completed recovery: '+Math.round(report.recoveredMs/60000)+' minutes. '+report.resolved.length+' commitment(s) have approved decisions covering their outstanding time. '+report.unverified.length+' unverified plans are excluded from debt until reviewed.';
@@ -129,7 +131,9 @@ function mount(){
   invalidate();const mode=action.value;
   $('lo75-time-wrap').hidden=!['recover','carry'].includes(mode);
   $('lo75-adjust-wrap').hidden=mode!=='adjust';
-  const item=outstanding(workspace()).open.find(x=>String(x.id)===selection.value);
+  const report=outstanding(workspace());if(report.error){notice.textContent=report.error;return}
+  const item=report.open.find(x=>String(x.id)===selection.value);
+  notice.textContent=item?'Review the details, then preview your decision.':'Choose a commitment to begin.';
   if(item&&(mode==='recover'||mode==='carry')){
    const slot=suggest(workspace(),item,Date.now(),mode);
    $('lo75-start').value=slot?localDateTime(slot.startAt):'';
@@ -145,14 +149,17 @@ function mount(){
   notice.textContent=check.action==='recover'||check.action==='carry'?'Preview: add a future '+Math.round(check.recoveredPortionMs/60000)+'-minute plan; '+Math.round(check.remainingMs/60000)+' minutes remain outstanding for future review. The original plan stays unchanged.':'Preview: '+check.action+' the outstanding commitment. The original plan and tracked history remain unchanged.';
  }
  selection.addEventListener('change',updateInputs);action.addEventListener('change',updateInputs);
- for(const id of ['lo75-start','lo75-end','lo75-adjust-ms'])$(id).addEventListener('input',invalidate);
+ for(const id of ['lo75-start','lo75-end','lo75-adjust-ms'])for(const event of ['input','change'])$(id).addEventListener(event,()=>{invalidate();notice.textContent='Details changed. Preview your decision again.'});
  $('lo75-propose').addEventListener('click',draft);
- approve.addEventListener('click',()=>{
+ approve.addEventListener('click',async()=>{
   if(!proposed){notice.textContent='Preview a decision first.';return}
   const request={...proposed,result:{ok:false,message:'No decision saved.'}};
+  invalidate();notice.textContent='Waiting for approval…';
   root.dispatchEvent(new CustomEvent('lifeos-v75-approve-debt',{detail:request}));
-  notice.textContent=request.result?.message||'Could not save the decision.';
-  invalidate();options();updateInputs();
+  if(request.pending)try{await request.pending}catch(_){request.result={ok:false,message:'Decision could not be saved.'}}
+  const message=request.result?.message||'Could not save the decision.';
+  options();updateInputs();notice.textContent=message;
+  const focus=$('lo75-propose');if(focus?.getClientRects().length)focus.focus({preventScroll:true});
  });
  root.addEventListener('lifeos-v75-changed',options);
  root.addEventListener('lifeos-v65-plan-committed',options);

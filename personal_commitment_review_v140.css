@@ -1,4 +1,4 @@
-/* V140: focused commitment review modal, preserves native V75 approval. */
+/* V140: focused commitment review modal, using the guarded V75 approval. */
 #v140Dialog{position:fixed;inset:0;z-index:3500;display:grid;align-items:end;justify-items:center}
 #v140Dialog[hidden]{display:none!important}
 #v140Dialog .v140-screen-dim{position:absolute;inset:0;background:#010711bc}
@@ -8,7 +8,7 @@
 #v140Dialog .v140-header span{font-size:10px;letter-spacing:.14em;font-weight:900;color:#89dfc4}
 #v140Dialog .v140-header h2{font-size:22px;letter-spacing:-.04em;line-height:1.2;margin:7px 0}
 #v140Dialog .v140-header p{font-size:13px;color:#c4d6e4;margin:5px 0}
-#v140Dialog .v140-header button{min-width:42px;height:42px;border-radius:11px;background:#203e50;color:white;border:1px solid #527386;font-size:17px;cursor:pointer}
+#v140Dialog .v140-header button{min-width:44px;height:44px;border-radius:11px;background:#203e50;color:white;border:1px solid #527386;font-size:17px;cursor:pointer}
 #v140Dialog .v140-guide{margin:17px 0 11px;border-left:3px solid #65cdb0;padding:9px 12px;background:#102f37;border-radius:8px}
 #v140Dialog .v140-guide strong{font-size:13px}
 #v140Dialog .v140-guide p{font-size:11px;line-height:1.55;color:#bacddd;margin:5px 0 0}
@@ -16,7 +16,7 @@
 #v140Dialog .v140-modes button{display:grid;gap:6px;align-content:center;min-height:77px;padding:11px 12px;text-align:left;border:1px solid #355468;border-radius:13px;background:#0b2238;color:#deecf6;cursor:pointer}
 #v140Dialog .v140-modes button[aria-pressed=true]{border-color:#61d8b7;background:#0d5a4c;box-shadow:inset 0 0 0 1px #3fa78d}
 #v140Dialog .v140-modes strong{font-size:12px}
-#v140Dialog .v140-modes small{font-size:10px;color:#adc6d7;line-height:1.35}
+#v140Dialog .v140-modes small{font-size:11px;color:#adc6d7;line-height:1.35}
 #v140Dialog .v140-modes button[aria-pressed=true] small{color:#d0f6e9}
 #v140Dialog .v140-explanation{color:#a6c5d8;font-size:11px;line-height:1.5;margin:4px 0 11px}
 #v140Dialog #lo75-debt-tools{margin:0;border:0;padding:0;background:transparent;box-shadow:none}
@@ -38,5 +38,11 @@ body.v140-open{overflow:hidden!important}
 #v136Workspace .v140-audit[open]>summary{padding-bottom:12px;border-bottom:1px solid #365466}
 #v136Workspace .v140-audit>div,#v136Workspace .v140-audit #lo74-debt{max-width:100%;overflow-wrap:anywhere}
 #v140Dialog button:focus-visible{outline:3px solid #9bf4d6;outline-offset:2px}
+html[data-lifeos-theme="light"] #v140Dialog .v140-panel{background:#f4faf8;color:#16363d;border-color:#a5c9c0}
+html[data-lifeos-theme="light"] #v140Dialog .v140-header span{color:#087559}html[data-lifeos-theme="light"] #v140Dialog .v140-header h2{color:#16363d}html[data-lifeos-theme="light"] #v140Dialog .v140-header p{color:#44666e}html[data-lifeos-theme="light"] #v140Dialog .v140-header button{background:#e0f0ec;color:#16363d;border-color:#a5c9c0}
+html[data-lifeos-theme="light"] #v140Dialog .v140-guide{background:#e0f2eb;border-color:#178a6d}html[data-lifeos-theme="light"] #v140Dialog .v140-guide p{color:#3d6066}
+html[data-lifeos-theme="light"] #v140Dialog .v140-modes button{background:#fff;color:#16363d;border-color:#a6c5c0}html[data-lifeos-theme="light"] #v140Dialog .v140-modes small{color:#4b6d73}html[data-lifeos-theme="light"] #v140Dialog .v140-modes button[aria-pressed=true]{background:#c6eee0;color:#0b4939;border-color:#16896b}html[data-lifeos-theme="light"] #v140Dialog .v140-modes button[aria-pressed=true] small{color:#255b50}
+html[data-lifeos-theme="light"] #v140Dialog .v140-explanation,html[data-lifeos-theme="light"] #v140Dialog #lo75-debt-tools #lo75-time-wrap label,html[data-lifeos-theme="light"] #v140Dialog #lo75-debt-tools #lo75-adjust-wrap label{color:#345a60}
+html[data-lifeos-theme="light"] #v140Dialog #lo75-debt-tools input{background:#fff;color:#173940;border-color:#a1c2bc;color-scheme:light}html[data-lifeos-theme="light"] #v140Dialog #lo75-propose{background:#e1f0ec;color:#173940;border-color:#9abfb8}html[data-lifeos-theme="light"] #v140Dialog #lo75-result{background:#e4f3ee;color:#294b51;border-color:#b0ccc6}html[data-lifeos-theme="light"] #v140Dialog #lo75-resolved,html[data-lifeos-theme="light"] #v140Dialog .v140-footnote{color:#496b70;border-color:#b0ccc6}
 @media(min-width:720px){#v140Dialog{align-items:center}#v140Dialog .v140-panel{border-radius:22px;max-height:85dvh}}
 @media(max-width:370px){#v140Dialog .v140-panel{padding-left:12px;padding-right:12px}#v140Dialog .v140-modes button{padding:8px}#v140Dialog .v140-modes strong{font-size:11px}}

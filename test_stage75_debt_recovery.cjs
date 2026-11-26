@@ -13,6 +13,7 @@ function workspace(){
  ]};
 }
 let w=workspace(),report=v75.outstanding(w,now);
+const duplicate=workspace();duplicate.schedule.push({...duplicate.schedule[1],name:'Duplicate gym'});assert.match(v75.outstanding(duplicate,now).error,/share an identifier/);assert.match(v75.review(duplicate,{id:'gym',action:'forgive'},now).reason,/share an identifier/);
 assert.equal(report.open.length,2);assert.equal(report.unverified.length,1);
 assert.equal(report.openMs,2*H);
 const short=report.open.find(x=>x.id==='study');
@@ -84,4 +85,12 @@ w.sessions.push({id:'recovered-study',name:'Recovery: Study',status:'finished',s
 studyRecovery.sessionId='recovered-study';
 assert.equal(v75.outstanding(w,completedAt).recoveredMs,H,'completed recovery requires a real linked finished timer');
 assert.equal(v75.outstanding(w,completedAt).scheduledMs,H,'the other booked recovery remains unverified');
+w.sessions.find(x=>x.id==='recovered-study').isExample=true;
+assert.equal(v75.outstanding(w,completedAt).recoveredMs,0,'An example timer cannot verify a recovery');
+assert.equal(v75.outstanding(w,completedAt).scheduledMs,2*H,'The corresponding recovery remains unverified');
+delete w.sessions.find(x=>x.id==='recovered-study').isExample;
+w.sessions.push({...w.sessions.find(x=>x.id==='recovered-study')});
+assert.equal(v75.outstanding(w,completedAt).recoveredMs,0,'Duplicate linked session IDs do not verify recovery');
+w.sessions.pop();w.sessions.find(x=>x.id==='recovered-study').endAt=completedAt+H;
+assert.equal(v75.outstanding(w,completedAt).recoveredMs,0,'Future-dated finished timers do not verify recovery');
 console.log('V75 Debt Chamber: all regression assertions passed.');

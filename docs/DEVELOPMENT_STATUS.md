@@ -44,6 +44,8 @@ Plan Tasks now opens an integrated Create/Edit sheet from Plan and Today. It sup
 
 Plan Compare now labels the daily-hours scale and shows averages based on the available days in each series. The recorded average explicitly includes today so far; unconfigured ideal data and future recorded time remain unavailable rather than being displayed as zero. It shows factual recorded-time comparisons when the selected period has ended and supporting data exists, plus the highest recorded day without inferring productivity. Synthetic 7-, 14- and 30-day browser tests and mobile captures cover the chart; the historical versioning of ideal routines and device acceptance are still open.
 
+Plan Improve's duration checks now compare active duration with the median of 3–20 eligible earlier same-named activities within 60 local calendar days, flagging a difference of at least 15 minutes and twice or half the median. Recorded activities over 24 hours are also presented for review. Sample, duplicate, future and inconsistent records do not supply evidence. A warning is a prompt to inspect the original, not a claim of an error. Explicitly skipped commitments now reach recovery review. Selecting a commitment and a recovery option opens the existing decision sheet; preview, in-app consent and a fresh conflict check precede any save. Synthetic browser tests cover cancellation, a conflict introduced during consent, failed storage and successful reload. Device acceptance remains open.
+
 ## Still open
 
 - The Android screenshots show bottom navigation floating above the system navigation area and content behind it. The native/WebView interaction needs device measurements and a later consolidated native release; browser viewport checks do not verify native IME or system bars.

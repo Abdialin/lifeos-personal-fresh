@@ -4,7 +4,7 @@
 (function(root,factory){const api=factory(root);if(typeof module==='object'&&module.exports)module.exports=api;else root.LifeOSAccountabilityV74=api;})(typeof globalThis!=='undefined'?globalThis:this,function(root){
 'use strict';
 const CATEGORIES=['Social media','Entertainment','Communication','Procrastination','Interruption','Environment','Other'];
-const sample=s=>s?.source==='development-starter'||s?.source==='assumed-demo'||!!s?.seedBatch;
+const sample=s=>!!(s?.assumed||s?.isExample||s?.developmentExample||s?.seedBatch||['development-starter','assumed-demo','imported-example'].includes(s?.source));
 const distract=s=>{
  if(!s)return false;
  if(typeof root.lifeosActivityClassification==='function')return root.lifeosActivityClassification(s)?.group==='Distraction';
@@ -14,6 +14,15 @@ const distract=s=>{
  return s.activityType==='distraction'||s.name==='Distraction'||/^Distraction[: —-]/i.test(String(s.name||''));
 };
 function duration(s,now){return (s?.segments||[]).reduce((sum,x)=>{const a=Number(x?.start),b=x?.end==null?(s.status==='running'?now:NaN):Number(x.end);return sum+(Number.isFinite(a)&&Number.isFinite(b)?Math.max(0,Math.min(b,now)-a):0)},0)}
+function eligibleSessions(sessions,at){
+ const records=(Array.isArray(sessions)?sessions:[]).filter(s=>s&&s.id!=null&&!sample(s)),counts=new Map(),result=new Map();
+ for(const s of records){const id=String(s.id);counts.set(id,(counts.get(id)||0)+1)}
+ for(const s of records){const id=String(s.id);if(counts.get(id)!==1)continue;
+  if(s.status==='finished'&&s.endAt!=null){const end=typeof s.endAt==='number'?s.endAt:(Number.isFinite(Number(s.endAt))?Number(s.endAt):Date.parse(s.endAt));if(!Number.isFinite(end)||end>at)continue}
+  result.set(id,s);
+ }
+ return result;
+}
 function distractionReport(workspace,at=Date.now(),days=28){
  const start=at-days*86400000,entries=[],groups=new Map(),hours=new Map();
  for(const s of workspace?.sessions||[]){
@@ -37,10 +46,14 @@ function distractionReport(workspace,at=Date.now(),days=28){
 }
 function debtReport(workspace,at=Date.now(),days=7){
  const start=at-days*86400000,records=[],pending=[];
- const sessionMap=new Map((workspace?.sessions||[]).filter(s=>!sample(s)).map(s=>[s.id,s]));
- for(const p of workspace?.schedule||[]){
-  if(!p||!Number.isFinite(p.endAt)||!Number.isFinite(p.startAt)||p.endAt<=p.startAt||p.endAt>at||p.endAt<start||p.status==='cancelled'||p.source==='debt-recovery-v75')continue;
-  const planned=p.endAt-p.startAt,linked=sessionMap.get(p.sessionId);
+ const plans=Array.isArray(workspace?.schedule)?workspace.schedule:[],ids=new Map();
+ for(const p of plans){if(!p||p.id==null||!String(p.id).trim())continue;const id=String(p.id);ids.set(id,(ids.get(id)||0)+1)}
+ const sessionMap=eligibleSessions(workspace?.sessions,at);
+ for(const p of plans){
+  if(!p||sample(p)||!Number.isFinite(p.endAt)||!Number.isFinite(p.startAt)||p.endAt<=p.startAt||p.endAt>at||p.endAt<start||p.status==='cancelled'||p.source==='debt-recovery-v75')continue;
+  if(typeof p.id!=='string'||!p.id.trim())return {confirmed:[],totalMs:0,unverified:[],confirmedCount:0,unverifiedCount:0,error:'A plan has no identifier or has an unsupported identifier. Export a recovery backup and review the record before making recovery decisions.'};
+  if(ids.get(p.id)>1)return {confirmed:[],totalMs:0,unverified:[],confirmedCount:0,unverifiedCount:0,error:'Multiple plans share an identifier. Export a recovery backup and review the duplicate records before making recovery decisions.'};
+  const planned=p.endAt-p.startAt,linked=p.sessionId==null?null:sessionMap.get(String(p.sessionId));
   const actual=linked?duration(linked,at):null;
   if(p.status==='skipped'){
    records.push({id:p.id,name:p.name||'Planned activity',outstandingMs:planned,reason:'explicitly-skipped',plannedMs:planned,actualMs:0});continue;
@@ -74,6 +87,7 @@ function mount(){
   for(const s of w.sessions||[])if(distract(s)&&!sample(s))select.add(new Option(String(s.name||'Distraction')+' · '+new Date(s.startAt).toLocaleString(),String(s.id)));
   select.value=[...select.options].some(x=>x.value===prev)?prev:'';
   const d=debtReport(w,Date.now(),28),extended=root.LifeOSDebtRecoveryV75?.outstanding?.(w,Date.now(),api),box=debt.querySelector('#lo74-debt-results');box.replaceChildren();
+  if(d.error||extended?.error){box.textContent='Commitment review unavailable: '+(d.error||extended.error);return}
   const open=extended?.open||d.confirmed,openMs=extended?.openMs??d.totalMs,resolved=extended?.resolved?.length||0;
   const overview=document.createElement('p');overview.textContent='Outstanding after approved decisions: '+fmt(openMs)+' across '+open.length+' commitment(s). '+resolved+' resolved or scheduled for recovery. '+d.unverifiedCount+' past plan(s) need completion review.';box.append(overview);
   const confirmed=document.createElement('ul');for(const row of open.slice(0,12)){const li=document.createElement('li');li.textContent=row.name+': −'+fmt(row.outstandingMs)+' ('+row.reason.replaceAll('-',' ')+')';confirmed.append(li)}box.append(confirmed);
@@ -107,7 +121,7 @@ function mount(){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
  render();
 }
-const api={distractionReport,debtReport,duration,fmt,CATEGORIES};
+const api={distractionReport,debtReport,duration,eligibleSessions,fmt,CATEGORIES};
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount()}
 return api;
 });

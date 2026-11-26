@@ -18,7 +18,7 @@ const displayDate=s=>new Date(s+'T12:00:00').toLocaleDateString(undefined,{weekd
 const tasks=x=>Array.isArray(x.todos)?x.todos:[];
 const all=()=>{const x=w();return {x,plans:(x.schedule||[]).filter(valid).filter(p=>!['cancelled','skipped'].includes(p.status)),real:(x.sessions||[]).filter(valid).filter(confirmed),samples:(x.sessions||[]).filter(valid).filter(preview)}};
 const intersect=(r,from,to)=>+r.startAt<to&&+r.endAt>from;
-let host,source,selected='overview',anchor=datekey(Date.now()),range='day',compare='reality',compareWindow=7,showAll=false,detailsOpen=false,reviewMode='shortfalls';
+let host,source,selected='overview',anchor=datekey(Date.now()),range='day',compare='reality',compareWindow=7,showAll=false,detailsOpen=false,reviewMode='shortfalls',showAllDurationChecks=false,showAllShortfalls=false,showAllUnverified=false;
 function cleanName(s){return String(s||'Activity').trim().toLowerCase().replace(/[^a-z0-9\u00c0-\u024f]+/g,' ')}
 function getDayRows(data,key){const from=startday(key),to=startday(datekey(from+86400000)),plans=data.plans.filter(p=>intersect(p,from,to)),real=data.real.filter(s=>intersect(s,from,to));
  return [...real.map(s=>({name:s.name||'Activity',start:s.startAt,end:s.endAt,kind:'record',category:cat(s.name),flag:suspicious(s),source:s})),...plans.filter(p=>!real.some(s=>String(s.plannedId||'')===String(p.id)||String(p.sessionId||'')===String(s.id))).map(p=>({name:p.name||'Plan',start:p.startAt,end:p.endAt,kind:'plan',category:cat(p.name),flag:false,source:p}))]
@@ -134,25 +134,27 @@ function renderImprove(){
 }
 function renderReview(){
  const d=all(),now=Date.now(),report=(()=>{try{return window.LifeOSDebtRecoveryV75?.outstanding?.(d.x,now)}catch{return null}})(),
- open=Array.isArray(report?.open)?report.open:[],unknown=Array.isArray(report?.unverified)?report.unverified:[],
- flag=d.real.filter(x=>+x.endAt>now-14*86400000&&suspicious(x)),safe=x=>esc(x||'');
- $('v136ReviewMetrics').innerHTML='<div><strong>'+open.length+'</strong><small>Calculated shortfalls</small></div><div><strong>'+unknown.length+'</strong><small>Unverified plans</small></div><div><strong>'+flag.length+'</strong><small>Duration checks</small></div>';
+ reportAvailable=!!report&&!report.error,open=reportAvailable&&Array.isArray(report.open)?report.open:[],unknown=reportAvailable&&Array.isArray(report.unverified)?report.unverified:[],hasDurationModel=typeof window.LifeOSPlanConcept?.durationFlags==='function'&&typeof window.LifeOSUnifiedAnalytics?.sessionIntervals==='function',
+ flag=hasDurationModel?window.LifeOSPlanConcept.durationFlags(d.x,now):[],safe=x=>esc(x||''),
+ flagDetail=x=>window.LifeOSPlanConcept?.durationFlagDetail?.(x)||dur(x.durationMs)+' total span · review';
+ $('v136ReviewMetrics').innerHTML='<div><strong>'+(reportAvailable?open.length:'—')+'</strong><small>Calculated shortfalls</small></div><div><strong>'+(reportAvailable?unknown.length:'—')+'</strong><small>Unverified plans</small></div><div><strong>'+(hasDurationModel?flag.length:'—')+'</strong><small>Duration checks</small></div>';
  host.querySelectorAll('[data-v138-review]').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v138Review===reviewMode)));
  const list=$('v136ReviewList'),title=$('v138ReviewTitle'),desc=$('v136ReviewNote');
  if(reviewMode==='shortfalls'){
   title.textContent='Commitments to confirm';
   desc.textContent='These are calculated shortfalls, not proof that a commitment was missed. Review before making a recovery decision.';
-  list.innerHTML=open.length?open.slice(0,8).map(x=>'<article class="v136-review-row"><div><strong>'+safe(x.name)+'</strong><small>'+dur(x.outstandingMs)+' calculated shortfall</small><em>Needs your confirmation</em></div><button type="button" data-v136-recovery="'+safe(x.id)+'">Review →</button></article>').join(''):'<p class="v136-muted">No calculated shortfalls currently require attention.</p>';
+  list.innerHTML=!reportAvailable?'<p class="v136-muted">Commitment review is unavailable. '+safe(report?.error||'Your records have not changed.')+'</p>':open.length?(showAllShortfalls?open:open.slice(0,8)).map(x=>'<article class="v136-review-row"><div><strong>'+safe(x.name)+'</strong><small>'+dur(x.outstandingMs)+' calculated shortfall</small><em>Needs your confirmation</em></div><button type="button" data-v136-recovery="'+safe(x.id)+'">Review →</button></article>').join('')+(open.length>8?'<button type="button" class="btn outline" data-v138-shortfalls-more aria-expanded="'+showAllShortfalls+'">'+(showAllShortfalls?'Show fewer':'Show all '+open.length+' commitments')+'</button>':''):'<p class="v136-muted">No calculated shortfalls currently require attention.</p>';
  }else if(reviewMode==='unknown'){
   title.textContent='Plans without confirmed completion';
   desc.textContent='A missing linked timer does not mean the activity was missed. Check other sources before deciding.';
-  list.innerHTML=unknown.length?unknown.slice(0,12).map(x=>'<article class="v136-review-row"><div><strong>'+safe(x.name||x.planName||'Unverified plan')+'</strong><small>'+safe(Number.isFinite(+x.startAt)?new Date(+x.startAt).toLocaleDateString():'Attendance not confirmed')+'</small><em>Unknown · not automatically missed</em></div></article>').join(''):'<p class="v136-muted">No unverified past plans were reported.</p>';
+  list.innerHTML=!reportAvailable?'<p class="v136-muted">Commitment review is unavailable. '+safe(report?.error||'Your records have not changed.')+'</p>':unknown.length?(showAllUnverified?unknown:unknown.slice(0,12)).map(x=>'<article class="v136-review-row"><div><strong>'+safe(x.name||x.planName||'Unverified plan')+'</strong><small>'+safe(Number.isFinite(+x.startAt)?new Date(+x.startAt).toLocaleDateString():'Attendance not confirmed')+'</small><em>Unknown · not automatically missed</em></div><button type="button" data-v137-activity="plan" data-v137-id="'+safe(x.id)+'">Review →</button></article>').join('')+(unknown.length>12?'<button type="button" class="btn outline" data-v138-unverified-more aria-expanded="'+showAllUnverified+'">'+(showAllUnverified?'Show fewer':'Show all '+unknown.length+' plans')+'</button>':''):'<p class="v136-muted">No unverified past plans were reported.</p>';
  }else{
   title.textContent='Check recorded durations';
-  desc.textContent='The total start-to-end span may differ from a short slice displayed on a particular calendar day.';
-  list.innerHTML=flag.length?flag.slice(0,10).map(x=>'<article class="v136-review-row"><div><strong>'+safe(x.name)+'</strong><small>'+dur(+x.endAt- +x.startAt)+' total span · '+safe(new Date(+x.startAt).toLocaleDateString())+'</small><em>Review original session in Track</em></div><button type="button" data-v138-open-track>Open Track →</button></article>').join(''):'<p class="v136-muted">No unusually long finished sessions detected in the review window.</p>';
+  desc.textContent=hasDurationModel?'Active time is compared with the median of 3–20 earlier sessions with the same name in the previous 60 days. A difference of at least 15 minutes and twice or half the median is shown. Sessions over 24 hours are also shown.':'Duration review is unavailable. Your records have not changed.';
+  const shown=showAllDurationChecks?flag:flag.slice(0,10);
+  list.innerHTML=!hasDurationModel?'<p class="v136-muted">Duration review is unavailable. Your records have not changed.</p>':flag.length?shown.map(x=>'<article class="v136-review-row"><div><strong>'+safe(x.session.name)+'</strong><small>'+safe(flagDetail(x))+' · '+safe(new Date(+x.session.startAt).toLocaleDateString())+'</small><em>Review the original activity</em></div><button type="button" data-v137-activity="record" data-v137-id="'+safe(x.session.id)+'">Review →</button></article>').join('')+(flag.length>10?'<button type="button" class="btn outline" data-v138-duration-more aria-expanded="'+showAllDurationChecks+'">'+(showAllDurationChecks?'Show fewer':'Show all '+flag.length+' checks')+'</button>':''):'<p class="v136-muted">No duration checks identified. Repeated activities need at least three earlier sessions.</p>';
  }
- $('v136ReviewAnomalies').innerHTML=flag.slice(0,5).map(x=>'<div class="v136-review-mini"><strong>'+safe(x.name)+'</strong><span>'+dur(+x.endAt- +x.startAt)+' total span · '+safe(new Date(+x.startAt).toLocaleDateString())+'</span></div>').join('')||'<p class="v136-muted">No unusual durations detected.</p>';
+ $('v136ReviewAnomalies').innerHTML=flag.slice(0,5).map(x=>'<div class="v136-review-mini"><strong>'+safe(x.session.name)+'</strong><span>'+safe(flagDetail(x))+' · '+safe(new Date(+x.session.startAt).toLocaleDateString())+'</span></div>').join('')||'<p class="v136-muted">'+(hasDurationModel?'No duration checks identified.':'Duration review is unavailable.')+'</p>';
 }
 function categorize(n){const id=n.id||'';if(/^(lo133PlanStudio|scheduleForm|lo133DailyDetails|lo133UpcomingDetails|lo11ScheduleCalendar|scheduleDay|scheduleList)/.test(id))return 'calendar';
  if(/^(lo74-debt|lo75-debt|lo99-audit|lo102)/.test(id)||/debt|outstanding|recovery audit/i.test(id))return 'review';
@@ -217,7 +219,10 @@ function init(){
  host.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.v136Tab){screen(b.dataset.v136Tab);return}
-  if(b.dataset.v138Review){reviewMode=b.dataset.v138Review;renderReview();return}
+  if(b.dataset.v138Review){reviewMode=b.dataset.v138Review;showAllDurationChecks=false;showAllShortfalls=false;showAllUnverified=false;renderReview();return}
+  if(b.hasAttribute('data-v138-duration-more')){showAllDurationChecks=!showAllDurationChecks;renderReview();return}
+  if(b.hasAttribute('data-v138-shortfalls-more')){showAllShortfalls=!showAllShortfalls;renderReview();return}
+  if(b.hasAttribute('data-v138-unverified-more')){showAllUnverified=!showAllUnverified;renderReview();return}
   if(b.hasAttribute('data-v138-open-track')){document.querySelector('#lifeosNavigation button[data-view="tracking"]')?.click();return}
   if(b.dataset.v136Range){range=b.dataset.v136Range;renderCalendar();return}
   if(b.dataset.v136Date){anchor=b.dataset.v136Date;range='day';showAll=false;renderCalendar();return}
@@ -225,7 +230,7 @@ function init(){
   if(b.dataset.v136Compare){compare=b.dataset.v136Compare;renderCompare();return}
   if(b.dataset.v139Days){compareWindow=+b.dataset.v139Days;renderCompare();return}
   if(b.hasAttribute('data-v139-review')){reviewMode='durations';screen('review');return}
-  if(b.dataset.v136Recovery){$('v136RecoveryDrawer').open=true;const old=$('lo75-debt-tools'),pick=$('lo75-item');if(old)old.open=true;if(pick){pick.value=b.dataset.v136Recovery;pick.dispatchEvent(new Event('change',{bubbles:true}))}$('v136RecoveryDrawer').scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(b.dataset.v136Recovery){if(b.dataset.paRecoveryMode)screen('review');$('v136RecoveryDrawer').open=true;const old=$('lo75-debt-tools'),pick=$('lo75-item'),mode=$('lo75-action');if(old)old.open=true;if(pick){pick.value=b.dataset.v136Recovery;pick.dispatchEvent(new Event('change',{bubbles:true}))}if(mode&&['recover','carry','adjust','forgive'].includes(b.dataset.paRecoveryMode)){mode.value=b.dataset.paRecoveryMode;mode.dispatchEvent(new Event('change',{bubbles:true}))}$('v136RecoveryDrawer').scrollIntoView({behavior:'smooth',block:'start'});return}
   if(b.id==='v136MoreRows'){showAll=!showAll;renderCalendar();return}
   if(b.dataset.v136Action==='today'){anchor=datekey(Date.now());range='day';showAll=false;renderCalendar();return}
   if(b.dataset.v136Action==='next'){const p=all().plans.filter(x=>+x.startAt>Date.now()).sort((a,b)=>a.startAt-b.startAt)[0];if(p){anchor=datekey(+p.startAt);range='day';showAll=false;renderCalendar();$('v136DaySummary')?.scrollIntoView({block:'center',behavior:'smooth'})}return}
