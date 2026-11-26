@@ -1,4 +1,6 @@
 /* Concept A+ Plan subsections; scoped to the existing planning workspace. */
+body[data-lifeos-view="schedule"]:not(.v136-sheet-open):not(.v140-open):not(.v137-modal-open):not(.pa-task-sheet-open){overflow-x:clip!important;overflow-y:visible!important}
+body.pa-task-sheet-open{overflow:hidden!important}
 #v136Workspace .v136-screen:not([data-v136-screen="overview"]){padding:0;border:0;background:transparent}
 #v136Workspace .v136-screen [hidden]{display:none!important}
 #v136Workspace #v136TodayOverview>.v136-kpi-row,#v136Workspace #v136TodayOverview>.v136-next{display:none}
@@ -26,8 +28,9 @@
 #v136Workspace .pa-kpis>div{min-width:0;padding:9px 5px;border:1px solid var(--pov-line);border-radius:11px;background:linear-gradient(140deg,var(--pov-card),var(--pov-card2));text-align:center}
 #v136Workspace .pa-kpis b{display:block;color:var(--pov-text);font-size:15px;line-height:1.2;white-space:nowrap}
 #v136Workspace .pa-kpis small{display:block;margin-top:3px;color:var(--pov-muted);font-size:10px;line-height:1.2}
-#v136Workspace .pa-calendar-card{padding:7px;overflow:hidden}
-#v136Workspace .pa-grid-scroll,#v136Workspace .pa-chart-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+#v136Workspace .pa-calendar-card{padding:7px;overflow:visible}
+#v136Workspace .pa-grid-scroll,#v136Workspace .pa-grid-head-scroll,#v136Workspace .pa-chart-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+#v136Workspace .pa-grid-head-wrap{position:sticky;top:0;z-index:12;background:var(--pov-card2);border-bottom:1px solid var(--pov-line)}#v136Workspace .pa-grid-head-scroll{scrollbar-width:none}#v136Workspace .pa-grid-head-scroll::-webkit-scrollbar{display:none}#v136Workspace .pa-head-cell{min-width:0;border-left:1px solid var(--pov-line)}#v136Workspace .pa-axis-label{display:grid;place-items:center;color:var(--pov-muted);font-size:10px}
 #v136Workspace .pa-grid{display:grid;grid-template-columns:39px repeat(var(--pa-days),minmax(88px,1fr));min-width:calc(39px + var(--pa-days)*88px)}
 #v136Workspace .pa-axis{position:sticky;left:0;z-index:5;background:var(--pov-card2)}
 #v136Workspace .pa-axis>div,#v136Workspace .pa-day-head{height:43px}
