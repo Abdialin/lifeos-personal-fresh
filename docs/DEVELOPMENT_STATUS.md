@@ -12,7 +12,7 @@ Track work is also in progress: Live now exposes compact session and daily-durat
 
 Focus setup and the running sheet have compact primary controls and expose the existing alert engine's sound/vibration preferences. Focus, pause, break and reload behavior are covered in a synthetic browser fixture; device delivery and the remaining V1 visual differences are still open.
 
-History now groups a session's same-day segments without altering its saved records. Its detail sheet shows full and day-portion time, original timestamps, classification, notes, significant pauses and selectable concurrent sessions. The existing editor preserves unchanged timestamp precision and paused segments, and reports a rejected recovery write without closing as though the edit succeeded. Synthetic overnight and overlap fixtures verify the calculations and edits; the reference's unsupported scores and inferred measures are not fabricated.
+History now groups a session's same-day segments without altering its saved records. Its detail sheet shows full and day-portion time, original timestamps, classification, notes, significant pauses and selectable concurrent sessions. The existing editor preserves unchanged timestamp precision and paused segments, and reports a rejected recovery write without closing as though the edit succeeded. Segment replacement requires in-app confirmation, rechecks for intervening changes and retains the original timeline in the edit audit. Synthetic overnight and overlap fixtures verify the calculations and edits; the reference's unsupported scores and inferred measures are not fabricated.
 
 ## Today: current work
 

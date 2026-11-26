@@ -1084,7 +1084,7 @@ function handleClick(event){
  }
  const open=event.target.closest('[data-ca-sheet]');if(open)sheet(open.dataset.caSheet,open.dataset.caId,open.dataset.caDayKey);
 }
-function handleDialogClick(event){
+async function handleDialogClick(event){
  const todayItem=event.target.closest('[data-ca-today-kind]');
  if(todayItem){window.lifeosTrackOpenTodayItem(todayItem.dataset.caTodayKind,todayItem.dataset.caTodayId,Number(todayItem.dataset.caTodayAt));return}
  const category=event.target.closest('[data-ca-category-save]');
@@ -1179,10 +1179,13 @@ function handleDialogClick(event){
    if($(source)&&$(target))$(target).value=$(source).value;
   }
   if(typeof window.lifeosSaveEditedActivity!=='function'){if(alert)alert.textContent='The activity editor is unavailable. No changes were saved.';return}
+  const button=event.target.closest('[data-ca-save-edit]');if(button.disabled)return;button.disabled=true;
   try{
-   if(window.lifeosSaveEditedActivity()===true){closeDialog();setTimeout(()=>{state.lastHistory=0;renderHistory();renderReview()},120)}
-   else if(alert)alert.textContent='Changes were not saved. Your original activity is preserved.';
-  }catch(error){if(alert)alert.textContent='Unable to confirm the edit: '+String(error?.message||error)}
+   const result=await window.lifeosSaveEditedActivity();
+   if(result?.ok){if(button.isConnected)closeDialog();setTimeout(()=>{state.lastHistory=0;renderHistory();renderReview()},120)}
+   else if(alert?.isConnected)alert.textContent=result?.message||'Changes were not saved. Your original activity is preserved.';
+  }catch(error){if(alert?.isConnected)alert.textContent='Unable to confirm the edit: '+String(error?.message||error)}
+  finally{if(button.isConnected)button.disabled=false}
   return;
  }
  if(event.target.closest('[data-ca-distraction]')){$('distractionToggle')?.click();closeDialog();return}
