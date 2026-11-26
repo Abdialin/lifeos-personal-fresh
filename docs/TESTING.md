@@ -13,6 +13,7 @@ node tests/today-v250-precision.cjs
 node tests/today-v250-volume.cjs
 TODAY_V1_CAPTURE=1 node tests/today-release-v1.cjs
 node tests/today-review-categories.cjs
+TODAY_REVIEW_HISTORY_CAPTURE=1 node tests/today-review-history.cjs
 TODAY_AGENDA_CAPTURE=1 node tests/today-agenda-habits.cjs
 node tests/today-history-date.cjs
 TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
@@ -55,6 +56,8 @@ The Today V1 fixture checks record-based overview values and navigation into exi
 The Today Agenda habit fixture checks scheduled and unscheduled habits, completion and undo from Today and My Life, retention of linked evidence, opt-in automatic-check dismissal, stale and duplicate checks, failed checkpoint writes, reload persistence, light-mode controls and reduced browser heights. It uses only synthetic, offline records. `TODAY_AGENDA_CAPTURE=1` saves dark and light browser screenshots; it does not verify Android input or system insets.
 
 The synthetic Review category fixture checks an empty day and a ten-category day, including disclosure labels, raw-duration bar widths and individual category drill-down. The fixture does not connect to a real Preview account.
+
+The historical Review fixture checks local-day date navigation and future-date rejection, previous-day totals and overlaps, unverified commitment details, partial gap logging and persistence, category drill-down to the same Timeline day, a midnight transition, 23- and 25-hour days and reduced browser viewports. `TODAY_REVIEW_HISTORY_CAPTURE=1` saves a synthetic previous-day screenshot.
 
 The synthetic Goals reading fixture checks that the daily chart uses the same goal evidence rules as weekly totals, does not infer a daily target, excludes assumed and future-dated entries, preserves date-only logs entered today, deduplicates linked sessions, and handles pauses, overnight sessions and a daylight-saving change. It also checks the affected light-mode heading contrast. Capture mode writes browser screenshots; it does not establish completion or approval of the Goals redesign.
 

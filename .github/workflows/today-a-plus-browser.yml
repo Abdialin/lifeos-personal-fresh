@@ -23,6 +23,7 @@ jobs:
       - run: node tests/today-v250-volume.cjs
       - run: TODAY_V1_CAPTURE=1 node tests/today-release-v1.cjs
       - run: node tests/today-review-categories.cjs
+      - run: TODAY_REVIEW_HISTORY_CAPTURE=1 node tests/today-review-history.cjs
       - run: TODAY_AGENDA_CAPTURE=1 node tests/today-agenda-habits.cjs
       - run: TODAY_HISTORY_CAPTURE=1 node tests/today-history-date.cjs
       - run: TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
