@@ -349,7 +349,7 @@ function renderHistory(){
   out+='<span class="ca-day-toggle"><span class="ca-day-show">Show activities</span><span class="ca-day-hide">Hide activities</span><span class="ca-day-arrow" aria-hidden="true">⌄</span></span></summary>';
   out+='<div class="ca-day-activities">';
   for(const record of items){
-   out+='<button type="button" class="ca-history-item" data-ca-sheet="record" data-ca-id="'+htmlEscape(record.id)+'"><i class="ca-dot"></i><span class="ca-h-text"><strong>'+htmlEscape(record.name)+'</strong><small>'+htmlEscape(record.time)+'</small></span><span class="ca-h-duration">'+htmlEscape(record.duration)+'</span><span aria-hidden="true">⋮</span></button>';
+   out+='<button type="button" class="ca-history-item" data-ca-sheet="record" data-ca-id="'+htmlEscape(record.id)+'" data-ca-day-key="'+htmlEscape(record.dateKey||'')+'"><i class="ca-dot"></i><span class="ca-h-text"><strong>'+htmlEscape(record.name)+'</strong><small>'+htmlEscape(record.time)+'</small></span><span class="ca-h-duration">'+htmlEscape(record.duration)+'</span><span aria-hidden="true">⋮</span></button>';
   }
   return out+'</div></details>';
  }
@@ -558,16 +558,26 @@ function closeDialog(){
  dialogBody.innerHTML='';
  if(previousFocus&&previousFocus.isConnected&&previousFocus.focus)previousFocus.focus();
 }
+function gapContext(gap,day){
+ let before=day.recorded.filter(x=>x.b<=gap.a).sort((x,y)=>y.b-x.b)[0];
+ let after=day.recorded.filter(x=>x.a>=gap.b).sort((x,y)=>x.a-y.a)[0];
+ if(!before&&gap.a===day.start){
+  const prior=new Date(day.start);prior.setDate(prior.getDate()-1);
+  before=window.lifeosTodayAPlusSnapshot(Date.now(),prior.getTime()).recorded.filter(x=>x.b<=gap.a).sort((x,y)=>y.b-x.b)[0];
+ }
+ if(!after&&gap.b===day.end&&day.end<Date.now())
+  after=window.lifeosTodayAPlusSnapshot(Date.now(),day.end).recorded.filter(x=>x.a>=gap.b).sort((x,y)=>x.a-y.a)[0];
+ return {before,after};
+}
 window.lifeosTrackOpenGap=function(gap){
  if(!dialog)build();
  if(!dialog||!window.lifeosTodayAPlusGapValid?.(gap,gap.a,gap.b))return false;
  sheet('past');selectedGap={a:gap.a,b:gap.b};
- const d=window.lifeosTodayAPlusSnapshot();
- const before=d.recorded.filter(x=>x.b<=gap.a).sort((x,y)=>y.b-x.b)[0];
- const after=d.recorded.filter(x=>x.a>=gap.b).sort((x,y)=>x.a-y.a)[0];
+ const d=window.lifeosTodayAPlusSnapshot(Date.now(),gap.a);
+ const {before,after}=gapContext(gap,d);
  const context=e('p','ca-editor-footnote');context.id='caGapContext';
  const time=v=>new Date(v).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
- context.textContent='Unlogged '+time(gap.a)+'–'+time(gap.b)+' · Before: '+(before?.name||'Start of day')+' · After: '+(after?.name||'Now');
+ context.textContent='Unlogged '+time(gap.a)+'–'+time(gap.b)+' · Before: '+(before?.name||'Start of day')+' · After: '+(after?.name||(gap.b>=d.end?'End of day':'Now'));
  const guidance=dialogBody.querySelector('.ca-editor-footnote');
  if(guidance)guidance.textContent='Choose times within this unlogged interval. Existing activities cannot be overlapped.';
  dialogBody.prepend(context);dialog.dataset.caContext='gap';
@@ -585,16 +595,16 @@ window.lifeosTrackOpenGap=function(gap){
 window.lifeosTrackOpenTodayItem=function(kind,key,at){
  if(!dialog)build();
  if(!dialog||typeof window.lifeosTodayAPlusSnapshot!=='function')return false;
- const d=window.lifeosTodayAPlusSnapshot();
+ const selectionAt=kind==='gap'?Number(String(key).split(':')[0]):kind==='active'?Date.now():Number(at);
+ const d=window.lifeosTodayAPlusSnapshot(Date.now(),Number.isFinite(selectionAt)?selectionAt:Date.now());
  const time=(v,seconds=false)=>new Date(v).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',...(seconds?{second:'2-digit'}:{})});
  const line=(label,value)=>'<div class="ca-record-detail"><span>'+htmlEscape(label)+'</span><strong>'+htmlEscape(value)+'</strong></div>';
  let content='';
  if(kind==='gap'){
   const [a,b]=String(key).split(':').map(Number);
   if(!window.lifeosTodayAPlusGapValid?.({a,b},a,b))return false;
-  const before=d.recorded.filter(x=>x.b<=a).sort((x,y)=>y.b-x.b)[0];
-  const after=d.recorded.filter(x=>x.a>=b).sort((x,y)=>x.a-y.a)[0];
-  content=line('Activity','Unlogged interval')+line('Category','Unknown')+line('Start',time(a,b-a<60000))+line('End',time(b,b-a<60000))+line('Duration',exactDuration(b-a))+line('Status','Unlogged / unknown')+line('Before',before?.name||'Start of day')+line('After',after?.name||'Now')+line('Concurrent','None recorded');
+  const {before,after}=gapContext({a,b},d);
+  content=line('Activity','Unlogged interval')+line('Category','Unknown')+line('Start',time(a,b-a<60000))+line('End',time(b,b-a<60000))+line('Duration',exactDuration(b-a))+line('Status','Unlogged / unknown')+line('Before',before?.name||'Start of day')+line('After',after?.name||(b>=d.end?'End of day':'Now'))+line('Concurrent','None recorded');
   content+='<button type="button" class="ca-sheet-primary" data-ca-gap="'+a+':'+b+'">Log activity</button><button type="button" class="ca-sheet-secondary" data-ca-close>Leave unknown</button>';
   openDialog('Unlogged interval','Review this time without assigning a category.',content);dialog.dataset.caContext='details';return true;
  }
@@ -632,12 +642,12 @@ window.lifeosTrackOpenTodayItem=function(kind,key,at){
   for(const item of window.LifeOSActivityIntelligenceV251?.catalog||[])if(!coreIds.has(item.id)&&!categories.includes(item.title))categories.push(item.title);
   content+='<label class="ca-form-label" for="caTodayCategory">Review category</label><select id="caTodayCategory" class="ca-input" '+(locked?'disabled':'')+'>'+categories.map(c=>'<option '+(c===x.category?'selected':'')+'>'+htmlEscape(c)+'</option>').join('')+'</select>';
   content+=locked?'<p class="ca-editor-footnote">Example records cannot be edited here.</p>':'<button type="button" class="ca-sheet-secondary" data-ca-category-save="'+htmlEscape(x.id)+'">Save category</button><p id="caCategoryMessage" class="ca-editor-footnote" role="status"></p>';
-  content+='<button type="button" class="ca-sheet-primary" data-ca-today-record="'+htmlEscape(x.id)+'" data-ca-today-status="'+htmlEscape(status)+'">'+(status==='finished'?'Open in History / edit':'Open in Track')+'</button>';
+  content+='<button type="button" class="ca-sheet-primary" data-ca-today-record="'+htmlEscape(x.id)+'" data-ca-today-status="'+htmlEscape(status)+'" data-ca-today-day="'+htmlEscape(localKey(new Date(x.a)))+'">'+(status==='finished'?'Open in History / edit':'Open in Track')+'</button>';
  }
  content+='<button type="button" class="ca-sheet-secondary" data-ca-close>Close</button>';
  openDialog(planned?'Planned commitment':'Activity details',planned?'Planning details':'Recorded interval details',content);dialog.dataset.caContext='details';return true;
 };
-function sheet(type,id){
+function sheet(type,id,dayKey){
  if(type==='past'){
   selectedGap=null;
   openDialog('Log a past activity','Record an activity that already happened.',
@@ -679,7 +689,7 @@ function sheet(type,id){
   openDialog('Activity in progress','Timer details and advanced controls',content);return;
  }
  if(type==='record'){
-  const rec=readHistory().find(x=>x.id===id);if(!rec)return;
+  const history=readHistory(),rec=history.find(x=>x.id===id&&(!dayKey||x.dateKey===dayKey))||history.find(x=>x.id===id);if(!rec)return;
   const label=(rec.time||'').includes('Development example')?'Development example':(rec.time||'').includes('Estimated')?'Estimated':'Recorded';
   let content='<div class="ca-record-hero"><div class="ca-record-icon">▣</div><div><h3>'+htmlEscape(rec.name)+'</h3><p>'+htmlEscape(rec.day)+' · '+htmlEscape(label)+'</p></div></div>';
   content+='<div class="ca-record-stats"><div><small>Duration</small><strong>'+htmlEscape(rec.duration)+'</strong></div>'
@@ -782,7 +792,7 @@ function sheet(type,id){
 }
 function handleClick(event){
  const tab=event.target.closest('[data-ca-tab]');if(tab){chooseTab(tab.dataset.caTab);return}
- const period=event.target.closest('[data-ca-period]');if(period){
+ const period=event.target.closest('button[data-ca-period]');if(period){
   state.historyPeriod=period.dataset.caPeriod;renderHistory();return
  }
  const monthMove=event.target.closest('[data-ca-month-move]');
@@ -798,7 +808,7 @@ function handleClick(event){
   if(act.dataset.caAct==='break'){sheet('break',act.dataset.caId);return}
   originalAction(act.dataset.caId,act.dataset.caAct);setTimeout(refresh,60);return;
  }
- const open=event.target.closest('[data-ca-sheet]');if(open)sheet(open.dataset.caSheet,open.dataset.caId);
+ const open=event.target.closest('[data-ca-sheet]');if(open)sheet(open.dataset.caSheet,open.dataset.caId,open.dataset.caDayKey);
 }
 function handleDialogClick(event){
  const todayItem=event.target.closest('[data-ca-today-kind]');
@@ -814,9 +824,9 @@ function handleDialogClick(event){
  if(todayNav){const view=todayNav.dataset.caTodayNav;closeDialog();document.querySelector('#lifeosNavigation [data-view="'+view+'"]')?.click();return}
  const todayRecord=event.target.closest('[data-ca-today-record]');
  if(todayRecord){
-  const id=todayRecord.dataset.caTodayRecord,status=todayRecord.dataset.caTodayStatus;
+  const id=todayRecord.dataset.caTodayRecord,status=todayRecord.dataset.caTodayStatus,dayKey=todayRecord.dataset.caTodayDay;
   closeDialog();document.querySelector('#lifeosNavigation [data-view="tracking"]')?.click();
-  if(status==='finished'){updateHistorySource();chooseTab('history');renderHistory();sheet('record',id)}
+  if(status==='finished'){updateHistorySource();chooseTab('history');renderHistory();sheet('record',id,dayKey)}
   else{chooseTab('live');sheet('activity',id)}
   return;
  }
@@ -943,7 +953,7 @@ function handleDialogClick(event){
    const hist=$('caHistory');if(hist)delete hist.dataset.caSignature;
    renderHistory();renderReview();
    const dateKey=localKey(new Date(start));
-   const remaining=selectedGap?window.lifeosTodayAPlusSnapshot().gaps.map(g=>({a:Math.max(g.a,selectedGap.a),b:Math.min(g.b,selectedGap.b)})).filter(g=>g.b>g.a):[];
+   const remaining=selectedGap?window.lifeosTodayAPlusSnapshot(Date.now(),selectedGap.a).gaps.map(g=>({a:Math.max(g.a,selectedGap.a),b:Math.min(g.b,selectedGap.b)})).filter(g=>g.b>g.a):[];
    dialogBody.innerHTML='<div class="ca-past-success"><span aria-hidden="true">✓</span><strong>Activity saved</strong><p>'+htmlEscape(name)+' · '+htmlEscape(durationLabel(end-start))+'</p></div>'
      +'<button type="button" class="ca-sheet-primary" data-ca-view-past="'+htmlEscape(dateKey)+'">View in History</button>'
      +(remaining.length?'<p class="ca-editor-footnote">Remaining unlogged in the selected interval: '+htmlEscape(durationLabel(remaining.reduce((n,g)=>n+g.b-g.a,0)))+'</p>'+remaining.map(g=>'<button type="button" class="ca-sheet-secondary" data-ca-gap="'+g.a+':'+g.b+'">Log remaining '+htmlEscape(new Date(g.a).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}))+'–'+htmlEscape(new Date(g.b).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}))+'</button>').join(''):'')

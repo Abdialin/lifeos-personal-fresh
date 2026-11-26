@@ -12,6 +12,7 @@ node tests/today-v250-colors.cjs
 node tests/today-v250-precision.cjs
 node tests/today-v250-volume.cjs
 TODAY_V1_CAPTURE=1 node tests/today-release-v1.cjs
+node tests/today-history-date.cjs
 node test_plan_evidence_v250.cjs
 node tests/plan-overview-model.cjs
 PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
@@ -37,3 +38,5 @@ Browser tests cannot verify Samsung WebView system insets, native IME, gesture/t
 The Plan Concept A+ tests cover all four new subsection presentations, calendar views, individual activity details, task edits, recurring-series preview and approval, conflict revalidation, failed-storage rollback, reload persistence, aligned comparison windows and evidence cutoffs, paused time, DST recurrence rejection, empty and 132-record states, themes, navigation and reduced browser heights. Captures in `plan-verification/` are intercepted synthetic fixtures. See `docs/design/plan/COMPARISON.md` for visual differences and open device checks.
 
 The Today V1 fixture checks record-based overview values and navigation into existing editors, partial-period union accounting, category drill-down, proportional overlap lanes, short interval access, cancelled-plan exclusion, task completion and reload persistence, light mode and browser viewport clearance. With capture enabled it writes synthetic images under `docs/design/today/current/release-*.png`. Reference comparison notes and remaining discrepancies are in `docs/design/today/COMPARISON.md`.
+
+The historical Today timeline test covers date-picker and previous/next-day navigation, future-date rejection, overnight session identity, full and partial gap logging on earlier days, a second writer invalidating a selected gap, exact local-midnight boundaries, reload persistence, restored Track History record clicks and correct overnight day-portion details, and 23-/25-hour days. Requests are intercepted and storage is synthetic.
