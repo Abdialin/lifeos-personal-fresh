@@ -205,7 +205,16 @@ function build(){
    option.hidden=!option.textContent.toLocaleLowerCase().includes(value);
   }
  });
- dialog.addEventListener('change',event=>{if(selectedGap&&['caPastStart','caPastEnd'].includes(event.target.id)){event.target.dataset.gapEdited='1';updateGapSummary()}});
+ dialog.addEventListener('change',event=>{
+  if(selectedGap&&['caPastStart','caPastEnd'].includes(event.target.id)){event.target.dataset.gapEdited='1';updateGapSummary();return}
+  const key=event.target.dataset.caFocusAlert;if(!['sound','vibration'].includes(key))return;
+  const source=$(key==='sound'?'lo221-sound':'lo221-vibrate'),engine=window.LifeOSAlertEngineV221,status=$('caFocusAlertStatus');
+  if(!source||!engine?.load){if(status)status.textContent='Alert settings are unavailable.';return}
+  source.checked=event.target.checked;source.dispatchEvent(new Event('change',{bubbles:true}));
+  const saved=Boolean(engine.load()[key]);
+  if(saved!==event.target.checked){source.checked=saved;event.target.checked=saved;if(status)status.textContent='Could not save alert settings; previous setting restored.'}
+  else if(status)status.textContent='Alert settings saved.';
+ });
 
  dialog.addEventListener('click',event=>{if(event.target===dialog)closeDialog()});
  dialog.addEventListener('keydown',event=>{
@@ -272,10 +281,10 @@ function liveMarkup(today){
   // No goal percentage is displayed unless a real goal source is available.
   markup+='<div class="ca-control-grid">';
   markup+='<button type="button" data-ca-act="'+(first.status==='running'?'pause':'resume')+'" data-ca-id="'+htmlEscape(first.id)+'" class="ca-emphasis">'+liveIcon(first.status==='running'?'pause':'play')+(first.status==='running'?'Pause':'Resume')+'</button>';
-  markup+='<button type="button" data-ca-act="break" data-ca-id="'+htmlEscape(first.id)+'">'+liveIcon('break')+'Break</button>';
+  markup+='<button type="button" data-ca-act="break" data-ca-id="'+htmlEscape(first.id)+'" '+(first.status==='paused'?'disabled aria-label="Resume this activity before starting a break"':'')+'>'+liveIcon('break')+'Break</button>';
   markup+='<button type="button" data-ca-act="finish" data-ca-id="'+htmlEscape(first.id)+'" aria-label="'+(pendingFinish(first.id)?'Confirm finish ':'Finish ')+htmlEscape(first.name)+'">'+liveIcon('finish')+(pendingFinish(first.id)?'Confirm finish':'Finish')+'</button>';
   markup+='<button type="button" data-ca-sheet="activity" data-ca-id="'+htmlEscape(first.id)+'">'+liveIcon('details')+'Details</button>';
-  markup+='</div></div>';
+  markup+='</div>'+(first.status==='paused'?'<p class="ca-break-unavailable">Resume this activity to start a break.</p>':'')+'</div>';
  }else{
   markup+='<div class="ca-panel ca-primary"><div class="ca-overline">◎ ACTIVE ACTIVITY</div><div class="ca-empty"><strong style="display:block;color:#f3fffa;font-size:20px;margin-bottom:8px">Ready for your next activity?</strong>No timer is running. Start a new activity to see its live clock here.</div></div>';
  }
@@ -670,22 +679,28 @@ function focusDeviceControls(){
   +'<p>On Android, swipe down twice from the top to open Quick Settings. Tap <strong>Do Not Disturb</strong> to turn it on or off. Touch and hold the tile to choose which calls and notifications may interrupt you. LifeOS does not change this setting automatically.</p></details>'
   +'</section>';
 }
+function focusAlertControls(){
+ const settings=window.LifeOSAlertEngineV221?.load?.(),available=Boolean(settings&&$('lo221-sound')&&$('lo221-vibrate'));
+ return '<div class="ca-focus-alerts" aria-label="Focus alert settings">'
+  +[['sound','Sound'],['vibration','Vibration']].map(([key,label])=>'<label><span>'+label+'</span><input type="checkbox" data-ca-focus-alert="'+key+'" '+(settings?.[key]?'checked ':'')+(available?'':'disabled')+'></label>').join('')
+  +'</div><p class="ca-focus-alert-status" id="caFocusAlertStatus" role="status">'+(available?'':'Alert settings unavailable.')+'</p>';
+}
 function showRealFocus(){
  const session=readRealFocusState();
  if(!session)return;
  const remaining=focusRemainingMs(session),label=session.label||'Focus';
  const content='<div class="ca-focus-hero"><div class="ca-focus-icon">◎</div><h3>'+htmlEscape(label)+'</h3><p>Stay with one meaningful activity.</p></div>'
-  +'<div class="ca-focus-ring ca-focus-real-ring" id="caFocusLiveRing"><div><strong id="caFocusLiveClock">'+focusClock(remaining)+'</strong><small id="caFocusLiveMode">Focus running · saved session</small></div></div>'
+  +'<div class="ca-focus-ring ca-focus-real-ring" id="caFocusLiveRing"><div><strong id="caFocusLiveClock">'+focusClock(remaining)+'</strong><small id="caFocusLiveMode">Focus running</small></div></div>'
   +'<div class="ca-distraction-stats"><div><b id="caFocusProgress">'+(session.plannedMs?Math.round((1-remaining/session.plannedMs)*100):0)+'%</b><span>Focus progress</span></div>'
   +'<div><b id="caFocusLiveStatus">'+htmlEscape(session.mode)+'</b><span>Current status</span></div></div>'
-  +'<div class="ca-preview-actions ca-focus-live-actions"><button type="button" class="ca-sheet-secondary" data-ca-focus-control="pause" id="caFocusPause">Ⅱ Pause</button>'
-  +'<button type="button" class="ca-sheet-secondary" data-ca-focus-control="break" id="caFocusBreak">☕ Break</button></div>'
-  +focusDeviceControls()
-  +'<button type="button" class="ca-sheet-primary" data-ca-close>Minimize focus</button>'
-  +'<button type="button" class="ca-sheet-secondary ca-focus-end" data-ca-focus-control="end">■ End focus session</button>'
-  +'<p class="ca-feature-footnote">This is your real LifeOS Focus session. Your tracked activity timers run independently. Alerts depend on Android permissions.</p>';
- openDialog('Focus session','Real Focus Mode · LifeOS',content);
- dialog.dataset.caFocusLive='1';
+  +'<div class="ca-preview-actions ca-focus-live-actions"><button type="button" class="ca-sheet-secondary" data-ca-focus-control="pause" id="caFocusPause">Pause</button>'
+  +'<button type="button" class="ca-sheet-secondary" data-ca-focus-control="break" id="caFocusBreak">Break</button>'
+  +'<button type="button" class="ca-sheet-primary" data-ca-close>Minimize</button>'
+  +'<button type="button" class="ca-sheet-secondary ca-focus-end" data-ca-focus-control="end">End focus</button></div>'
+  +focusAlertControls()+'<details class="ca-focus-options"><summary>Notifications and Do Not Disturb</summary>'+focusDeviceControls()+'</details>'
+  +'<p class="ca-feature-footnote">Tracked activities run separately. Alerts depend on device permissions.</p>';
+ openDialog('Focus session','Stay focused',content);
+ dialog.dataset.caContext='focus-live';dialog.dataset.caFocusLive='1';
  delete dialog.dataset.caFocusStarting;
  updateRealFocusScreen();
 }
@@ -697,11 +712,11 @@ function updateRealFocusScreen(){
  const clock=$('caFocusLiveClock');if(clock)clock.textContent=focusClock(remaining);
  const modes={running:'Focus running',paused:'Focus paused',break:'Break in progress',ringing:'Focus complete'};
  const status=$('caFocusLiveStatus');if(status)status.textContent=modes[session.mode]||session.mode;
- const note=$('caFocusLiveMode');if(note)note.textContent=(modes[session.mode]||session.mode)+' · saved session';
+ const note=$('caFocusLiveMode');if(note)note.textContent=modes[session.mode]||session.mode;
  const progress=session.plannedMs?Math.max(0,Math.min(100,Math.round((1-remaining/session.plannedMs)*100))):0;
  const percent=$('caFocusProgress');if(percent)percent.textContent=progress+'%';
- const pause=$('caFocusPause');if(pause)pause.textContent=session.mode==='running'?'Ⅱ Pause':'▷ Resume';
- const br=$('caFocusBreak');if(br)br.textContent=session.mode==='break'?'▷ Resume focus':'☕ Break';
+ const pause=$('caFocusPause');if(pause)pause.textContent=session.mode==='running'?'Pause':'Resume';
+ const br=$('caFocusBreak');if(br)br.textContent=session.mode==='break'?'Resume focus':'Break';
  const ring=$('caFocusLiveRing');if(ring)ring.style.setProperty('--ca-focus-percent',progress+'%');
 }
 function refresh(){
@@ -854,7 +869,7 @@ function sheet(type,id,dayKey){
   content+='<div class="ca-detail-information"><div class="ca-detail-line"><span>Session information</span><strong>'+htmlEscape(current.meta)+'</strong></div></div>';
   content+='<h3 class="ca-detail-heading">Activity controls</h3><div class="ca-detail-actions">'
    +'<button class="ca-detail-action ca-detail-action-mint" data-ca-act="'+(current.status==='running'?'pause':'resume')+'" data-ca-id="'+htmlEscape(current.id)+'"><b>'+(current.status==='running'?'Ⅱ':'▷')+'</b><span>'+(current.status==='running'?'Pause':'Resume')+'</span></button>'
-   +'<button class="ca-detail-action" data-ca-act="break" data-ca-id="'+htmlEscape(current.id)+'"><b>☕</b><span>Break</span></button>'
+   +'<button class="ca-detail-action" data-ca-act="break" data-ca-id="'+htmlEscape(current.id)+'" '+(current.status==='paused'?'disabled aria-label="Resume this activity before starting a break"':'')+'><b>☕</b><span>Break</span></button>'
    +'<button class="ca-detail-action" data-ca-act="switch" data-ca-id="'+htmlEscape(current.id)+'"><b>⇄</b><span>Switch</span></button>'
    +'<button class="ca-detail-action" data-ca-act="edit" data-ca-id="'+htmlEscape(current.id)+'"><b>✎</b><span>Edit</span></button></div>';
   content+='<button class="ca-detail-finish" data-ca-act="finish" data-ca-id="'+htmlEscape(current.id)+'">■ &nbsp; '+(pendingFinish(current.id)?'Confirm finish':'Finish activity')+'</button>';
@@ -895,7 +910,7 @@ function sheet(type,id,dayKey){
  if(type==='break'){
   const activity=live.find(x=>x.id===id)||current;
   const content='<div class="ca-focus-hero"><div class="ca-focus-icon">☕</div><h3>Time to recharge</h3><p>Pause briefly, then return to what matters.</p></div>'
-   +'<div class="ca-focus-ring"><div><strong>10:00</strong><small>Suggested break · design preview</small></div></div>'
+   +'<div class="ca-focus-ring"><div><strong>10:00</strong><small>Suggested break · no timer set</small></div></div>'
    +'<div class="ca-sheet-metric"><span>Activity</span><strong>'+htmlEscape(activity?.name||'No active activity')+'</strong></div>'
    +'<div class="ca-break-tips"><strong>Break suggestions</strong><span>Get some fresh air</span><span>Stretch and move your body</span><span>Hydrate and rest your eyes</span></div>'
    +(activity?'<button class="ca-sheet-primary" data-ca-act="break" data-ca-id="'+htmlEscape(activity.id)+'">☕ Start break</button>':'');
@@ -908,17 +923,16 @@ function sheet(type,id,dayKey){
    return;
   }
   const choices=live.length?live:[{id:'',name:'Studying'}];
-  let content='<div class="ca-focus-hero"><div class="ca-focus-icon">◎</div><h3>Focus on what matters</h3><p>A calmer screen for deliberate work, study, and reading.</p></div>';
-  content+='<div class="ca-focus-feature"><div class="ca-focus-feature-copy"><b>◷ &nbsp; Focus session</b><small>Uses your saved LifeOS focus timer</small></div><span class="ca-feature-tag">Ready</span></div>';
+  let content='<div class="ca-focus-hero"><div class="ca-focus-icon">◎</div><h3>Focus on what matters</h3><p>Choose an activity and duration.</p></div>';
   content+='<label class="ca-form-label" for="caFocusActivity">Focus activity</label><select class="ca-input" id="caFocusActivity">';
   for(const row of choices)content+='<option value="'+htmlEscape(row.id)+'">'+htmlEscape(row.name)+'</option>';
   content+='</select><label class="ca-form-label" for="caFocusDuration">Focus duration</label>';
   content+='<select id="caFocusDuration" class="ca-input"><option value="25">25 minutes</option><option value="45" selected>45 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option></select>';
-  content+='<div class="ca-focus-settings"><div class="ca-focus-setting"><span>♫</span><div><b>Sound and vibration</b><small>Uses existing LifeOS alert settings and Android permissions</small></div></div></div>';
-  content+=focusDeviceControls();
-  content+='<p id="caFocusError" role="alert" class="ca-inline-error"></p><button class="ca-sheet-primary" data-ca-focus-start>▷ &nbsp; Start Focus</button>';
-  content+='<p class="ca-feature-footnote">Runs the real LifeOS focus timer. Your activity timers continue separately. Sound, vibration and background notifications depend on device support.</p>';
-  openDialog('Focus Mode','Minimize distractions and stay on track.',content);return;
+  content+=focusAlertControls();
+  content+='<p id="caFocusError" role="alert" class="ca-inline-error"></p><button class="ca-sheet-primary" data-ca-focus-start>Start Focus</button>';
+  content+='<details class="ca-focus-options"><summary>Notifications and Do Not Disturb</summary>'+focusDeviceControls()+'</details>';
+  content+='<p class="ca-feature-footnote">Tracked activities run separately. Alerts depend on device permissions.</p>';
+  openDialog('Focus Mode','Choose your session',content);dialog.dataset.caContext='focus-setup';return;
  }
  if(type==='timer'){
   const choices=live.length?live:[{id:'',name:'No active timer'}];
@@ -1223,10 +1237,15 @@ function handleDialogClick(event){
  const focusControl=event.target.closest('[data-ca-focus-control]');
  if(focusControl){
   const map={pause:'lo221-layer-pause',break:'lo221-layer-break',end:'lo207-cancel-focus'};
-  const control=$(map[focusControl.dataset.caFocusControl]);
+  const action=focusControl.dataset.caFocusControl,control=$(map[action]),before=readRealFocusState();
   if(!control)return;
   control.click();
-  if(focusControl.dataset.caFocusControl==='end'){closeDialog();return}
+  const after=readRealFocusState(),expected=action==='pause'?(before?.mode==='running'?'paused':'running'):action==='break'?(before?.mode==='break'?'running':'break'):null;
+  if((action==='end'&&after)||(action!=='end'&&after?.mode!==expected)){
+   let note=$('caFocusActionError');if(!note){note=e('p','ca-inline-error');note.id='caFocusActionError';note.setAttribute('role','alert');focusControl.closest('.ca-focus-live-actions')?.after(note)}
+   note.textContent='Could not save this Focus change. The previous session remains active.';return;
+  }
+  if(action==='end'){closeDialog();return}
   window.setTimeout(updateRealFocusScreen,50);
   return;
  }

@@ -10,6 +10,8 @@ The in-progress Today V1 work connects the revised Overview, Agenda and Review t
 
 Track work is also in progress: Live now exposes compact session and daily-duration summaries, quick starts and concurrent-session controls using the existing tracking engine, including a visible two-step finish confirmation. History offers navigable local day/week/month/year/all-time and custom periods, data-based category charts and summaries, filtering and sorting while retaining the existing hierarchy and record details; Review uses local calendar-week and calendar-month filters. Synthetic browser evidence and remaining differences are documented in `docs/design/track/README.md` and `docs/KNOWN_ISSUES.md`; Track is not yet release-ready.
 
+Focus setup and the running sheet have compact primary controls and expose the existing alert engine's sound/vibration preferences. Focus, pause, break and reload behavior are covered in a synthetic browser fixture; device delivery and the remaining V1 visual differences are still open.
+
 ## Today: current work
 
 The V250 foundation added interactive recorded, planned, active and gap details, gap logging through Track's existing form, overlap review and separate raw-time metrics. A follow-up restored known Preview sample categories without changing saved sample records. The user reported that timeline entries are selectable and the gap form opens on Android; that is not acceptance of all V250 requirements.

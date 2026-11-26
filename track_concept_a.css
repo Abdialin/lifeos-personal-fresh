@@ -670,6 +670,8 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
 #loTrackConceptA #caLive .ca-control-grid button{min-height:44px;font-size:11px;gap:2px}
 #loTrackConceptA #caLive .ca-control-grid button span{font-size:15px}
 #loTrackConceptA #caLive .ca-control-grid button svg,#loTrackConceptA #caLive .ca-mini-action svg{width:17px;height:17px;flex:none}
+#loTrackConceptA #caLive .ca-control-grid button:disabled,#loCADialog .ca-detail-action:disabled{opacity:.5;cursor:not-allowed}
+#loTrackConceptA #caLive .ca-break-unavailable{margin:7px 1px 0;color:#bad4d8;font-size:11px;line-height:1.3}
 #loTrackConceptA #caLive .ca-secondary h3{margin:0 0 5px;font-size:14px}
 #loTrackConceptA #caLive .ca-mini-item{gap:5px;min-height:48px}
 #loTrackConceptA #caLive .ca-mini-item strong{font-size:12px}
@@ -704,6 +706,7 @@ html[data-lifeos-theme="light"] #loTrackConceptA #caLive :is(.ca-clock,.ca-mini-
 html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-mini-item{border-color:#d4e3e6}
 html[data-lifeos-theme="light"] #loTrackConceptA #caLive :is(.ca-control-grid button,.ca-mini-action,.ca-soft-button){background:#eef5f6;border-color:#b6d0d2;color:#21485b}
 html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-control-grid .ca-emphasis{background:#087d69;border-color:#087d69;color:#fff}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-break-unavailable{color:#4d6878}
 html[data-lifeos-theme="light"] #loTrackConceptA .ca-live-quick-grid button{background:#fff;border-color:#c3d9dc;color:#173246}
 html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-main-button{background:#087d69;color:#fff}
 html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-empty{color:#4d6878}
@@ -768,3 +771,46 @@ html[data-lifeos-theme="light"] #loTrackConceptA #caHistory :is(.ca-history-item
 html[data-lifeos-theme="light"] #loTrackConceptA #caHistory .ca-history-item small{color:#4d6878}
 html[data-lifeos-theme="light"] #loTrackConceptA #caHistory .ca-h-category{color:#075e4f;border-color:#b2d3ca}
 html[data-lifeos-theme="light"] #loTrackConceptA #caHistory .ca-compact-link{background:#e6f4ee;border-color:#b2d3ca;color:#075e4f}
+
+/* Compact Focus controls; the existing alert engine remains the source of settings. */
+#loCADialog[data-ca-context^="focus-"] .ca-sheet-head{margin-bottom:8px}
+#loCADialog[data-ca-context^="focus-"] .ca-focus-hero{padding:7px 10px;margin:0 0 8px}
+#loCADialog[data-ca-context^="focus-"] .ca-focus-icon{font-size:24px;line-height:1;margin:0}
+#loCADialog[data-ca-context^="focus-"] .ca-focus-hero h3{font-size:16px;margin:3px 0}
+#loCADialog[data-ca-context^="focus-"] .ca-focus-hero p{font-size:11px;line-height:1.3}
+#loCADialog[data-ca-context^="focus-"] .ca-form-label{margin:8px 0 4px}
+#loCADialog[data-ca-context="focus-live"] .ca-focus-real-ring{width:min(172px,48vw);height:min(172px,48vw);margin:8px auto 10px}
+#loCADialog[data-ca-context="focus-live"] .ca-focus-real-ring strong{font-size:32px}
+#loCADialog[data-ca-context="focus-live"] .ca-focus-real-ring small{margin-top:4px;font-size:10px}
+#loCADialog[data-ca-context="focus-live"] .ca-distraction-stats{margin:7px 0;gap:6px}
+#loCADialog[data-ca-context="focus-live"] .ca-distraction-stats>div{padding:7px;border-radius:10px}
+#loCADialog[data-ca-context="focus-live"] .ca-distraction-stats b{font-size:15px;line-height:1.2}
+#loCADialog[data-ca-context="focus-live"] .ca-distraction-stats span{font-size:10px;margin-top:3px}
+#loCADialog[data-ca-context="focus-live"] .ca-focus-live-actions{gap:6px;margin:8px 0}
+#loCADialog[data-ca-context="focus-live"] .ca-focus-live-actions button{min-height:44px}
+#loCADialog .ca-focus-alerts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+#loCADialog .ca-focus-alerts label{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:7px 10px;border:1px solid #365a67;border-radius:10px;background:#102b3b;color:#e8fbf5;font-size:12px;font-weight:700}
+#loCADialog .ca-focus-alerts input{width:20px;height:20px;accent-color:#73edbc}
+#loCADialog .ca-focus-alert-status{margin:3px 0;color:#bcebdc;font-size:11px;line-height:1.3}
+#loCADialog .ca-focus-alert-status:empty{display:none}
+#loCADialog .ca-focus-options{border:1px solid #365a67;border-radius:10px;margin:8px 0;background:#102b3b}
+#loCADialog .ca-focus-options>summary{cursor:pointer;min-height:44px;padding:13px 10px;color:#c6f5e4;font-size:12px;font-weight:700}
+#loCADialog .ca-focus-options .ca-focus-device-panel{margin:0 6px 6px}
+#loCADialog .ca-focus-device-buttons button{min-height:44px}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"]{color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-sheet{background:#f5fbfa;border-color:#b6d0d2}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] :is(.ca-sheet-head h2,.ca-focus-hero h3,.ca-focus-real-ring strong,.ca-distraction-stats b){color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] :is(.ca-sheet-head p,.ca-focus-hero p,.ca-form-label,.ca-focus-real-ring small,.ca-distraction-stats span,.ca-feature-footnote){color:#4b6978}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] :is(.ca-x,.ca-input,.ca-focus-alerts label,.ca-focus-options,.ca-distraction-stats>div){background:#fff;border-color:#b6d0d2;color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-focus-hero{background:#e6f5ee;border-color:#b6d8ca}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-focus-icon{color:#087d69}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-focus-real-ring>div{background:#e6f5ee}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-sheet-primary{background:#087d69;color:#fff}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-sheet-secondary{background:#e9f4f2;border-color:#b6d0d2;color:#173f4b}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-focus-end{background:#f8eaed!important;border-color:#d9a9b1!important;color:#8b3445!important}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] :is(.ca-focus-options>summary,.ca-focus-alert-status){color:#075e4f}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] :is(.ca-focus-device-panel,.ca-focus-dnd[open]>summary,.ca-focus-dnd p,.ca-focus-settings-help){background:#eff8f5;border-color:#b6d0d2;color:#35576b}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] :is(.ca-focus-device-copy strong,.ca-focus-dnd p strong){color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-focus-device-copy small{color:#4b6978}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] :is(.ca-focus-device-icon,.ca-focus-device-link){color:#087d69}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-focus-device-buttons button{background:#dff3e9;border-color:#a7d0c1;color:#075e4f}
