@@ -44,7 +44,7 @@ function taskGroups(todos,now){
  const today=key(now),groups={overdue:[],today:[],upcoming:[],anytime:[],completed:[]};
  for(const t of todos||[]){if(!t||!t.id)continue;const due=String(t.due||'').slice(0,10),validDate=/^\d{4}-\d{2}-\d{2}$/.test(due)&&key(new Date(due+'T12:00:00'))===due;
   if(t.done){groups.completed.push(t);continue}if(!validDate){groups.anytime.push(t);continue}
-  const deadline=t.dueTime&&/^\d\d:\d\d$/.test(t.dueTime)?new Date(due+'T'+t.dueTime).getTime():null;
+  const deadline=t.dueTime&&/^([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,3})?)?$/.test(t.dueTime)?new Date(due+'T'+t.dueTime).getTime():null;
   if(due<today||(due===today&&deadline!==null&&deadline<now))groups.overdue.push(t);else if(due===today)groups.today.push(t);else groups.upcoming.push(t);
  }
  for(const k of Object.keys(groups))groups[k].sort((a,b)=>String(a.due||'9999').localeCompare(String(b.due||'9999'))||String(a.dueTime||a.startTime||'99:99').localeCompare(String(b.dueTime||b.startTime||'99:99'))||String(a.name).localeCompare(String(b.name)));
@@ -93,6 +93,10 @@ function compareModel(workspace,from,days,now){
  }
  const total=type=>series.some(d=>d[type]!==null)?series.reduce((n,d)=>n+(d[type]||0),0):null;
  return {from,end,series,forecast,idealRows,totals:{reality:total('reality'),planned:total('planned'),predicted:total('predicted'),ideal:total('ideal')}};
+}
+function chartScale(series){
+ const hours=Math.max(1,...series.flatMap(d=>['reality','planned','predicted','ideal'].map(k=>(d[k]||0)/3600000))),raw=hours/4,power=10**Math.floor(Math.log10(raw)),step=[1,2,2.5,5,10].find(n=>n*power>=raw)*power;
+ return {maxMs:step*4*3600000,ticks:[4,3,2,1,0].map(n=>Number((step*n).toPrecision(8)))};
 }
 let host,state={anchor:key(Date.now()),range:'week',compareDays:7,compareAnchor:week(Date.now()),taskAnchor:week(Date.now())};
 function title(text,meta=''){return '<div class="pa-heading"><h3>'+text+'</h3>'+meta+'</div>'}
@@ -159,22 +163,32 @@ function tasks(){
  target.innerHTML='<div class="pa-section-heading"><div><h3>Tasks</h3><p>Manage, prioritise and complete your to-dos.</p></div></div>'+progress+sections;
 }
 function compare(){
- const target=$('paCompare');if(!target)return;const m=compareModel(read(),state.compareAnchor,state.compareDays,Date.now()),colors={reality:'Reality',planned:'Planned',predicted:'Predicted',ideal:'Ideal'},max=Math.max(3600000,...m.series.flatMap(d=>Object.keys(colors).map(k=>d[k]||0)));
+ const target=$('paCompare');if(!target)return;const at=Date.now(),workspace=read(),m=compareModel(workspace,state.compareAnchor,state.compareDays,at),colors={reality:'Reality',planned:'Planned',predicted:'Predicted',ideal:'Ideal'},scale=chartScale(m.series),max=scale.maxMs;
  const bars=m.series.map(d=>'<div class="pa-chart-day"><div class="pa-bar-group">'+Object.keys(colors).map(k=>'<i class="pa-'+k+'" style="height:'+((d[k]||0)/max*100)+'%" title="'+colors[k]+': '+(d[k]===null?'unavailable':hrs(d[k]))+'"></i>').join('')+'</div><small>'+new Date(d.start).toLocaleDateString(undefined,{weekday:state.compareDays===7?'short':'narrow',day:'numeric'})+'</small></div>').join('');
  const legend='<div class="pa-chart-legend">'+Object.keys(colors).map(k=>'<span><i class="pa-'+k+'"></i>'+colors[k]+'</span>').join('')+'</div>';
  const values='<details class="pa-data"><summary>Daily values</summary><div class="pa-data-scroll"><table><thead><tr><th>Day</th>'+Object.values(colors).map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+m.series.map(d=>'<tr><th>'+esc(date(d.start))+'</th>'+Object.keys(colors).map(k=>'<td>'+(d[k]===null?'—':hrs(d[k]))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div></details>';
- const totals=Object.keys(colors).map(k=>'<div class="pa-total pa-border-'+k+'"><small>'+colors[k]+'</small><strong>'+(m.totals[k]===null?'—':hrs(m.totals[k]))+'</strong><span>'+(k==='predicted'&&!m.forecast.available?esc(m.forecast.reason):k==='ideal'&&m.totals[k]===null?'No ideal routines':k==='reality'?'Unique tracked time':k==='planned'?'Saved commitments':'Evidence-based pattern')+'</span></div>').join('');
- const ratio=m.end<=Date.now()&&m.totals.ideal>0&&m.totals.reality!==null?Math.round(m.totals.reality/m.totals.ideal*100):null;
- const comparison=card(title('Schedule comparison','<span class="pa-muted">daily hours</span>')+'<div class="pa-chart-scroll"><div class="pa-chart" aria-hidden="true" style="--pa-chart-days:'+m.series.length+'">'+bars+'</div></div>'+legend+'<div class="pa-totals">'+totals+'</div>'+values);
- const data=normalized(read()),start=m.from,end=m.end,items=new Map();
+ const totals=Object.keys(colors).map(k=>{const days=m.series.filter(d=>d[k]!==null).length,average=days?'<span class="pa-average">'+hrs(m.totals[k]/days)+' / '+(k==='reality'?'elapsed day':'day')+'</span>':'';return '<div class="pa-total pa-border-'+k+'"><small>'+colors[k]+'</small><strong>'+(m.totals[k]===null?'—':hrs(m.totals[k]))+'</strong>'+average+'<span>'+(k==='predicted'&&!m.forecast.available?esc(m.forecast.reason):k==='ideal'&&m.totals[k]===null?'No ideal routines':k==='reality'?'Unique tracked time':k==='planned'?'Saved commitments':k==='ideal'?'Current ideal routines':'Evidence-based pattern')+'</span></div>'}).join('');
+ const completed=m.end<=at,ratios=Object.fromEntries(['reality','planned','predicted'].map(k=>[k,completed&&m.totals.ideal>0&&m.totals[k]!==null?Math.round(m.totals[k]/m.totals.ideal*100):null])),ratio=ratios.reality;
+ const axis='<div class="pa-chart-axis">'+scale.ticks.map(n=>'<span>'+esc(n.toLocaleString(undefined,{maximumFractionDigits:2}))+'h</span>').join('')+'</div>';
+ const comparison=card(title('Schedule comparison','<span class="pa-muted">daily hours</span>')+'<div class="pa-chart-frame" aria-hidden="true">'+axis+'<div class="pa-chart-scroll"><div class="pa-chart" style="--pa-chart-days:'+m.series.length+'">'+bars+'</div></div></div>'+legend+'<div class="pa-totals">'+totals+'</div>'+(m.series.some(d=>d.start<=at&&at<d.end)?'<p class="pa-footnote">Recorded daily average includes today so far.</p>':'')+values);
+ const data=normalized(workspace),start=m.from,end=m.end,items=new Map();
  const add=(item,type,a,b)=>{const amount=Math.max(0,Math.min(b,end,type==='reality'?Date.now():end)-Math.max(a,start));if(!amount)return;const c=category(item),row=items.get(c.name)||{reality:0,planned:0,ideal:0};row[type]+=amount;items.set(c.name,row)};
  for(const s of data.sessions)for(const x of analytics().sessionIntervals(s,Date.now()))add(s,'reality',x.start,x.end);
  for(const p of data.schedule)add(p,'planned',+p.startAt,+p.endAt);for(const r of m.idealRows)add(r,'ideal',+r.startAt,+r.endAt);
  const top=[...items].sort((a,b)=>Object.values(b[1]).reduce((x,y)=>x+y,0)-Object.values(a[1]).reduce((x,y)=>x+y,0)).slice(0,5),big=Math.max(1,...top.flatMap(x=>Object.values(x[1])));
- const cats=top.map(([name,v])=>'<div class="pa-category"><span>'+esc(name)+'</span><div class="pa-category-bars">'+['reality','planned','ideal'].map(k=>'<i><b class="pa-'+k+'" style="width:'+(v[k]/big*100)+'%"></b></i>').join('')+'</div><strong>'+hrs(v.reality)+' / '+hrs(v.planned)+' / '+hrs(v.ideal)+'</strong></div>').join('');
+ const cats=top.map(([name,v])=>'<div class="pa-category"><span>'+esc(name)+'</span><div class="pa-category-bars">'+['reality','planned','ideal'].map(k=>'<i><b class="pa-'+k+'" style="width:'+(v[k]/big*100)+'%"></b></i>').join('')+'</div><strong>'+(m.totals.reality===null?'—':hrs(v.reality))+' / '+hrs(v.planned)+' / '+(m.totals.ideal===null?'—':hrs(v.ideal))+'</strong></div>').join('');
  const categoryCard=card(title('By category','<span class="pa-muted">R / P / I</span>')+(cats||empty('No activity in this period.'))+'<p class="pa-footnote">Summed durations can include overlaps.</p>');
- const overall=card(title('Overall progress')+'<div class="pa-ring pa-big-ring" style="--pa-pct:'+Math.min(100,ratio||0)+'"><span>'+(ratio===null?'—':ratio+'%')+'</span></div><p class="pa-sub">'+(ratio===null?'Available after the selected period ends and ideal routines exist.':'Unique recorded time / ideal time; not a completion rate.')+'</p>');
- target.innerHTML='<div class="pa-section-heading"><div><h3>Compare</h3><p>Reality, planned, predicted and ideal schedules.</p></div></div>'+card('<div class="pa-period"><button type="button" data-pa-compare-move="-1" aria-label="Previous period">‹</button><strong>'+labelPeriod(m.from,m.end)+'</strong><button type="button" data-pa-compare-move="1" aria-label="Next period">›</button></div><div class="pa-segments">'+[7,14,30].map(n=>'<button type="button" data-pa-days="'+n+'" aria-pressed="'+(state.compareDays===n)+'">'+n+' days</button>').join('')+'</div>')+comparison+'<div class="pa-pair">'+categoryCard+overall+'</div>'+card(title('Key insights')+'<p class="pa-sub">'+(m.forecast.available?'Predictions are observed patterns, not bookings or proof of future activity.':esc(m.forecast.reason)+'. Predictions need at least 14 tracked days and three matching weekday observations.')+'</p><button class="pa-link" type="button" data-v136-tab="improve">Review opportunities ›</button>');
+ const ratioRows=Object.keys(ratios).map(k=>'<div><span><i class="pa-'+k+'"></i>'+colors[k]+' vs ideal</span><strong>'+(ratios[k]===null?'—':ratios[k].toLocaleString()+'%')+'</strong></div>').join('');
+ const overall=card(title('Overall progress')+'<div class="pa-ring pa-big-ring" style="--pa-pct:'+Math.min(100,ratio||0)+'"><span>'+(ratio===null?'—':ratio.toLocaleString()+'%')+'</span></div><div class="pa-ratio-list">'+ratioRows+'</div><p class="pa-sub">'+(ratio===null?'Available after the selected period ends and ideal routines exist.':'Unique time divided by current ideal time; not a completion rate.')+'</p>');
+ const prior=completed?sum(data,shift(m.from,-state.compareDays),m.from,at).uniqueRecordedMs:null,change=prior>=60000?Math.round((m.totals.reality-prior)/prior*100):null;
+ const idealDiff=completed&&m.totals.ideal>0&&m.totals.reality!==null?m.totals.reality-m.totals.ideal:null;
+ const peak=m.series.filter(d=>d.reality>0).sort((a,b)=>b.reality-a.reality)[0];
+ const insightDuration=ms=>ms>0&&ms<60000?'<1m':ms<3600000?dur(ms):hrs(ms);
+ const insightRows=[{value:change===null?'—':(change>0?'+':'')+change.toLocaleString()+'%',label:'Recorded vs prior period',detail:change===null?(completed?'At least 1m of prior recorded time needed':'Available after this period ends'):'Unique recorded time'},
+  {value:idealDiff===null?'—':(idealDiff>0?'+':idealDiff<0?'−':'')+insightDuration(Math.abs(idealDiff)),label:'Recorded vs ideal',detail:idealDiff===null?'Past periods with an ideal schedule':'Difference in unique time'},
+  {value:peak?new Date(peak.start).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}):'—',label:'Highest recorded day',detail:peak?insightDuration(peak.reality)+' recorded':'No recorded time in this period'}];
+ const insights='<div class="pa-insight-grid">'+insightRows.map(x=>'<div><strong>'+esc(x.value)+'</strong><span>'+esc(x.label)+'</span><small>'+esc(x.detail)+'</small></div>').join('')+'</div>';
+ target.innerHTML='<div class="pa-section-heading"><div><h3>Compare</h3><p>Reality, planned, predicted and ideal schedules.</p></div></div>'+card('<div class="pa-period"><button type="button" data-pa-compare-move="-1" aria-label="Previous period">‹</button><strong>'+labelPeriod(m.from,m.end)+'</strong><button type="button" data-pa-compare-move="1" aria-label="Next period">›</button></div><div class="pa-segments">'+[7,14,30].map(n=>'<button type="button" data-pa-days="'+n+'" aria-pressed="'+(state.compareDays===n)+'">'+n+' days</button>').join('')+'</div>')+comparison+'<div class="pa-pair pa-compare-pair">'+categoryCard+overall+'</div>'+(m.totals.ideal!==null?'<p class="pa-footnote">Ideal values use your current routines; historical target changes are not available.</p>':'')+card(title('Key insights')+insights+'<p class="pa-footnote">'+(m.forecast.available?'Predictions are observed patterns, not bookings or proof of future activity.':esc(m.forecast.reason)+'. Predictions need at least 14 tracked days and three matching weekday observations.')+'</p><button class="pa-link" type="button" data-v136-tab="improve">Review opportunities ›</button>');
 }
 function improve(){
  const target=$('paImprove');if(!target)return;const w=read(),now=Date.now(),ws=normalized(w),report=(()=>{try{return root.LifeOSDebtRecoveryV75?.outstanding?.({...w,...ws},now)||{open:[],unverified:[]}}catch{return {open:[],unverified:[]}}})(),unknown=report.unverified||[],open=report.open||[],recent=ws.sessions.filter(s=>s.status==='finished'&&+s.endAt>shift(now,-14)),flag=recent.filter(s=>{const duration=analytics().sessionIntervals(s,now).reduce((n,x)=>n+x.end-x.start,0);return duration>24*3600000||(duration>=3*3600000&&/prayer|fajr|dhuhr|asr|maghrib|isha/i.test(s.name||''))||(duration>=8*3600000&&/quran|memorization|arabic/i.test(s.name||''))});
@@ -220,5 +234,5 @@ function init(){
  return true;
 }
 if(root.document){const boot=()=>{if(!init())root.setTimeout(boot,250)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',boot,{once:true});else boot()}
-return {init,render,calendar,tasks,compare,improve,taskEditor,taskGroups,compareModel,rowsForDay,lanes,ideal,forecasts,series,day,shift,week};
+return {init,render,calendar,tasks,compare,improve,taskEditor,taskGroups,compareModel,chartScale,rowsForDay,lanes,ideal,forecasts,series,day,shift,week};
 });

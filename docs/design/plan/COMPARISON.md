@@ -20,4 +20,12 @@ The V1 supporting board shows a full-page task editor and repeat control; the de
 ![Edit task, dark browser capture](current/v1-task-editor-edit.png)
 ![Create task, light browser capture](current/v1-task-editor-light.png)
 
+Compare now includes a labeled, data-scaled daily-hours axis and averages. The recorded average divides by the elapsed calendar days in the selected period, including today so far where applicable; the other available series use the selected days. An unconfigured ideal schedule and a future period’s recorded time are shown as unavailable, including in category rows. Evidence-based cards show a highest recorded day, a prior-period change only after the selected period ends with at least one minute recorded previously, and an ideal-time difference only where an ideal is configured. They describe recorded time, not productivity or proof that plans were completed. The three ratios use unique durations, are withheld until a period has ended, and are labeled as comparisons rather than completion. Ideal routines are the current configuration applied to the selected period; historical target changes are unavailable.
+
+![Compare, dark browser capture](current/v1-compare-dark.png)
+![Compare, light browser capture](current/v1-compare-light.png)
+![Compare insight cards, dark browser capture](current/v1-compare-dark-insights.png)
+
+Full-page captures are also available in `current/v1-compare-dark-full.png` and `current/v1-compare-light-full.png`. A stitched full-page browser capture places the fixed bottom navigation partway down the image; it is not a screenshot of the navigation's position after scrolling.
+
 The screenshots intentionally differ in content and numbers, may require scrolling, and omit unsupported ratios and suggestions. Calendar bulk editing of an entire recurring series is not implemented; each generated occurrence remains an ordinary plan. Device rendering, native system insets, keyboard behavior and final visual acceptance remain unverified.

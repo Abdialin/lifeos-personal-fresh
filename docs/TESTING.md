@@ -32,6 +32,7 @@ PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
 node tests/plan-concept-a-model.cjs
 PLAN_CAPTURE=1 node tests/plan-concept-a.cjs
 PLAN_TASK_CAPTURE=1 node tests/plan-task-editor.cjs
+PLAN_COMPARE_CAPTURE=1 node tests/plan-compare-chart.cjs
 node scripts/capture-design-baselines.cjs
 node test_goal_fitness_cross_section_v204.cjs
 node test_personal_goals_integration.cjs
@@ -46,9 +47,11 @@ python3 test_frontend_static_assets_v236.py
 
 The V250 tests cover selected map items, short intervals, full/partial/consecutive gap saves, invalid/stale boundaries, exact unedited millisecond endpoints, reload persistence, overlapping/overnight/paused records, explicit and ambiguous categories, representative Goals/Insights category paths, empty and 132-record states, 23/25-hour days, themes, six navigation sections and reduced browser heights. To recreate the synthetic high-volume image, run `LIFEOS_CAPTURE_VOLUME=1 node tests/today-v250-volume.cjs` and copy `today-verification/high-volume.png` to `docs/design/today/current/timeline-high-volume.png`.
 
-The Plan tests cover local-week and daylight-saving boundaries, overnight and paused sessions, overlapping intervals and conflicts, explicit completion evidence, empty and high-volume models, search, editing/toggling tasks, adding a plan, Track-to-Plan refresh, reload persistence, dark/light themes, reduced viewports, bottom clearance, settings, and navigation. The browser fixture writes only to intercepted synthetic local storage. With capture enabled it writes `plan-verification/overview-dark.png`, `overview-light.png`, `overview-bottom.png` and `overview-dark-full.png`.
+The Plan tests cover precise task-deadline ordering, local-week and daylight-saving boundaries, overnight and paused sessions, overlapping intervals and conflicts, explicit completion evidence, empty and high-volume models, search, editing/toggling tasks, adding a plan, Track-to-Plan refresh, reload persistence, dark/light themes, reduced viewports, bottom clearance, settings, and navigation. The browser fixture writes only to intercepted synthetic local storage. With capture enabled it writes `plan-verification/overview-dark.png`, `overview-light.png`, `overview-bottom.png` and `overview-dark-full.png`.
 
 The task-sheet fixture covers the four supported timing types, invalid dates, equal or reversed times and estimates, preservation of original timestamps and unrelated fields, cancellation, stale saves and deletes, in-app deletion confirmation, simulated checkpoint failures, successful retry, reload persistence, focus confinement, reduced viewports, both themes and a task created through the retained original manager. It uses synthetic local records and captures three screenshots under `docs/design/plan/current/`. It does not verify a native Android keyboard or cloud synchronization.
+
+The comparison fixture checks the hour-axis labels and bar proportions against raw daily unique durations, recorded and planned averages and their denominators, unavailable predicted and ideal data, evidence-gated recorded-time insight cards and current-ideal ratios, the daily-values table, 7/14/30-day ranges, empty states, themes, reduced viewports, navigation clearance and read-only behavior. Captures use only synthetic offline records.
 
 GitHub workflows: `.github/workflows/preview-runtime.yml`, `today-a-plus-browser.yml`, `today-aplus-mobile-visual.yml`, and `today-presentation-check.yml`. The mobile workflow captures multiple widths and themes and checks geometry; screenshots are evidence, not automatic visual approval against a supplied reference. The visual library contains synthetic prior/current captures and comparison notes.
 

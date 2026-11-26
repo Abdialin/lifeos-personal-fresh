@@ -7,13 +7,15 @@ const t=s=>new Date(s).getTime(),now=t('2026-11-26T16:00:00');
 const tasks=api.taskGroups([
  {id:'late',name:'Late',due:'2026-11-25'},
  {id:'late-today',name:'Past deadline',due:'2026-11-26',dueTime:'12:00'},
+ {id:'late-precise',name:'Past precise deadline',due:'2026-11-26',dueTime:'15:59:59.999'},
+ {id:'today-precise',name:'Upcoming precise deadline',due:'2026-11-26',dueTime:'16:00:00.001'},
  {id:'today',name:'Today',due:'2026-11-26'},
  {id:'future',name:'Future',due:'2026-11-27'},
  {id:'none',name:'No date'},
  {id:'done',name:'Done',done:true}
 ],now);
-assert.deepEqual(tasks.overdue.map(x=>x.id),['late','late-today']);
-assert.deepEqual(tasks.today.map(x=>x.id),['today']);assert.deepEqual(tasks.upcoming.map(x=>x.id),['future']);assert.equal(tasks.anytime[0].id,'none');assert.equal(tasks.completed[0].id,'done');
+assert.deepEqual(tasks.overdue.map(x=>x.id),['late','late-today','late-precise']);
+assert.deepEqual(tasks.today.map(x=>x.id),['today-precise','today']);assert.deepEqual(tasks.upcoming.map(x=>x.id),['future']);assert.equal(tasks.anytime[0].id,'none');assert.equal(tasks.completed[0].id,'done');
 const original={name:'Gym',seriesId:'series-test',startAt:t('2026-12-01T18:00:00'),endAt:t('2026-12-01T19:00:00'),until:'2026-12-15',frequency:'weekly',reminder:true};
 const generated=api.series(original,[],now);assert.equal(generated.length,3);assert.deepEqual(generated.map(x=>new Date(x.startAt).getDate()),[1,8,15]);
 assert.throws(()=>api.series(original,generated,now),/already been saved/);
@@ -25,6 +27,8 @@ assert.throws(()=>api.series({...original,seriesId:'dst',startAt:t('2027-03-27T0
 const day=api.day('2026-11-24'),sessions=[{id:'paused',name:'Study',status:'finished',startAt:day+9*3600000,endAt:day+11*3600000,segments:[{start:day+9*3600000,end:day+10*3600000},{start:day+10.5*3600000,end:day+11*3600000}]},{id:'overlap',name:'Work',status:'finished',startAt:day+9.5*3600000,endAt:day+10.5*3600000,segments:[{start:day+9.5*3600000,end:day+10.5*3600000}]}];
 const w={sessions,schedule:[{id:'p',name:'Study',startAt:day+12*3600000,endAt:day+13*3600000,status:'planned'}],idealRoutines:[]};
 const model=api.compareModel(w,api.week(now),7,now);assert.equal(model.totals.reality,2*3600000);assert.equal(model.totals.planned,3600000);assert.equal(model.totals.ideal,null);assert.equal(model.totals.predicted,null);assert.equal(model.series.at(-1).reality,null);
+assert.deepEqual(api.chartScale([]).ticks,[1,0.75,0.5,0.25,0]);
+for(const h of [0.1,1,2,3.8,7,10,23,25]){const scale=api.chartScale([{reality:h*3600000}]);assert(scale.maxMs>=h*3600000);assert.equal(scale.ticks.length,5);assert.equal(scale.ticks[4],0);assert.equal(scale.ticks[0]*3600000,scale.maxMs)}
 const assigned=api.lanes([{start:0,end:20},{start:10,end:15},{start:20,end:30}]);assert.deepEqual(assigned.map(x=>x.lanes),[2,2,1]);assert.equal(assigned[0].end,20);
 const forecastFrom=t('2026-11-23T00:00:00'),history=[];
 for(let d=1;d<=28;d++){const dayStart=api.shift(forecastFrom,-d),a=dayStart+9*3600000;history.push({id:'h'+d,name:'Study',status:'finished',startAt:a,endAt:a+2*3600000,segments:[{start:a,end:a+3600000}]})}

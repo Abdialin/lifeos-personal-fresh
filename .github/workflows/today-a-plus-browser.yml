@@ -46,6 +46,7 @@ jobs:
       - run: node tests/plan-concept-a-model.cjs
       - run: PLAN_CAPTURE=1 node tests/plan-concept-a.cjs
       - run: PLAN_TASK_CAPTURE=1 node tests/plan-task-editor.cjs
+      - run: PLAN_COMPARE_CAPTURE=1 node tests/plan-compare-chart.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -57,3 +58,4 @@ jobs:
             docs/design/track/current/v1-*.png
             docs/design/goals/current/release-reading*.png
             docs/design/plan/current/v1-task-editor-*.png
+            docs/design/plan/current/v1-compare-*.png
