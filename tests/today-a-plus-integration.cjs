@@ -32,9 +32,15 @@ const server=http.createServer((req,res)=>{
  await page.screenshot({path:'today-verification/integration/'+width+'-tab-'+i+'-top.png'});
  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
  await page.screenshot({path:'today-verification/integration/'+width+'-tab-'+i+'-bottom.png'});
- const last=page.locator('#apPage'+i+' > :last-child');
- const box=await last.boundingBox(), n=await nav.boundingBox();
- assert(box&&n&&box.y+box.height<=n.y+2,'Last card obstructed: '+width+' tab '+i);
+ // Today can replace its cards on a minute tick. Measure both current elements
+ // in one browser task so a detached card cannot produce a transient null box.
+ const measurement=await page.waitForFunction(tab=>{
+  const last=document.querySelector('#apPage'+tab+' > :last-child'),navigation=document.getElementById('lifeosNavigation');
+  if(!last?.getClientRects().length||!navigation?.getClientRects().length)return false;
+  return {bottom:last.getBoundingClientRect().bottom,navTop:navigation.getBoundingClientRect().top};
+ },i,{timeout:5000});
+ const {bottom,navTop}=await measurement.jsonValue();
+ assert(bottom<=navTop+2,'Last card obstructed: '+width+' tab '+i+' ('+bottom+' > '+navTop+')');
  await page.evaluate(()=>window.scrollTo(0,0));
  }
  for(const view of ['tracking','schedule','goals','analytics','life','dashboard']){
