@@ -40,7 +40,12 @@ body.pa-task-sheet-open{overflow:hidden!important}
 #v136Workspace .pa-day-col{min-width:0;border-left:1px solid var(--pov-line)}
 #v136Workspace .pa-day-head{display:grid;place-content:center;width:100%;padding:3px;border:0;border-radius:8px;background:transparent;color:var(--pov-text);font-size:11px;line-height:1.2}
 #v136Workspace .pa-day-head b{font-size:13px}#v136Workspace .pa-day-head.is-today{background:#145d55;color:#ddfff5;outline:1px solid var(--pov-accent)}
-#v136Workspace .pa-day-body{background:repeating-linear-gradient(to bottom,transparent 0,transparent 27px,var(--pov-line) 27px,var(--pov-line) 28px)}
+#v136Workspace .pa-day-body{background-image:linear-gradient(to bottom,transparent calc(100% - 1px),var(--pov-line) 0);background-size:100% calc(100% / var(--pa-hours))}
+#v136Workspace .pa-day-events{position:absolute;inset:0}
+#v136Workspace .pa-clock-change .pa-day-events{left:36px}
+#v136Workspace .pa-day-axis{position:absolute;top:0;bottom:0;left:0;width:36px;background:var(--pov-card2);border-right:1px solid var(--pov-line)}
+#v136Workspace .pa-day-axis span{position:absolute;left:1px;transform:translateY(-50%);color:var(--pov-muted);font-size:9px;line-height:1;white-space:nowrap}
+#v136Workspace .pa-day-axis span:first-child{transform:none}#v136Workspace .pa-day-axis span:last-child{transform:translateY(-100%)}
 #v136Workspace .pa-block{position:absolute;z-index:2;display:block;min-width:0;min-height:0;overflow:hidden;padding:2px 3px;border:1px solid #9ab0dd;border-radius:5px;color:#f5fbff;text-align:left;line-height:1.1}
 #v136Workspace .pa-block strong,#v136Workspace .pa-block small{display:block;overflow:hidden;text-overflow:ellipsis;font-size:10px;line-height:1.15}
 #v136Workspace .pa-block small{font-size:9px;white-space:nowrap}

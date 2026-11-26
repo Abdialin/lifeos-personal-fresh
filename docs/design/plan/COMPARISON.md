@@ -10,12 +10,19 @@ The original images below were supplied by the user on 26 November 2026; their v
 | Compare | ![Compare reference](reference/04_Plan_Compare.png) | ![Compare delivered](current/compare.png) | ![Compare light](current/compare-light.png) |
 | Improve | ![Improve reference](reference/05_Plan_Improve.png) | ![Improve delivered](current/improve.png) | ![Improve light](current/improve-light.png) |
 
-The shared Plan header, five tabs, navy cards and mint selection follow the existing Overview. The Calendar week view uses horizontally scrollable day columns at narrow widths so text and controls remain usable; it displays the full local day, so more vertical scrolling is needed than in the illustrative cropped reference. Very short blocks also appear in an expandable list. On a week containing a daylight-saving transition, each day's geometry uses its actual length; the shared axis follows the first day and an explanatory note directs the user to exact item times.
+The shared Plan header, five tabs, navy cards and mint selection follow the existing Overview. The Calendar week view uses horizontally scrollable day columns at narrow widths so text and controls remain usable; it displays the full local day, so more vertical scrolling is needed than in the illustrative cropped reference. Very short blocks also appear in an expandable list. On a clock-change day, geometry uses the actual day length and an adjacent time scale appears if the shared scale differs. Repeated times are marked a/b, while activity details include the applicable UTC offset.
 
 The day headings now remain visible during vertical map scrolling and track the timeline during horizontal swipes in browser tests. The captures below show the scrolled state with synthetic overlapping and short records. Native Android safe areas and scrolling are still unverified.
 
 ![Calendar sticky headings, dark browser capture](current/v1-calendar-sticky-dark.png)
 ![Calendar sticky headings, light browser capture](current/v1-calendar-sticky-light.png)
+
+The following browser captures show the separate clock-change scale with synthetic records. It narrows the affected day’s blocks, which remain available in the item list; legibility on an Android device is still unverified.
+
+![Spring clock change, dark browser capture](current/v1-calendar-dst-spring.png)
+![Autumn clock change, dark browser capture](current/v1-calendar-dst-autumn.png)
+![Autumn clock change, light browser capture](current/v1-calendar-dst-autumn-light.png)
+![Half-hour clock change, dark browser capture](current/v1-calendar-dst-half-hour.png)
 
 The planned-activity details sheet uses the selected theme and asks for explicit in-app confirmation before marking an activity skipped. This retains the original plan and does not create a tracked session. The following synthetic captures show the light sheet and the dark and light confirmation dialogs; device rendering is unverified.
 

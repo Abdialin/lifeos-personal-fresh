@@ -23,6 +23,29 @@ const analytics=()=>root.LifeOSUnifiedAnalytics;
 const sum=(workspace,a,b,now)=>analytics().summarize(workspace,{start:a,end:b,now});
 const fmtWeek=t=>{const d=new Date(t),u=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));u.setUTCDate(u.getUTCDate()+4-(u.getUTCDay()||7));return Math.ceil((((u-new Date(Date.UTC(u.getUTCFullYear(),0,1)))/86400000)+1)/7)};
 const labelPeriod=(a,b)=>date(a)+' – '+new Date(b-1).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+// Find the other occurrence of a local time on a repeated-clock day. Offset
+// changes need not be a whole hour (for example, Australia/Lord_Howe).
+function calendarOffsets(start){const end=shift(start,1),offsets=new Set();for(let t=start;t<end;t+=3600000)offsets.add(new Date(t).getTimezoneOffset());offsets.add(new Date(end-1).getTimezoneOffset());return [...offsets]}
+function calendarTwin(start,time,offsets){
+ const end=shift(start,1),current=new Date(time).getTimezoneOffset();
+ for(const offset of offsets){const other=time+(offset-current)*60000;if(offset!==current&&other>=start&&other<end&&new Date(other).getTimezoneOffset()===offset)return other}
+ return null;
+}
+function calendarTicks(start){
+ const end=shift(start,1),offsets=calendarOffsets(start),times=new Set();
+ for(let t=start;t<end;t+=3600000){times.add(t);const twin=calendarTwin(start,t,offsets);if(twin!==null)times.add(twin)}
+ return [...times].sort((a,b)=>a-b).map(time=>{const twin=calendarTwin(start,time,offsets);return {time,label:clock(time)+(twin===null?'':time<twin?'a':'b')}});
+}
+function calendarAxis(start){
+ const length=shift(start,1)-start;
+ return calendarTicks(start).map(t=>'<span style="top:'+((t.time-start)/length*100)+'%">'+esc(t.label)+'</span>').join('')+'<span style="top:100%">24:00</span>';
+}
+function calendarClock(time,start){
+ if(time===shift(start,1))return '24:00';
+ if(shift(start,1)-start===86400000)return clock(time);
+ const twin=calendarTwin(start,time,calendarOffsets(start));
+ return clock(time)+(twin===null?'':time<twin?'a':'b');
+}
 function taskDate(t){const value=String(t?.due||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(value)||key(new Date(value+'T12:00:00'))!==value)return 'No date';return new Date(value+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}
 function category(item){
  let name='Other / review';try{name=root.lifeosActivityClassification?.(item)?.group||name}catch{}
@@ -65,6 +88,8 @@ function series(request,existing,now){
   if(d.getHours()!==first.getHours()||d.getMinutes()!==first.getMinutes())throw Error('A repeated time does not exist during a clock change. Choose another time.');
   const finish=new Date(d.getFullYear(),d.getMonth(),d.getDate()+dayOffset,last.getHours(),last.getMinutes(),last.getSeconds(),last.getMilliseconds());
   if(finish.getHours()!==last.getHours()||finish.getMinutes()!==last.getMinutes()||finish<=d)throw Error('A repeated finish time is invalid during a clock change.');
+  const startDay=day(+d),finishDay=day(+finish);
+  if(calendarTwin(startDay,+d,calendarOffsets(startDay))!==null||calendarTwin(finishDay,+finish,calendarOffsets(finishDay))!==null)throw Error('A repeated time is ambiguous during a clock change. Choose a different time.');
   const a=+d,b=+finish,id=seriesId+'-'+key(a);if((existing||[]).some(p=>String(p.id)===id))throw Error('This occurrence identifier already exists.');
   if((existing||[]).some(p=>planOk(p)&&overlap(a,b,+p.startAt,+p.endAt))||rows.some(p=>overlap(a,b,p.startAt,p.endAt)))throw Error('A repeated activity overlaps another plan. Review the calendar before saving.');
   rows.push({id,seriesId,seriesFrequency:frequency,name:String(name).trim(),startAt:a,endAt:b,status:'planned',sessionId:null,reminder:!!request.reminder,notes:String(request.notes||'').slice(0,1000),createdAt:now});
@@ -149,10 +174,11 @@ function calendar(){
  }else{
   const days=[];for(let t=from;t<end;t=shift(t,1))days.push(t);
   const headings=days.map(t=>'<div class="pa-head-cell"><button class="pa-day-head'+(key(t)===key(now)?' is-today':'')+'" type="button" data-pa-date="'+key(t)+'"><span>'+new Date(t).toLocaleDateString(undefined,{weekday:'short'})+'</span><b>'+new Date(t).getDate()+'</b></button></div>').join('');
-  const columns=days.map(t=>{const next=shift(t,1),length=next-t,events=lanes(rowsForDay(w,t,next,now));const blocks=events.map(r=>{const c=category(r.source),top=(r.start-t)/length*100,height=(r.end-r.start)/length*100,left=r.lane/r.lanes*100,width=100/r.lanes;return '<button type="button" class="pa-block pa-cat-'+c.css+' pa-kind-'+r.kind+'" style="top:'+top+'%;height:'+height+'%;left:'+left+'%;width:'+width+'%" data-v137-activity="'+r.kind+'" data-v137-id="'+esc(r.source.id)+'" aria-label="'+esc((r.source.name||'Activity')+' · '+(sample(r.source)?'example · ':'')+(r.kind==='plan'?'planned':'recorded')+' · '+clock(r.start)+' to '+clock(r.end))+'"><strong>'+esc(r.source.name||'Activity')+'</strong><small>'+(sample(r.source)?'Example · ':'')+clock(r.start)+'–'+clock(r.end)+'</small></button>'}).join('');return '<div class="pa-day-col"><div class="pa-day-body" style="--pa-hours:'+(length/3600000)+'">'+blocks+(now>=t&&now<next?'<i class="pa-now" style="top:'+((now-t)/length*100)+'%"></i>':'')+'</div></div>'}).join('');
-  const firstLength=shift(days[0],1)-days[0],ticks=[];for(let t=days[0];t<days[0]+firstLength;t+=3600000)ticks.push('<span style="top:'+((t-days[0])/firstLength*100)+'%">'+clock(t)+'</span>');ticks.push('<span style="top:100%">24:00</span>');const axis=ticks.join('');
-  content=(days.length>3?'<p class="pa-calendar-hint">Swipe to view all days</p>':'')+(days.some(t=>shift(t,1)-t!==firstLength)?'<p class="pa-calendar-hint">Clock change this week: open an item for its exact local time.</p>':'')+'<div class="pa-grid-head-wrap"><div class="pa-grid-head-scroll" role="region" aria-label="Calendar day headings; scroll horizontally for more days" tabindex="0"><div class="pa-grid" style="--pa-days:'+days.length+'"><div class="pa-axis"><div class="pa-axis-label">Time</div></div>'+headings+'</div></div></div><div class="pa-grid-scroll" role="region" aria-label="Calendar timeline; scroll horizontally for more days" tabindex="0"><div class="pa-grid" style="--pa-days:'+days.length+'"><div class="pa-axis"><section>'+axis+'</section></div>'+columns+'</div></div><div class="pa-legend"><span><i class="pa-dot study"></i>Study</span><span><i class="pa-dot work"></i>Work</span><span><i class="pa-dot fitness"></i>Fitness</span><span><i class="pa-dot other"></i>Other</span><span>Outline: recorded</span></div>';
-  const list=days.flatMap(t=>rowsForDay(w,t,shift(t,1),now).map(r=>({...r,day:t})));content+='<details class="pa-list"><summary>All timeline items ('+list.length+')</summary>'+(list.length?list.map(r=>'<button type="button" data-v137-activity="'+r.kind+'" data-v137-id="'+esc(r.source.id)+'"><span><strong>'+esc(r.source.name||'Activity')+'</strong><small>'+date(r.day)+' · '+clock(r.start)+'–'+clock(r.end)+' · '+(sample(r.source)?'Example · ':'')+(r.kind==='plan'?'Planned':'Recorded')+'</small></span><b>›</b></button>').join(''):empty('No activities in this period.'))+'</details>';
+  const axisDay=days.find(t=>shift(t,1)-t===86400000)??days[0],axisLength=shift(axisDay,1)-axisDay;
+  const columns=days.map(t=>{const next=shift(t,1),length=next-t,ownAxis=length!==axisLength,events=lanes(rowsForDay(w,t,next,now));const blocks=events.map(r=>{const c=category(r.source),top=(r.start-t)/length*100,height=(r.end-r.start)/length*100,left=r.lane/r.lanes*100,width=100/r.lanes;return '<button type="button" class="pa-block pa-cat-'+c.css+' pa-kind-'+r.kind+'" style="top:'+top+'%;height:'+height+'%;left:'+left+'%;width:'+width+'%" data-v137-activity="'+r.kind+'" data-v137-id="'+esc(r.source.id)+'" aria-label="'+esc((r.source.name||'Activity')+' · '+(sample(r.source)?'example · ':'')+(r.kind==='plan'?'planned':'recorded')+' · '+calendarClock(r.start,t)+' to '+calendarClock(r.end,t))+'"><strong>'+esc(r.source.name||'Activity')+'</strong><small>'+(sample(r.source)?'Example · ':'')+calendarClock(r.start,t)+'–'+calendarClock(r.end,t)+'</small></button>'}).join('');return '<div class="pa-day-col'+(ownAxis?' pa-clock-change':'')+'" data-pa-day="'+key(t)+'"><div class="pa-day-body" style="--pa-hours:'+(length/3600000)+'">'+(ownAxis?'<div class="pa-day-axis" aria-hidden="true">'+calendarAxis(t)+'</div>':'')+'<div class="pa-day-events">'+blocks+(now>=t&&now<next?'<i class="pa-now" style="top:'+((now-t)/length*100)+'%"></i>':'')+'</div></div></div>'}).join('');
+  const hasClockChange=days.some(t=>shift(t,1)-t!==86400000),axis=calendarAxis(axisDay);
+  content=(days.length>3?'<p class="pa-calendar-hint">Swipe to view all days</p>':'')+(hasClockChange?'<p class="pa-calendar-hint">Clock change: the affected day has its own time scale when needed. Repeated hours are marked a and b. Open an item for details.</p>':'')+'<div class="pa-grid-head-wrap"><div class="pa-grid-head-scroll" role="region" aria-label="Calendar day headings; scroll horizontally for more days" tabindex="0"><div class="pa-grid" style="--pa-days:'+days.length+'"><div class="pa-axis"><div class="pa-axis-label">Time</div></div>'+headings+'</div></div></div><div class="pa-grid-scroll" role="region" aria-label="Calendar timeline; scroll horizontally for more days" tabindex="0"><div class="pa-grid" style="--pa-days:'+days.length+'"><div class="pa-axis"><section>'+axis+'</section></div>'+columns+'</div></div><div class="pa-legend"><span><i class="pa-dot study"></i>Study</span><span><i class="pa-dot work"></i>Work</span><span><i class="pa-dot fitness"></i>Fitness</span><span><i class="pa-dot other"></i>Other</span><span>Outline: recorded</span></div>';
+  const list=days.flatMap(t=>rowsForDay(w,t,shift(t,1),now).map(r=>({...r,day:t})));content+='<details class="pa-list"><summary>All timeline items ('+list.length+')</summary>'+(list.length?list.map(r=>'<button type="button" data-v137-activity="'+r.kind+'" data-v137-id="'+esc(r.source.id)+'"><span><strong>'+esc(r.source.name||'Activity')+'</strong><small>'+date(r.day)+' · '+calendarClock(r.start,r.day)+'–'+calendarClock(r.end,r.day)+' · '+(sample(r.source)?'Example · ':'')+(r.kind==='plan'?'Planned':'Recorded')+'</small></span><b>›</b></button>').join(''):empty('No activities in this period.'))+'</details>';
  }
  target.innerHTML=segments+controls+metricsHtml+card(content,'pa-calendar-card')+card(title('This period','<button type="button" data-v136-tab="improve">Review ›</button>')+'<p class="pa-sub">'+hrs(metrics.uniquePlannedMs)+' planned · '+hrs(metrics.uniqueRecordedMs)+' recorded'+(conflicts.length?' · '+conflicts.length+' conflict'+(conflicts.length===1?'':'s'):'')+'</p>','pa-period-summary');
  const headings=target.querySelector('.pa-grid-head-scroll'),timeline=target.querySelector('.pa-grid-scroll');

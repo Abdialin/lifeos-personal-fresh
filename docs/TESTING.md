@@ -32,6 +32,7 @@ PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
 node tests/plan-concept-a-model.cjs
 PLAN_CAPTURE=1 node tests/plan-concept-a.cjs
 PLAN_CALENDAR_CAPTURE=1 node tests/plan-calendar-sticky.cjs
+PLAN_DST_CAPTURE=1 node tests/plan-calendar-dst.cjs
 PLAN_TASK_CAPTURE=1 node tests/plan-task-editor.cjs
 PLAN_COMPARE_CAPTURE=1 node tests/plan-compare-chart.cjs
 node tests/plan-duration-evidence.cjs
@@ -66,6 +67,8 @@ Browser tests cannot verify Samsung WebView system insets, native IME, gesture/t
 The Plan Concept A+ tests cover all four new subsection presentations, calendar views, individual activity details, task edits, recurring-series preview and approval, conflict revalidation, failed-storage rollback, reload persistence, aligned comparison windows and evidence cutoffs, paused time, DST recurrence rejection, empty and 132-record states, themes, navigation and reduced browser heights. Captures in `plan-verification/` are intercepted synthetic fixtures. See `docs/design/plan/COMPARISON.md` for visual differences and open device checks.
 
 The Calendar heading fixture checks that the day headings remain visible during vertical scrolling and follow horizontal scrolling in both directions, with the time axis and day columns aligned. It also checks proportional overlapping blocks, a very short activity through the accessible list, modal scroll locking, empty states, themes, reduced viewports and read-only navigation. It captures synthetic browser images; Samsung WebView behavior is not established.
+
+The Calendar clock-change fixture checks the 23- and 25-hour Stockholm days and a 24.5-hour Lord Howe day, missing and repeated local times, per-day scales, proportional interval geometry, exact offsets in activity details, the accessible list, single-day and three-day views, light-mode contrast, read-only browsing and rejection of an ambiguous recurring series in its preview. Model tests also cover ambiguous start and end times and half-hour transitions. `PLAN_DST_CAPTURE=1` saves synthetic screenshots; native device rendering has not been tested.
 
 The Plan skip fixture verifies cancellation and focus, rejected checkpoint writes, explicit approval and audit, preservation of the original plan without creating a session, a plan moved during confirmation, duplicate identifiers, malformed audit data, recovery visibility, exclusion from Today’s unverified commitments, reload persistence, the original schedule control and light/dark sheets. It blocks network requests and uses synthetic local records; native behavior is not established.
 

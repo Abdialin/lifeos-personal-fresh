@@ -47,6 +47,7 @@ jobs:
       - run: node tests/plan-concept-a-model.cjs
       - run: PLAN_CAPTURE=1 node tests/plan-concept-a.cjs
       - run: PLAN_CALENDAR_CAPTURE=1 node tests/plan-calendar-sticky.cjs
+      - run: PLAN_DST_CAPTURE=1 node tests/plan-calendar-dst.cjs
       - run: PLAN_TASK_CAPTURE=1 node tests/plan-task-editor.cjs
       - run: PLAN_COMPARE_CAPTURE=1 node tests/plan-compare-chart.cjs
       - run: node tests/plan-duration-evidence.cjs
@@ -66,4 +67,5 @@ jobs:
             docs/design/plan/current/v1-compare-*.png
             docs/design/plan/current/v1-improve-*.png
             docs/design/plan/current/v1-calendar-sticky-*.png
+            docs/design/plan/current/v1-calendar-dst-*.png
             docs/design/plan/current/v1-skip-*.png

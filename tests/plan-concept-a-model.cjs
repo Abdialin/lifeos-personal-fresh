@@ -24,6 +24,12 @@ assert.throws(()=>api.series({...original,seriesId:'other'},generated,now),/over
 assert.throws(()=>api.series({...original,until:'2026-11-30'},[],now),/end date/);
 const monthly=api.series({...original,seriesId:'monthly',startAt:t('2027-01-31T18:00:00'),endAt:t('2027-01-31T19:00:00'),until:'2027-03-31',frequency:'monthly'},[],now);assert.deepEqual(monthly.map(x=>new Date(x.startAt).getMonth()),[0,2]);
 assert.throws(()=>api.series({...original,seriesId:'dst',startAt:t('2027-03-27T02:30:00'),endAt:t('2027-03-27T03:30:00'),until:'2027-03-28',frequency:'daily'},[],now),/clock change/);
+assert.throws(()=>api.series({...original,seriesId:'dst-repeat-start',startAt:t('2027-10-30T02:30:00'),endAt:t('2027-10-30T03:30:00'),until:'2027-10-31',frequency:'daily'},[],now),/ambiguous.*clock change/);
+assert.throws(()=>api.series({...original,seriesId:'dst-repeat-end',startAt:t('2027-10-30T01:30:00'),endAt:t('2027-10-30T02:30:00'),until:'2027-10-31',frequency:'daily'},[],now),/ambiguous.*clock change/);
+assert.throws(()=>api.series({...original,seriesId:'dst-second-instance',startAt:Date.parse('2027-10-31T02:30:00+01:00'),endAt:Date.parse('2027-10-31T03:30:00+01:00'),until:'2027-10-31',frequency:'daily'},[],now),/ambiguous.*clock change/);
+process.env.TZ='Australia/Lord_Howe';
+assert.throws(()=>api.series({...original,seriesId:'half-hour-repeat',startAt:Date.parse('2026-04-04T01:45:00+11:00'),endAt:Date.parse('2026-04-04T02:15:00+11:00'),until:'2026-04-05',frequency:'daily'},[],Date.parse('2026-01-01T00:00:00+11:00')),/ambiguous.*clock change/);
+process.env.TZ='Europe/Stockholm';
 const day=api.day('2026-11-24'),sessions=[{id:'paused',name:'Study',status:'finished',startAt:day+9*3600000,endAt:day+11*3600000,segments:[{start:day+9*3600000,end:day+10*3600000},{start:day+10.5*3600000,end:day+11*3600000}]},{id:'overlap',name:'Work',status:'finished',startAt:day+9.5*3600000,endAt:day+10.5*3600000,segments:[{start:day+9.5*3600000,end:day+10.5*3600000}]}];
 const w={sessions,schedule:[{id:'p',name:'Study',startAt:day+12*3600000,endAt:day+13*3600000,status:'planned'}],idealRoutines:[]};
 const model=api.compareModel(w,api.week(now),7,now);assert.equal(model.totals.reality,2*3600000);assert.equal(model.totals.planned,3600000);assert.equal(model.totals.ideal,null);assert.equal(model.totals.predicted,null);assert.equal(model.series.at(-1).reality,null);

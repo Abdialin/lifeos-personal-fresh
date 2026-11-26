@@ -5,7 +5,14 @@
 const $=id=>document.getElementById(id);
 const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const read=()=>{try{return window.lifeosReadOnlyWorkspace?.()||{}}catch{return {}}};
-const fmt=t=>new Date(+t).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+const fmt=t=>{
+ if(!Number.isFinite(+t))return 'Unknown';
+ const d=new Date(+t),day=new Date(d.getFullYear(),d.getMonth(),d.getDate()),next=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);
+ const label=d.toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+ if(+next- +day===86400000)return label;
+ const offset=-d.getTimezoneOffset(),pad=n=>String(Math.abs(n)).padStart(2,'0');
+ return label+' · UTC'+(offset<0?'-':'+')+pad(Math.trunc(offset/60))+':'+pad(offset%60);
+};
 const local=t=>{const d=new Date(+t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const mins=t=>{const n=Math.round((+t||0)/60000);return n>=60?Math.floor(n/60)+'h '+String(n%60).padStart(2,'0')+'m':n+'m'};
 let activeId=null,activeKind=null,closeFocus=null,dismissedTimer='',lastCheck=0;
