@@ -40,6 +40,8 @@ The Today follow-up and activity-loader cache correction are in commits `8a69849
 
 The supplied Plan reference files are stored under `docs/design/plan/reference/`. The current work preserves Overview and implements the Calendar, Tasks, Compare and Improve presentations using the existing workspace and action bridges. Browser evidence and remaining design differences are recorded in `docs/design/plan/COMPARISON.md`. Device acceptance is pending for all five; the user requested a single focused review after the four remaining subsections are implemented. Verify the exact deployed revision and Actions results separately.
 
+Plan Tasks now opens an integrated Create/Edit sheet from Plan and Today. It supports the existing task timing, priority and reminder fields, plus optional notes and duration estimates; unchanged metadata and timestamp precision are preserved. Saves use the existing atomic workspace checkpoint, stale edits are rejected, and deletion requires explicit confirmation. The original task manager remains under Advanced task tools. Synthetic browser coverage and visual differences are recorded in `docs/design/plan/COMPARISON.md`; task recurrence and device acceptance remain open.
+
 ## Still open
 
 - The Android screenshots show bottom navigation floating above the system navigation area and content behind it. The native/WebView interaction needs device measurements and a later consolidated native release; browser viewport checks do not verify native IME or system bars.

@@ -24,6 +24,8 @@ The fixed 90-minute threshold has been removed from the Goals reading chart; it 
 
 All five supplied Plan reference images are now in `docs/design/plan/reference/`. Calendar, Tasks, Compare and Improve have new browser implementations and synthetic visual evidence; physical-device acceptance is pending. The narrow week calendar scrolls horizontally, and the full day requires vertical scrolling. During a daylight-saving week the shared axis follows the first day; item details show exact local times. Recurring occurrences can be edited individually through existing controls, but bulk series editing is not implemented. Live Preview sample seeding and authenticated behavior require access to the isolated Preview workspace; browser fixtures do not prove either.
 
+Plan's task editor is now an integrated sheet with browser coverage. Its full-page reference includes repeating tasks, which the existing task data model does not support; no repeat control is presented until it can be implemented safely. Completion remains available in the task list. The reference's chart axes and other visual differences still require review. Native keyboard and insets have not been tested.
+
 ## Track V1 comparison
 
 The History “This Week” filter and Review's “This Week” and “This Month” filters now use the local calendar week or month through today. The Review chart states when it displays only the latest portion of a month. These behaviors have synthetic browser regression coverage, including overnight portions and daylight-saving boundaries; they have not been verified on a device.

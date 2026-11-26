@@ -230,7 +230,7 @@ function init(){
   if(b.dataset.v136Action==='today'){anchor=datekey(Date.now());range='day';showAll=false;renderCalendar();return}
   if(b.dataset.v136Action==='next'){const p=all().plans.filter(x=>+x.startAt>Date.now()).sort((a,b)=>a.startAt-b.startAt)[0];if(p){anchor=datekey(+p.startAt);range='day';showAll=false;renderCalendar();$('v136DaySummary')?.scrollIntoView({block:'center',behavior:'smooth'})}return}
   if(b.dataset.v136Action==='new'){if(selected==='tasks'&&window.LifeOSPlanConcept)window.LifeOSPlanConcept.taskEditor();else openForm();return}
-  if(b.dataset.v136Action==='tasks'){screen('tasks');const target=$('todoForm');if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),150);return}
+  if(b.dataset.v136Action==='tasks'){screen('tasks');return}
  });
  const sheet=$('v136PlanFormDetails');
  sheet?.addEventListener('toggle',()=>{document.body.classList.toggle('v136-sheet-open',sheet.open)});
