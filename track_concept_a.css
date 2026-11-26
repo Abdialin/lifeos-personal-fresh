@@ -814,3 +814,33 @@ html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] :is(.ca-f
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-focus-device-copy small{color:#4b6978}
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] :is(.ca-focus-device-icon,.ca-focus-device-link){color:#087d69}
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context^="focus-"] .ca-focus-device-buttons button{background:#dff3e9;border-color:#a7d0c1;color:#075e4f}
+
+/* Saved activity details use the canonical segments and overlap calculations. */
+#loCADialog[data-ca-context="history-record"] .ca-sheet-head{margin-bottom:8px}
+#loCADialog[data-ca-context="history-record"] .ca-record-hero{padding:10px;margin-bottom:8px}
+#loCADialog[data-ca-context="history-record"] .ca-record-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#loCADialog[data-ca-context="history-record"] .ca-record-stats{gap:6px;margin:8px 0}
+#loCADialog[data-ca-context="history-record"] .ca-record-stats>div{padding:9px}
+#loCADialog[data-ca-context="history-record"] .ca-record-stats small{margin-bottom:4px}
+#loCADialog[data-ca-context="history-record"] .ca-record-detail{padding:7px 2px}
+#loCADialog[data-ca-context="history-record"] .ca-history-detail-heading{font-size:14px;margin:15px 0 6px;color:#edfff8}
+#loCADialog[data-ca-context="history-record"] :is(.ca-history-pause,.ca-history-detail-empty,.ca-history-notes){margin:5px 0;padding:9px 10px;border:1px solid #36596a;border-radius:10px;background:#102b3a;color:#c4dcd9;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+#loCADialog[data-ca-context="history-record"] .ca-history-pause strong,#loCADialog[data-ca-context="history-record"] .ca-history-pause small{display:block}
+#loCADialog[data-ca-context="history-record"] .ca-history-pause small{margin-top:3px;color:#aecbd0}
+#loCADialog[data-ca-context="history-record"] .ca-history-notes{white-space:pre-wrap}
+#loCADialog[data-ca-context="history-record"] .ca-history-related{width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;margin:5px 0;padding:8px 10px;border:1px solid #3a6d69;border-radius:10px;background:#133c3d;color:#e2fff0;font:inherit;font-size:12px}
+#loCADialog[data-ca-context="history-record"] .ca-history-related strong{flex:none;color:#9df4d1;font-size:11px}
+#loCADialog[data-ca-context="history-record"] .ca-record-foot{position:sticky;bottom:-18px;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 0 4px;margin-top:8px;background:#11283a}
+#loCADialog[data-ca-context="history-record"] .ca-record-foot button{min-width:0;min-height:44px;margin:0;font-size:12px}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"]{color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-sheet{background:#f5fbfa;border-color:#b6d0d2}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] :is(.ca-sheet-head h2,.ca-record-hero h3,.ca-record-stats strong,.ca-record-detail strong,.ca-history-detail-heading){color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] :is(.ca-sheet-head p,.ca-record-hero p,.ca-record-stats small,.ca-record-detail span,.ca-history-pause small){color:#4b6978}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] :is(.ca-x,.ca-record-stats>div,.ca-history-pause,.ca-history-detail-empty,.ca-history-notes){background:#fff;border-color:#b6d0d2;color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-record-hero{background:#e6f5ee;border-color:#b6d8ca}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-record-detail{border-color:#d2e4df}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-history-related{background:#e6f5ee;border-color:#b6d8ca;color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-history-related strong{color:#075e4f}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-sheet-primary{background:#087d69;color:#fff}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-sheet-secondary{background:#e9f4f2;border-color:#b6d0d2;color:#173f4b}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-record-foot{background:#f5fbfa}

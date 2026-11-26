@@ -16,6 +16,7 @@ node tests/today-history-date.cjs
 TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
 node tests/track-live-controls.cjs
 TRACK_FOCUS_CAPTURE=1 node tests/track-focus-mode.cjs
+TRACK_DETAIL_CAPTURE=1 node tests/track-record-details.cjs
 node --test test_track_design_v126.test.cjs test_track_focus_v127.test.cjs test_track_polish_v128.test.cjs test_track_visual_v129.test.cjs
 node test_plan_evidence_v250.cjs
 node tests/plan-overview-model.cjs
@@ -48,3 +49,5 @@ The historical Today timeline test covers date-picker and previous/next-day navi
 Track calendar-period browser fixtures check History's day/week/month/year/all-time and custom-range navigation, invalid and future range rejection, activity/category filters, chronological sorting, raw recorded totals and averages, explicit category precedence, cross-midnight session identity, no record mutations, Review chart scope and zero-day bars, year and daylight-saving boundaries, Live and History light-mode text contrast, and reduced mobile viewports. The Live control fixture checks pause/resume, the expiring two-step finish confirmation, independent concurrent timers, quick starts and reload persistence. Both intercept requests and use synthetic records. `TRACK_PERIOD_CAPTURE=1` writes synthetic Live, History and Review captures under `docs/design/track/current/v1-*.png`; these are comparisons, not evidence of native-device verification.
 
 The intercepted Focus fixture checks starting, pausing, resuming, breaks, minimizing, reload recovery and ending while preserving a separate tracked activity. It also checks saved sound/vibration preferences, failure feedback and restoration after a rejected storage write, visibility of primary controls at mobile sizes and selected light-mode contrast. `TRACK_FOCUS_CAPTURE=1` writes synthetic Focus setup and running screenshots. This does not verify Android alert sound, vibration, Do Not Disturb, background execution or notification delivery.
+
+The synthetic History detail fixture checks aggregation of multiple segments into one day portion, full-session and selected-day durations, original timestamps, explicit category, notes, significant pauses, individual overlaps and suppression of sub-minute entries. It checks cancellation, a simulated failed recovery-checkpoint write, a successful name/notes edit retaining exact timestamps and all segments, and a finish-time edit that preserves an activity's paused interval; the resulting records are checked after reload. It also checks primary action clearance and selected light-mode contrast. `TRACK_DETAIL_CAPTURE=1` writes synthetic detail screenshots.

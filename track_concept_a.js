@@ -126,7 +126,20 @@ function readHistory(){
     time:item.querySelector('.lo-history-foot small')?.textContent.trim()||''});
   }
  }
- return result;
+ // A paused session can contribute several saved segments to the same day.
+ // Present one day portion per session, summing the unrounded segment values.
+ // Entries without raw durations remain separate rather than inventing totals.
+ const combined=[],bySessionDay=new Map();
+ for(const record of result){
+  const key=record.id&&record.dateKey&&Number.isFinite(record.rawDurationMs)?record.id+'\u0000'+record.dateKey:'';
+  const existing=key?bySessionDay.get(key):null;
+  if(!existing){record.parts=1;combined.push(record);if(key)bySessionDay.set(key,record);continue}
+  existing.rawDurationMs+=record.rawDurationMs;existing.parts++;
+  existing.duration=durationLabel(existing.rawDurationMs);
+  const source=(existing.time.split(' · ').slice(1).join(' · ')||'Recorded');
+  existing.time=existing.parts+' recorded intervals · '+source.replace(/^\d+ recorded intervals · /,'');
+ }
+ return combined;
 }
 function dayDate(record){
  if(record.dateKey){
@@ -268,12 +281,15 @@ function liveIcon(name){
  const paths={pause:'<path d="M7 5h3v14H7zm7 0h3v14h-3z" fill="currentColor" stroke="none"/>',play:'<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',finish:'<rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" stroke="none"/>',break:'<path d="M4 7h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V7Zm12 1h2a3 3 0 0 1 0 6h-2M4 21h13"/>',details:'<circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/>'};
  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[name]||paths.details)+'</svg>';
 }
+function categoryGlyph(category){
+ const source=({'University':'Studying','Study':'Studying','Work & business':'Work','Fitness':'Fitness','Nutrition':'Eating','Sleep':'Sleep','Prayer':'Prayer','Quran & Arabic':'Quran'})[category];
+ return Array.from(document.querySelectorAll('#quick button[data-name]')).find(b=>b.dataset.name===source)?.querySelector('.lo-quick-glyph')?.innerHTML||'◷';
+}
 function liveMarkup(today){
  const rows=activeSessions(),first=rows[0],others=rows.slice(1);
  const metrics=today?.metrics||{},firstLive=today?.active?.find(x=>String(x.id)===String(first?.id));
  const time=firstLive&&Number.isFinite(firstLive.startAt)?new Date(firstLive.startAt).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}):'';
- const category=today?.recorded?.find(x=>String(x.id)===String(first?.id))?.category,iconSource=({'University':'Studying','Study':'Studying','Work & business':'Work','Fitness':'Fitness','Nutrition':'Eating','Sleep':'Sleep','Prayer':'Prayer','Quran & Arabic':'Quran'})[category];
- const activityIcon=Array.from(document.querySelectorAll('#quick button[data-name]')).find(b=>b.dataset.name===iconSource)?.querySelector('.lo-quick-glyph')?.innerHTML||'◷';
+ const category=today?.recorded?.find(x=>String(x.id)===String(first?.id))?.category,activityIcon=categoryGlyph(category);
  let markup='<div class="ca-live-overview"><div class="ca-live-count" aria-label="'+rows.length+' active sessions"><strong>'+rows.length+'</strong><small>Active '+(rows.length===1?'session':'sessions')+'</small></div><div class="ca-live-overview-stats"><div><span>Unique tracked today</span><strong data-ca-live-unique>'+htmlEscape(durationLabel(metrics.unique||0))+'</strong></div><div><span>Total recorded today</span><strong data-ca-live-total>'+htmlEscape(durationLabel(metrics.total||0))+'</strong></div><small>Overlapping time is counted once in unique time.</small></div></div>';
  if(first){
   markup+='<div class="ca-panel ca-primary"><div class="ca-overline"><span>Current session</span><span class="ca-pill">'+htmlEscape(first.status==='running'?'● Running':'Ⅱ Paused')+'</span></div>';
@@ -521,11 +537,12 @@ function renderHistory(){
  }
  const firstDay=dayGroups.keys().next().value,initialPeriod=!target.dataset.caSignature||target.dataset.caPeriod!==state.historyPeriod;
  const groupedHistory=['month','year','all'].includes(state.historyPeriod)||(state.historyPeriod==='custom'&&historyDaySpan(range.start,range.end)>31);
+ const activityCount=items=>new Set(items.map((item,index)=>item.id?'id:'+item.id:'unknown:'+index)).size;
  function dayMarkup(group){
-  const items=group.items;
+  const items=group.items,count=activityCount(items);
   const dayOpen=queryActive||openDays.has(group.key)||(initialPeriod&&!groupedHistory&&group.key===firstDay);
   let out='<details class="ca-day" data-ca-day="'+htmlEscape(group.key)+'" '+(dayOpen?'open':'')+'>';
-  out+='<summary class="ca-day-summary"><span class="ca-day-main"><strong>'+htmlEscape(group.label)+'</strong><small>'+items.length+' '+(items.length===1?'activity':'activities')+' · '+' summed '+durationLabel(total(items))+'</small></span>';
+  out+='<summary class="ca-day-summary"><span class="ca-day-main"><strong>'+htmlEscape(group.label)+'</strong><small>'+count+' '+(count===1?'activity':'activities')+' · '+' summed '+durationLabel(total(items))+'</small></span>';
   out+='<span class="ca-day-toggle"><span class="ca-day-show">Show activities</span><span class="ca-day-hide">Hide activities</span><span class="ca-day-arrow" aria-hidden="true">⌄</span></span></summary>';
   out+='<div class="ca-day-activities">';
   for(const record of items){
@@ -546,14 +563,14 @@ function renderHistory(){
   }
   let monthIndex=0;
   for(const month of months.values()){
-   const monthOpen=queryActive||state.historyPeriod==='month'||openMonths.has(month.key)||(!wasMonthView&&monthIndex===0);
+   const monthOpen=queryActive||state.historyPeriod==='month'||openMonths.has(month.key)||(!wasMonthView&&monthIndex===0),monthCount=activityCount(month.items);
    page+='<details class="ca-history-month" data-ca-month="'+htmlEscape(month.key)+'" '+(monthOpen?'open':'')+'>';
-   page+='<summary class="ca-history-month-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(monthTitle(month.key))+'</strong><small>'+month.weeks.size+' '+(month.weeks.size===1?'week':'weeks')+' · '+month.items.length+' activities · '+' summed '+durationLabel(total(month.items))+'</small></span><span class="ca-history-group-toggle"><span class="ca-history-group-show">Show weeks</span><span class="ca-history-group-hide">Hide weeks</span><span class="ca-history-group-arrow" aria-hidden="true">⌄</span></span></summary>';
+   page+='<summary class="ca-history-month-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(monthTitle(month.key))+'</strong><small>'+month.weeks.size+' '+(month.weeks.size===1?'week':'weeks')+' · '+monthCount+' '+(monthCount===1?'activity':'activities')+' · '+' summed '+durationLabel(total(month.items))+'</small></span><span class="ca-history-group-toggle"><span class="ca-history-group-show">Show weeks</span><span class="ca-history-group-hide">Hide weeks</span><span class="ca-history-group-arrow" aria-hidden="true">⌄</span></span></summary>';
    page+='<div class="ca-history-month-body">';
    for(const week of month.weeks.values()){
-    const weekKey=month.key+'|'+week.key;
+    const weekKey=month.key+'|'+week.key,weekCount=activityCount(week.items);
     page+='<details class="ca-history-week" data-ca-week="'+htmlEscape(weekKey)+'" '+(queryActive||openWeeks.has(weekKey)?'open':'')+'>';
-    page+='<summary class="ca-history-week-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(week.label)+'</strong><small>'+week.days.length+' '+(week.days.length===1?'day':'days')+' · '+week.items.length+' activities · '+' summed '+durationLabel(total(week.items))+'</small></span>';
+    page+='<summary class="ca-history-week-summary"><span class="ca-history-group-main"><strong>'+htmlEscape(week.label)+'</strong><small>'+week.days.length+' '+(week.days.length===1?'day':'days')+' · '+weekCount+' '+(weekCount===1?'activity':'activities')+' · '+' summed '+durationLabel(total(week.items))+'</small></span>';
     page+='<span class="ca-history-group-toggle"><span class="ca-history-group-show">Show days</span><span class="ca-history-group-hide">Hide days</span><span class="ca-history-group-arrow" aria-hidden="true">⌄</span></span></summary>';
     page+='<div class="ca-history-week-body">';
     for(const day of week.days)page+=dayMarkup(day);
@@ -729,6 +746,7 @@ function openDialog(title,subtitle,content){
  delete dialog.dataset.caFocusLive;
  delete dialog.dataset.caFocusStarting;
  delete dialog.dataset.caContext;
+ delete dialog.dataset.caEditRecord;
  previousFocus=document.activeElement;
  $('caDialogTitle').textContent=title;
  $('caDialogSubtitle').textContent=subtitle||'';
@@ -834,6 +852,31 @@ window.lifeosTrackOpenTodayItem=function(kind,key,at){
  content+='<button type="button" class="ca-sheet-secondary" data-ca-close>Close</button>';
  openDialog(planned?'Planned commitment':'Activity details',planned?'Planning details':'Recorded interval details',content);dialog.dataset.caContext='details';return true;
 };
+function historyRecordFacts(id){
+ const workspace=window.lifeosReadOnlyWorkspace?.(),sessions=Array.isArray(workspace?.sessions)?workspace.sessions:[],session=sessions.find(s=>String(s.id)===String(id)),engine=window.LifeOSUnifiedAnalytics;
+ if(!session||!engine?.sessionIntervals||!engine?.unionDuration||!engine?.intersectionDuration)return {session:null,intervals:[],pauses:[],concurrent:[]};
+ const timestamp=value=>value==null?NaN:(Number.isFinite(Number(value))?Number(value):Date.parse(value));
+ const now=Date.now(),intervals=engine.sessionIntervals(session,now).slice().sort((a,b)=>a.start-b.start);
+ const recorded=intervals.reduce((sum,x)=>sum+x.end-x.start,0),start=timestamp(session.startAt),end=timestamp(session.endAt);
+ const merged=[];
+ for(const item of intervals){const last=merged[merged.length-1];if(last&&item.start<=last.end)last.end=Math.max(last.end,item.end);else merged.push({start:item.start,end:item.end})}
+ const events=(Array.isArray(workspace.events)?workspace.events:[]).filter(e=>String(e.sessionId)===String(id));
+ const pauseLabel=at=>events.some(e=>['PAUSE','BREAK_START'].includes(e.type)&&Math.abs(timestamp(e.time)-at)<1000)?'Paused':'Unrecorded interval';
+ const pauses=[];
+ for(let i=1;i<merged.length;i++)if(merged[i].start-merged[i-1].end>=60000)pauses.push({start:merged[i-1].end,end:merged[i].start,label:pauseLabel(merged[i-1].end),resumed:true});
+ if(Number.isFinite(end)&&merged.length&&end-merged[merged.length-1].end>=60000){const a=merged[merged.length-1].end;pauses.push({start:a,end,label:pauseLabel(a),resumed:false})}
+ const validBounds=Number.isFinite(start)&&Number.isFinite(end)&&end>=start&&intervals.length>0;
+ const clipped=validBounds?intervals.map(x=>({start:Math.max(start,x.start),end:Math.min(end,x.end)})).filter(x=>x.end>x.start):[];
+ const unrecorded=validBounds?Math.max(0,end-start-engine.unionDuration(clipped)):null;
+ const concurrent=[];
+ for(const other of sessions){
+  if(String(other.id)===String(id))continue;
+  const overlap=engine.intersectionDuration(intervals,engine.sessionIntervals(other,now));
+  if(overlap>=60000)concurrent.push({id:String(other.id),name:String(other.name||'Activity'),status:other.status,overlap});
+ }
+ concurrent.sort((a,b)=>b.overlap-a.overlap||a.name.localeCompare(b.name));
+ return {session,intervals,recorded,start,end,unrecorded,pauses,concurrent};
+}
 function sheet(type,id,dayKey){
  if(type==='past'){
   selectedGap=null;
@@ -849,7 +892,7 @@ function sheet(type,id,dayKey){
  }
  
  const live=activeSessions();
- const current=live.find(x=>x.id===id)||live[0];
+ const current=id?live.find(x=>x.id===id):live[0];
  if(type==='start'){
   let choices=Array.from(document.querySelectorAll('#quick button')).filter(x=>!/(show all|hide|more)/i.test(x.textContent||'')).slice(0,10);
   let content='<div class="ca-toolbar"><input id="caStartSearch" class="ca-input" placeholder="Search or choose an activity..." aria-label="Search activities"></div><div class="ca-sheet-grid" id="caQuickChoices">';
@@ -877,17 +920,33 @@ function sheet(type,id,dayKey){
  }
  if(type==='record'){
   const history=readHistory(),rec=history.find(x=>x.id===id&&(!dayKey||x.dateKey===dayKey))||history.find(x=>x.id===id);if(!rec)return;
-  const label=(rec.time||'').includes('Development example')?'Development example':(rec.time||'').includes('Estimated')?'Estimated':'Recorded';
-  let content='<div class="ca-record-hero"><div class="ca-record-icon">▣</div><div><h3>'+htmlEscape(rec.name)+'</h3><p>'+htmlEscape(rec.day)+' · '+htmlEscape(label)+'</p></div></div>';
-  content+='<div class="ca-record-stats"><div><small>Duration</small><strong>'+htmlEscape(rec.duration)+'</strong></div>'
-   +'<div><small>Record type</small><strong>'+htmlEscape(label)+'</strong></div></div>';
-  content+='<div class="ca-record-detail"><span>Activity</span><strong>'+htmlEscape(rec.name)+'</strong></div>'
-   +'<div class="ca-record-detail"><span>Date</span><strong>'+htmlEscape(rec.day)+'</strong></div>'
-   +'<div class="ca-record-detail"><span>Time and source</span><strong>'+htmlEscape(rec.time)+'</strong></div>';
-  content+='<div class="ca-record-foot"><button type="button" class="ca-sheet-primary" data-ca-edit-record="'+htmlEscape(rec.id)+'">✎ &nbsp; Edit activity</button>'
-   +'<button type="button" class="ca-sheet-secondary ca-record-delete" data-ca-delete-record="'+htmlEscape(rec.id)+'">Delete activity</button>'
-   +'<button type="button" class="ca-sheet-secondary" data-ca-close>Close details</button></div>';
-  openDialog('Activity Details','Your saved activity record',content);return;
+  const facts=historyRecordFacts(id),source=facts.session,label=(rec.time||'').includes('Development example')?'Development example':(rec.time||'').includes('Estimated')?'Estimated':'Recorded';
+  const category=source?(window.lifeosActivityClassification?.(source)?.group||'Other / review'):'Unavailable';
+  const stamp=value=>Number.isFinite(value)?new Date(value).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'Unavailable';
+  const line=(name,value,attribute='')=>'<div class="ca-record-detail"><span>'+htmlEscape(name)+'</span><strong '+attribute+'>'+htmlEscape(value)+'</strong></div>';
+  const dayDuration=Number.isFinite(rec.rawDurationMs)?exactDuration(rec.rawDurationMs):rec.duration;
+  let content='<div class="ca-record-hero"><div class="ca-record-icon" aria-hidden="true">'+categoryGlyph(category)+'</div><div><h3>'+htmlEscape(rec.name)+'</h3><p>'+htmlEscape(category)+' · '+htmlEscape(label)+'</p></div></div>';
+  content+='<div class="ca-record-stats"><div><small>Selected day</small><strong data-ca-record-day>'+htmlEscape(dayDuration)+'</strong></div>'
+   +'<div><small>Full recorded time</small><strong data-ca-record-full>'+htmlEscape(facts.intervals.length?exactDuration(facts.recorded):'Unavailable')+'</strong></div></div>';
+  const status=source?.status==='finished'?'Finished':source?.status==='paused'?'Paused':source?.status==='running'?'Running':'Unavailable';
+  content+=line('Category',category,'data-ca-record-category')+line('Status',status)+line('Start',stamp(facts.start),'data-ca-record-start')+line('Finish',stamp(facts.end),'data-ca-record-end')
+   +line('Selected day',rec.day)+line('Time and source',rec.time)+line('Unrecorded within session',facts.unrecorded==null?'Unavailable':exactDuration(facts.unrecorded));
+  content+='<h3 class="ca-history-detail-heading">Pause and resume</h3>';
+  if(!source||!facts.intervals.length)content+='<p class="ca-history-detail-empty">Pause details are unavailable.</p>';
+  else if(!facts.pauses.length)content+='<p class="ca-history-detail-empty">No intervals of one minute or longer.</p>';
+  else for(const pause of facts.pauses)content+='<div class="ca-history-pause"><strong>'+htmlEscape(pause.label)+' · '+htmlEscape(exactDuration(pause.end-pause.start))+'</strong><small>'+htmlEscape(stamp(pause.start))+' – '+htmlEscape(stamp(pause.end))+(pause.resumed?' · Resumed':' · Ended')+'</small></div>';
+  content+='<h3 class="ca-history-detail-heading">Concurrent activities</h3>';
+  if(!source)content+='<p class="ca-history-detail-empty">Concurrent details are unavailable.</p>';
+  else if(!facts.concurrent.length)content+='<p class="ca-history-detail-empty">No overlaps of one minute or longer.</p>';
+  else for(const other of facts.concurrent){
+   const active=other.status==='running'||other.status==='paused',available=active||history.some(item=>String(item.id)===other.id);
+   content+=available?'<button type="button" class="ca-history-related" data-ca-sheet="'+(active?'activity':'record')+'" data-ca-id="'+htmlEscape(other.id)+'"><span>'+htmlEscape(other.name)+'</span><strong>'+htmlEscape(exactDuration(other.overlap))+' overlap ›</strong></button>':'<p class="ca-history-detail-empty">'+htmlEscape(other.name)+' · '+htmlEscape(exactDuration(other.overlap))+' overlap</p>';
+  }
+  content+='<h3 class="ca-history-detail-heading">Notes</h3><p class="ca-history-notes">'+htmlEscape(source?.notes||'No notes')+'</p>';
+  content+='<div class="ca-record-foot"><button type="button" class="ca-sheet-primary" data-ca-edit-record="'+htmlEscape(rec.id)+'">Edit</button>'
+   +'<button type="button" class="ca-sheet-secondary ca-record-delete" data-ca-delete-record="'+htmlEscape(rec.id)+'">Delete</button>'
+   +'<button type="button" class="ca-sheet-secondary" data-ca-close>Close</button></div>';
+  openDialog('Activity details','Saved activity record',content);dialog.dataset.caContext='history-record';return;
  }
  if(type==='editRecord'){
   // The original Edit dialog is the existing source of truth for stored records.
@@ -904,7 +963,6 @@ function sheet(type,id,dayKey){
    +'<p class="ca-inline-error" id="caEditError" role="alert"></p>'
    +'<div class="ca-record-foot"><button class="ca-sheet-primary" type="button" data-ca-save-edit>Save changes</button>'
    +'<button class="ca-sheet-secondary" type="button" data-ca-close>Cancel</button></div>';
-  dialog.dataset.caEditRecord=id;
   openDialog('Edit Activity','Update an existing activity',form);return;
  }
  if(type==='break'){
@@ -1098,7 +1156,7 @@ function handleDialogClick(event){
   }
   return;
  }
- const editRecord=event.target.closest('[data-ca-edit-record]');
+ const editRecord=event.target.closest('button[data-ca-edit-record]');
  if(editRecord){
   const id=editRecord.dataset.caEditRecord;
   if(originalHistory(id,'edit')){
@@ -1120,8 +1178,11 @@ function handleDialogClick(event){
   for(const [source,target] of [['caEditName','editName'],['caEditStart','editStart'],['caEditNote','editNote'],['caEditEnd','editEnd']]){
    if($(source)&&$(target))$(target).value=$(source).value;
   }
-  const save=$('saveEdit');
-  if(save){save.click();closeDialog();setTimeout(()=>{state.lastHistory=0;renderHistory();renderReview()},120)}
+  if(typeof window.lifeosSaveEditedActivity!=='function'){if(alert)alert.textContent='The activity editor is unavailable. No changes were saved.';return}
+  try{
+   if(window.lifeosSaveEditedActivity()===true){closeDialog();setTimeout(()=>{state.lastHistory=0;renderHistory();renderReview()},120)}
+   else if(alert)alert.textContent='Changes were not saved. Your original activity is preserved.';
+  }catch(error){if(alert)alert.textContent='Unable to confirm the edit: '+String(error?.message||error)}
   return;
  }
  if(event.target.closest('[data-ca-distraction]')){$('distractionToggle')?.click();closeDialog();return}
