@@ -36,6 +36,7 @@ PLAN_TASK_CAPTURE=1 node tests/plan-task-editor.cjs
 PLAN_COMPARE_CAPTURE=1 node tests/plan-compare-chart.cjs
 node tests/plan-duration-evidence.cjs
 PLAN_IMPROVE_CAPTURE=1 node tests/plan-improve-evidence.cjs
+PLAN_SKIP_CAPTURE=1 node tests/plan-skip-consent.cjs
 node scripts/capture-design-baselines.cjs
 node test_goal_fitness_cross_section_v204.cjs
 node test_personal_goals_integration.cjs
@@ -65,6 +66,8 @@ Browser tests cannot verify Samsung WebView system insets, native IME, gesture/t
 The Plan Concept A+ tests cover all four new subsection presentations, calendar views, individual activity details, task edits, recurring-series preview and approval, conflict revalidation, failed-storage rollback, reload persistence, aligned comparison windows and evidence cutoffs, paused time, DST recurrence rejection, empty and 132-record states, themes, navigation and reduced browser heights. Captures in `plan-verification/` are intercepted synthetic fixtures. See `docs/design/plan/COMPARISON.md` for visual differences and open device checks.
 
 The Calendar heading fixture checks that the day headings remain visible during vertical scrolling and follow horizontal scrolling in both directions, with the time axis and day columns aligned. It also checks proportional overlapping blocks, a very short activity through the accessible list, modal scroll locking, empty states, themes, reduced viewports and read-only navigation. It captures synthetic browser images; Samsung WebView behavior is not established.
+
+The Plan skip fixture verifies cancellation and focus, rejected checkpoint writes, explicit approval and audit, preservation of the original plan without creating a session, a plan moved during confirmation, duplicate identifiers, malformed audit data, recovery visibility, reload persistence, the original schedule control and light/dark sheets. It blocks network requests and uses synthetic local records; native behavior is not established.
 
 The Today V1 fixture checks record-based overview values and navigation into existing editors, partial-period union accounting, category drill-down, proportional overlap lanes, short interval access, cancelled-plan exclusion, task completion and reload persistence, light mode and browser viewport clearance. Review assertions verify category bars against raw duration, full accessible labels, touch target height, intelligence order and selected light-mode text contrast. With capture enabled it writes synthetic images under `docs/design/today/current/release-*.png`. Reference comparison notes and remaining discrepancies are in `docs/design/today/COMPARISON.md`.
 

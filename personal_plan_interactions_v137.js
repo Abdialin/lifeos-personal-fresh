@@ -63,16 +63,13 @@ function startPlan(){
  if(detail.result?.ok){hide();document.querySelector('#lifeosNavigation button[data-view="tracking"]')?.click()}
  else status(detail.result?.message||'Unable to start the timer. The existing plan was preserved.');
 }
-function skipPlan(){
+async function skipPlan(){
  const p=plan();if(!p||p.status!=='planned'||p.sessionId){status('This plan cannot be skipped from its current state.');return}
- if(!confirm('Mark "'+(p.name||'this activity')+'" as skipped? No tracked time will be created.'))return;
- refreshPlan();
- const list=$('scheduleList');const native=[...(list?.querySelectorAll('button[data-schedule-act="skip"]')||[])].find(x=>x.dataset.scheduleId===String(p.id));
- if(!native){status('The original plan controls are unavailable. No change was made.');return}
- native.click();
- const updated=(read().schedule||[]).find(x=>String(x.id)===String(p.id));
- if(updated?.status==='skipped'){hide();document.dispatchEvent(new Event('lifeos-v137-plan-updated'));}
- else status('Skip could not be verified. Review the original schedule before trying again.');
+ const button=$('v137ActivityActions')?.querySelector('[data-v137-action="skip"]');if(button?.disabled)return;
+ if(typeof window.lifeosPlanSkip!=='function'){status('Skip is unavailable. No change was made.');return}
+ if(button)button.disabled=true;status('Confirmation opened. No change has been made.');
+ try{const result=await window.lifeosPlanSkip(String(p.id),JSON.stringify(p));if(result?.ok){const trigger=closeFocus;show('plan',String(p.id),trigger);status(result.message);document.dispatchEvent(new Event('lifeos-v137-plan-updated'))}else{status(result?.message||'Skip was not saved.');if(button?.isConnected&&!result?.committed&&!result?.stale){button.disabled=false;button.focus({preventScroll:true})}}}
+ catch(error){status('Skip could not be confirmed: '+String(error?.message||error));if(button?.isConnected){button.disabled=false;button.focus({preventScroll:true})}}
 }
 function showOriginal(){
  const p=plan();if(!p)return;
@@ -124,7 +121,7 @@ function init(){
   const btn=event.target.closest('[data-v137-activity]');if(!btn)return;
   const kind=btn.dataset.v137Activity,id=btn.dataset.v137Id;if(id)show(kind,id,btn);
  });
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('v137ActivityModal')?.hidden)hide()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('v137ActivityModal')?.hidden&&!document.querySelector('[role="dialog"][aria-label="Skip this plan?"]'))hide()});
  document.addEventListener('lifeos-v137-plan-updated',()=>{try{$('v136Workspace [data-v136-action="today"]')?.click()}catch{}});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)timerAttention()});
  window.addEventListener('lifeos-v77-tracking-changed',timerAttention);

@@ -46,6 +46,8 @@ Plan Compare now labels the daily-hours scale and shows averages based on the av
 
 Plan Calendar's day headings stay visible while the map scrolls vertically and stay aligned with the time grid during horizontal swipes. The map retains proportional interval geometry, overlap lanes and the accessible item list. The Plan-only overflow change and modal scroll locks have browser regression coverage; native Android scrolling and insets remain unverified.
 
+Explicitly marking a planned activity skipped now uses an in-app confirmation with stale-record and checkpoint guards, a retained original plan and an audit entry. It does not invent tracked time. The activity-details sheet also follows the selected light theme. These checks use synthetic browser data; device acceptance is open.
+
 Plan Improve's duration checks now compare active duration with the median of 3–20 eligible earlier same-named activities within 60 local calendar days, flagging a difference of at least 15 minutes and twice or half the median. Recorded activities over 24 hours are also presented for review. Sample, duplicate, future and inconsistent records do not supply evidence. A warning is a prompt to inspect the original, not a claim of an error. Explicitly skipped commitments now reach recovery review. Selecting a commitment and a recovery option opens the existing decision sheet; preview, in-app consent and a fresh conflict check precede any save. Synthetic browser tests cover cancellation, a conflict introduced during consent, failed storage and successful reload. Device acceptance remains open.
 
 ## Still open

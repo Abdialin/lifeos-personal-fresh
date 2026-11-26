@@ -17,6 +17,12 @@ The day headings now remain visible during vertical map scrolling and track the 
 ![Calendar sticky headings, dark browser capture](current/v1-calendar-sticky-dark.png)
 ![Calendar sticky headings, light browser capture](current/v1-calendar-sticky-light.png)
 
+The planned-activity details sheet uses the selected theme and asks for explicit in-app confirmation before marking an activity skipped. This retains the original plan and does not create a tracked session. The following synthetic captures show the light sheet and the dark and light confirmation dialogs; device rendering is unverified.
+
+![Activity details, light browser capture](current/v1-skip-light-details.png)
+![Skip confirmation, dark browser capture](current/v1-skip-dark.png)
+![Skip confirmation, light browser capture](current/v1-skip-light.png)
+
 Tasks retains a separate Anytime group for records without valid dates. The percentage is calculated from non-example tasks due or completed in the selected week. Its integrated Create/Edit task sheet follows the reference's compact task fields and uses the existing workspace checkpoint; the original full controls remain under Advanced task tools. The sheet supports a date, optional deadline or scheduled time, priority, life area, optional estimate and notes. It checks for intervening edits and requires confirmation before deletion. Compare shows real recorded and planned time, evidence-based pattern projections and existing ideal routines, with an accessible daily-values table. It does not present the reference's illustrative statistics as real results; the ideal ratio is withheld for a period that has not ended. Category bars sum durations and may count overlaps. Improve shows only supported findings and links to the existing review and approval flows. No plan changes are applied automatically.
 
 The V1 supporting board shows a full-page task editor and repeat control; the delivered editor is a scrollable sheet and does not implement recurring tasks. The original task list supplies completion controls; the sheet does not duplicate them. The preview below uses synthetic data and does not establish Android keyboard, safe-area or device behavior.

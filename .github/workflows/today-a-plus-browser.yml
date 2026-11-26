@@ -51,6 +51,7 @@ jobs:
       - run: PLAN_COMPARE_CAPTURE=1 node tests/plan-compare-chart.cjs
       - run: node tests/plan-duration-evidence.cjs
       - run: PLAN_IMPROVE_CAPTURE=1 node tests/plan-improve-evidence.cjs
+      - run: PLAN_SKIP_CAPTURE=1 node tests/plan-skip-consent.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -65,3 +66,4 @@ jobs:
             docs/design/plan/current/v1-compare-*.png
             docs/design/plan/current/v1-improve-*.png
             docs/design/plan/current/v1-calendar-sticky-*.png
+            docs/design/plan/current/v1-skip-*.png

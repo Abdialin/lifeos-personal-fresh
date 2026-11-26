@@ -28,6 +28,8 @@ Plan's task editor is now an integrated sheet with browser coverage. Its full-pa
 
 Improve's duration checks disclose the history and thresholds used, rather than treating a named activity's duration as inherently abnormal. Recovery choices open the existing reviewed-commitment sheet after a commitment is selected, and require a preview and explicit in-app consent. This differs from the reference's single-screen arrangement. Visual and device acceptance remain open. A duration check is not evidence that a timer is wrong.
 
+An explicit skipped-plan decision is available with in-app confirmation and audit. There is not yet a verified workflow for recording partial or manual completion of an unverified plan without a linked activity; absence of tracked time remains unverified rather than automatically missed.
+
 If a plan in the review period has a missing or unsupported identifier, or shares its identifier with another plan, recovery review is deliberately unavailable and explains that a recovery backup and review of the affected records are needed. No records are removed or changed automatically; a safe in-app repair workflow for those plan identifiers has not been verified.
 
 ## Track V1 comparison

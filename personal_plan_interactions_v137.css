@@ -47,6 +47,21 @@
 #v137ActivityModal .v137-actions-secondary button:last-child{border-color:#73524d;color:#edb9aa;background:#2b252d}
 #v137ActivityModal .v137-link{border:0;background:none;color:#97e7d5;text-decoration:underline;padding:14px 0;font-size:12px;cursor:pointer}
 #v137ActivityModal .v137-status:not(:empty){background:#2c2830;color:#ffd1a1;border-radius:11px;padding:11px;font-size:12px;line-height:1.55}
+/* Keep the activity sheet in the selected theme, including confirmation feedback. */
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-modal-sheet{background:#f4faf8;color:#16363d;border-color:#a5c9c0}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-modal-bar{background:#a0beb8}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-modal-heading span{color:#087559}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-close{background:#e0f0ec;color:#16363d;border-color:#a5c9c0}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-datetime span{background:#fff;color:#44666e;border-color:#a5c9c0}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-datetime strong{color:#16363d}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-detail-line{border-color:#b0ccc6}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-detail-line>span{color:#44666e}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-muted{color:#496b70}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-note{background:#e4f3ee;color:#16363d}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-actions-secondary button{background:#e1f0ec;color:#173940;border-color:#9abfb8}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-actions-secondary button:last-child{background:#fff0ee;color:#8e3b38;border-color:#d9a6a0}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-link{color:#087559}
+html[data-lifeos-theme="light"] #v137ActivityModal .v137-status:not(:empty){background:#fff3de;color:#77471c}
 body.v137-modal-open{overflow:hidden!important}
 #v136Workspace .v137-timer-notice{border:1px solid #b08b54;background:#392c24;border-radius:14px;padding:12px;display:grid;grid-template-columns:26px minmax(0,1fr);gap:7px 10px;color:#ffe5bb;margin-top:11px}
 #v136Workspace .v137-notice-icon{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#85532e;font-weight:900}
