@@ -34,8 +34,8 @@ test('visible timer remains accessible while optional settings remain folded',()
  assert.match(css,/#lo86-timer:not\(\[hidden\]\)/);
 });
 test('deployed and permitted as static files',()=>{
- assert.match(html,/href="personal_track_focus_v127\.css"/);
- assert.match(html,/src="personal_track_focus_v127\.js"/);
+ assert.match(html,/href="personal_track_focus_v127\.css(?:\?[^"]+)?"/);
+ assert.match(html,/src="personal_track_focus_v127\.js(?:\?[^"]+)?"/);
  assert.match(server,/'personal_track_focus_v127\.js'/);
  assert.match(server,/'personal_track_focus_v127\.css'/);
 });

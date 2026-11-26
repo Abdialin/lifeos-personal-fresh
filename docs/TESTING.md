@@ -13,6 +13,9 @@ node tests/today-v250-precision.cjs
 node tests/today-v250-volume.cjs
 TODAY_V1_CAPTURE=1 node tests/today-release-v1.cjs
 node tests/today-history-date.cjs
+TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
+node tests/track-live-controls.cjs
+node --test test_track_design_v126.test.cjs test_track_focus_v127.test.cjs test_track_polish_v128.test.cjs test_track_visual_v129.test.cjs
 node test_plan_evidence_v250.cjs
 node tests/plan-overview-model.cjs
 PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
@@ -40,3 +43,5 @@ The Plan Concept A+ tests cover all four new subsection presentations, calendar 
 The Today V1 fixture checks record-based overview values and navigation into existing editors, partial-period union accounting, category drill-down, proportional overlap lanes, short interval access, cancelled-plan exclusion, task completion and reload persistence, light mode and browser viewport clearance. With capture enabled it writes synthetic images under `docs/design/today/current/release-*.png`. Reference comparison notes and remaining discrepancies are in `docs/design/today/COMPARISON.md`.
 
 The historical Today timeline test covers date-picker and previous/next-day navigation, future-date rejection, overnight session identity, full and partial gap logging on earlier days, a second writer invalidating a selected gap, exact local-midnight boundaries, reload persistence, restored Track History record clicks and correct overnight day-portion details, and 23-/25-hour days. Requests are intercepted and storage is synthetic.
+
+Track calendar-period browser fixtures check the current local week/month, chart scope, zero-day bars, overnight portions, year and daylight-saving boundaries, selected Live text contrast, and reduced mobile viewports. The Live control fixture checks pause/resume, the expiring two-step finish confirmation, independent concurrent timers, quick starts and reload persistence. Both intercept requests and use synthetic records. `TRACK_PERIOD_CAPTURE=1` writes synthetic Live, History and Review captures under `docs/design/track/current/v1-*.png`; these are comparisons, not evidence of native-device verification.

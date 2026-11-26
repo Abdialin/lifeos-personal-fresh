@@ -78,6 +78,7 @@ body[data-lifeos-view="tracking"] #loTrackConceptA{display:block!important;width
 #loTrackConceptA .ca-legend-row b{white-space:nowrap;color:#e6ffff}
 #loTrackConceptA .ca-bars{display:flex;align-items:flex-end;justify-content:space-around;gap:8px;height:132px;border-bottom:1px solid #426075;margin-top:15px}
 #loTrackConceptA .ca-bars .ca-bar{flex:1;max-width:44px;background:linear-gradient(0deg,#3b7ac9,#78edb7);border-radius:5px 5px 0 0;min-height:3px;position:relative}
+#loTrackConceptA .ca-bars .ca-bar.ca-zero{min-height:0}
 #loTrackConceptA .ca-bars .ca-bar span{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);font-size:10px;color:#b9ccd6;white-space:nowrap}
 #loTrackConceptA .ca-distraction-band{display:flex;justify-content:space-between;align-items:center;gap:12px}
 #loTrackConceptA .ca-distraction-band b{font-size:15px}
@@ -643,3 +644,67 @@ body.lo-ca-ready[data-lifeos-view="tracking"] #loTrackConceptA{scroll-margin-top
 #loCADialog[data-ca-context="gap"] #caPastNotes{min-height:44px}
 #loCADialog[data-ca-context="gap"] .ca-editor-footnote:not(#caGapContext){background:none;border:0;padding:0;margin:6px 0;font-size:11px}
 #loCADialog[data-ca-context="gap"] .ca-gap-summary{margin-top:5px}
+
+/* V1 Track Live: compact evidence summary and actions backed by existing timers. */
+#loTrackConceptA .ca-brand{margin-bottom:10px}
+#loTrackConceptA .ca-heading{font-size:27px}
+#loTrackConceptA .ca-subtitle{margin-bottom:12px}
+#loTrackConceptA .ca-tabs{margin-bottom:12px}
+#loTrackConceptA .ca-live-overview{display:flex;align-items:center;gap:14px;padding:4px 8px 14px}
+#loTrackConceptA .ca-live-count{width:90px;height:90px;flex:none;border:9px solid #67e8bb;border-left-color:#577e91;border-radius:50%;display:grid;place-content:center;text-align:center}
+#loTrackConceptA .ca-live-count strong{font-size:26px;line-height:1;color:#f2fffb}
+#loTrackConceptA .ca-live-count small{font-size:10px;line-height:1.15;color:#c5dcdf;max-width:64px;margin-top:4px}
+#loTrackConceptA .ca-live-overview-stats{flex:1;min-width:0;display:grid;gap:5px}
+#loTrackConceptA .ca-live-overview-stats>div{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;color:#b7cfd5}
+#loTrackConceptA .ca-live-overview-stats strong{font-size:16px;white-space:nowrap;color:#f2fffb;font-variant-numeric:tabular-nums}
+#loTrackConceptA .ca-live-overview-stats>small{font-size:10px;line-height:1.25;color:#a7becb}
+#loTrackConceptA #caLive .ca-panel{padding:12px;margin-bottom:10px;border-radius:15px}
+#loTrackConceptA #caLive .ca-overline{margin-bottom:8px;font-size:11px;letter-spacing:.04em}
+#loTrackConceptA .ca-live-primary-row{display:flex;align-items:center;gap:9px;margin-bottom:10px;min-width:0}
+#loTrackConceptA .ca-live-activity-icon{display:grid;place-items:center;width:40px;height:40px;flex:none;border-radius:11px;background:#17604f;color:#92ffd1;font-size:24px}
+#loTrackConceptA .ca-live-activity-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#loTrackConceptA .ca-live-primary-copy{flex:1;min-width:0}
+#loTrackConceptA #caLive .ca-activity-name{font-size:16px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#loTrackConceptA #caLive .ca-timer-meta{text-align:left;margin:3px 0 0;font-size:11px;line-height:1.25}
+#loTrackConceptA #caLive .ca-clock{font-size:17px;line-height:1.1;letter-spacing:0;margin:0;white-space:nowrap}
+#loTrackConceptA #caLive .ca-control-grid button{min-height:44px;font-size:11px;gap:2px}
+#loTrackConceptA #caLive .ca-control-grid button span{font-size:15px}
+#loTrackConceptA #caLive .ca-control-grid button svg,#loTrackConceptA #caLive .ca-mini-action svg{width:17px;height:17px;flex:none}
+#loTrackConceptA #caLive .ca-secondary h3{margin:0 0 5px;font-size:14px}
+#loTrackConceptA #caLive .ca-mini-item{gap:5px;min-height:48px}
+#loTrackConceptA #caLive .ca-mini-item strong{font-size:12px}
+#loTrackConceptA #caLive .ca-mini-item time{font-size:11px}
+#loTrackConceptA #caLive .ca-mini-action{min-width:44px;min-height:44px;padding:3px;border:1px solid #38596a;border-radius:9px;background:#1c3043;color:#e6f8f2;font-size:12px}
+#loTrackConceptA .ca-live-quick{margin:12px 0}
+#loTrackConceptA .ca-live-quick-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#loTrackConceptA .ca-live-quick-head h3{font-size:15px;margin:0;color:#f2fffb}
+#loTrackConceptA .ca-live-quick-head button{min-height:44px;border:0;background:transparent;color:var(--ca-mint);font-weight:700}
+#loTrackConceptA .ca-live-quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+#loTrackConceptA .ca-live-quick-grid button{min-width:0;min-height:60px;padding:5px 2px;border:1px solid #315366;border-radius:11px;background:#102a38;color:#d9f8ed;display:grid;place-items:center;gap:2px;font:inherit}
+#loTrackConceptA .ca-live-quick-grid button span{color:var(--ca-mint);font-size:21px;line-height:1}
+#loTrackConceptA .ca-live-quick-grid button svg{width:23px;height:23px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#loTrackConceptA .ca-live-quick-grid button strong{font-size:11px;line-height:1.15}
+#loTrackConceptA #caLive .ca-main-button{min-height:48px;font-size:14px;border-radius:12px}
+@media(max-width:375px){#loTrackConceptA .ca-live-overview{gap:9px;padding-left:0;padding-right:0}#loTrackConceptA .ca-live-count{width:78px;height:78px;border-width:8px}#loTrackConceptA #caLive .ca-mini-item{gap:3px}}
+
+/* Track Live follows the existing global theme preference. */
+html[data-lifeos-theme="light"] body[data-lifeos-view="tracking"] #loTrackConceptA{--ca-mint:#087d69;--ca-soft:#4c6878;color:#173246}
+html[data-lifeos-theme="light"] #loTrackConceptA :is(.ca-heading,.ca-live-count strong,.ca-live-overview-stats strong,.ca-live-quick-head h3,#caLive .ca-secondary h3){color:#173246}
+html[data-lifeos-theme="light"] #loTrackConceptA :is(.ca-subtitle,.ca-live-count small,.ca-live-overview-stats>small,.ca-live-overview-stats>div,#caLive .ca-timer-meta){color:#4d6878}
+html[data-lifeos-theme="light"] #loTrackConceptA .ca-brand-end{background:#e2f4ee;border-color:#a3cec0;color:#086451}
+html[data-lifeos-theme="light"] #loTrackConceptA .ca-tabs{background:#e6eff3;border-color:#b9ccd4}
+html[data-lifeos-theme="light"] #loTrackConceptA .ca-tab{color:#35576b}
+html[data-lifeos-theme="light"] #loTrackConceptA .ca-tab[aria-selected="true"]{background:#087d69;color:#fff}
+html[data-lifeos-theme="light"] #loTrackConceptA .ca-live-count{border-color:#20a882;border-left-color:#accdd2}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-panel{background:#fff;border-color:#c3d9dc;box-shadow:0 5px 18px #315e7410}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-panel.ca-primary{background:#e4f6f0;border-color:#a1d5c4}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive :is(.ca-overline,.ca-activity-name,.ca-live-quick-head button){color:#086b59}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-overline .ca-pill{background:#d2eee2;border-color:#9acbb9;color:#075f4e}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive :is(.ca-clock,.ca-mini-item time,.ca-mini-item strong){color:#173246}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-mini-item{border-color:#d4e3e6}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive :is(.ca-control-grid button,.ca-mini-action,.ca-soft-button){background:#eef5f6;border-color:#b6d0d2;color:#21485b}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-control-grid .ca-emphasis{background:#087d69;border-color:#087d69;color:#fff}
+html[data-lifeos-theme="light"] #loTrackConceptA .ca-live-quick-grid button{background:#fff;border-color:#c3d9dc;color:#173246}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-main-button{background:#087d69;color:#fff}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-empty{color:#4d6878}
+html[data-lifeos-theme="light"] #loTrackConceptA #caLive .ca-empty strong{color:#173246!important}

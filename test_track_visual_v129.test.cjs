@@ -38,8 +38,8 @@ test('mobile visuals are semantic accessible and responsive',()=>{
  assert.doesNotThrow(()=>new Function(src));
 });
 test('V129 assets are deployed through HTML and allowlisted',()=>{
- assert.match(html,/src="personal_track_visual_v129\.js"/);
- assert.match(html,/href="personal_track_visual_v129\.css"/);
+ assert.match(html,/src="personal_track_visual_v129\.js(?:\?[^"]+)?"/);
+ assert.match(html,/href="personal_track_visual_v129\.css(?:\?[^"]+)?"/);
  assert.match(server,/'personal_track_visual_v129\.js'/);
  assert.match(server,/'personal_track_visual_v129\.css'/);
 });

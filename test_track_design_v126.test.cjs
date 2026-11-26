@@ -49,8 +49,8 @@ test('Track has progressive disclosure and responsive semantic colors',()=>{
  assert.match(css,/@media\(max-width:520px\)/);
  assert.match(css,/focus-visible/);
  assert.match(css,/var\(--lo121-prayer\)/);
- assert.match(html,/src="personal_track_design_v126\.js"/);
- assert.match(html,/href="personal_track_design_v126\.css"/);
+ assert.match(html,/src="personal_track_design_v126\.js(?:\?[^"]+)?"/);
+ assert.match(html,/href="personal_track_design_v126\.css(?:\?[^"]+)?"/);
  assert.match(server,/'personal_track_design_v126\.js'/);
 });
 test('scripts parse and Track design has no record mutation methods',()=>{

@@ -13,6 +13,7 @@ const e=(tag,cls,textValue)=>{
 };
 const state={tab:'live',historyPeriod:'week',historyMonth:localMonthKey(new Date()),reviewPeriod:'week',query:'',history:[],lastHistory:0};
 let shell,dialog,dialogBody,previousFocus,selectedGap=null;
+const finishPending=new Map();
 const localInput=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*60000).toISOString().slice(0,23)};
 function htmlEscape(value){return String(value==null?'':value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function durationMs(text){
@@ -62,6 +63,20 @@ function activeSessions(){
 function originalAction(id,action){
  const control=Array.from(document.querySelectorAll('#sessions [data-act]')).find(b=>b.dataset.id===id&&b.dataset.act===action);
  if(control){control.click();return true}return false;
+}
+function pendingFinish(id){
+ const expires=finishPending.get(String(id))||0;
+ if(expires<=Date.now()){finishPending.delete(String(id));return false}
+ return true;
+}
+function finishActivity(id){
+ const control=Array.from(document.querySelectorAll('#sessions [data-act="finish"]')).find(b=>b.dataset.id===id);
+ if(!control)return {ok:false,pending:false};
+ control.click();
+ const saved=window.lifeosReadOnlyWorkspace?.()?.sessions?.find(s=>String(s.id)===String(id));
+ const finished=!!saved&&saved.status==='finished',pending=!finished&&/tap again to finish/i.test(control.textContent||'');
+ if(pending)finishPending.set(String(id),Date.now()+15000);else finishPending.delete(String(id));
+ return {ok:pending||finished,pending};
 }
 function originalHistory(id,action){
  const control=Array.from(document.querySelectorAll('#history [data-act]')).find(b=>b.dataset.id===id&&b.dataset.act===action);
@@ -129,11 +144,15 @@ function matchesPeriod(record,period){
  // silently counted in the wrong week or month.
  if(!record.dateKey)return false;
  const d=dayDate(record);if(!d)return false;
- const now=new Date();now.setHours(0,0,0,0);d.setHours(0,0,0,0);
- const delta=Math.round((now-d)/86400000);
- if(period==='today')return delta===0;
- if(period==='week')return delta>=0&&delta<7;
- if(period==='month')return delta>=0&&delta<31;
+ const now=new Date(),today=localKey(now);
+ if(record.dateKey>today)return false;
+ if(period==='today')return record.dateKey===today;
+ if(period==='week'){
+  const monday=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  monday.setDate(monday.getDate()-(monday.getDay()+6)%7);
+  return record.dateKey>=localKey(monday);
+ }
+ if(period==='month')return record.dateKey.slice(0,7)===today.slice(0,7);
  return true;
 }
 function build(){
@@ -143,7 +162,7 @@ function build(){
  shell=e('section');shell.id='loTrackConceptA';shell.setAttribute('aria-label','Track Concept A');
  shell.innerHTML=[
  '<div class="ca-workspaces">',
- '<div class="ca-brand"><div><span class="ca-logo">◈</span><b>LifeOS Beta</b></div><span class="ca-brand-end">● Personal</span></div>',
+ '<div class="ca-brand"><div><span class="ca-logo">◈</span><b>'+(location.hostname==='lifeos-today-aplus-preview.onrender.com'?'LifeOS Preview':'LifeOS Beta')+'</b></div><span class="ca-brand-end">● Personal</span></div>',
  '<h1 class="ca-heading">Track</h1><p class="ca-subtitle">Track time, focus and activities</p>',
  '<div class="ca-tabs" role="tablist" aria-label="Track workspaces">',
  '<button class="ca-tab" type="button" data-ca-tab="live" role="tab" aria-selected="true">▷ &nbsp;Live</button>',
@@ -226,28 +245,40 @@ function chooseTab(name){
  if(name==='live')renderLive();
  shell.scrollIntoView({block:'start',behavior:'auto'});
 }
-function liveMarkup(){
+function liveIcon(name){
+ const paths={pause:'<path d="M7 5h3v14H7zm7 0h3v14h-3z" fill="currentColor" stroke="none"/>',play:'<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',finish:'<rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" stroke="none"/>',break:'<path d="M4 7h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V7Zm12 1h2a3 3 0 0 1 0 6h-2M4 21h13"/>',details:'<circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/>'};
+ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[name]||paths.details)+'</svg>';
+}
+function liveMarkup(today){
  const rows=activeSessions(),first=rows[0],others=rows.slice(1);
- let markup='';
+ const metrics=today?.metrics||{},firstLive=today?.active?.find(x=>String(x.id)===String(first?.id));
+ const time=firstLive&&Number.isFinite(firstLive.startAt)?new Date(firstLive.startAt).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}):'';
+ const category=today?.recorded?.find(x=>String(x.id)===String(first?.id))?.category,iconSource=({'University':'Studying','Study':'Studying','Work & business':'Work','Fitness':'Fitness','Nutrition':'Eating','Sleep':'Sleep','Prayer':'Prayer','Quran & Arabic':'Quran'})[category];
+ const activityIcon=Array.from(document.querySelectorAll('#quick button[data-name]')).find(b=>b.dataset.name===iconSource)?.querySelector('.lo-quick-glyph')?.innerHTML||'◷';
+ let markup='<div class="ca-live-overview"><div class="ca-live-count" aria-label="'+rows.length+' active sessions"><strong>'+rows.length+'</strong><small>Active '+(rows.length===1?'session':'sessions')+'</small></div><div class="ca-live-overview-stats"><div><span>Unique tracked today</span><strong data-ca-live-unique>'+htmlEscape(durationLabel(metrics.unique||0))+'</strong></div><div><span>Total recorded today</span><strong data-ca-live-total>'+htmlEscape(durationLabel(metrics.total||0))+'</strong></div><small>Overlapping time is counted once in unique time.</small></div></div>';
  if(first){
-  markup+='<div class="ca-panel ca-primary"><div class="ca-overline"><span>◎ Active activity</span><span class="ca-pill">'+htmlEscape(first.status==='running'?'● Running':'Ⅱ Paused')+'</span></div>';
-  markup+='<div class="ca-activity-name">'+htmlEscape(first.name)+'</div>';
-  markup+='<div class="ca-clock" id="caMainClock">'+htmlEscape(first.clock)+'</div><p class="ca-timer-meta">Total recorded session time · '+htmlEscape(first.status)+'</p>';
+  markup+='<div class="ca-panel ca-primary"><div class="ca-overline"><span>Current session</span><span class="ca-pill">'+htmlEscape(first.status==='running'?'● Running':'Ⅱ Paused')+'</span></div>';
+  markup+='<div class="ca-live-primary-row"><div class="ca-live-activity-icon" aria-hidden="true">'+activityIcon+'</div><div class="ca-live-primary-copy"><div class="ca-activity-name">'+htmlEscape(first.name)+'</div><p class="ca-timer-meta">'+(time?'Started '+htmlEscape(time)+' · ':'')+'Total session time</p></div><div class="ca-clock" id="caMainClock">'+htmlEscape(first.clock)+'</div></div>';
   // No goal percentage is displayed unless a real goal source is available.
   markup+='<div class="ca-control-grid">';
-  markup+='<button type="button" data-ca-act="'+(first.status==='running'?'pause':'resume')+'" data-ca-id="'+htmlEscape(first.id)+'" class="ca-emphasis"><span>'+(first.status==='running'?'Ⅱ':'▷')+'</span>'+(first.status==='running'?'Pause':'Resume')+'</button>';
-  markup+='<button type="button" data-ca-act="break" data-ca-id="'+htmlEscape(first.id)+'"><span>☕</span>Break</button>';
-  markup+='<button type="button" data-ca-act="finish" data-ca-id="'+htmlEscape(first.id)+'"><span>■</span>Finish</button>';
-  markup+='<button type="button" data-ca-sheet="activity" data-ca-id="'+htmlEscape(first.id)+'"><span>⋯</span>Details</button>';
+  markup+='<button type="button" data-ca-act="'+(first.status==='running'?'pause':'resume')+'" data-ca-id="'+htmlEscape(first.id)+'" class="ca-emphasis">'+liveIcon(first.status==='running'?'pause':'play')+(first.status==='running'?'Pause':'Resume')+'</button>';
+  markup+='<button type="button" data-ca-act="break" data-ca-id="'+htmlEscape(first.id)+'">'+liveIcon('break')+'Break</button>';
+  markup+='<button type="button" data-ca-act="finish" data-ca-id="'+htmlEscape(first.id)+'" aria-label="'+(pendingFinish(first.id)?'Confirm finish ':'Finish ')+htmlEscape(first.name)+'">'+liveIcon('finish')+(pendingFinish(first.id)?'Confirm finish':'Finish')+'</button>';
+  markup+='<button type="button" data-ca-sheet="activity" data-ca-id="'+htmlEscape(first.id)+'">'+liveIcon('details')+'Details</button>';
   markup+='</div></div>';
  }else{
   markup+='<div class="ca-panel ca-primary"><div class="ca-overline">◎ ACTIVE ACTIVITY</div><div class="ca-empty"><strong style="display:block;color:#f3fffa;font-size:20px;margin-bottom:8px">Ready for your next activity?</strong>No timer is running. Start a new activity to see its live clock here.</div></div>';
  }
  if(others.length){
-  markup+='<div class="ca-panel ca-secondary"><h3>▱ &nbsp; Other active ('+others.length+')</h3>';
-  for(const row of others)markup+='<div class="ca-mini-item"><i class="ca-dot"></i><strong>'+htmlEscape(row.name)+'</strong><time>'+htmlEscape(row.clock)+'</time><button type="button" class="ca-soft-button" style="min-height:32px;padding:0 10px" data-ca-sheet="activity" data-ca-id="'+htmlEscape(row.id)+'" aria-label="Open '+htmlEscape(row.name)+'">›</button></div>';
+  markup+='<div class="ca-panel ca-secondary"><h3>Other active ('+others.length+')</h3>';
+  for(const row of others)markup+='<div class="ca-mini-item"><i class="ca-dot"></i><strong title="'+htmlEscape(row.name)+'">'+htmlEscape(row.name)+'</strong><time>'+htmlEscape(row.clock)+'</time><button type="button" class="ca-mini-action" data-ca-act="'+(row.status==='running'?'pause':'resume')+'" data-ca-id="'+htmlEscape(row.id)+'" aria-label="'+(row.status==='running'?'Pause ':'Resume ')+htmlEscape(row.name)+'">'+liveIcon(row.status==='running'?'pause':'play')+'</button><button type="button" class="ca-mini-action" data-ca-act="finish" data-ca-id="'+htmlEscape(row.id)+'" aria-label="'+(pendingFinish(row.id)?'Confirm finish ':'Finish ')+htmlEscape(row.name)+'">'+(pendingFinish(row.id)?'Confirm':liveIcon('finish'))+'</button><button type="button" class="ca-mini-action" data-ca-sheet="activity" data-ca-id="'+htmlEscape(row.id)+'" aria-label="Open '+htmlEscape(row.name)+'">›</button></div>';
   markup+='</div>';
  }
+ const available=Array.from(document.querySelectorAll('#quick button[data-name]'));
+ const options=[['Studying','Study'],['Work','Work'],['Fitness','Exercise'],['Reading','Reading'],['Eating','Eating'],['Sleep','Sleep'],['Prayer','Prayer']].map(([name,label])=>({name,label,source:available.find(b=>b.dataset.name===name)})).filter(x=>x.source);
+ markup+='<section class="ca-live-quick"><div class="ca-live-quick-head"><h3>Quick start</h3><button type="button" data-ca-sheet="start">＋ Custom</button></div><div class="ca-live-quick-grid">';
+ for(const option of options)markup+='<button type="button" data-ca-quick-start="'+htmlEscape(option.name)+'" aria-label="Start '+htmlEscape(option.name)+(rows.length?' alongside current sessions':'')+'"><span aria-hidden="true">'+(option.source.querySelector('.lo-quick-glyph')?.innerHTML||'▷')+'</span><strong>'+htmlEscape(option.label)+'</strong></button>';
+ markup+='<button type="button" data-ca-sheet="start"><span aria-hidden="true">⋯</span><strong>More</strong></button></div></section>';
  markup+='<button type="button" class="ca-main-button" data-ca-sheet="start">＋ &nbsp; Start Activity</button>';
  const focus=readRealFocusState();
  markup+='<div class="ca-quiet-actions"><button type="button" class="ca-soft-button" data-ca-sheet="focus">'+(focus?'● Focus '+htmlEscape(focus.mode):'◎ Focus Mode')+'</button><button type="button" class="ca-soft-button" data-ca-sheet="timer">◷ Timer settings</button></div>';
@@ -257,14 +288,17 @@ function renderLive(){
  if(!shell)return;
  const target=$('caLive');if(!target)return;
  const previous=target.querySelector('#caMainClock')?.textContent;
- const next=liveMarkup();
+ const today=window.lifeosTodayAPlusSnapshot?.(),next=liveMarkup(today);
  const focus=readRealFocusState();
- const signature=activeSessions().map(x=>x.id+'|'+x.name+'|'+x.status).join('|')+'|focus:'+String(focus?.mode||'none')+'|'+String(focus?.label||'');
+ const categories=new Map((today?.recorded||[]).map(x=>[String(x.id),x.category]));
+ const signature=activeSessions().map(x=>x.id+'|'+x.name+'|'+x.status+'|'+pendingFinish(x.id)+'|'+String(categories.get(String(x.id))||'')).join('|')+'|focus:'+String(focus?.mode||'none')+'|'+String(focus?.label||'');
  if(target.dataset.signature!==signature){
   target.innerHTML=next;target.dataset.signature=signature;
  }else{
   const sessions=activeSessions();
   if(sessions[0]&&$('caMainClock'))$('caMainClock').textContent=sessions[0].clock;
+  const unique=target.querySelector('[data-ca-live-unique]'),total=target.querySelector('[data-ca-live-total]');
+  if(unique)unique.textContent=durationLabel(today?.metrics?.unique||0);if(total)total.textContent=durationLabel(today?.metrics?.total||0);
   const timers=target.querySelectorAll('.ca-mini-item time');
   sessions.slice(1).forEach((s,i)=>{if(timers[i])timers[i].textContent=s.clock});
  }
@@ -399,7 +433,7 @@ function renderReview(){
  const stats=readOverview();
  const today=window.lifeosTodayAPlusSnapshot?.().metrics;
  const records=readHistory().filter(x=>matchesPeriod(x,state.reviewPeriod));
- const signature=state.reviewPeriod+'|'+records.map(x=>[x.id,x.dateKey,x.duration,x.name].join(':')).join('|')+'|'+stats.unique+'|'+stats.overlap+'|'+stats.distraction+'|'+Math.round((today?.total||0)/60000);
+ const signature=state.reviewPeriod+'|'+localKey(new Date())+'|'+records.map(x=>[x.id,x.dateKey,x.duration,x.name].join(':')).join('|')+'|'+stats.unique+'|'+stats.overlap+'|'+stats.distraction+'|'+Math.round((today?.total||0)/60000);
  if(target.dataset.caSignature===signature)return;
  const groups=new Map(),dates=new Map(),ids=new Set();
  let recordedMs=0;
@@ -422,7 +456,7 @@ function renderReview(){
   parts.push(colors[i]+' '+angle.toFixed(2)+'% '+next.toFixed(2)+'%');
   angle=next;
  }
- const scope={today:'Today',week:'Last 7 days',month:'Last 30 days',all:'All saved history'}[state.reviewPeriod]||'Recorded time';
+ const scope={today:'Today',week:'This week',month:'This month',all:'All saved history'}[state.reviewPeriod]||'Recorded time';
  let page='<div class="ca-section-head"><span class="ca-section-icon">▥</span><div><h2>Review & Insights</h2><p>Understand your time, focus and distractions</p></div></div>';
  page+='<div class="ca-filter-row">';
  for(const [key,label] of [['today','Today'],['week','This Week'],['month','This Month'],['all','All']])
@@ -451,7 +485,7 @@ function renderReview(){
   page+='</div></div>';
  }
  page+='</div><div class="ca-panel"><h3 class="ca-card-heading">Recorded time by day</h3>';
- const count=state.reviewPeriod==='today'?1:state.reviewPeriod==='month'?14:state.reviewPeriod==='all'?14:7;
+ const current=new Date(),count=state.reviewPeriod==='today'?1:state.reviewPeriod==='week'?(current.getDay()+6)%7+1:state.reviewPeriod==='month'?Math.min(current.getDate(),14):14;
  let days=[];
  for(let i=count-1;i>=0;i--){
   const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);
@@ -461,8 +495,9 @@ function renderReview(){
  const max=Math.max(1,...days.map(x=>x.ms));
  if(days.some(x=>x.ms>0)){
   page+='<div class="ca-bars" aria-label="Time by day">';
-  for(const item of days)page+='<div class="ca-bar" style="height:'+Math.max(3,Math.round(item.ms/max*100))+'%" title="'+htmlEscape(item.key)+' · '+durationLabel(item.ms)+'"><span>'+htmlEscape(item.label)+'</span></div>';
-  page+='</div><div class="ca-chart-caption">Total recorded time from saved finished activities · simultaneous activities may overlap.</div>';
+  for(const item of days)page+='<div class="ca-bar '+(item.ms?'':'ca-zero')+'" style="height:'+(item.ms?Math.max(3,Math.round(item.ms/max*100)):0)+'%" title="'+htmlEscape(item.key)+' · '+durationLabel(item.ms)+'"><span>'+htmlEscape(item.label)+'</span></div>';
+  const chartScope=state.reviewPeriod==='week'?'This week through today':state.reviewPeriod==='month'?'Latest '+count+' days of this month':state.reviewPeriod==='all'?'Latest '+count+' days':'Today';
+  page+='</div><div class="ca-chart-caption">'+chartScope+' · total recorded time from saved finished activities; simultaneous activities may overlap.</div>';
  }else page+='<div class="ca-empty">No completed activity time found for the displayed days.</div>';
  page+='</div>';
  page+='<div class="ca-panel ca-distraction-band"><div><b>△ &nbsp; Distraction review</b><p>'+htmlEscape(stats.distraction)+'</p></div><button type="button" class="ca-soft-button" data-ca-sheet="distraction">Review ›</button></div>';
@@ -685,7 +720,7 @@ function sheet(type,id,dayKey){
    +'<button class="ca-detail-action" data-ca-act="break" data-ca-id="'+htmlEscape(current.id)+'"><b>☕</b><span>Break</span></button>'
    +'<button class="ca-detail-action" data-ca-act="switch" data-ca-id="'+htmlEscape(current.id)+'"><b>⇄</b><span>Switch</span></button>'
    +'<button class="ca-detail-action" data-ca-act="edit" data-ca-id="'+htmlEscape(current.id)+'"><b>✎</b><span>Edit</span></button></div>';
-  content+='<button class="ca-detail-finish" data-ca-act="finish" data-ca-id="'+htmlEscape(current.id)+'">■ &nbsp; Finish activity</button>';
+  content+='<button class="ca-detail-finish" data-ca-act="finish" data-ca-id="'+htmlEscape(current.id)+'">■ &nbsp; '+(pendingFinish(current.id)?'Confirm finish':'Finish activity')+'</button>';
   openDialog('Activity in progress','Timer details and advanced controls',content);return;
  }
  if(type==='record'){
@@ -792,6 +827,7 @@ function sheet(type,id,dayKey){
 }
 function handleClick(event){
  const tab=event.target.closest('[data-ca-tab]');if(tab){chooseTab(tab.dataset.caTab);return}
+ const quick=event.target.closest('[data-ca-quick-start]');if(quick){const source=Array.from(document.querySelectorAll('#quick button[data-name]')).find(b=>b.dataset.name===quick.dataset.caQuickStart);if(source){source.click();setTimeout(refresh,60)}return}
  const period=event.target.closest('button[data-ca-period]');if(period){
   state.historyPeriod=period.dataset.caPeriod;renderHistory();return
  }
@@ -806,6 +842,11 @@ function handleClick(event){
  const review=event.target.closest('[data-ca-review-period]');if(review){state.reviewPeriod=review.dataset.caReviewPeriod;renderReview();return}
  const act=event.target.closest('[data-ca-act]');if(act){
   if(act.dataset.caAct==='break'){sheet('break',act.dataset.caId);return}
+  if(act.dataset.caAct==='finish'){
+   const result=finishActivity(act.dataset.caId);
+   if(!result.ok){act.textContent='Unable to finish; try again';return}
+   renderLive();return;
+  }
   originalAction(act.dataset.caId,act.dataset.caAct);setTimeout(refresh,60);return;
  }
  const open=event.target.closest('[data-ca-sheet]');if(open)sheet(open.dataset.caSheet,open.dataset.caId,open.dataset.caDayKey);
@@ -845,7 +886,20 @@ function handleDialogClick(event){
   return;
  }
  const act=event.target.closest('[data-ca-act]');
- if(act){const ok=originalAction(act.dataset.caId,act.dataset.caAct);if(ok){closeDialog();setTimeout(refresh,100)}return}
+ if(act){
+  if(act.dataset.caAct==='finish'){
+   const result=finishActivity(act.dataset.caId);
+   if(!result.ok){act.textContent='Unable to finish; try again';return}
+   if(result.pending){
+    act.textContent='Confirm finish';
+    let note=dialogBody.querySelector('.ca-finish-confirmation');if(!note){note=e('p','ca-editor-footnote ca-finish-confirmation');note.setAttribute('role','status');act.before(note)}
+    note.textContent='Tap Confirm finish within 15 seconds to save this activity.';
+    setTimeout(()=>{if(act.isConnected&&!pendingFinish(act.dataset.caId)){act.textContent='Finish activity';note.textContent='Confirmation expired; tap Finish activity again.'}},15100);
+   }else{closeDialog();setTimeout(refresh,100)}
+   return;
+  }
+  const ok=originalAction(act.dataset.caId,act.dataset.caAct);if(ok){closeDialog();setTimeout(refresh,100)}return;
+ }
  const edit=event.target.closest('[data-ca-history-act]');
  if(edit){const ok=originalHistory(edit.dataset.caId,edit.dataset.caHistoryAct);if(ok)closeDialog();return}
  const deleteRecord=event.target.closest('[data-ca-delete-record]');

@@ -46,8 +46,8 @@ test('history keeps search and editing, chart is collapsed initially and respons
 });
 test('new assets are parseable, wired, allowlisted and read-only',()=>{
  assert.doesNotThrow(()=>new Function(source));
- assert.match(html,/src="personal_track_polish_v128\.js"/);
- assert.match(html,/href="personal_track_polish_v128\.css"/);
+ assert.match(html,/src="personal_track_polish_v128\.js(?:\?[^"]+)?"/);
+ assert.match(html,/href="personal_track_polish_v128\.css(?:\?[^"]+)?"/);
  assert.match(server,/'personal_track_polish_v128\.js'/);
  assert.match(server,/'personal_track_polish_v128\.css'/);
  assert.doesNotMatch(source,/localStorage\.setItem|saveSession\(|deleteSession\(|finishSession\(/);
