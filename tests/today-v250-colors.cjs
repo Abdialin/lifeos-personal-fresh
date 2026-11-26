@@ -49,7 +49,7 @@ const serve=route=>{
   assert.equal(consistency.goal.value,1,'Goals should respect explicit classification and exclude Preview samples');
   await page.locator('#apTab1').click();await page.locator('[data-ap-live-period="0"]').click();
   const fill=id=>page.locator('svg [data-ap-detail="record"][data-ap-key="'+id+'"] > rect').getAttribute('fill');
-  assert.equal(await fill('legacy-0'),'#8295dd');assert.equal(await fill('legacy-2'),'#78b8ef');assert.equal(await fill('legacy-3'),'#b6a4f5');assert.equal(await fill('untrusted'),'#a6bcd0');
+  assert.equal(await fill('legacy-0'),'#829ab5');assert.equal(await fill('legacy-2'),'#65dfc0');assert.equal(await fill('legacy-3'),'#65b8ee');assert.equal(await fill('untrusted'),'#a6bcd0');
   assert((await page.locator('#apPage1').innerText()).includes('Sleep'));assert((await page.locator('#apPage1').innerText()).includes('University'));
   await page.locator('svg [data-ap-detail="record"][data-ap-key="legacy-0"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Sleep'));assert.equal(await page.locator('#caTodayCategory').inputValue(),'Sleep');await page.locator('#loCADialog [data-ca-close]').last().click();
   assert.deepEqual(await page.evaluate(()=>window.lifeosReadOnlyWorkspace().sessions),saved,'Classification display must not rewrite activity history');

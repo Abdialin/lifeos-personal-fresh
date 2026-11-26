@@ -1,0 +1,13 @@
+# Release acceptance checklist (all pending until verified)
+- [ ] Baseline repository, branch, deployment, data backup and signing identity documented; no concurrent changes overwritten.
+- [ ] Every primary and supporting screen mapped to implementation; omissions explicitly reported.
+- [ ] Compare actual screenshots against primary references at 360/393/412 CSS px, dark/light, reduced-height keyboard; check long names, short blocks, empty and populated states.
+- [ ] Today: timeline taps, gap partial/full logging, stale gap rejection, overlap math, agenda and review.
+- [ ] Track: start alongside/switch, pause/resume/finish, lock-screen persistence, overnight/DST, manual entry, history grouping, edit/delete, focus and distraction controls.
+- [ ] Plan: all four calendar views, task CRUD, conflicts, compare periods, insufficient evidence, recovery and explicit approval.
+- [ ] Goals: create/edit/pause/archive, unit-aware progress, milestones, history, two-week review.
+- [ ] Insights: filters, day details, raw/unique/overlap consistency, reliability and distraction correction.
+- [ ] My Life: fitness/nutrition/habits/routines/life areas/settings, measurement units, privacy and social permissions.
+- [ ] Cross-section edits recalculate consistently; persistence after reload/restart, offline/reconnect where supported, no duplicate writes, migration and backup restore tested.
+- [ ] Native Samsung device: system bars, bottom navigation, keyboard, notifications locked/unlocked, sound/vibration, timer persistence; signed Preview install/update retains data.
+- [ ] Record actual test commands/results, screenshots, commits, deployment URL, unresolved defects and deferred features; user accepts each section before production rollout.

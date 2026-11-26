@@ -6,9 +6,9 @@ The user's 25 November 2026 Android screenshots show the six-section bar floatin
 
 Next native investigation: collect device/API level, gesture versus three-button mode, keyboard state, WebView bounds, system-bar and IME insets, `innerHeight`, `visualViewport` height/offset, navigation bounds and final scroll clearance. Test both navigation modes, keyboard open/closed, all six sections and dialogs. Keep native changes for the later consolidated signed Preview release. Reduced-height browser tests are useful but cannot close this issue.
 
-## Missing visual references
+## V1 design comparisons
 
-The original approved Today Concept A+ mockups for Overview, Timeline, Agenda and Review, and Track Concept A mockups for Live, History and Review, are not present in the repository. `docs/design/` contains synthetic implementation captures, not those approved source images. Request the actual references one subsection at a time. Future Plan/Goals/Insights/My Life concepts also require the approvals described in the roadmap.
+The user supplied a V1 release package with individual Today Overview and Timeline targets, Track references, all five Plan targets, remaining-section references and supporting boards. They are indexed in `docs/design/release-v1/` and `docs/design/today/reference/`. Agenda and Review are represented on supporting boards rather than individual Today reference files. The original historical approval provenance remains unconfirmed. Reference availability does not establish visual or device acceptance; see `docs/design/today/COMPARISON.md` and the remaining sections’ comparisons.
 
 ## Storage
 

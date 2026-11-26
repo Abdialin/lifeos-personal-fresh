@@ -1,14 +1,14 @@
-# Today visual comparison and annotations
+# Today V1 visual comparison
 
-All screenshots below use an isolated synthetic fixture at 393×780. The left column is the implementation at `5aa749b6173f4aa65c281672f0f785ef52cd2f02`; the right column is the current workspace capture. These are implementation-to-implementation comparisons, **not** comparisons against the missing approved source mockup.
+The supplied design screenshots are targets, with illustrative numbers. Current captures use a synthetic, network-intercepted fixture at 393×780; fixed navigation and timer overlays appear at viewport coordinates in full-page captures. They are browser evidence, not Android device screenshots or visual approval.
 
-| Subsection | Before | Current | Review note |
+| Subsection | User-supplied reference | Current implementation | Findings |
 | --- | --- | --- | --- |
-| Overview | ![Before Overview](before/overview-top.png) | ![Current Overview](current/overview-top.png) | Preserve the Concept A+ hierarchy. |
-| Timeline | ![Before Timeline](before/timeline-top.png) | ![Current Timeline](current/timeline-top.png) | Categories remain distinct; map windows now use local clock boundaries. |
-| Agenda | ![Before Agenda](before/agenda-top.png) | ![Current Agenda](current/agenda-top.png) | Use unscheduled-time language. |
-| Review | ![Before Review](before/review-top.png) | ![Current Review](current/review-top.png) | Keep unknown time separate from distraction. |
-| Activity details | ![Before details](before/activity-details.png) | ![Current details](current/activity-details.png) | Compact rows, readable precision and status; no blank status box. |
-| Gap entry | ![Before gap form](before/gap-entry.png) | ![Current gap form](current/gap-entry.png) | Practical time controls, remaining-time summary and accurate gap restriction. |
+| Overview | [Individual overview](reference/Overview.png) | [Viewport](current/release-overview.png) · [Full page](current/release-overview-full.png) · [Light](current/release-overview-light.png) | Paired day progress and glance cards, live controls, plan progress, distribution and quick actions are present. Life-area rows use saved activity, habit and routine evidence. The reference uses more compact controls and more iconography; scores with no defined evidence source are not invented. Extra bottom clearance is provided for the floating timer, which can still cover content while scrolling. |
+| Timeline | [Individual timeline](reference/Timeline.png) | [Viewport](current/release-timeline.png) · [Full page](current/release-timeline-full.png) | Category colors, proportional lanes, six-hour selector, accessible short-item list and selected-period accounting are present. Planned blocks use an outlined treatment. The date picker and tighter layout in the reference remain visual/functional differences. |
+| Agenda | [Section board](reference/Full_section_board.png) | [Viewport](current/release-agenda.png) · [Full page](current/release-agenda-full.png) | Next commitment, task completion, upcoming journey and unverified commitments use real records. Scheduled habits link to their existing My Life controls; the board's integrated routine checklist and compact layout are not yet matched. |
+| Review | [Section board](reference/Full_section_board.png) | [Viewport](current/release-review.png) · [Full page](current/release-review-full.png) | Summary, category drill-down, unlogged review and concurrent activity details are present. The page remains longer than the reference and needs further layout refinement. |
+| Activity details | [Supporting board](reference/Supporting_screens.png) | [Current details](current/activity-details.png) | Existing V250 detail and correction controls are retained; compare its remaining differences during focused device review. |
+| Gap entry | [Supporting board](reference/Supporting_screens.png) | [Current gap form](current/gap-entry.png) | Existing partial/full gap workflow and validation are retained; this capture predates the V1 layout changes. |
 
-The Android screenshots supplied in chat are device observations; their original files are not included in this repository. Bottom navigation remains a native-device issue until measured and verified. The approved Today mockup images are still required for a true desired-versus-delivered comparison.
+Other pending checks: all Today interactions on an authenticated isolated Preview account, actual Samsung safe areas and keyboard behavior, notification delivery and a full light-mode contrast review. The reference library does not certify the overall release.

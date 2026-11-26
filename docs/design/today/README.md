@@ -1,5 +1,7 @@
 # Today Concept A+
 
-The approved architecture is Overview, Timeline, Agenda and Review. [Current synthetic captures](current/) show each top and bottom viewport, a light-mode Overview, activity details, gap entry and a [132-record timeline](current/timeline-high-volume.png). [Prior captures](before/) show the same fixture at the V250 baseline plus earlier synthetic CI evidence. See [comparison and annotations](COMPARISON.md).
+The four subsections are Overview, Timeline, Agenda and Review. The user-supplied V1 release package provides individual [Overview](reference/Overview.png) and [Timeline](reference/Timeline.png) references and a [section board](reference/Full_section_board.png) containing Agenda, Review and supporting flows. The board is a supporting reference; the release specification and individual screens take precedence when they differ. Mockup figures are illustrative, not user data.
 
-Original approved source images missing: **Overview, Timeline, Agenda and Review**. Request the Overview image first, then the remaining subsections individually. The implementation captures do not prove visual equivalence to the missing mockups. Current correction requires focused user device acceptance.
+[Current synthetic browser captures](current/) include the V1 Today work, light mode, activity details and gap entry. [Earlier captures](before/) document the previous implementation. See the [comparison and open discrepancies](COMPARISON.md). All fixtures are synthetic and run with intercepted requests.
+
+The original historical Concept A+ approval files are not independently identified. The newly supplied V1 images are the current requested direction. Browser screenshots do not establish Android navigation, keyboard or notification correctness; device acceptance remains pending.

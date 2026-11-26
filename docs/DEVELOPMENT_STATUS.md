@@ -2,6 +2,12 @@
 
 Last reviewed: 26 November 2026. Use `git rev-parse HEAD` and GitHub Actions for the exact current revision and run status; do not infer deployment from this file.
 
+## V1 release package and active work
+
+The user supplied three replacement archives; the earlier oversized two-part package was superseded. The V1 instructions are in `docs/release/v1/` and the illustrative design references are indexed in `docs/design/release-v1/` and `docs/design/today/reference/`. Goals and Insights duplicate originals are not stored twice; unredacted device implementation captures are not included as design targets. Work remains section-by-section, starting with Today. This is not a release certification.
+
+The in-progress Today V1 work connects the revised Overview, Agenda and Review to existing records and editors, refines timeline colors and overlap lanes, adds selected-period time accounting and browser clearance for the floating timer. `docs/design/today/COMPARISON.md` records the remaining differences. Physical Android safe areas, keyboard behavior and notification delivery, authenticated Preview behavior, and formal user acceptance remain open. Track, Plan, Goals, Insights and My Life still need verification against the newly supplied V1 references before the release checklist can be satisfied.
+
 ## Today: current work
 
 The V250 foundation added interactive recorded, planned, active and gap details, gap logging through Track's existing form, overlap review and separate raw-time metrics. A follow-up restored known Preview sample categories without changing saved sample records. The user reported that timeline entries are selectable and the gap form opens on Android; that is not acceptance of all V250 requirements.
@@ -17,7 +23,7 @@ The supplied Plan reference files are stored under `docs/design/plan/reference/`
 ## Still open
 
 - The Android screenshots show bottom navigation floating above the system navigation area and content behind it. The native/WebView interaction needs device measurements and a later consolidated native release; browser viewport checks do not verify native IME or system bars.
-- The original approved Today Concept A+ and Track Concept A mockup image files are absent from the repository. Current screenshots are implementation evidence, not substitutes for those approvals.
+- The historical provenance of the earlier Today Concept A+ and Track Concept A approvals is unconfirmed. The supplied V1 references are stored and comparisons must distinguish targets from implementation captures.
 - Cross-section category behavior is checked for the core categories and fitness evidence. Generic keyword-based goal matching and the wider category catalog have not received a complete cross-section audit.
 - Preview persistence and staging database expiry are documented in `docs/DEPLOYMENT.md`; no migration or infrastructure changes have been made.
 

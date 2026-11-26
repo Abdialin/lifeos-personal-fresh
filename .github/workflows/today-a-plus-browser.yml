@@ -21,6 +21,7 @@ jobs:
       - run: node tests/today-v250-colors.cjs
       - run: node tests/today-v250-precision.cjs
       - run: node tests/today-v250-volume.cjs
+      - run: TODAY_V1_CAPTURE=1 node tests/today-release-v1.cjs
       - run: node test_plan_evidence_v250.cjs
       - run: node tests/plan-overview-model.cjs
       - run: PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
@@ -33,3 +34,4 @@ jobs:
           path: |
             today-verification/
             plan-verification/
+            docs/design/today/current/release-*.png

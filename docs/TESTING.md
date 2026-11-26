@@ -11,6 +11,7 @@ node tests/today-v250.cjs
 node tests/today-v250-colors.cjs
 node tests/today-v250-precision.cjs
 node tests/today-v250-volume.cjs
+TODAY_V1_CAPTURE=1 node tests/today-release-v1.cjs
 node test_plan_evidence_v250.cjs
 node tests/plan-overview-model.cjs
 PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
@@ -29,8 +30,10 @@ The V250 tests cover selected map items, short intervals, full/partial/consecuti
 
 The Plan tests cover local-week and daylight-saving boundaries, overnight and paused sessions, overlapping intervals and conflicts, explicit completion evidence, empty and high-volume models, search, editing/toggling tasks via the existing editor, adding a plan, Track-to-Plan refresh, reload persistence, dark/light themes, reduced viewports, bottom clearance, settings, and navigation. The browser fixture writes only to intercepted synthetic local storage. With capture enabled it writes `plan-verification/overview-dark.png`, `overview-light.png`, `overview-bottom.png` and `overview-dark-full.png`.
 
-GitHub workflows: `.github/workflows/preview-runtime.yml`, `today-a-plus-browser.yml`, `today-aplus-mobile-visual.yml`, and `today-presentation-check.yml`. The mobile workflow captures multiple widths and themes and checks geometry; screenshots are evidence, not automatic approval against a missing mockup. The visual library contains synthetic prior/current captures and comparison notes.
+GitHub workflows: `.github/workflows/preview-runtime.yml`, `today-a-plus-browser.yml`, `today-aplus-mobile-visual.yml`, and `today-presentation-check.yml`. The mobile workflow captures multiple widths and themes and checks geometry; screenshots are evidence, not automatic visual approval against a supplied reference. The visual library contains synthetic prior/current captures and comparison notes.
 
 Browser tests cannot verify Samsung WebView system insets, native IME, gesture/three-button navigation, notifications, vibration, background execution or signing. Record those as device checks only after observing the actual device. Do not weaken time, persistence or geometry assertions to make CI pass.
 
 The Plan Concept A+ tests cover all four new subsection presentations, calendar views, individual activity details, task edits, recurring-series preview and approval, conflict revalidation, failed-storage rollback, reload persistence, aligned comparison windows and evidence cutoffs, paused time, DST recurrence rejection, empty and 132-record states, themes, navigation and reduced browser heights. Captures in `plan-verification/` are intercepted synthetic fixtures. See `docs/design/plan/COMPARISON.md` for visual differences and open device checks.
+
+The Today V1 fixture checks record-based overview values and navigation into existing editors, partial-period union accounting, category drill-down, proportional overlap lanes, short interval access, cancelled-plan exclusion, task completion and reload persistence, light mode and browser viewport clearance. With capture enabled it writes synthetic images under `docs/design/today/current/release-*.png`. Reference comparison notes and remaining discrepancies are in `docs/design/today/COMPARISON.md`.
