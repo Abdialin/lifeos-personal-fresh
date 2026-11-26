@@ -11,7 +11,7 @@ const e=(tag,cls,textValue)=>{
  if(textValue!==undefined)node.textContent=textValue;
  return node;
 };
-const state={tab:'live',historyPeriod:'week',historyMonth:localMonthKey(new Date()),reviewPeriod:'week',query:'',history:[],lastHistory:0};
+const state={tab:'live',historyPeriod:'week',historyMonth:localMonthKey(new Date()),historyAnchor:localKey(new Date()),historyCategory:'',historyActivity:'',historyOrder:'newest',reviewPeriod:'week',query:'',history:[],lastHistory:0};
 let shell,dialog,dialogBody,previousFocus,selectedGap=null;
 const finishPending=new Map();
 const localInput=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*60000).toISOString().slice(0,23)};
@@ -186,6 +186,14 @@ function build(){
    if(replacement){replacement.focus();if(caret!==null)replacement.setSelectionRange(caret,caret)}
   }
  });
+ shell.addEventListener('change',event=>{
+  const key=event.target.dataset.caHistoryFilter;
+  if(key==='category')state.historyCategory=event.target.value;
+  else if(key==='activity')state.historyActivity=event.target.value;
+  else if(key==='order')state.historyOrder=event.target.value;
+  else return;
+  renderHistory();
+ });
  dialog.addEventListener('click',handleDialogClick);
  dialog.addEventListener('input',event=>{
   if(selectedGap&&['caPastStart','caPastEnd'].includes(event.target.id)){event.target.dataset.gapEdited='1';updateGapSummary()}
@@ -234,7 +242,7 @@ function build(){
 }
 function chooseTab(name){
  if(!['live','history','review'].includes(name))return;
- state.tab=name;
+ state.tab=name;shell.dataset.caActiveTab=name;
  for(const view of ['live','history','review']){
   const tab=shell.querySelector('[data-ca-tab="'+view+'"]');
   tab.setAttribute('aria-selected',String(view===name));tab.tabIndex=view===name?0:-1;
@@ -335,37 +343,136 @@ function isoWeekInfo(dateKey){
  const key=year+'-W'+String(week).padStart(2,'0');
  return {key,label:'Week '+week+' · '+fmt(monday)+' – '+fmt(sunday)};
 }
+function historyDate(key){
+ const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(key||'');
+ if(!match)return null;
+ const date=new Date(Number(match[1]),Number(match[2])-1,Number(match[3]),12);
+ return localKey(date)===key?date:null;
+}
+function historyWindow(period){
+ const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate(),12);
+ let anchor=historyDate(state.historyAnchor)||today;
+ if(period==='month')anchor=historyDate(state.historyMonth+'-01')||today;
+ const start=new Date(anchor),end=new Date(anchor);
+ if(period==='week'){
+  start.setDate(start.getDate()-(start.getDay()+6)%7);end.setTime(start.getTime());end.setDate(end.getDate()+7);
+ }else if(period==='month'){
+  start.setDate(1);end.setTime(start.getTime());end.setMonth(end.getMonth()+1);
+ }else if(period==='year'){
+  start.setMonth(0,1);end.setFullYear(start.getFullYear()+1,0,1);
+ }else{end.setDate(end.getDate()+1)}
+ const futureLimit=new Date(today);futureLimit.setDate(futureLimit.getDate()+1);
+ return {start,end,limit:end<futureLimit?end:futureLimit,today};
+}
+function historyWindowLabel(period,window){
+ const fmt=date=>date.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+ if(period==='all')return 'All saved history';
+ if(period==='today')return fmt(window.start);
+ if(period==='month')return monthTitle(localMonthKey(window.start));
+ if(period==='year')return String(window.start.getFullYear());
+ const last=new Date(window.end);last.setDate(last.getDate()-1);
+ const firstLabel=window.start.toLocaleDateString(undefined,{day:'numeric',month:'short',...(window.start.getFullYear()===last.getFullYear()?{}:{year:'numeric'})});
+ return firstLabel+' – '+fmt(last);
+}
+function historyDuration(record){return Number.isFinite(record.rawDurationMs)?Math.max(0,record.rawDurationMs):durationMs(record.duration)}
+function historyDaySpan(a,b){
+ const day=d=>Date.UTC(d.getFullYear(),d.getMonth(),d.getDate());
+ return Math.max(0,Math.round((day(b)-day(a))/86400000));
+}
+function historyColor(name){
+ return ({'University':'#69e7b5','Study':'#69e7b5','Work & business':'#74b8ed','Fitness':'#f2cd67','Nutrition':'#e4a079','Sleep':'#a2b5d0','Prayer':'#b9adf0','Quran & Arabic':'#d3a6ef','Distraction':'#ef9898','Other / review':'#9fb3c8'})[name]||'#9fb3c8';
+}
+function historyChart(records,period,window){
+ const bins=new Map();
+ function bin(key,label){if(!bins.has(key))bins.set(key,{key,label,groups:new Map(),total:0});return bins.get(key)}
+ if(period==='all'){
+  for(const record of records){const d=historyDate(record.dateKey);if(d)bin(String(d.getFullYear()),String(d.getFullYear()))}
+ }else if(period==='year'){
+  for(let i=0;i<12;i++){const d=new Date(window.start.getFullYear(),i,1,12);bin(localMonthKey(d),d.toLocaleDateString(undefined,{month:'short'}))}
+ }else{
+  for(const d=new Date(window.start);d<window.end;d.setDate(d.getDate()+1)){
+   if(period==='month'){
+    const monday=new Date(d);monday.setDate(monday.getDate()-(monday.getDay()+6)%7);
+    bin(localKey(monday),monday.toLocaleDateString(undefined,{day:'numeric',month:'short'}));
+   }else bin(localKey(d),d.toLocaleDateString(undefined,{weekday:'short',...(period==='today'?{day:'numeric'}:{})}));
+  }
+ }
+ const categories=new Map();
+ for(const record of records){
+  const d=historyDate(record.dateKey);if(!d)continue;
+  let key=period==='all'?String(d.getFullYear()):period==='year'?localMonthKey(d):record.dateKey;
+  if(period==='month'){const monday=new Date(d);monday.setDate(monday.getDate()-(monday.getDay()+6)%7);key=localKey(monday)}
+  const value=historyDuration(record),group=record.category||'Other / review',bucket=bins.get(key);
+  if(!bucket)continue;
+  bucket.total+=value;bucket.groups.set(group,(bucket.groups.get(group)||0)+value);categories.set(group,(categories.get(group)||0)+value);
+ }
+ let displayed=Array.from(bins.values()).sort((a,b)=>a.key.localeCompare(b.key));
+ const truncated=displayed.length>12;if(truncated)displayed=displayed.slice(-12);
+ const groups=Array.from(categories).sort((a,b)=>b[1]-a[1]).map(([name])=>name),max=Math.max(1,...displayed.map(b=>b.total));
+ let html='<div class="ca-history-chart" aria-label="Recorded time by category">';
+ if(!displayed.some(b=>b.total>0))html+='<p class="ca-history-chart-empty">No recorded time in this period.</p>';
+ else{
+  const axis=ms=>ms>0&&ms<60000?exactDuration(ms):durationLabel(ms);
+  html+='<div class="ca-history-chart-plot"><div class="ca-history-axis" aria-hidden="true"><span>'+htmlEscape(axis(max))+'</span><span>'+htmlEscape(axis(max/2))+'</span><span>0m</span></div><div class="ca-history-bars">';
+  for(const b of displayed){
+   html+='<div class="ca-history-bar-column"><div class="ca-history-bar" role="img" aria-label="'+htmlEscape(b.label+' · '+durationLabel(b.total))+'">';
+   for(const [name,ms] of b.groups)html+='<span title="'+htmlEscape(name+' · '+durationLabel(ms))+'" style="height:'+Math.max(0,ms/max*100)+'%;background:'+historyColor(name)+'"></span>';
+   html+='</div><small>'+htmlEscape(b.label)+'</small></div>';
+  }
+  html+='</div></div><div class="ca-history-legend">';
+  for(const name of groups)html+='<span><i style="background:'+historyColor(name)+'"></i>'+htmlEscape(name)+'</span>';
+  html+='</div>';
+ }
+ const undated=records.filter(r=>!historyDate(r.dateKey)).length;
+ return html+'<small class="ca-history-chart-note">'+(truncated?'Most recent 12 years shown · ':'')+'Recorded duration, including concurrent time.'+(undated?' '+undated+' undated '+(undated===1?'entry':'entries')+' excluded from chart.':'')+'</small></div>';
+}
 function renderHistory(){
  if(!shell)return;
  if(state.tab==='history')updateHistorySource();
  const target=$('caHistory');if(!target)return;
  state.history=readHistory();
- const filtered=state.history.filter(x=>
-  (state.historyPeriod==='month'?x.dateKey?.slice(0,7)===state.historyMonth:matchesPeriod(x,state.historyPeriod))
+ const range=historyWindow(state.historyPeriod),workspace=window.lifeosReadOnlyWorkspace?.();
+ const originals=new Map((workspace?.sessions||[]).map(s=>[String(s.id),s]));
+ for(const item of state.history)item.category=window.lifeosActivityClassification?.(originals.get(String(item.id))||{name:item.name})?.group||'Other / review';
+ const periodItems=state.history.filter(x=>state.historyPeriod==='all'||(x.dateKey&&x.dateKey>=localKey(range.start)&&x.dateKey<localKey(range.limit)));
+ const filtered=periodItems.filter(x=>(!state.historyCategory||x.category===state.historyCategory)&&(!state.historyActivity||x.name===state.historyActivity)
   &&(x.name+' '+x.time+' '+x.day).toLowerCase().includes(state.query.toLowerCase()));
- filtered.sort((a,b)=>(b.dateKey||'').localeCompare(a.dateKey||''));
- const signature=state.historyPeriod+'|'+state.historyMonth+'|'+state.query+'|'+filtered.map(x=>[x.id,x.dateKey,x.duration,x.time,x.name].join(':')).join('|');
+ filtered.sort((a,b)=>{
+  const direction=state.historyOrder==='oldest'?1:-1,day=(a.dateKey||'').localeCompare(b.dateKey||'');
+  const first=Number(originals.get(String(a.id))?.startAt)||0,second=Number(originals.get(String(b.id))?.startAt)||0;
+  return direction*(day||(first-second));
+ });
+ const signature=[state.historyPeriod,state.historyMonth,state.historyAnchor,state.historyCategory,state.historyActivity,state.historyOrder,state.query,localKey(range.today),periodItems.map(x=>[x.id,x.dateKey,x.duration,x.rawDurationMs,x.time,x.name,x.category].join(':')).join('|')].join('|');
  if(target.dataset.caSignature===signature){state.lastHistory=Date.now();return}
  const openDays=new Set(Array.from(target.querySelectorAll('details.ca-day[open]')).map(el=>el.dataset.caDay));
  const openWeeks=new Set(Array.from(target.querySelectorAll('details.ca-history-week[open]')).map(el=>el.dataset.caWeek));
  const openMonths=new Set(Array.from(target.querySelectorAll('details.ca-history-month[open]')).map(el=>el.dataset.caMonth));
  // Opening the monthly or all-history view starts with its most recent month visible.
- const wasMonthView=target.dataset.caPeriod==='month'||target.dataset.caPeriod==='all';
+ const wasMonthView=['month','year','all'].includes(target.dataset.caPeriod);
  const queryActive=Boolean(state.query.trim());
  let page='<div class="ca-section-head"><span class="ca-section-icon">▣</span><div><h2>Activity History</h2><p>Your recorded activities and sessions</p></div></div>';
  page+='<div class="ca-toolbar"><input id="caHistorySearch" class="ca-search" type="search" placeholder="⌕  Search activities..." aria-label="Search activity history" value="'+htmlEscape(state.query)+'"></div>';
  page+='<div class="ca-filter-row">';
- for(const [key,label] of [['today','Today'],['week','This Week'],['month','Month'],['all','All']])
+ for(const [key,label] of [['today','Day'],['week','Week'],['month','Month'],['year','Year'],['all','All time']])
   page+='<button type="button" class="ca-chip" data-ca-period="'+key+'" aria-pressed="'+(state.historyPeriod===key)+'">'+label+'</button>';
  page+='</div>';
- if(state.historyPeriod==='month'){
-  const parts=state.historyMonth.split('-').map(Number);
-  const current=localMonthKey(new Date());
-  page+='<div class="ca-month-navigation"><button type="button" data-ca-month-move="-1" aria-label="Previous month">‹</button>';
-  page+='<strong>'+htmlEscape(monthTitle(state.historyMonth))+'</strong>';
-  page+='<button type="button" data-ca-month-move="1" '+(state.historyMonth>=current?'disabled':'')+' aria-label="Next month">›</button></div>';
- }
- page+='<p class="ca-history-time-note">Time totals are summed activity time. Simultaneous activities can overlap, so these totals may exceed the hours on a clock.</p>';
+ if(state.historyPeriod!=='all'){
+  const atCurrent=range.end>range.today;
+  page+='<div class="ca-month-navigation"><button type="button" data-ca-history-move="-1" aria-label="Previous '+htmlEscape(state.historyPeriod==='today'?'day':state.historyPeriod)+'">‹</button>';
+  page+='<strong>'+htmlEscape(historyWindowLabel(state.historyPeriod,range))+'</strong>';
+  page+='<button type="button" data-ca-history-move="1" '+(atCurrent?'disabled':'')+' aria-label="Next '+htmlEscape(state.historyPeriod==='today'?'day':state.historyPeriod)+'">›</button></div>';
+ }else page+='<p class="ca-history-range">All saved history</p>';
+ const total=items=>items.reduce((acc,r)=>acc+historyDuration(r),0),sum=total(filtered),dates=new Set(filtered.map(r=>r.dateKey).filter(Boolean));
+ const first=Array.from(dates).sort()[0],avgStart=state.historyPeriod==='all'?historyDate(first):range.start;
+ const days=avgStart?historyDaySpan(avgStart,state.historyPeriod==='all'?new Date(range.today.getFullYear(),range.today.getMonth(),range.today.getDate()+1,12):range.limit):0;
+ const avg=days&&!filtered.some(r=>!r.dateKey)?durationLabel(sum/days):'—';
+ page+='<div class="ca-history-metrics"><div><strong data-ca-history-total>'+htmlEscape(durationLabel(sum))+'</strong><small>Recorded</small></div><div><strong data-ca-history-average>'+htmlEscape(avg)+'</strong><small>Daily average</small></div><div><strong data-ca-history-count>'+new Set(filtered.map(r=>r.id)).size+'</strong><small>Activities</small></div><div><strong data-ca-history-days>'+dates.size+'</strong><small>Active days</small></div></div>';
+ page+=historyChart(filtered,state.historyPeriod,range);
+ const names=Array.from(new Set(periodItems.map(x=>x.name))).sort((a,b)=>a.localeCompare(b));
+ const categories=Array.from(new Set(periodItems.map(x=>x.category))).sort((a,b)=>a.localeCompare(b));
+ const select=(key,label,values,value)=>'<label><span class="ca-visually-hidden">'+label+'</span><select data-ca-history-filter="'+key+'" aria-label="'+label+'"><option value="">All '+(key==='activity'?'activities':'categories')+'</option>'+values.map(v=>'<option value="'+htmlEscape(v)+'" '+(v===value?'selected':'')+'>'+htmlEscape(v)+'</option>').join('')+'</select></label>';
+ page+='<div class="ca-history-filters">'+select('activity','Filter activities',names,state.historyActivity)+select('category','Filter categories',categories,state.historyCategory)+'<label><span class="ca-visually-hidden">Sort activities</span><select data-ca-history-filter="order" aria-label="Sort activities"><option value="newest" '+(state.historyOrder==='newest'?'selected':'')+'>Newest</option><option value="oldest" '+(state.historyOrder==='oldest'?'selected':'')+'>Oldest</option></select></label></div>';
+ page+='<p class="ca-history-time-note">Summed activity time includes overlaps; it can exceed unique time.</p>';
  if(!filtered.length)page+='<div class="ca-panel ca-empty">No recorded sessions match these filters.</div>';
  // Each row is a recorded day portion. It belongs to exactly one day and week.
  const dayGroups=new Map();
@@ -374,20 +481,20 @@ function renderHistory(){
   if(!dayGroups.has(dayKey))dayGroups.set(dayKey,{key:dayKey,label:rec.day,items:[]});
   dayGroups.get(dayKey).items.push(rec);
  }
- function total(items){return items.reduce((acc,r)=>acc+(r.rawDurationMs??durationMs(r.duration)),0)}
+ const firstDay=dayGroups.keys().next().value,initialPeriod=!target.dataset.caSignature||target.dataset.caPeriod!==state.historyPeriod;
  function dayMarkup(group){
   const items=group.items;
-  const dayOpen=queryActive||openDays.has(group.key);
+  const dayOpen=queryActive||openDays.has(group.key)||(initialPeriod&&!['month','year','all'].includes(state.historyPeriod)&&group.key===firstDay);
   let out='<details class="ca-day" data-ca-day="'+htmlEscape(group.key)+'" '+(dayOpen?'open':'')+'>';
   out+='<summary class="ca-day-summary"><span class="ca-day-main"><strong>'+htmlEscape(group.label)+'</strong><small>'+items.length+' '+(items.length===1?'activity':'activities')+' · '+' summed '+durationLabel(total(items))+'</small></span>';
   out+='<span class="ca-day-toggle"><span class="ca-day-show">Show activities</span><span class="ca-day-hide">Hide activities</span><span class="ca-day-arrow" aria-hidden="true">⌄</span></span></summary>';
   out+='<div class="ca-day-activities">';
   for(const record of items){
-   out+='<button type="button" class="ca-history-item" data-ca-sheet="record" data-ca-id="'+htmlEscape(record.id)+'" data-ca-day-key="'+htmlEscape(record.dateKey||'')+'"><i class="ca-dot"></i><span class="ca-h-text"><strong>'+htmlEscape(record.name)+'</strong><small>'+htmlEscape(record.time)+'</small></span><span class="ca-h-duration">'+htmlEscape(record.duration)+'</span><span aria-hidden="true">⋮</span></button>';
+   out+='<button type="button" class="ca-history-item" data-ca-sheet="record" data-ca-id="'+htmlEscape(record.id)+'" data-ca-day-key="'+htmlEscape(record.dateKey||'')+'" aria-label="'+htmlEscape(record.name+' · '+record.category+' · '+record.time+' · '+record.duration)+'"><i class="ca-dot" style="background:'+historyColor(record.category)+'"></i><span class="ca-h-text"><strong title="'+htmlEscape(record.name)+'">'+htmlEscape(record.name)+'</strong><small>'+htmlEscape(record.time)+'</small></span><span class="ca-h-category" title="'+htmlEscape(record.category)+'">'+htmlEscape(record.category)+'</span><span class="ca-h-duration">'+htmlEscape(record.duration)+'</span><span aria-hidden="true">›</span></button>';
   }
   return out+'</div></details>';
  }
- if(state.historyPeriod==='month'||state.historyPeriod==='all'){
+ if(['month','year','all'].includes(state.historyPeriod)){
   const months=new Map();
   for(const day of dayGroups.values()){
    const monthKey=/^\d{4}-\d{2}-\d{2}$/.test(day.key)?day.key.slice(0,7):'undated';
@@ -829,7 +936,21 @@ function handleClick(event){
  const tab=event.target.closest('[data-ca-tab]');if(tab){chooseTab(tab.dataset.caTab);return}
  const quick=event.target.closest('[data-ca-quick-start]');if(quick){const source=Array.from(document.querySelectorAll('#quick button[data-name]')).find(b=>b.dataset.name===quick.dataset.caQuickStart);if(source){source.click();setTimeout(refresh,60)}return}
  const period=event.target.closest('button[data-ca-period]');if(period){
-  state.historyPeriod=period.dataset.caPeriod;renderHistory();return
+  const previous=state.historyPeriod,next=period.dataset.caPeriod;
+  if(previous==='month'&&next!=='month')state.historyAnchor=state.historyMonth+'-01';
+  if(next==='month'&&previous!=='month')state.historyMonth=state.historyAnchor.slice(0,7);
+  state.historyPeriod=next;state.historyCategory='';state.historyActivity='';renderHistory();return
+ }
+ const move=event.target.closest('[data-ca-history-move]');
+ if(move&&!move.disabled){
+  const direction=Number(move.dataset.caHistoryMove),range=historyWindow(state.historyPeriod);
+  const date=new Date(range.start);
+  if(state.historyPeriod==='today')date.setDate(date.getDate()+direction);
+  else if(state.historyPeriod==='week')date.setDate(date.getDate()+direction*7);
+  else if(state.historyPeriod==='month')date.setMonth(date.getMonth()+direction);
+  else if(state.historyPeriod==='year')date.setFullYear(date.getFullYear()+direction);
+  if(date<=range.today){state.historyAnchor=localKey(date);state.historyMonth=localMonthKey(date);renderHistory()}
+  return;
  }
  const monthMove=event.target.closest('[data-ca-month-move]');
  if(monthMove&&!monthMove.disabled){
