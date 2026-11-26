@@ -844,3 +844,51 @@ html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .c
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-sheet-primary{background:#087d69;color:#fff}
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-sheet-secondary{background:#e9f4f2;border-color:#b6d0d2;color:#173f4b}
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-record-foot{background:#f5fbfa}
+
+/* Compact, selectable Track analysis, backed by the shared category classifier. */
+#loTrackConceptA[data-ca-active-tab="review"] :is(.ca-heading,.ca-subtitle){display:none}
+#loTrackConceptA[data-ca-active-tab="review"] .ca-brand{margin-bottom:8px}
+#loTrackConceptA #caReview .ca-section-head{margin:2px 0 8px}
+#loTrackConceptA #caReview .ca-filter-row{margin-bottom:10px}
+#loTrackConceptA #caReview .ca-review-scope{margin:0 0 9px}
+#loTrackConceptA #caReview .ca-metrics{gap:6px;margin-bottom:9px}
+#loTrackConceptA #caReview .ca-metric{min-height:75px;padding:8px 6px;border-radius:11px}
+#loTrackConceptA #caReview .ca-metric .ca-micon{font-size:15px;line-height:1;margin-bottom:3px}
+#loTrackConceptA #caReview .ca-metric b{font-size:16px;line-height:1.15}
+#loTrackConceptA #caReview .ca-metric span{font-size:10px;margin-top:4px}
+#loTrackConceptA #caReview .ca-panel{padding:12px;margin-bottom:9px;border-radius:13px}
+#loTrackConceptA #caReview .ca-review-chart-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+#loTrackConceptA #caReview .ca-review-chart-head .ca-card-heading{margin:0;font-size:14px}
+#loTrackConceptA #caReview .ca-review-group{display:flex;gap:3px;border:1px solid #365668;border-radius:10px;padding:3px;background:#10283a}
+#loTrackConceptA #caReview .ca-review-group button{min-height:44px;padding:4px 7px;border:0;border-radius:7px;background:transparent;color:#d1e4e8;font-size:11px;font-weight:700}
+#loTrackConceptA #caReview .ca-review-group button[aria-pressed="true"]{background:#76eab6;color:#092d2a}
+#loTrackConceptA #caReview .ca-donut-area{gap:10px}
+#loTrackConceptA #caReview .ca-donut{width:106px;height:106px}
+#loTrackConceptA #caReview .ca-donut-inner{width:68px;height:68px}
+#loTrackConceptA #caReview .ca-legend-row{width:100%;min-height:44px;padding:5px 3px;margin:0;border:0;border-bottom:1px solid #2c4857;background:transparent;color:#e6ffff;text-align:left;font:inherit;font-size:11px}
+#loTrackConceptA #caReview .ca-review-more>summary{cursor:pointer;min-height:44px;padding:12px 3px;color:#a6f3d6;font-size:11px;font-weight:700}
+#loTrackConceptA #caReview .ca-review-more .ca-review-hide{display:none}
+#loTrackConceptA #caReview .ca-review-more[open] .ca-review-show{display:none}
+#loTrackConceptA #caReview .ca-review-more[open] .ca-review-hide{display:inline}
+#loTrackConceptA #caReview .ca-bars{height:105px}
+#loTrackConceptA #caReview .ca-card-heading{margin-bottom:8px}
+html[data-lifeos-theme="light"] #loTrackConceptA #caReview :is(.ca-section-head h2,.ca-card-heading,.ca-metric b,.ca-donut-inner strong,.ca-legend-row,.ca-legend-row b,.ca-distraction-band b,.ca-insight-row strong){color:#173246}
+html[data-lifeos-theme="light"] #loTrackConceptA #caReview :is(.ca-section-head p,.ca-review-scope,.ca-metric span,.ca-donut-inner small,.ca-chart-caption,.ca-bars .ca-bar span,.ca-distraction-band p,.ca-insight-row,.ca-empty){color:#4d6878}
+html[data-lifeos-theme="light"] #loTrackConceptA #caReview :is(.ca-chip,.ca-metric,.ca-panel,.ca-review-group,.ca-inline-note){background:#fff;border-color:#c3d9dc;color:#244658}
+html[data-lifeos-theme="light"] #loTrackConceptA #caReview .ca-chip[aria-pressed="true"],html[data-lifeos-theme="light"] #loTrackConceptA #caReview .ca-review-group button[aria-pressed="true"]{background:#087d69;border-color:#087d69;color:#fff}
+html[data-lifeos-theme="light"] #loTrackConceptA #caReview .ca-review-group button{color:#35576b}
+html[data-lifeos-theme="light"] #loTrackConceptA #caReview .ca-donut-inner{background:#fff}
+html[data-lifeos-theme="light"] #loTrackConceptA #caReview :is(.ca-inline-note b,.ca-review-more>summary){color:#075e4f}
+html[data-lifeos-theme="light"] #loTrackConceptA #caReview .ca-soft-button{background:#e6f4ee;border-color:#b2d3ca;color:#075e4f}
+html[data-lifeos-theme="light"] #loTrackConceptA #caReview :is(.ca-legend-row,.ca-insight-row){border-color:#d1e2e1}
+#loCADialog[data-ca-context="history-record"] .ca-history-category{margin:10px 0;border:1px solid #36596a;border-radius:10px;padding:0 10px 8px;background:#102b3a}
+#loCADialog[data-ca-context="history-record"] .ca-history-category>summary{min-height:44px;padding:13px 0;cursor:pointer;color:#b6f7df;font-size:12px;font-weight:700}
+#loCADialog[data-ca-context="history-record"] .ca-history-category-status{font-size:11px;line-height:1.4;color:#b6f7df;margin:7px 0 0}
+#loCADialog[data-ca-context="history-record"] .ca-history-category-status.ca-history-category-error{color:#ffb8bb}
+#loCADialog[data-ca-context="history-record"] .ca-history-category-status:empty{display:none}
+#loCADialog[data-ca-context="history-record"] .ca-history-category button:disabled{opacity:.55;cursor:not-allowed}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-history-category{background:#fff;border-color:#b6d0d2}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] :is(.ca-history-category>summary,.ca-history-category-status){color:#075e4f}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-history-category-status.ca-history-category-error{color:#a12c35}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] :is(.ca-history-category .ca-form-label,.ca-history-category .ca-input){color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-history-category .ca-input{background:#fff;border-color:#b6d0d2}

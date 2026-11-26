@@ -11,7 +11,7 @@ const e=(tag,cls,textValue)=>{
  if(textValue!==undefined)node.textContent=textValue;
  return node;
 };
-const state={tab:'live',historyPeriod:'week',historyMonth:localMonthKey(new Date()),historyAnchor:localKey(new Date()),historyFrom:localKey(new Date()),historyTo:localKey(new Date()),historyDraftFrom:localKey(new Date()),historyDraftTo:localKey(new Date()),historyCategory:'',historyActivity:'',historyOrder:'newest',reviewPeriod:'week',query:'',history:[],lastHistory:0};
+const state={tab:'live',historyPeriod:'week',historyMonth:localMonthKey(new Date()),historyAnchor:localKey(new Date()),historyFrom:localKey(new Date()),historyTo:localKey(new Date()),historyDraftFrom:localKey(new Date()),historyDraftTo:localKey(new Date()),historyCategory:'',historyActivity:'',historyOrder:'newest',reviewPeriod:'week',reviewGrouping:'category',query:'',history:[],lastHistory:0,lastReview:0};
 let shell,dialog,dialogBody,previousFocus,selectedGap=null;
 const finishPending=new Map();
 const localInput=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*60000).toISOString().slice(0,23)};
@@ -220,6 +220,11 @@ function build(){
  });
  dialog.addEventListener('change',event=>{
   if(selectedGap&&['caPastStart','caPastEnd'].includes(event.target.id)){event.target.dataset.gapEdited='1';updateGapSummary();return}
+  if(event.target.id==='caHistoryCategory'){
+   const button=dialogBody.querySelector('[data-ca-history-category-save]'),message=$('caHistoryCategoryMessage');
+   if(button)button.disabled=event.target.value===event.target.dataset.caSavedCategory;
+   if(message)message.textContent='';return;
+  }
   const key=event.target.dataset.caFocusAlert;if(!['sound','vibration'].includes(key))return;
   const source=$(key==='sound'?'lo221-sound':'lo221-vibrate'),engine=window.LifeOSAlertEngineV221,status=$('caFocusAlertStatus');
   if(!source||!engine?.load){if(status)status.textContent='Alert settings are unavailable.';return}
@@ -284,6 +289,13 @@ function liveIcon(name){
 function categoryGlyph(category){
  const source=({'University':'Studying','Study':'Studying','Work & business':'Work','Fitness':'Fitness','Nutrition':'Eating','Sleep':'Sleep','Prayer':'Prayer','Quran & Arabic':'Quran'})[category];
  return Array.from(document.querySelectorAll('#quick button[data-name]')).find(b=>b.dataset.name===source)?.querySelector('.lo-quick-glyph')?.innerHTML||'◷';
+}
+function activityCategories(current){
+ const categories=['Other / review','Prayer','University','Study','Fitness','Nutrition','Sleep','Quran & Arabic','Work & business','Distraction'];
+ const coreIds=new Set(['prayer','study','fitness','nutrition','sleep','quran','work','distraction']);
+ for(const item of window.LifeOSActivityIntelligenceV251?.catalog||[])if(!coreIds.has(item.id)&&!categories.includes(item.title))categories.push(item.title);
+ if(current&&!categories.includes(current))categories.push(current);
+ return categories;
 }
 function liveMarkup(today){
  const rows=activeSessions(),first=rows[0],others=rows.slice(1);
@@ -410,7 +422,8 @@ function historyDaySpan(a,b){
  return Math.max(0,Math.round((day(b)-day(a))/86400000));
 }
 function historyColor(name){
- return ({'University':'#69e7b5','Study':'#69e7b5','Work & business':'#74b8ed','Fitness':'#f2cd67','Nutrition':'#e4a079','Sleep':'#a2b5d0','Prayer':'#b9adf0','Quran & Arabic':'#d3a6ef','Distraction':'#ef9898','Other / review':'#9fb3c8'})[name]||'#9fb3c8';
+ const known={'University':'#65dfc0','Study':'#65dfc0','Work & business':'#65b8ee','Fitness':'#6bd7a0','Nutrition':'#e7bd54','Sleep':'#829ab5','Prayer':'#b89ae5','Quran & Arabic':'#a99aeb','Distraction':'#e38d8d','Other / review':'#a6bcd0'};
+ return known[name]||'#a6bcd0';
 }
 function historyChart(records,period,window){
  const bins=new Map();
@@ -596,27 +609,30 @@ function renderReview(){
  const stats=readOverview();
  const today=window.lifeosTodayAPlusSnapshot?.().metrics;
  const records=readHistory().filter(x=>matchesPeriod(x,state.reviewPeriod));
- const signature=state.reviewPeriod+'|'+localKey(new Date())+'|'+records.map(x=>[x.id,x.dateKey,x.duration,x.name].join(':')).join('|')+'|'+stats.unique+'|'+stats.overlap+'|'+stats.distraction+'|'+Math.round((today?.total||0)/60000);
- if(target.dataset.caSignature===signature)return;
- const groups=new Map(),dates=new Map(),ids=new Set();
+ const workspace=window.lifeosReadOnlyWorkspace?.(),originals=new Map((workspace?.sessions||[]).map(s=>[String(s.id),s]));
+ for(const record of records)record.category=window.lifeosActivityClassification?.(originals.get(String(record.id))||{name:record.name})?.group||'Other / review';
+ const signature=state.reviewPeriod+'|'+state.reviewGrouping+'|'+localKey(new Date())+'|'+records.map(x=>[x.id,x.dateKey,x.duration,x.rawDurationMs,x.name,x.category].join(':')).join('|')+'|'+stats.unique+'|'+stats.overlap+'|'+stats.distraction+'|'+Math.round((today?.total||0)/60000);
+ if(target.dataset.caSignature===signature){state.lastReview=Date.now();return}
+ const moreOpen=Boolean(target.querySelector('.ca-review-more')?.open);
+ const groups=new Map(),activityGroups=new Map(),dates=new Map(),ids=new Set();
  let recordedMs=0;
  for(const x of records){
   const ms=(x.rawDurationMs??durationMs(x.duration));
   recordedMs+=ms;
-  groups.set(x.name,(groups.get(x.name)||0)+ms);
+  const group=state.reviewGrouping==='category'?x.category:x.name;
+  groups.set(group,(groups.get(group)||0)+ms);activityGroups.set(x.name,(activityGroups.get(x.name)||0)+ms);
   const date=x.dateKey||(dayDate(x)?localKey(dayDate(x)):'');
   if(date)dates.set(date,(dates.get(date)||0)+ms);
   if(x.id)ids.add(x.id);
  }
  const sessionCount=ids.size||records.length;
- const sorted=[...groups].sort((a,b)=>b[1]-a[1]);
- const top=sorted.slice(0,3);
- if(sorted.length>3)top.push(['Other activities',sorted.slice(3).reduce((n,x)=>n+x[1],0)]);
- const sum=top.reduce((n,x)=>n+x[1],0),colors=['#78efb9','#76bbff','#b790ff','#b8c8d8'];
+ const sorted=[...groups].filter(([,ms])=>ms>0).sort((a,b)=>b[1]-a[1]),activities=[...activityGroups].filter(([,ms])=>ms>0).sort((a,b)=>b[1]-a[1]),top=sorted;
+ const sum=top.reduce((n,x)=>n+x[1],0),palette=['#78efb9','#76bbff','#b790ff','#f2cd67','#e4a079','#b8c8d8'];
+ const color=(name,index)=>state.reviewGrouping==='category'?historyColor(name):palette[index%palette.length];
  let angle=0;const parts=[];
  for(let i=0;i<top.length;i++){
   const next=angle+100*top[i][1]/(sum||1);
-  parts.push(colors[i]+' '+angle.toFixed(2)+'% '+next.toFixed(2)+'%');
+  parts.push(color(top[i][0],i)+' '+angle.toFixed(2)+'% '+next.toFixed(2)+'%');
   angle=next;
  }
  const scope={today:'Today',week:'This week',month:'This month',all:'All saved history'}[state.reviewPeriod]||'Recorded time';
@@ -630,7 +646,7 @@ function renderReview(){
   ['◎',sessionCount?durationLabel(recordedMs):'0m','Finished activity time'],
   ['▱',String(sessionCount),'Finished sessions'],
   ['◷',average,'Average per session'],
-  ['◇',sorted.length?sorted[0][0]:'—','Most tracked activity']
+  ['◇',activities.length?activities[0][0]:'—','Most tracked activity']
  ];
  page+='<div class="ca-metrics">';
  for(const [icon,value,title] of mainMetrics)
@@ -638,13 +654,13 @@ function renderReview(){
  page+='</div>';
  if(state.reviewPeriod==='today')
   page+='<div class="ca-inline-note">Today, including ongoing activity: total recorded <b>'+htmlEscape(durationLabel(today?.total||0))+'</b>; unique tracked <b>'+htmlEscape(durationLabel(today?.unique||0))+'</b>; additional overlap <b>'+htmlEscape(durationLabel(today?.overlap||0))+'</b>. The finished activity total above excludes ongoing sessions.</div>';
- page+='<div class="ca-panel"><h3 class="ca-card-heading">Time by Activity</h3>';
- if(!top.length)page+='<div class="ca-empty">No finished activities in this period. Your historical data remains available under All.</div>';
+ page+='<div class="ca-panel"><div class="ca-review-chart-head"><h3 class="ca-card-heading">Recorded time</h3><div class="ca-review-group" role="group" aria-label="Group recorded time"><button type="button" data-ca-review-group="category" aria-pressed="'+(state.reviewGrouping==='category')+'">Category</button><button type="button" data-ca-review-group="activity" aria-pressed="'+(state.reviewGrouping==='activity')+'">Activity</button></div></div>';
+ if(!top.length)page+='<div class="ca-empty">No finished activity time in this period. Your historical data remains available under All.</div>';
  else {
-  page+='<div class="ca-donut-area"><div class="ca-donut" style="background:conic-gradient('+parts.join(',')+')"><div class="ca-donut-inner"><strong>'+durationLabel(sum)+'</strong><small>Finished</small></div></div><div class="ca-legend">';
-  top.forEach((item,i)=>{
-   page+='<div class="ca-legend-row"><span class="ca-legend-label"><i class="ca-dot" style="background:'+colors[i]+'"></i><span>'+htmlEscape(item[0])+'</span></span><b>'+Math.round(item[1]*100/(sum||1))+'%</b></div>';
-  });
+  page+='<div class="ca-donut-area"><div class="ca-donut" role="img" aria-label="'+htmlEscape('Finished recorded time '+durationLabel(sum))+'" style="background:conic-gradient('+parts.join(',')+')"><div class="ca-donut-inner"><strong>'+durationLabel(sum)+'</strong><small>Finished</small></div></div><div class="ca-legend">';
+  const legend=(item,i)=>'<button type="button" class="ca-legend-row" data-ca-review-drill="'+htmlEscape(item[0])+'" aria-label="Review '+htmlEscape(item[0]+', '+durationLabel(item[1])+', '+Math.round(item[1]*100/(sum||1))+' percent')+'"><span class="ca-legend-label"><i class="ca-dot" style="background:'+color(item[0],i)+'"></i><span>'+htmlEscape(item[0])+'</span></span><b>'+htmlEscape(durationLabel(item[1]))+' · '+Math.round(item[1]*100/(sum||1))+'%</b></button>';
+  top.slice(0,5).forEach((item,i)=>{page+=legend(item,i)});
+  if(top.length>5)page+='<details class="ca-review-more" '+(moreOpen?'open':'')+'><summary><span class="ca-review-show">Show</span><span class="ca-review-hide">Hide</span> '+(top.length-5)+' more</summary>'+top.slice(5).map((item,i)=>legend(item,i+5)).join('')+'</details>';
   page+='</div></div>';
  }
  page+='</div><div class="ca-panel"><h3 class="ca-card-heading">Recorded time by day</h3>';
@@ -664,11 +680,11 @@ function renderReview(){
  }else page+='<div class="ca-empty">No completed activity time found for the displayed days.</div>';
  page+='</div>';
  page+='<div class="ca-panel ca-distraction-band"><div><b>△ &nbsp; Distraction review</b><p>'+htmlEscape(stats.distraction)+'</p></div><button type="button" class="ca-soft-button" data-ca-sheet="distraction">Review ›</button></div>';
- if(sorted.length){
-  page+='<div class="ca-panel ca-insights-panel"><h3 class="ca-card-heading">Your activity insights</h3><div class="ca-insight-row"><span class="ca-insight-icon">✓</span><span><strong>'+htmlEscape(sorted[0][0])+'</strong> is your most tracked finished activity in this period.</span></div>';
+ if(activities.length){
+  page+='<div class="ca-panel ca-insights-panel"><h3 class="ca-card-heading">Your activity insights</h3><div class="ca-insight-row"><span class="ca-insight-icon">✓</span><span><strong>'+htmlEscape(activities[0][0])+'</strong> is your most tracked finished activity in this period.</span></div>';
   page+='<div class="ca-insight-row"><span class="ca-insight-icon">✓</span><span>'+sessionCount+' finished session'+(sessionCount===1?'':'s')+' · '+durationLabel(recordedMs)+' recorded.</span></div></div>';
  }
- target.innerHTML=page;target.dataset.caSignature=signature;
+ target.innerHTML=page;target.dataset.caSignature=signature;state.lastReview=Date.now();
 }
 function localKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function readRealFocusState(){
@@ -737,9 +753,9 @@ function updateRealFocusScreen(){
  const ring=$('caFocusLiveRing');if(ring)ring.style.setProperty('--ca-focus-percent',progress+'%');
 }
 function refresh(){
- renderLive();
+ if(state.tab==='live')renderLive();
  if(state.tab==='history'&&Date.now()-state.lastHistory>8000)renderHistory();
- if(state.tab==='review')renderReview();
+ if(state.tab==='review'&&Date.now()-state.lastReview>8000)renderReview();
  updateRealFocusScreen();
 }
 function openDialog(title,subtitle,content){
@@ -842,9 +858,7 @@ window.lifeosTrackOpenTodayItem=function(kind,key,at){
  }else{
   const original=window.lifeosReadOnlyWorkspace?.().sessions.find(z=>String(z.id)===String(x.id));
   const locked=original&&(original.seedBatch||['development-starter','assumed-demo'].includes(original.source));
-  const categories=['Other / review','Prayer','University','Study','Fitness','Nutrition','Sleep','Quran & Arabic','Work & business','Distraction'];
-  const coreIds=new Set(['prayer','study','fitness','nutrition','sleep','quran','work','distraction']);
-  for(const item of window.LifeOSActivityIntelligenceV251?.catalog||[])if(!coreIds.has(item.id)&&!categories.includes(item.title))categories.push(item.title);
+  const categories=activityCategories(x.category);
   content+='<label class="ca-form-label" for="caTodayCategory">Review category</label><select id="caTodayCategory" class="ca-input" '+(locked?'disabled':'')+'>'+categories.map(c=>'<option '+(c===x.category?'selected':'')+'>'+htmlEscape(c)+'</option>').join('')+'</select>';
   content+=locked?'<p class="ca-editor-footnote">Example records cannot be edited here.</p>':'<button type="button" class="ca-sheet-secondary" data-ca-category-save="'+htmlEscape(x.id)+'">Save category</button><p id="caCategoryMessage" class="ca-editor-footnote" role="status"></p>';
   content+='<button type="button" class="ca-sheet-primary" data-ca-today-record="'+htmlEscape(x.id)+'" data-ca-today-status="'+htmlEscape(status)+'" data-ca-today-day="'+htmlEscape(localKey(new Date(x.a)))+'">'+(status==='finished'?'Open in History / edit':'Open in Track')+'</button>';
@@ -925,7 +939,7 @@ function sheet(type,id,dayKey){
   const stamp=value=>Number.isFinite(value)?new Date(value).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'Unavailable';
   const line=(name,value,attribute='')=>'<div class="ca-record-detail"><span>'+htmlEscape(name)+'</span><strong '+attribute+'>'+htmlEscape(value)+'</strong></div>';
   const dayDuration=Number.isFinite(rec.rawDurationMs)?exactDuration(rec.rawDurationMs):rec.duration;
-  let content='<div class="ca-record-hero"><div class="ca-record-icon" aria-hidden="true">'+categoryGlyph(category)+'</div><div><h3>'+htmlEscape(rec.name)+'</h3><p>'+htmlEscape(category)+' · '+htmlEscape(label)+'</p></div></div>';
+  let content='<div class="ca-record-hero"><div class="ca-record-icon" aria-hidden="true">'+categoryGlyph(category)+'</div><div><h3>'+htmlEscape(rec.name)+'</h3><p><span data-ca-record-hero-category>'+htmlEscape(category)+'</span> · '+htmlEscape(label)+'</p></div></div>';
   content+='<div class="ca-record-stats"><div><small>Selected day</small><strong data-ca-record-day>'+htmlEscape(dayDuration)+'</strong></div>'
    +'<div><small>Full recorded time</small><strong data-ca-record-full>'+htmlEscape(facts.intervals.length?exactDuration(facts.recorded):'Unavailable')+'</strong></div></div>';
   const status=source?.status==='finished'?'Finished':source?.status==='paused'?'Paused':source?.status==='running'?'Running':'Unavailable';
@@ -941,6 +955,12 @@ function sheet(type,id,dayKey){
   else for(const other of facts.concurrent){
    const active=other.status==='running'||other.status==='paused',available=active||history.some(item=>String(item.id)===other.id);
    content+=available?'<button type="button" class="ca-history-related" data-ca-sheet="'+(active?'activity':'record')+'" data-ca-id="'+htmlEscape(other.id)+'"><span>'+htmlEscape(other.name)+'</span><strong>'+htmlEscape(exactDuration(other.overlap))+' overlap ›</strong></button>':'<p class="ca-history-detail-empty">'+htmlEscape(other.name)+' · '+htmlEscape(exactDuration(other.overlap))+' overlap</p>';
+  }
+  if(source){
+   const locked=source.seedBatch||['development-starter','assumed-demo'].includes(source.source);
+   content+='<details class="ca-history-category"><summary>Correct category</summary><label class="ca-form-label" for="caHistoryCategory">Category</label><select id="caHistoryCategory" class="ca-input" data-ca-saved-category="'+htmlEscape(category)+'" '+(locked?'disabled':'')+'>'+activityCategories(category).map(c=>'<option '+(c===category?'selected':'')+'>'+htmlEscape(c)+'</option>').join('')+'</select>';
+   content+=locked?'<p class="ca-editor-footnote">Example records cannot be edited here.</p>':'<button type="button" class="ca-sheet-secondary" data-ca-history-category-save="'+htmlEscape(rec.id)+'" disabled>Save category</button><p id="caHistoryCategoryMessage" class="ca-history-category-status" role="status"></p>';
+   content+='</details>';
   }
   content+='<h3 class="ca-history-detail-heading">Notes</h3><p class="ca-history-notes">'+htmlEscape(source?.notes||'No notes')+'</p>';
   content+='<div class="ca-record-foot"><button type="button" class="ca-sheet-primary" data-ca-edit-record="'+htmlEscape(rec.id)+'">Edit</button>'
@@ -1072,6 +1092,15 @@ function handleClick(event){
   if(next<=localMonthKey(new Date())){state.historyMonth=next;renderHistory()}
   return
  }
+ const grouping=event.target.closest('button[data-ca-review-group]');
+ if(grouping){state.reviewGrouping=grouping.dataset.caReviewGroup;renderReview();return}
+ const drill=event.target.closest('button[data-ca-review-drill]');
+ if(drill){
+  state.historyPeriod=state.reviewPeriod;state.historyAnchor=localKey(new Date());state.historyMonth=localMonthKey(new Date());
+  state.historyCategory=state.reviewGrouping==='category'?drill.dataset.caReviewDrill:'';
+  state.historyActivity=state.reviewGrouping==='activity'?drill.dataset.caReviewDrill:'';
+  state.historyOrder='newest';state.query='';chooseTab('history');return;
+ }
  const review=event.target.closest('[data-ca-review-period]');if(review){state.reviewPeriod=review.dataset.caReviewPeriod;renderReview();return}
  const act=event.target.closest('[data-ca-act]');if(act){
   if(act.dataset.caAct==='break'){sheet('break',act.dataset.caId);return}
@@ -1092,6 +1121,20 @@ async function handleDialogClick(event){
   const detail={id:category.dataset.caCategorySave,fields:{category:$('caTodayCategory')?.value}};
   window.dispatchEvent(new CustomEvent('lifeos-v252-save-review',{detail}));
   $('caCategoryMessage').textContent=detail.result?.message||'Category could not be saved.';
+  return;
+ }
+ const historyCategory=event.target.closest('button[data-ca-history-category-save]');
+ if(historyCategory){
+  const detail={id:historyCategory.dataset.caHistoryCategorySave,fields:{category:$('caHistoryCategory')?.value}};
+  window.dispatchEvent(new CustomEvent('lifeos-v252-save-review',{detail}));
+  const message=$('caHistoryCategoryMessage');if(message){message.textContent=detail.result?.message||'Category could not be saved.';message.classList.toggle('ca-history-category-error',!detail.result?.ok)}
+  if(detail.result?.ok){
+   const value=$('caHistoryCategory')?.value||'Other / review';
+   if($('caHistoryCategory'))$('caHistoryCategory').dataset.caSavedCategory=value;historyCategory.disabled=true;
+   const categoryText=dialogBody.querySelector('[data-ca-record-category]'),hero=dialogBody.querySelector('[data-ca-record-hero-category]'),icon=dialogBody.querySelector('.ca-record-icon');
+   if(categoryText)categoryText.textContent=value;if(hero)hero.textContent=value;if(icon)icon.innerHTML=categoryGlyph(value);
+   const history=$('caHistory');if(history)delete history.dataset.caSignature;renderHistory();renderReview();
+  }
   return;
  }
  const todayNav=event.target.closest('[data-ca-today-nav]');
