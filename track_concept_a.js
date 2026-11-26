@@ -213,6 +213,7 @@ function build(){
  dialog.addEventListener('input',event=>{
   if(selectedGap&&['caPastStart','caPastEnd'].includes(event.target.id)){event.target.dataset.gapEdited='1';updateGapSummary()}
   if(event.target.id==='caExpectedMinutes'){updateTimerSave();return}
+  if(event.target.id==='caDistractionTrigger'){updateDistractionSave();return}
   if(event.target.id!=='caStartSearch')return;
   const value=event.target.value.trim().toLocaleLowerCase();
   for(const option of dialogBody.querySelectorAll('[data-ca-quick]')){
@@ -224,6 +225,7 @@ function build(){
   if(event.target.id==='caLimitActivity'){syncTimerForm();return}
   if(event.target.id==='caLimitAction'){updateTimerSave();return}
   if(event.target.id==='caProfileType'){syncProfileForm();return}
+  if(event.target.id==='caDistractionCategory'){updateDistractionSave();return}
   if(event.target.id==='caHistoryCategory'){
    const button=dialogBody.querySelector('[data-ca-history-category-save]'),message=$('caHistoryCategoryMessage');
    if(button)button.disabled=event.target.value===event.target.dataset.caSavedCategory;
@@ -742,6 +744,14 @@ function syncProfileForm(){
  let saved;try{saved=window.LifeOSDurationProfilesV80?.savedProfiles?.(window.localStorage)?.[select.value]}catch{}input.value=saved?String(saved.minutes):'';
  const status=$('caProfileStatus');if(status)status.textContent='';
 }
+function distractionFingerprint(session){
+ return session?JSON.stringify({group:window.lifeosActivityClassification?.(session)?.group,category:session.distractionCategory??null,trigger:session.distractionTrigger??null,nestedCategory:session.activityDetailsV252?.distractionCategory??null,nestedTrigger:session.activityDetailsV252?.distractionTrigger??null}):'';
+}
+function updateDistractionSave(){
+ const select=$('caDistractionCategory'),input=$('caDistractionTrigger'),button=dialogBody.querySelector('[data-ca-save-distraction]');if(!select||!input||!button)return;
+ const valid=window.LifeOSAccountabilityV74?.CATEGORIES?.includes(select.value)&&input.value.trim().length<=100;
+ button.disabled=!valid||button.dataset.caConflict==='true'||(select.value===button.dataset.caSavedCategory&&input.value.trim()===button.dataset.caSavedTrigger);
+}
 function showRealFocus(){
  const session=readRealFocusState();
  if(!session)return;
@@ -985,6 +995,14 @@ function sheet(type,id,dayKey){
    content+='<details class="ca-history-category"><summary>Correct category</summary><label class="ca-form-label" for="caHistoryCategory">Category</label><select id="caHistoryCategory" class="ca-input" data-ca-saved-category="'+htmlEscape(category)+'" '+(locked?'disabled':'')+'>'+activityCategories(category).map(c=>'<option '+(c===category?'selected':'')+'>'+htmlEscape(c)+'</option>').join('')+'</select>';
    content+=locked?'<p class="ca-editor-footnote">Example records cannot be edited here.</p>':'<button type="button" class="ca-sheet-secondary" data-ca-history-category-save="'+htmlEscape(rec.id)+'" disabled>Save category</button><p id="caHistoryCategoryMessage" class="ca-history-category-status" role="status"></p>';
    content+='</details>';
+   const kinds=window.LifeOSAccountabilityV74?.CATEGORIES;
+   if(category==='Distraction'&&Array.isArray(kinds)){
+    const stored=typeof source.distractionCategory==='string'?source.distractionCategory:(source.activityDetailsV252?.distractionCategory||''),saved=kinds.includes(stored)?stored:'',trigger=String(typeof source.distractionTrigger==='string'?source.distractionTrigger:(source.activityDetailsV252?.distractionTrigger||''));
+    content+='<details class="ca-history-category"><summary>Distraction details</summary><label class="ca-form-label" for="caDistractionCategory">Type</label><select id="caDistractionCategory" class="ca-input" '+(locked?'disabled':'')+'><option value="">Not classified</option>'+kinds.map(kind=>'<option value="'+htmlEscape(kind)+'" '+(kind===saved?'selected':'')+'>'+htmlEscape(kind)+'</option>').join('')+'</select>';
+    content+='<label class="ca-form-label" for="caDistractionTrigger">Trigger (optional)</label><input id="caDistractionTrigger" class="ca-input" maxlength="100" value="'+htmlEscape(trigger)+'" '+(locked?'disabled':'')+'>';
+    content+=locked?'<p class="ca-editor-footnote">Example records cannot be edited here.</p>':'<button type="button" class="ca-sheet-secondary" data-ca-save-distraction="'+htmlEscape(rec.id)+'" data-ca-saved-category="'+htmlEscape(saved)+'" data-ca-saved-trigger="'+htmlEscape(trigger)+'" data-ca-fingerprint="'+htmlEscape(distractionFingerprint(source))+'" disabled>Save distraction details</button><p id="caDistractionMessage" class="ca-history-category-status" role="status"></p>';
+    content+='</details>';
+   }
   }
   content+='<h3 class="ca-history-detail-heading">Notes</h3><p class="ca-history-notes">'+htmlEscape(source?.notes||'No notes')+'</p>';
   content+='<div class="ca-record-foot"><button type="button" class="ca-sheet-primary" data-ca-edit-record="'+htmlEscape(rec.id)+'">Edit</button>'
@@ -1062,25 +1080,31 @@ function sheet(type,id,dayKey){
   openDialog('Timer settings','Duration limits and reminders',content);dialog.dataset.caContext='timer-settings';syncTimerForm();syncProfileForm();return;
  }
  if(type==='distraction'){
-  const status=readOverview().distraction;
-  const records=readHistory().filter(x=>/distraction/i.test(x.name)&&matchesPeriod(x,state.reviewPeriod));
+  const all=window.lifeosReadOnlyWorkspace?.()?.sessions||[],byId=new Map(all.map(s=>[String(s.id),s]));
+  const isDistraction=s=>window.lifeosActivityClassification?.(s)?.group==='Distraction';
+  const active=all.filter(s=>['running','paused'].includes(s.status)&&isDistraction(s));
+  const records=readHistory().filter(x=>isDistraction(byId.get(String(x.id)))&&matchesPeriod(x,state.reviewPeriod));
   const unique=new Set(records.filter(x=>x.id).map(x=>x.id));
   const sessions=unique.size||records.length,total=records.reduce((n,x)=>n+(x.rawDurationMs??durationMs(x.duration)),0);
   let content='<div class="ca-focus-hero"><div class="ca-focus-icon">△</div><h3>Understand your distractions</h3><p>Review confirmed interruptions without treating unlogged time as distraction.</p></div>';
-  content+='<div class="ca-distraction-stats"><div><b>'+sessions+'</b><span>Recorded sessions</span></div><div><b>'+durationLabel(total)+'</b><span>Recorded time</span></div></div>';
-  content+='<div class="ca-focus-feature"><div class="ca-focus-feature-copy"><b>Current tracker</b><small>'+htmlEscape(status)+'</small></div><span class="ca-feature-tag">'+(status.toLowerCase().includes('no distraction')?'Inactive':'Active')+'</span></div>';
+  content+='<div class="ca-distraction-stats"><div><b>'+sessions+'</b><span>Finished sessions</span></div><div><b>'+durationLabel(total)+'</b><span>Recorded time</span></div></div>';
+  content+='<h3 class="ca-distraction-title">Active distractions</h3>';
+  if(active.length){content+='<div class="ca-distraction-list">';for(const s of active)content+='<button type="button" class="ca-distraction-row" data-ca-sheet="activity" data-ca-id="'+htmlEscape(s.id)+'"><span><b>'+htmlEscape(s.name)+'</b><small>'+htmlEscape(s.status==='paused'?'Paused':'Running')+'</small></span><strong>Review ›</strong></button>';content+='</div>'}
+  else content+='<div class="ca-empty">No active distraction timers.</div>';
   if(records.length){
    content+='<h3 class="ca-distraction-title">Recent interruptions</h3><div class="ca-distraction-list">';
    for(const x of records.slice(0,6)){
-    content+='<div class="ca-distraction-row"><span><b>'+htmlEscape(x.name)+'</b><small>'+htmlEscape(x.day)+'</small></span><strong>'+htmlEscape(x.duration)+'</strong></div>';
+    content+='<button type="button" class="ca-distraction-row" data-ca-sheet="record" data-ca-id="'+htmlEscape(x.id)+'" data-ca-day-key="'+htmlEscape(x.dateKey)+'"><span><b>'+htmlEscape(x.name)+'</b><small>'+htmlEscape(x.day)+'</small></span><strong>'+htmlEscape(x.duration)+' ›</strong></button>';
    }
    content+='</div>';
+   if(records.length>6)content+='<button type="button" class="ca-sheet-secondary" data-ca-distraction-history>View all '+records.length+' recorded intervals in History</button>';
   }else{
    content+='<div class="ca-empty">No finished distraction sessions found in the selected Review period.</div>';
   }
-  content+='<button class="ca-sheet-primary" data-ca-distraction>'+($('distractionToggle')?.textContent?.includes('Finish')?'■ Finish distraction':'▷ Start distraction')+'</button>';
-  content+='<p class="ca-feature-footnote">Details are based on saved activity records. Unlogged time is not classified automatically.</p>';
-  openDialog('Distraction Review','Recorded interruptions and their duration.',content);return;
+  content+='<p id="caDistractionStartStatus" class="ca-inline-error" role="status"></p><button type="button" class="ca-sheet-primary" data-ca-distraction-start>'+(active.length?'Start another distraction':'Start distraction')+'</button>';
+  content+='<p class="ca-feature-footnote">Recorded time includes overlaps.</p>';
+  const scope={today:'Today',week:'This week',month:'This month',all:'All saved history'}[state.reviewPeriod]||'Selected period';
+  openDialog('Distraction Review',scope+' · recorded interruptions',content);dialog.dataset.caContext='distraction-review';return;
  }
 
 }
@@ -1163,6 +1187,8 @@ async function handleDialogClick(event){
    if($('caHistoryCategory'))$('caHistoryCategory').dataset.caSavedCategory=value;historyCategory.disabled=true;
    const categoryText=dialogBody.querySelector('[data-ca-record-category]'),hero=dialogBody.querySelector('[data-ca-record-hero-category]'),icon=dialogBody.querySelector('.ca-record-icon');
    if(categoryText)categoryText.textContent=value;if(hero)hero.textContent=value;if(icon)icon.innerHTML=categoryGlyph(value);
+   if(value==='Distraction'&&!$('caDistractionCategory')&&message)message.textContent+=' Reopen activity details to classify the distraction.';
+   if(value!=='Distraction')$('caDistractionCategory')?.closest('details')?.setAttribute('hidden','');
    const history=$('caHistory');if(history)delete history.dataset.caSignature;renderHistory();renderReview();
   }
   return;
@@ -1181,7 +1207,10 @@ async function handleDialogClick(event){
  if(gapButton){const [a,b]=gapButton.dataset.caGap.split(':').map(Number);if(!window.lifeosTrackOpenGap({a,b}))dialogBody.insertAdjacentHTML('beforeend','<p class="ca-inline-error">This interval changed. Select a remaining gap again.</p>');return}
  if(event.target.closest('[data-ca-close]')){closeDialog();return}
  const sheetBack=event.target.closest('[data-ca-sheet]');
- if(sheetBack){sheet(sheetBack.dataset.caSheet,sheetBack.dataset.caId);return}
+ if(sheetBack){sheet(sheetBack.dataset.caSheet,sheetBack.dataset.caId,sheetBack.dataset.caDayKey);return}
+ if(event.target.closest('[data-ca-distraction-history]')){
+  state.historyPeriod=state.reviewPeriod;state.historyAnchor=localKey(new Date());state.historyMonth=localMonthKey(new Date());state.historyCategory='Distraction';state.historyActivity='';state.historyOrder='newest';state.query='';closeDialog();chooseTab('history');return;
+ }
  const quick=event.target.closest('[data-ca-quick]');
  if(quick){const original=dialog._choices?.[Number(quick.dataset.caQuick)];if(original){original.click();closeDialog();setTimeout(refresh,100)}return}
  if(event.target.closest('[data-ca-custom-start]')){
@@ -1214,19 +1243,24 @@ async function handleDialogClick(event){
   if(!rec)return;
   const prompt='<div class="ca-record-hero"><div class="ca-record-icon">!</div><div><h3>Delete this activity?</h3><p>'+htmlEscape(rec.name)+' · '+htmlEscape(rec.day)+'</p></div></div>'
    +'<div class="ca-editor-footnote">Deleting this saved record affects its history and analytics. You will be asked to confirm before any deletion.</div>'
+   +'<p id="caDeleteError" class="ca-inline-error" role="status"></p>'
    +'<button class="ca-sheet-secondary ca-record-delete" data-ca-confirm-delete="'+htmlEscape(rec.id)+'">Continue to deletion confirmation</button>'
-   +'<button class="ca-sheet-primary" data-ca-sheet="record" data-ca-id="'+htmlEscape(rec.id)+'">Keep activity</button>';
+   +'<button class="ca-sheet-primary" data-ca-sheet="record" data-ca-id="'+htmlEscape(rec.id)+'" data-ca-day-key="'+htmlEscape(rec.dateKey||'')+'">Keep activity</button>';
   openDialog('Delete Activity','Review before making permanent changes',prompt);return;
  }
  const confirmedDelete=event.target.closest('[data-ca-confirm-delete]');
  if(confirmedDelete){
-  const id=confirmedDelete.dataset.caConfirmDelete;
-  if(originalHistory(id,'edit')){
-   const native=$('editModal');if(native)native.hidden=true;
-   closeDialog();
-   // Original LifeOS deletion continues to require its existing explicit consent.
-   $('deleteEdit')?.click();
-  }
+  if(confirmedDelete.disabled)return;
+  const detail={id:confirmedDelete.dataset.caConfirmDelete,options:{zIndex:2147483004},promise:null},message=$('caDeleteError');
+  confirmedDelete.disabled=true;
+  try{
+   window.dispatchEvent(new CustomEvent('lifeos-v270-delete-reviewed-activity',{detail}));
+   if(!detail.promise){if(message)message.textContent='Delete confirmation is unavailable. No record changed.';return}
+   const result=await detail.promise;
+   if(result?.ok){closeDialog();setTimeout(()=>{state.lastHistory=0;state.lastReview=0;refresh()},100)}
+   else if(message?.isConnected)message.textContent=result?.message||'Deletion was not completed. The activity was preserved.';
+  }catch(error){if(message?.isConnected)message.textContent='Deletion could not be confirmed: '+String(error?.message||error)}
+  finally{if(confirmedDelete.isConnected){confirmedDelete.disabled=false;confirmedDelete.focus()}}
   return;
  }
  const editRecord=event.target.closest('button[data-ca-edit-record]');
@@ -1261,7 +1295,29 @@ async function handleDialogClick(event){
   finally{if(button.isConnected)button.disabled=false}
   return;
  }
- if(event.target.closest('[data-ca-distraction]')){$('distractionToggle')?.click();closeDialog();return}
+ const saveDistraction=event.target.closest('button[data-ca-save-distraction]');
+ if(saveDistraction){
+  if(saveDistraction.disabled)return;
+  const id=saveDistraction.dataset.caSaveDistraction,category=$('caDistractionCategory')?.value||'',trigger=$('caDistractionTrigger')?.value.trim()||'',message=$('caDistractionMessage'),source=timerSession(id);
+  const show=(text,error)=>{if(message){message.textContent=text;message.classList.toggle('ca-history-category-error',error)}};
+  if(distractionFingerprint(source)!==saveDistraction.dataset.caFingerprint){saveDistraction.dataset.caConflict='true';updateDistractionSave();show('This activity changed. Reopen it before saving.',true);return}
+  const detail={id,category,trigger,result:{ok:false,message:'Distraction details were not saved.'}};
+  try{
+   saveDistraction.disabled=true;window.dispatchEvent(new CustomEvent('lifeos-v74-classify-distraction',{detail}));
+   show(detail.result?.message||'Distraction details were not saved.',!detail.result?.ok);
+   if(detail.result?.ok){saveDistraction.dataset.caSavedCategory=category;saveDistraction.dataset.caSavedTrigger=trigger;saveDistraction.dataset.caFingerprint=distractionFingerprint(timerSession(id));state.lastHistory=0;state.lastReview=0}
+  }catch(error){show('Could not save distraction details: '+String(error?.message||error),true)}
+  finally{if(saveDistraction.isConnected)updateDistractionSave()}
+  return;
+ }
+ if(event.target.closest('[data-ca-distraction-start]')){
+  const message=$('caDistractionStartStatus'),quick=[...document.querySelectorAll('#quick button[data-name]')].find(button=>button.dataset.name==='Distraction');
+  if(!quick){if(message)message.textContent='Starting a distraction is unavailable.';return}
+  const before=new Set((window.lifeosReadOnlyWorkspace?.()?.sessions||[]).map(s=>String(s.id)));quick.click();
+  const created=(window.lifeosReadOnlyWorkspace?.()?.sessions||[]).some(s=>!before.has(String(s.id))&&s.name==='Distraction'&&s.status==='running');
+  if(!created){if(message)message.textContent='The distraction was not saved. Existing timers were retained.';return}
+  closeDialog();setTimeout(refresh,100);return;
+ }
  const viewPast=event.target.closest('[data-ca-view-past]');
  if(viewPast){
   const dayKey=viewPast.dataset.caViewPast;

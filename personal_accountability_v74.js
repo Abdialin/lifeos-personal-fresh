@@ -5,7 +5,14 @@
 'use strict';
 const CATEGORIES=['Social media','Entertainment','Communication','Procrastination','Interruption','Environment','Other'];
 const sample=s=>s?.source==='development-starter'||s?.source==='assumed-demo'||!!s?.seedBatch;
-const distract=s=>!!s&&(s.activityType==='distraction'||s.name==='Distraction'||/^Distraction[: —-]/i.test(String(s.name||'')));
+const distract=s=>{
+ if(!s)return false;
+ if(typeof root.lifeosActivityClassification==='function')return root.lifeosActivityClassification(s)?.group==='Distraction';
+ const nested=typeof s.activityDetailsV252?.category==='string'?s.activityDetailsV252.category.trim():'';
+ const reviewed=nested||(typeof s.category==='string'?s.category.trim():'');
+ if(reviewed)return reviewed.toLowerCase()==='distraction';
+ return s.activityType==='distraction'||s.name==='Distraction'||/^Distraction[: —-]/i.test(String(s.name||''));
+};
 function duration(s,now){return (s?.segments||[]).reduce((sum,x)=>{const a=Number(x?.start),b=x?.end==null?(s.status==='running'?now:NaN):Number(x.end);return sum+(Number.isFinite(a)&&Number.isFinite(b)?Math.max(0,Math.min(b,now)-a):0)},0)}
 function distractionReport(workspace,at=Date.now(),days=28){
  const start=at-days*86400000,entries=[],groups=new Map(),hours=new Map();
@@ -93,6 +100,7 @@ function mount(){
   finally{remove.disabled=false}
  });
  root.addEventListener('lifeos-v74-records-changed',render);
+ root.addEventListener('lifeos-v77-tracking-changed',render);
  root.addEventListener('lifeos-v75-changed',render);
  root.addEventListener('lifeos-v65-plan-committed',render);
  root.addEventListener('focus',render);

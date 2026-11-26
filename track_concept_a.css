@@ -913,3 +913,22 @@ html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] .c
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] .ca-sheet-secondary{background:#e9f4f2;border-color:#b6d0d2;color:#173f4b}
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] :is(.ca-more-settings>summary,.ca-timer-status){color:#075e4f}
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] .ca-timer-status.ca-timer-error{color:#a12c35}
+
+/* Review classified interruptions without changing or merging their records. */
+#loCADialog[data-ca-context="distraction-review"] .ca-focus-hero{padding:8px 10px;margin:0 0 8px}
+#loCADialog[data-ca-context="distraction-review"] .ca-focus-icon{font-size:24px;line-height:1;margin:0}
+#loCADialog[data-ca-context="distraction-review"] .ca-focus-hero h3{font-size:16px;margin:4px 0}
+#loCADialog[data-ca-context="distraction-review"] .ca-focus-hero p{font-size:12px;line-height:1.35}
+#loCADialog[data-ca-context="distraction-review"] .ca-distraction-stats>div{padding:10px 8px}
+#loCADialog[data-ca-context="distraction-review"] .ca-distraction-stats b{font-size:20px}
+#loCADialog[data-ca-context="distraction-review"] .ca-distraction-title{margin:14px 0 8px}
+#loCADialog[data-ca-context="distraction-review"] button.ca-distraction-row{width:100%;min-height:48px;text-align:left;background:transparent;border:0;border-top:1px solid #2d4d61;cursor:pointer}
+#loCADialog[data-ca-context="distraction-review"] button.ca-distraction-row:first-child{border-top:0}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="distraction-review"]{color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="distraction-review"] .ca-sheet{background:#f5fbfa;border-color:#b6d0d2}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="distraction-review"] :is(.ca-sheet-head h2,.ca-focus-hero h3,.ca-distraction-title,.ca-distraction-stats b,.ca-distraction-row b){color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="distraction-review"] :is(.ca-sheet-head p,.ca-focus-hero p,.ca-distraction-stats span,.ca-distraction-row small,.ca-feature-footnote,.ca-empty){color:#4b6978}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="distraction-review"] :is(.ca-x,.ca-distraction-stats>div,.ca-distraction-list){background:#fff;border-color:#b6d0d2;color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="distraction-review"] .ca-focus-hero{background:#e6f5ee;border-color:#b6d8ca}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="distraction-review"] :is(.ca-focus-icon,.ca-distraction-row strong){color:#087d69}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="distraction-review"] .ca-sheet-primary{background:#087d69;color:#fff}

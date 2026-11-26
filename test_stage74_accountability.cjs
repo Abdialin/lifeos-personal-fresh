@@ -20,6 +20,16 @@ assert.equal(d.mostFrequent.category,'Social media');assert.equal(d.mostFrequent
 assert.equal(d.mostTimeConsuming.category,'Entertainment');assert.equal(d.mostTimeConsuming.totalMs,1800000);
 assert.equal(d.ranking.some(x=>x.category==='Fake'),false);
 assert.equal(m.distractionReport({sessions:[sessions[4]]},now).count,0);
+const classified=[
+ {id:'manual',name:'Social feed',status:'finished',activityDetailsV252:{category:'Distraction'},segments:[{start:base,end:base+60000}]},
+ {id:'corrected',name:'Distraction: lecture',status:'finished',activityType:'distraction',activityDetailsV252:{category:'University'},segments:[{start:base,end:base+60000}]},
+ {id:'empty-nested',name:'Distraction',status:'finished',category:'University',activityDetailsV252:{category:' '},segments:[{start:base,end:base+60000}]},
+ {id:'automatic',name:'Distraction',status:'finished',activityDetailsV252:{category:''},segments:[{start:base,end:base+60000}]},
+ {id:'unknown',name:'Discussing distraction',status:'finished',segments:[{start:base,end:base+60000}]}
+];
+assert.deepEqual(m.distractionReport({sessions:classified},now).entries.map(x=>x.id),['manual','automatic'],'Explicit classifications take precedence, blank values allow recognition, and ambiguous names remain unknown');
+globalThis.lifeosActivityClassification=s=>({group:s.id==='unknown'?'Distraction':'Other / review'});
+try{assert.deepEqual(m.distractionReport({sessions:classified},now).entries.map(x=>x.id),['unknown'],'The shared browser classifier is authoritative when present')}finally{delete globalThis.lifeosActivityClassification}
 const debt=m.debtReport({sessions,schedule},now);
 assert.equal(debt.confirmedCount,2);
 assert.equal(debt.totalMs,2*h);
@@ -30,4 +40,4 @@ assert.equal(m.debtReport({sessions:[],schedule:[schedule[1]]},now).confirmedCou
 assert.equal(m.duration({status:'running',segments:[{start:base,end:null}]},now),2*h);
 assert.equal(m.fmt(3660000),'1h 01m');
 assert.equal(m.CATEGORIES.includes('Social media'),true);
-console.log('V74: 16/16 distraction/debt assertions passed.');
+console.log('V74: distraction/debt assertions and classification precedence passed.');
