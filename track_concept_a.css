@@ -892,3 +892,24 @@ html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] :i
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-history-category-status.ca-history-category-error{color:#a12c35}
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] :is(.ca-history-category .ca-form-label,.ca-history-category .ca-input){color:#173246}
 html[data-lifeos-theme="light"] #loCADialog[data-ca-context="history-record"] .ca-history-category .ca-input{background:#fff;border-color:#b6d0d2}
+
+/* Duration settings use the existing persisted timer and profile engines. */
+#loCADialog[data-ca-context="timer-settings"] .ca-sheet-head{margin-bottom:8px}
+#loCADialog[data-ca-context="timer-settings"] .ca-form-label{margin:9px 0 4px}
+#loCADialog[data-ca-context="timer-settings"] .ca-preset-grid{margin:8px 0;gap:6px}
+#loCADialog[data-ca-context="timer-settings"] .ca-timer-intro{margin:0 0 8px;color:#bbd5dc;font-size:12px;line-height:1.4}
+#loCADialog[data-ca-context="timer-settings"] .ca-timer-status{margin:7px 0;color:#b6f7df;font-size:12px;line-height:1.4}
+#loCADialog[data-ca-context="timer-settings"] .ca-timer-status:empty{display:none}
+#loCADialog[data-ca-context="timer-settings"] .ca-timer-error{color:#ffb8bb}
+#loCADialog[data-ca-context="timer-settings"] :is(button,input,select):disabled{opacity:.55;cursor:not-allowed}
+#loCADialog[data-ca-context="timer-settings"] .ca-more-settings{padding-bottom:10px}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"]{color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] .ca-sheet{background:#f5fbfa;border-color:#b6d0d2}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] :is(.ca-sheet-head h2,.ca-form-label){color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] :is(.ca-sheet-head p,.ca-timer-intro,.ca-feature-footnote){color:#4b6978}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] :is(.ca-x,.ca-input,.ca-preset,.ca-more-settings){background:#fff;border-color:#b6d0d2;color:#173246}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] .ca-preset[aria-pressed="true"]{background:#dff3e9;border-color:#87c8ae;color:#075e4f}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] .ca-sheet-primary{background:#087d69;color:#fff}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] .ca-sheet-secondary{background:#e9f4f2;border-color:#b6d0d2;color:#173f4b}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] :is(.ca-more-settings>summary,.ca-timer-status){color:#075e4f}
+html[data-lifeos-theme="light"] #loCADialog[data-ca-context="timer-settings"] .ca-timer-status.ca-timer-error{color:#a12c35}

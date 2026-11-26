@@ -51,8 +51,18 @@ function mount(){
  $('lo80-save').addEventListener('click',()=>{
   const value=Number(minutes.value);
   if(!Number.isSafeInteger(value)||value<5||value>1440){message.textContent='Choose a whole number of minutes between 5 and 1440.';return}
-  const next=clean({...profiles,[select.value]:{minutes:value}});
-  try{localStorage.setItem(KEY,JSON.stringify(next));profiles=next;message.textContent='Profile saved on this device. New sessions will use a reminder-only duration limit.';redraw()}catch{message.textContent='Profile could not be saved on this device. Your activity history was not changed.'}
+  try{
+   // Another tab may have saved a profile since this panel was mounted. Merge
+   // with the latest stored value and keep unknown fields for forward compatibility.
+   const raw=localStorage.getItem(KEY),stored=raw===null?{}:JSON.parse(raw);
+   if(!stored||typeof stored!=='object'||Array.isArray(stored))throw new Error('Invalid saved profiles');
+   const previous=stored[select.value];
+   const entry=previous&&typeof previous==='object'&&!Array.isArray(previous)?previous:{};
+   localStorage.setItem(KEY,JSON.stringify({...stored,[select.value]:{...entry,minutes:value}}));
+   const verified=JSON.parse(localStorage.getItem(KEY)||'{}');
+   if(validProfile(verified[select.value])?.minutes!==value)throw new Error('Could not verify profile');
+   profiles=clean(verified);message.textContent='Profile saved on this device. New sessions will use a reminder-only duration limit.';redraw();
+  }catch{message.textContent='Profile could not be saved or verified on this device. Your activity history was not changed.'}
  });
  const state=()=>{try{return root.lifeosReadOnlyWorkspace?.()?.sessions||[]}catch{return []}};
  function redraw(){

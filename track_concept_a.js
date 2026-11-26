@@ -212,6 +212,7 @@ function build(){
  dialog.addEventListener('click',handleDialogClick);
  dialog.addEventListener('input',event=>{
   if(selectedGap&&['caPastStart','caPastEnd'].includes(event.target.id)){event.target.dataset.gapEdited='1';updateGapSummary()}
+  if(event.target.id==='caExpectedMinutes'){updateTimerSave();return}
   if(event.target.id!=='caStartSearch')return;
   const value=event.target.value.trim().toLocaleLowerCase();
   for(const option of dialogBody.querySelectorAll('[data-ca-quick]')){
@@ -220,6 +221,9 @@ function build(){
  });
  dialog.addEventListener('change',event=>{
   if(selectedGap&&['caPastStart','caPastEnd'].includes(event.target.id)){event.target.dataset.gapEdited='1';updateGapSummary();return}
+  if(event.target.id==='caLimitActivity'){syncTimerForm();return}
+  if(event.target.id==='caLimitAction'){updateTimerSave();return}
+  if(event.target.id==='caProfileType'){syncProfileForm();return}
   if(event.target.id==='caHistoryCategory'){
    const button=dialogBody.querySelector('[data-ca-history-category-save]'),message=$('caHistoryCategoryMessage');
    if(button)button.disabled=event.target.value===event.target.dataset.caSavedCategory;
@@ -718,6 +722,26 @@ function focusAlertControls(){
   +[['sound','Sound'],['vibration','Vibration']].map(([key,label])=>'<label><span>'+label+'</span><input type="checkbox" data-ca-focus-alert="'+key+'" '+(settings?.[key]?'checked ':'')+(available?'':'disabled')+'></label>').join('')
   +'</div><p class="ca-focus-alert-status" id="caFocusAlertStatus" role="status">'+(available?'':'Alert settings unavailable.')+'</p>';
 }
+function timerSession(id){return (window.lifeosReadOnlyWorkspace?.()?.sessions||[]).find(s=>String(s.id)===String(id))}
+function timerFingerprint(session){return session?JSON.stringify({id:session.id,status:session.status,startAt:session.startAt,segments:session.segments,guard:session.durationGuardV78||null}):''}
+function updateTimerSave(){
+ const select=$('caLimitActivity'),input=$('caExpectedMinutes'),mode=$('caLimitAction'),button=$('caTimerSave');if(!select||!input||!mode||!button)return;
+ const n=Number(input.value),valid=Boolean(select.value&&input.value&&Number.isSafeInteger(n)&&n>=5&&n<=1440);
+ button.disabled=!valid||(button.dataset.caSavedId===select.value&&button.dataset.caSavedMinutes===String(n)&&button.dataset.caSavedMode===mode.value);
+ for(const preset of dialogBody.querySelectorAll('[data-ca-limit]'))preset.setAttribute('aria-pressed',String(Number(preset.dataset.caLimit)===n&&Boolean(input.value)));
+}
+function syncTimerForm(){
+ const select=$('caLimitActivity'),input=$('caExpectedMinutes'),mode=$('caLimitAction'),button=$('caTimerSave');if(!select||!input||!mode||!button)return;
+ const session=timerSession(select.value),guard=window.LifeOSDurationGuardV78?.valid?.(session);
+ input.value=guard?String(guard.targetMinutes):'';mode.value=guard?.mode||'warn';
+ button.dataset.caSavedId=guard?select.value:'';button.dataset.caSavedMinutes=guard?String(guard.targetMinutes):'';button.dataset.caSavedMode=guard?.mode||'';
+ const status=$('caTimerStatus');if(status)status.textContent='';updateTimerSave();
+}
+function syncProfileForm(){
+ const select=$('caProfileType'),input=$('caProfileMinutes');if(!select||!input)return;
+ let saved;try{saved=window.LifeOSDurationProfilesV80?.savedProfiles?.(window.localStorage)?.[select.value]}catch{}input.value=saved?String(saved.minutes):'';
+ const status=$('caProfileStatus');if(status)status.textContent='';
+}
 function showRealFocus(){
  const session=readRealFocusState();
  if(!session)return;
@@ -1013,23 +1037,29 @@ function sheet(type,id,dayKey){
   openDialog('Focus Mode','Choose your session',content);dialog.dataset.caContext='focus-setup';return;
  }
  if(type==='timer'){
-  const choices=live.length?live:[{id:'',name:'No active timer'}];
-  let content='<div class="ca-focus-hero"><div class="ca-focus-icon">◷</div><h3>Keep your time intentional</h3><p>Set a reminder when an activity reaches its expected duration.</p></div>';
-  content+='<label class="ca-form-label" for="caLimitActivity">Running activity</label><select class="ca-input" id="caLimitActivity">';
+  const choices=live.filter(row=>row.status==='running'),nativeProfiles=$('lo80-type');
+  let content='<p class="ca-timer-intro">Set a limit for recorded active time. Pauses do not count.</p>';
+  content+='<label class="ca-form-label" for="caLimitActivity">Running activity</label><select class="ca-input" id="caLimitActivity" '+(!choices.length?'disabled':'')+'>';
+  if(!choices.length)content+='<option value="">No running activity</option>';
   for(const row of choices)content+='<option value="'+htmlEscape(row.id)+'">'+htmlEscape(row.name)+'</option>';
   content+='</select><label class="ca-form-label" for="caExpectedMinutes">Expected duration</label>';
-  content+='<input type="number" id="caExpectedMinutes" class="ca-input" min="1" max="1440" value="60" inputmode="numeric">';
+  content+='<input type="number" id="caExpectedMinutes" class="ca-input" min="5" max="1440" step="1" placeholder="Minutes, 5–1440" inputmode="numeric" '+(!choices.length?'disabled':'')+'>';
   content+='<div class="ca-preset-grid">';
-  for(const val of [15,30,45,60])content+='<button type="button" class="ca-preset" data-ca-limit="'+val+'" aria-pressed="'+(val===60)+'">'+val+' min</button>';
+  for(const val of [15,30,45,60])content+='<button type="button" class="ca-preset" data-ca-limit="'+val+'" aria-pressed="false" '+(!choices.length?'disabled':'')+'>'+val+' min</button>';
   content+='</div><label class="ca-form-label" for="caLimitAction">When the limit is reached</label>';
-  content+='<select class="ca-input" id="caLimitAction"><option>Remind me: Finish or Extend</option><option>Ask me to review the timer</option></select>';
-  content+='<button class="ca-sheet-primary" data-ca-timer-preview>◷ &nbsp; Preview duration reminder</button>';
-  content+='<p class="ca-feature-footnote">Visual preview; no duration setting is saved yet.</p>';
-  content+='<details class="ca-more-settings"><summary>More timer preferences</summary>';
-  content+='<div class="ca-sheet-metric"><span>Duration profiles</span><strong>Saved in original LifeOS</strong></div>';
-  content+='<div class="ca-sheet-metric"><span>Forgotten timer reviews</span><strong>Existing data retained</strong></div>';
-  content+='<div class="ca-sheet-metric"><span>Pause and resume timeline</span><strong>Available in session details</strong></div></details>';
-  openDialog('Timer preferences','Duration limits, reminders and recovery.',content);return;
+  content+='<select class="ca-input" id="caLimitAction" '+(!choices.length?'disabled':'')+'><option value="warn">Remind me to review</option><option value="auto">Automatically finish · requires confirmation</option></select>';
+  content+='<p class="ca-feature-footnote">Reminders depend on device notification settings. Automatic finish is optional and may use an estimated end time.</p><p id="caTimerStatus" class="ca-timer-status" role="status"></p><button type="button" class="ca-sheet-primary" id="caTimerSave" data-ca-timer-save disabled>Save duration</button>';
+  content+='<details class="ca-more-settings"><summary>Duration profiles for new activities</summary><p class="ca-feature-footnote">Profiles apply to new activities. Existing timers are not changed.</p>';
+  if(nativeProfiles&&$('lo80-minutes')&&$('lo80-save')){
+   content+='<label class="ca-form-label" for="caProfileType">Activity type</label><select id="caProfileType" class="ca-input">'+Array.from(nativeProfiles.options).map(o=>'<option value="'+htmlEscape(o.value)+'">'+htmlEscape(o.textContent)+'</option>').join('')+'</select>';
+   content+='<label class="ca-form-label" for="caProfileMinutes">Expected active minutes</label><input id="caProfileMinutes" type="number" min="5" max="1440" step="1" inputmode="numeric" class="ca-input" placeholder="Minutes, 5–1440"><p id="caProfileStatus" class="ca-timer-status" role="status"></p><button type="button" class="ca-sheet-secondary" data-ca-profile-save>Save profile</button>';
+  }else content+='<p class="ca-feature-footnote">Duration profiles are unavailable.</p>';
+  content+='</details>';
+  content+='<details class="ca-more-settings"><summary>Reminder appearance</summary><p class="ca-feature-footnote">This is an example, not a scheduled reminder.</p><button type="button" class="ca-sheet-secondary" data-ca-timer-preview>Preview reminder</button></details>';
+  const sessions=window.lifeosReadOnlyWorkspace?.()?.sessions||[],guardApi=window.LifeOSDurationGuardV78;
+  const overdue=sessions.map(session=>({session,report:guardApi?.inspect?.(session,Date.now())})).filter(item=>item.report?.configured&&item.report.overdue);
+  if(overdue.length){content+='<details class="ca-more-settings"><summary>Timers to review ('+overdue.length+')</summary>';for(const item of overdue)content+='<button type="button" class="ca-sheet-secondary" data-ca-sheet="activity" data-ca-id="'+htmlEscape(item.session.id)+'">'+htmlEscape(item.session.name)+' · review ›</button>';content+='</details>'}
+  openDialog('Timer settings','Duration limits and reminders',content);dialog.dataset.caContext='timer-settings';syncTimerForm();syncProfileForm();return;
  }
  if(type==='distraction'){
   const status=readOverview().distraction;
@@ -1358,19 +1388,50 @@ async function handleDialogClick(event){
  }
  const limit=event.target.closest('[data-ca-limit]');
  if(limit){
-  const input=$('caExpectedMinutes');if(input)input.value=limit.dataset.caLimit;
-  for(const preset of dialogBody.querySelectorAll('[data-ca-limit]'))
-   preset.setAttribute('aria-pressed',String(preset===limit));
+  const input=$('caExpectedMinutes');if(input){input.value=limit.dataset.caLimit;input.dispatchEvent(new Event('input',{bubbles:true}))}
+  return;
+ }
+ const timerSave=event.target.closest('[data-ca-timer-save]');
+ if(timerSave){
+  if(timerSave.disabled)return;
+  const id=$('caLimitActivity')?.value||'',minutes=Number($('caExpectedMinutes')?.value),mode=$('caLimitAction')?.value||'',status=$('caTimerStatus'),session=timerSession(id),api=window.LifeOSDurationGuardV78;
+  const fail=message=>{if(status?.isConnected){status.textContent=message;status.classList.add('ca-timer-error')}};
+  if(!api?.configure||!session){fail('The running timer is unavailable. No changes were saved.');return}
+  const check=api.configure(session,minutes,mode,Date.now());if(!check.ok){fail(check.reason||'Choose a valid duration.');return}
+  const fingerprint=timerFingerprint(session);timerSave.disabled=true;
+  try{
+   if(mode==='auto'){
+    if(typeof window.lifeosConfirmDurationAuto!=='function'){fail('Confirmation is unavailable. No changes were saved.');return}
+    if(!await window.lifeosConfirmDurationAuto(session.name,minutes)){fail('No changes were saved.');return}
+    if(timerFingerprint(timerSession(id))!==fingerprint){fail('The timer changed while confirmation was open. Review it before saving.');return}
+   }
+   const detail={type:'configure',id,minutes,mode,result:{ok:false,message:'Duration was not saved.'}};
+   window.dispatchEvent(new CustomEvent('lifeos-v78-duration-action',{detail}));
+   if(status?.isConnected){status.textContent=detail.result?.message||'Duration was not saved.';status.classList.toggle('ca-timer-error',!detail.result?.ok)}
+   if(detail.result?.ok&&timerSave.isConnected){timerSave.dataset.caSavedId=id;timerSave.dataset.caSavedMinutes=String(minutes);timerSave.dataset.caSavedMode=mode}
+  }catch(error){fail('Could not save duration: '+String(error?.message||error))}
+  finally{if(timerSave.isConnected)updateTimerSave()}
+  return;
+ }
+ if(event.target.closest('[data-ca-profile-save]')){
+  const type=$('caProfileType')?.value||'',raw=$('caProfileMinutes')?.value||'',minutes=Number(raw),status=$('caProfileStatus'),nativeType=$('lo80-type'),nativeMinutes=$('lo80-minutes'),nativeSave=$('lo80-save'),nativeStatus=$('lo80-message');
+  const show=(message,error)=>{if(status){status.textContent=message;status.classList.toggle('ca-timer-error',error)}};
+  if(!nativeType||!nativeMinutes||!nativeSave||!window.LifeOSDurationProfilesV80){show('Duration profiles are unavailable.',true);return}
+  if(!raw||!Number.isSafeInteger(minutes)||minutes<5||minutes>1440){show('Choose a whole number of minutes between 5 and 1440.',true);return}
+  let before;try{before=window.LifeOSDurationProfilesV80.savedProfiles(window.localStorage)[type]}catch{show('Profile storage is unavailable. Your activities were not changed.',true);return}
+  if(before?.minutes===minutes){show('This profile is already saved.',false);return}
+  nativeType.value=type;nativeType.dispatchEvent(new Event('change',{bubbles:true}));nativeMinutes.value=String(minutes);nativeSave.click();
+  let saved;try{saved=window.LifeOSDurationProfilesV80.savedProfiles(window.localStorage)[type]}catch{}
+  show(saved?.minutes===minutes?(nativeStatus?.textContent||'Profile saved.'):('Profile could not be saved or verified. Your activities were not changed.'),saved?.minutes!==minutes);
   return;
  }
  if(event.target.closest('[data-ca-timer-preview]')){
-  const minutes=Math.max(1,Math.min(1440,Number($('caExpectedMinutes')?.value||60)));
+  const minutes=Math.max(5,Math.min(1440,Number($('caExpectedMinutes')?.value||60)));
   const timer=$('caLimitActivity')?.selectedOptions?.[0]?.textContent||'Activity';
-  dialog.dataset.caPreview='timer';
   const content='<div class="ca-focus-hero"><div class="ca-focus-icon">◷</div><h3>Duration reached</h3><p>'+htmlEscape(timer)+' · '+minutes+' min target</p></div>'
    +'<div class="ca-timer-reminder"><strong>Time to check in</strong><p>Would you like to finish, extend, or review this activity?</p></div>'
    +'<div class="ca-preview-actions"><button class="ca-sheet-secondary" data-ca-preview-back="timer">‹ &nbsp; Settings</button><button class="ca-sheet-primary" data-ca-close>Close preview</button></div>';
-  openDialog('Timer check-in','Reminder appearance · preview only',content);return;
+  openDialog('Timer check-in','Reminder appearance · example only',content);return;
  }
  const back=event.target.closest('[data-ca-preview-back]');
  if(back){sheet(back.dataset.caPreviewBack);return;}

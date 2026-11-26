@@ -17,6 +17,9 @@ TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
 node tests/track-live-controls.cjs
 TRACK_FOCUS_CAPTURE=1 node tests/track-focus-mode.cjs
 TRACK_DETAIL_CAPTURE=1 node tests/track-record-details.cjs
+TRACK_TIMER_CAPTURE=1 node tests/track-timer-settings.cjs
+node test_stage78_duration.cjs
+node test_stage80_duration_profiles.cjs
 node --test test_track_design_v126.test.cjs test_track_focus_v127.test.cjs test_track_polish_v128.test.cjs test_track_visual_v129.test.cjs
 node test_plan_evidence_v250.cjs
 node tests/plan-overview-model.cjs
@@ -51,3 +54,5 @@ Track calendar-period browser fixtures check History's day/week/month/year/all-t
 The intercepted Focus fixture checks starting, pausing, resuming, breaks, minimizing, reload recovery and ending while preserving a separate tracked activity. It also checks saved sound/vibration preferences, failure feedback and restoration after a rejected storage write, visibility of primary controls at mobile sizes and selected light-mode contrast. `TRACK_FOCUS_CAPTURE=1` writes synthetic Focus setup and running screenshots. This does not verify Android alert sound, vibration, Do Not Disturb, background execution or notification delivery.
 
 The synthetic History detail fixture checks aggregation of multiple segments into one day portion, full-session and selected-day durations, original timestamps, explicit category, notes, significant pauses, individual overlaps and suppression of sub-minute entries. It checks cancellation, a simulated failed recovery-checkpoint write, a successful name/notes edit retaining exact timestamps and all segments, and a finish-time edit that preserves an activity's paused interval. For an explicit segment replacement it tests in-app cancellation, keyboard focus, rejection when the record changes during confirmation, approved replacement and retention of the original timeline in the audit. The original editor is also exercised; results are checked after reload without browser alert or confirm dialogs. It also checks primary action clearance and selected light-mode contrast. `TRACK_DETAIL_CAPTURE=1` writes synthetic detail screenshots.
+
+The synthetic timer-settings fixture verifies reminder configuration, recovery-checkpoint failure and rollback, reload persistence, explicit consent for automatic finish, cancellation, rejection of changes to a timer while the confirmation is open, and the absence of running timers. It checks duration profiles for new activities, failed storage writes, malformed profile data, and preservation of profiles changed since the panel opened and unrecognized fields. It also checks light-mode contrast and control reachability in reduced browser viewports. `TRACK_TIMER_CAPTURE=1` writes timer and consent screenshots. These checks do not establish native notification delivery, background execution or automatic finish timing on Android.

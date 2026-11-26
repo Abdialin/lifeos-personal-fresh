@@ -27,6 +27,9 @@ jobs:
       - run: node tests/track-live-controls.cjs
       - run: TRACK_FOCUS_CAPTURE=1 node tests/track-focus-mode.cjs
       - run: TRACK_DETAIL_CAPTURE=1 node tests/track-record-details.cjs
+      - run: TRACK_TIMER_CAPTURE=1 node tests/track-timer-settings.cjs
+      - run: node test_stage78_duration.cjs
+      - run: node test_stage80_duration_profiles.cjs
       - run: node --test test_track_design_v126.test.cjs test_track_focus_v127.test.cjs test_track_polish_v128.test.cjs test_track_visual_v129.test.cjs
       - run: node test_plan_evidence_v250.cjs
       - run: node tests/plan-overview-model.cjs

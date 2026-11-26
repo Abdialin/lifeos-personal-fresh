@@ -14,6 +14,8 @@ Track Review now offers category and activity groupings using the shared classif
 
 Focus setup and the running sheet have compact primary controls and expose the existing alert engine's sound/vibration preferences. Focus, pause, break and reload behavior are covered in a synthetic browser fixture; device delivery and the remaining V1 visual differences are still open.
 
+The Track timer-settings sheet now uses the existing duration guard and duration-profile storage instead of a visual-only preview. Reminder limits are saved for the chosen running activity; automatic finish requires an explicit confirmation and is marked estimated by the existing engine when applied. Profile updates preserve newer saved categories and unknown fields, and do not modify existing timers. A synthetic browser fixture checks persistence and failures. Background operation, reminder delivery and actual Android behavior remain unverified.
+
 History now groups a session's same-day segments without altering its saved records. Its detail sheet shows full and day-portion time, original timestamps, classification, notes, significant pauses and selectable concurrent sessions. The existing editor preserves unchanged timestamp precision and paused segments, and reports a rejected recovery write without closing as though the edit succeeded. Segment replacement requires in-app confirmation, rechecks for intervening changes and retains the original timeline in the edit audit. Synthetic overnight and overlap fixtures verify the calculations and edits; the reference's unsupported scores and inferred measures are not fabricated.
 
 ## Today: current work
