@@ -33,8 +33,22 @@ const serve=route=>{
   assert.equal(snap.recorded.find(x=>x.id==='explicit').category,'Sleep');
   assert.equal(snap.recorded.find(x=>x.id==='review').category,'Other / review');
   assert.equal(snap.recorded.find(x=>x.id==='unknown-value').category,'Other / review');
+  await page.waitForFunction(()=>window.LifeOSActivityAnalyticsV253&&window.LifeOSGoalEvidenceV175&&window.lifeosActivityClassification);
+  const consistency=await page.evaluate(()=>{
+   const examples=[['Sleep','Sleep','sleep'],['Sleeping','Sleep','sleep'],['Studying for an exam','University','study'],['Lecture','University','study'],['Assignment','University','study'],['Kurs','University','study'],['Praying','Prayer','prayer'],['Prayed','Prayer','prayer'],['Fajr','Prayer','prayer'],['Breakfast','Nutrition','nutrition'],['Lunch','Nutrition','nutrition'],['Dinner','Nutrition','nutrition'],['Gym','Fitness','fitness'],['Workout','Fitness','fitness'],['Training','Fitness','fitness'],['Yoga','Fitness','fitness'],['Cycling','Fitness','fitness'],['Working','Work & business','work'],['App development','Work & business','work'],['Project test','Other / review','other'],['Gym work','Other / review','other']];
+   const rows=examples.map(([name,group,id])=>({name,group,id,today:window.lifeosActivityClassification({name}).group,insights:window.LifeOSActivityAnalyticsV253.category({name})}));
+   const cases=[{name:'Sleep',activityDetailsV252:{category:''}},{name:'Sleep',activityDetailsV252:{category:'  '}},{name:'Sleep',activityDetailsV252:{category:'Other / review'}},{name:'Gym',activityDetailsV252:{category:'Prayer'}},{name:'Unspecified',activityDetailsV252:{category:' sleep '}},{name:'Sleep',category:'Work'},{name:'Sleep',activityType:'distraction'},{name:'Sleep',activityType:'distraction',activityDetailsV252:{category:'Other / review'}},{name:'Sleep',activityDetailsV252:{category:'family'}},{name:'Sleep',activityDetailsV252:{category:'Family time'}},{name:'Gym',activityDetailsV252:{category:'Sleep and rest'}}];
+   const overrides=cases.map(s=>({today:window.lifeosActivityClassification(s).group,insights:window.LifeOSActivityAnalyticsV253.category(s)}));
+   const now=Date.now(),session=(id,name,category,notes='')=>({id,name,status:'finished',startAt:now-120000,endAt:now-60000,segments:[{start:now-120000,end:now-60000}],notes,activityDetailsV252:{category}});
+   const workspace={sessions:[session('a','Unspecified','Fitness'),session('b','Gym','Other / review'),session('c','Gym','Fitness','Synthetic Preview test record')],workouts:[]};
+   const goal=window.LifeOSGoalEvidenceV175.measure({category:'fitness',unit:'sessions'},workspace,now-3600000,now);
+   return {rows,overrides,goal};
+  });
+  for(const row of consistency.rows){assert.equal(row.today,row.group,row.name);assert.equal(row.insights,row.id,row.name)}
+  assert.deepEqual(consistency.overrides,[{today:'Sleep',insights:'sleep'},{today:'Sleep',insights:'sleep'},{today:'Other / review',insights:'other'},{today:'Prayer',insights:'prayer'},{today:'Sleep',insights:'sleep'},{today:'Work & business',insights:'work'},{today:'Distraction',insights:'distraction'},{today:'Other / review',insights:'other'},{today:'Family time',insights:'family'},{today:'Family time',insights:'family'},{today:'Sleep',insights:'sleep'}]);
+  assert.equal(consistency.goal.value,1,'Goals should respect explicit classification and exclude Preview samples');
   await page.locator('#apTab1').click();await page.locator('[data-ap-live-period="0"]').click();
-  const fill=id=>page.locator('svg [data-ap-detail="record"][data-ap-key="'+id+'"] rect').getAttribute('fill');
+  const fill=id=>page.locator('svg [data-ap-detail="record"][data-ap-key="'+id+'"] > rect').getAttribute('fill');
   assert.equal(await fill('legacy-0'),'#8295dd');assert.equal(await fill('legacy-2'),'#78b8ef');assert.equal(await fill('legacy-3'),'#b6a4f5');assert.equal(await fill('untrusted'),'#a6bcd0');
   assert((await page.locator('#apPage1').innerText()).includes('Sleep'));assert((await page.locator('#apPage1').innerText()).includes('University'));
   await page.locator('svg [data-ap-detail="record"][data-ap-key="legacy-0"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Sleep'));assert.equal(await page.locator('#caTodayCategory').inputValue(),'Sleep');await page.locator('#loCADialog [data-ca-close]').last().click();
@@ -51,6 +65,11 @@ const serve=route=>{
   assert(legacyReview.ok,legacyReview.message);
   await page.evaluate(()=>{const p=document.getElementById('lo252-picker');p.value='explicit';p.dispatchEvent(new Event('change',{bubbles:true}))});
   assert.equal(await page.locator('#lo252-fields [data-key="category"]').inputValue(),'study');
+  const familyReview=await page.evaluate(()=>{const d={id:'explicit',fields:{category:'family'}};window.dispatchEvent(new CustomEvent('lifeos-v252-save-review',{detail:d}));return d.result});assert(familyReview.ok);
+  await page.locator('#apTab1').click();await page.locator('[data-ap-live-period="1"]').click();await page.locator('svg [data-ap-detail="record"][data-ap-key="explicit"]').click();
+  assert.equal(await page.locator('#caTodayCategory').inputValue(),'Family time');await page.locator('[data-ca-category-save]').click();assert((await page.locator('#caCategoryMessage').innerText()).includes('saved'));await page.locator('#loCADialog [data-ca-close]').last().click();
+  await page.evaluate(()=>{const p=document.getElementById('lo252-picker');p.value='explicit';p.dispatchEvent(new Event('change',{bubbles:true}))});assert.equal(await page.locator('#lo252-fields [data-key="category"]').inputValue(),'family');
+  assert.equal(await page.evaluate(()=>window.LifeOSActivityAnalyticsV253.category(window.lifeosReadOnlyWorkspace().sessions.find(s=>s.id==='explicit'))),'family');
   assert.deepEqual(errors,[]);await context.close();
   // A matching name alone, without the complete fixture, must not be guessed.
   const isolated=await browser.newContext({viewport:{width:360,height:700},timezoneId:'Europe/Stockholm'});const blank=await isolated.newPage();await blank.route('**/*',serve);

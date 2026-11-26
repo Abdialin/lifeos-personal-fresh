@@ -2,7 +2,7 @@
 (()=>{'use strict';
 const E=id=>document.getElementById(id),H=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const read=()=>{try{return window.lifeosReadOnlyWorkspace?.()||{}}catch(_){return {}}};
-const sample=x=>!!(x?.assumed||x?.isExample||x?.developmentExample||x?.seedBatch||['development-starter','development-seed','assumed-demo'].includes(x?.source));
+const sample=x=>!!(x?.assumed||x?.isExample||x?.developmentExample||x?.seedBatch||x?.notes==='Synthetic Preview test record'||['development-starter','development-seed','assumed-demo'].includes(x?.source));
 const monday=n=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(d.getDay()+6)%7+7*n);return d.getTime()};
 const time=x=>{const n=Number(x?.endAt);if(Number.isFinite(n)&&n>0)return n;const d=x?.date||x?.completedAt;return typeof d==='string'?Date.parse(d.length===10?d+'T12:00:00':d):NaN};
 const interval=(x,a,b)=>{const t=time(x);return Number.isFinite(t)&&t>=a&&t<b};
@@ -38,6 +38,7 @@ if(cat==='fitness'){
  // Use the same activity classification as My Life so Gym/Training in different
  // languages contributes to Goals exactly once (linked workout IDs are deduplicated below).
  const isWorkoutSession=x=>{
+  if(typeof window.lifeosActivityClassification==='function')return window.lifeosActivityClassification(x).group==='Fitness';
   const classify=window.LifeOSMyLifeV190?.kindOf;
   if(typeof classify==='function'&&classify(x.name)==='fitness')return true;
   return /\b(gym|workout|fitness|strength|weightlifting|exercise|running|run|boxing|cardio|cycling|swimming|pilates|yoga|training|walking|walk|jogging|träning|träna|promenad|löpning|styrketräning|boxning)\b/i.test(String(x.name||''));

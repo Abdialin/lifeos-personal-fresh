@@ -31,9 +31,10 @@ const local=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*6
    session('unknown','finish a task',[[t('2026-11-24T10:00:00'),t('2026-11-24T11:00:00')]]),
    session('later','Eating at work',[[t('2026-11-24T11:10:00'),t('2026-11-24T11:11:00')]]),
    session('sample','Work example',[[t('2026-11-24T12:00:00'),t('2026-11-24T12:01:00')]],{source:'assumed-demo'}),
-   session('live','Ongoing work',[[t('2026-11-24T15:00:00'),null]],{status:'running',endAt:null})
+   session('live','Ongoing work',[[t('2026-11-24T15:00:00'),null]],{status:'running',endAt:null}),
+   session('paused-yesterday','Paused yesterday',[[t('2026-11-23T20:00:00'),t('2026-11-23T21:00:00')]],{status:'paused',endAt:null})
   ];
-  const schedule=[{id:'plan',name:'Evening commitment',startAt:t('2026-11-24T17:00:00'),endAt:t('2026-11-24T18:00:00'),createdAt:t('2026-11-24T00:00:00'),status:'planned',sessionId:null,reminder:false,notes:''}];
+  const schedule=[{id:'plan',name:'Evening commitment',startAt:t('2026-11-24T17:00:00'),endAt:t('2026-11-24T18:00:00'),createdAt:t('2026-11-24T00:00:00'),status:'planned',sessionId:null,reminder:false,notes:''},{id:'plan-overlap',name:'Concurrent commitment',startAt:t('2026-11-24T17:30:00'),endAt:t('2026-11-24T18:30:00'),createdAt:t('2026-11-24T00:00:00'),status:'planned',sessionId:null,reminder:false,notes:''}];
   localStorage.setItem('lifeos-live-v1',JSON.stringify({version:1,sessions,events:[],schedule,todos:[]}));localStorage.setItem('v250-fixture','1');
  });
  const snap=()=>page.evaluate(()=>window.lifeosTodayAPlusSnapshot());
@@ -51,6 +52,7 @@ const local=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*6
   assert.equal(d.recorded.find(x=>x.id==='night').b-d.recorded.find(x=>x.id==='night').a,20*60000);
   assert.equal(d.recorded.filter(x=>x.id==='paused').reduce((n,x)=>n+x.b-x.a,0),45*60000);
   await page.locator('#apTab1').click();await page.locator('[data-ap-live-period="1"]').click();
+  await page.locator('#apPage1 [data-ap-detail="active"][data-ap-key="paused-yesterday"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Paused'));await close();
   await page.locator('svg [data-ap-detail="record"][data-ap-key="paused"]').first().click();
   assert((await page.locator('#caDialogBody').innerText()).includes('Study with pause'));
   assert((await page.locator('#caDialogBody').innerText()).includes('Reading together'));
@@ -67,13 +69,17 @@ const local=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*6
   await page.locator('[data-ca-save-past]').click();assert((await page.locator('#caPastError').innerText()).includes('outside'));
   await page.locator('#caPastStart').fill(await page.evaluate(local,gap.a));
   await page.locator('#caPastEnd').fill(await page.evaluate(local,gap.a+1800000));
+  assert((await page.locator('#caGapSummary').innerText()).includes('Recording 30m · Remaining unlogged 30m'));
+  assert((await page.locator('#caDialogBody').innerText()).includes('cannot be overlapped'));
   await confirmSave('First partial');assert((await page.locator('#caDialogBody').innerText()).includes('Remaining unlogged'));
   await page.locator('#loCADialog [data-ca-gap]').click();await confirmSave('Second partial');await page.locator('[data-ca-view-past]').click();
   await page.waitForFunction(()=>document.body.dataset.lifeosView==='tracking');assert(await page.locator('#caHistory').isVisible());await nav('dashboard');await page.locator('#apTab1').click();
   d=await snap();assert(!d.gaps.some(g=>g.a<gap.b&&g.b>gap.a));assert.equal(d.metrics.unique,217*60000+30*60000);
   await page.locator('[data-ap-live-period="2"]').click();
-  await page.locator('svg [data-ap-detail="record"][data-ap-key="live"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('running'));await close();
-  await page.locator('svg [data-ap-detail="plan"][data-ap-key="plan"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Evening commitment'));await close();
+  await page.locator('svg [data-ap-detail="record"][data-ap-key="live"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Running'));await close();
+  const plan1=page.locator('svg [data-ap-detail="plan"][data-ap-key="plan"]'),plan2=page.locator('svg [data-ap-detail="plan"][data-ap-key="plan-overlap"]');
+  assert.notEqual(await plan1.locator(':scope > rect').getAttribute('x'),await plan2.locator(':scope > rect').getAttribute('x'));
+  await plan1.click();assert((await page.locator('#caDialogBody').innerText()).includes('Evening commitment'));await close();await plan2.click();assert((await page.locator('#caDialogBody').innerText()).includes('Concurrent commitment'));await close();
   await page.locator('#apTab0').click();await page.getByRole('button',{name:'Log longest interval'}).click();assert(await page.locator('#caGapContext').isVisible());await close();
   await page.locator('#apTab3').click();
   const review=await page.locator('#apPage3').innerText();assert(review.includes('Reading together'));assert(!review.includes('Brief interval'));
@@ -100,8 +106,15 @@ const local=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*6
   await page.waitForFunction(()=>{const sheet=document.querySelector('#loCADialog .ca-sheet');return sheet&&sheet.getBoundingClientRect().bottom<=(window.visualViewport?.height||innerHeight)+2});
   const box=await page.locator('#loCADialog .ca-sheet').boundingBox();assert(box.y+box.height<=462);await page.locator('#caPastName').fill('Manual past check');
   const first=d.gaps.find(g=>g.b-g.a>120000);await page.locator('#caPastStart').fill(await page.evaluate(local,first.a));await page.locator('#caPastEnd').fill(await page.evaluate(local,first.a+60000));await page.locator('[data-ca-save-past]').click();await page.getByText('Activity saved',{exact:true}).waitFor({state:'visible'});await close();
-  await page.setViewportSize({width:393,height:780});
-  for(const view of ['dashboard','tracking','schedule','goals','analytics','life']){await nav(view);await page.waitForFunction(v=>document.body.dataset.lifeosView===v,view)}
+  for(const height of [460,780]){
+   await page.setViewportSize({width:393,height});
+   for(const view of ['dashboard','tracking','schedule','goals','analytics','life']){
+    await nav(view);await page.waitForFunction(v=>document.body.dataset.lifeosView===v,view);
+    await page.waitForFunction(()=>{const n=document.getElementById('lifeosNavigation'),v=window.visualViewport;return n&&Math.abs(n.getBoundingClientRect().bottom-((v?.offsetTop||0)+(v?.height||innerHeight)))<3});
+    assert.equal(await page.locator('#loTrackWorkspaces:visible').count(),0,'Superseded Track workspace leaked into '+view);
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),view+' horizontal overflow at '+height);
+   }
+  }
   await nav('dashboard');await page.locator('#todayAPlus .ap-header button').click();assert(await page.locator('#todayAPlus.ap-light').count());
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(dialogs,[]);assert.deepEqual(errors,[]);
   // A separate, empty Preview storage area also exercises a 23-hour local day.
@@ -112,8 +125,16 @@ const local=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*6
   const emptyDay=await blank.evaluate(()=>window.lifeosTodayAPlusSnapshot());assert.equal(emptyDay.metrics.dayLength,23*3600000);assert.equal(emptyDay.metrics.total,0);
   assert.equal(emptyDay.metrics.unique+emptyDay.metrics.unlogged+emptyDay.metrics.remaining,emptyDay.metrics.dayLength);
   await blank.locator('#apTab1').click();await blank.locator('.ap-v250-access summary').click();await blank.locator('.ap-v250-access [data-ap-detail="gap"]').first().click();assert((await blank.locator('#caDialogBody').innerText()).includes('Unknown'));await blank.locator('#loCADialog [data-ca-gap]').click();
-  assert.equal(await blank.locator('#caPastEnd').evaluate(e=>new Date(e.value).getTime()),emptyDay.at);await blank.locator('#caPastName').fill('Exact full interval');await blank.locator('[data-ca-save-past]').click();await blank.getByText('Activity saved',{exact:true}).waitFor({state:'visible'});assert.equal((await blank.evaluate(()=>window.lifeosTodayAPlusSnapshot())).recorded[0].b,emptyDay.at);await blank.locator('#loCADialog [data-ca-close]').last().click();
+  assert.equal((await blank.locator('#caPastEnd').inputValue()).length,16);assert((await blank.locator('#caGapSummary').innerText()).includes('Remaining unlogged 0s'));
+  await blank.locator('#caPastName').fill('Exact full interval');await blank.locator('[data-ca-save-past]').click();await blank.getByText('Activity saved',{exact:true}).waitFor({state:'visible'});assert.equal((await blank.evaluate(()=>window.lifeosTodayAPlusSnapshot())).recorded[0].b,emptyDay.at);await blank.locator('#loCADialog [data-ca-close]').last().click();
   await blank.locator('#todayAPlus .ap-header button').click();assert(await blank.locator('#todayAPlus.ap-light').count());assert(await blank.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  // Six-hour map windows follow local clock time on both daylight-saving transitions.
+  await blank.clock.setFixedTime(new Date('2026-03-29T06:30:00+02:00'));await blank.goto(origin+'/');await blank.waitForFunction(()=>window.lifeosTodayAPlusSnapshot);await blank.locator('#apTab1').click();
+  assert((await blank.locator('[data-ap-live-period="1"]').getAttribute('class')).includes('ap-selected'));
+  const springBlock=blank.locator('#apPage1 svg [data-ap-detail="record"]').first();assert(Math.abs(Number(await springBlock.locator('rect').first().getAttribute('height'))-28)<0.1);
+  await blank.clock.setFixedTime(new Date('2026-10-25T05:30:00+01:00'));await blank.goto(origin+'/');await blank.waitForFunction(()=>window.lifeosTodayAPlusSnapshot);await blank.locator('#apTab1').click();
+  assert.equal((await blank.evaluate(()=>window.lifeosTodayAPlusSnapshot())).metrics.dayLength,25*3600000);assert((await blank.locator('[data-ap-live-period="0"]').getAttribute('class')).includes('ap-selected'));
+  assert.equal((await blank.locator('#apPage1 svg').nth(1).locator('text').allTextContents()).filter(x=>x==='02:00').length,2);
   await blank.goto(origin+'/?todayDemo=1');await blank.locator('#apTab2').click();assert(!(await blank.locator('#apPage2').innerText()).includes('available window'));assert((await blank.locator('#apPage2').innerText()).includes('unscheduled time'));
   await blank.locator('#apTab3').click();const demoSummary=blank.locator('#apPage3 details').filter({hasText:'shorter intervals'}).locator('summary');await demoSummary.click();await blank.waitForFunction(el=>el.textContent.startsWith('Hide '),await demoSummary.elementHandle());await demoSummary.click();await blank.waitForFunction(el=>el.textContent.startsWith('Show '),await demoSummary.elementHandle());
   assert.deepEqual(blankErrors,[]);await empty.close();

@@ -4,12 +4,20 @@
 (function(root,factory){const api=factory(root);if(typeof module==='object'&&module.exports)module.exports=api;else root.LifeOSActivityAnalyticsV253=api;})(typeof globalThis!=='undefined'?globalThis:this,function(root){
 'use strict';
 const DAY=86400000,MIN=60000;
-const excluded=s=>!s||!!s.seedBatch||['development-starter','assumed-demo','imported-example'].includes(s.source);
+const excluded=s=>!s||!!s.seedBatch||s.notes==='Synthetic Preview test record'||['development-starter','assumed-demo','imported-example'].includes(s.source);
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
 function category(s){
- const direct=String(s?.activityDetailsV252?.category||'').trim().toLowerCase();
+ const direct=(String(s?.activityDetailsV252?.category||'').trim()||String(s?.category||'').trim()).toLowerCase();
  const catalog=root.LifeOSActivityIntelligenceV251?.catalog||[];
  if(catalog.some(c=>c.id===direct))return direct;
+ const labels={'prayer':'prayer','university':'study','study':'study','fitness':'fitness','nutrition':'nutrition','sleep':'sleep','quran & arabic':'quran','work & business':'work','business':'work','distraction':'distraction','other / review':'other','other':'other'};
+ if(direct)return Object.prototype.hasOwnProperty.call(labels,direct)?labels[direct]:catalog.find(c=>c.title.toLowerCase()===direct)?.id||'other';
+ const resolved=root.lifeosActivityClassification?.(s);
+ if(resolved){
+  const id=labels[String(resolved.group||'').toLowerCase()];
+  if(id&&id!=='other')return id;
+  if(resolved.reason!=='unmatched')return 'other';
+ }
  if(s?.activityType==='distraction')return 'distraction';
  return root.LifeOSActivityIntelligenceV251?.match?.(s?.name)?.id||'other';
 }

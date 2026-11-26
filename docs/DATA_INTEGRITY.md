@@ -1,0 +1,12 @@
+# Data integrity
+
+The original Beta contains historical user data. Do not write to, reset, migrate, export into Preview, or clear its local storage without explicit authorization. Do not remove an installed app or change its package/signing identity to work around an update problem. Treat backups and signing material as private and never commit them.
+
+- Raw segment timestamps and durations are authoritative. Today clips them to the local day and aggregates milliseconds before formatting. Unique coverage is the union of intervals; total is their sum; overlap is total minus unique. Unlogged is elapsed minus unique, and remaining is local-day end minus now. Local day length may be 23 or 25 hours.
+- A pause is not active recorded time. Concurrency shorter than one minute may be omitted from warnings, but remains in raw totals. Never delete original overlapping records automatically.
+- Gap logging validates the selected original interval against the latest unlogged boundaries immediately before the existing manual save. The unchanged displayed endpoints retain their exact original milliseconds. Edited endpoints must be within the gap. Failed persistence retains prior records.
+- Explicit category choices take precedence; empty choices permit recognition. Synthetic/ambiguous names are not guessed. The original built-in Preview example set is identified from its complete known fixture signature without rewriting it; its new generator carries explicit labels. Preview sample evidence is excluded from category analytics and fitness goal evidence where those paths are used.
+- V252 review uses the existing auditable save bridge; timestamp correction is limited to eligible records and keeps an audit event. Do not replace a multi-segment history with a fabricated single interval.
+- Local recovery uses the atomic checkpoint and journal. A browser reload test establishes only local persistence, not server durability, device backup, or two-device synchronization.
+
+Preview startup logs on 25 November 2026 reported SQLite configured by `LIFEOS_DB`; the service description did not show a persistent disk. Do not rely on its server-side data surviving redeploys until persistence is independently established. The separately named disposable staging PostgreSQL instance was available and listed with expiry **8 December 2026 06:15 UTC**; its connection to any service was not established. No database was queried or modified for this observation.

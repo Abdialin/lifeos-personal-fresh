@@ -1,0 +1,26 @@
+# Architecture and active code
+
+This is an incremental map, not a claim that every historical module has been audited. Start with the current `git` revision and trace the active DOM and handlers before changing legacy code.
+
+## Web application
+
+- `index.html` is the main application and includes the canonical workspace, tracking actions, Today A+ foundation/visual scripts, `ap-live-integration`, and Preview viewport scripts. The `todayDemo=1` route uses illustrative UI; the default Today view uses `lifeosTodayAPlusSnapshot()` and real local state.
+- `track_concept_a.js` and `track_concept_a.css` provide the active Track Concept A presentation and shared details/manual-entry sheet. The older `#loTrackWorkspaces` and original forms remain in the DOM as adapters; do not remove them without tracing action and history dependencies.
+- `personal_planning_v11.js` supplies the older grouped history representation consumed by Track. `lifeos_unified_analytics.js` computes clipped raw intervals, union durations and overlap. Today classification is exposed as `lifeosActivityClassification` in `index.html`; `personal_activity_analytics_v253.js` and the fitness goal evidence path consume that result where available. Explicit V251 catalog categories also round-trip through the V252 review form. Some other goal rules deliberately match an activity name or user-provided keyword; they are not a fully unified category engine.
+- Six-section navigation uses `#lifeosNavigation` and `body[data-lifeos-view]`. The Preview-only V248/V249 viewport code uses `visualViewport` and CSS variables. Browser alignment is not proof of Android system-inset behavior.
+- `personal_plan_product_v136.js` and `personal_plan_interactions_v137.js` present and connect the current planning UI; schedules and tasks remain in the shared workspace. `calendar.js`, `atomic_calendar.py`, and `google_calendar.py` are additional calendar integration paths. Trace the actual action before changing them; the presence of an older script does not establish that it owns the current interface.
+- The tracking engine's session segments, pause/resume actions and manual-entry form live in `index.html`; the Concept A UI calls their existing actions. `personal_activity_intelligence_v251.js`, `personal_activity_review_v252.js`, and `personal_activity_analytics_v253.js` provide a catalog, reviewed details and category analytics. Multiple older analytics and design patches still load; do not remove them based only on version numbers.
+
+## State and server
+
+The local workspace is maintained in memory with `lifeos-live-v1`, the atomic recovery checkpoint, outbox and sync metadata. `trackingCommit` and existing persistence checks protect timer changes; manual past entry uses the existing form/persistence path. Recovery and sync code includes `personal_browser_activity_recovery_v241.js`, `personal_activity_delta_sync_v242.js`, and the atomic/outbox logic in `index.html`.
+
+`server.py` serves allowlisted assets and authenticated routes. `lifeos_browser_login_v153.py` handles the browser login/logout flow, while the server also checks configured authorization; credentials and tokens must never be logged or committed. It supports SQLite (`LIFEOS_DB`) or PostgreSQL (`LIFEOS_DATABASE_URL`), with revision-based compare-and-swap in the shared workspace. The separate account API is disabled unless explicitly configured and has a separate boundary. See `docs/DATA_INTEGRITY.md` before inspecting any live data.
+
+Recovery and synchronization are layered: `personal_native_backup_v234.js`, `personal_browser_activity_recovery_v241.js`, `personal_activity_delta_sync_v242.js`, `personal_pending_queue_recovery_v244.js`, `personal_storage_rescue_v265.js`, and `personal_durable_storage_v268.js` cooperate with the server and the in-page journal/outbox. Their presence is not proof of end-to-end cross-device recovery; test each flow with synthetic isolated data before changing it.
+
+## Android
+
+`android-companion/` contains a WebView wrapper, native timer service, alarms, reminders and origin-restricted bridge. `TimerService.kt` implements the foreground timer notification, `PlannedReminder.kt` handles planned reminders and `NativeAlarm.kt` handles native focus alarms; web-side notification/bridge code includes `personal_android_bridge_v222.js` and `personal_notification_controls_v87.js`. `MainActivity.kt` applies system-bar and IME insets to the WebView on supported Android versions; the web layer also positions the navigation using `visualViewport`. Their interaction on a physical Samsung device remains unverified for the reported floating bar. The Preview variant has its own application ID; preserve package identities and permanent signing.
+
+Historical V121/V122/V126 resources explain earlier design choices but are not substitutes for the active Concept A+/Concept A implementation or the missing approved mockup images.

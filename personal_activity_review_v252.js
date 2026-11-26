@@ -56,7 +56,7 @@ function mount(){
   // Today stores display labels; resolve them to the existing Track review IDs
   // without changing the saved record until the user explicitly saves it.
   const todayIds={'Prayer':'prayer','University':'study','Study':'study','Fitness':'fitness','Nutrition':'nutrition','Sleep':'sleep','Quran & Arabic':'quran','Work & business':'work','Distraction':'distraction','Other / review':'other'};
-  const stored=Object.prototype.hasOwnProperty.call(todayIds,fields.category)?todayIds[fields.category]:fields.category;
+  const stored=Object.prototype.hasOwnProperty.call(todayIds,fields.category)?todayIds[fields.category]:(all.find(item=>item.title===fields.category)?.id||fields.category);
   const known=x=>x==='other'||all.some(item=>item.id===x);
   const cat=known(selectedCategory)?selectedCategory:known(stored)?stored:found,schema=schemas[cat]||[];
   // Only offer deletion as a distraction when the saved record is classified
@@ -134,7 +134,7 @@ function mount(){
 
 }
 if(root.document&&!root.document.getElementById('lo253-script')){
- const load=()=>{if(root.document.getElementById('lo253-script'))return;const el=root.document.createElement('script');el.id='lo253-script';el.src='/personal_activity_analytics_v253.js?v=271';el.defer=true;root.document.head.appendChild(el)};
+ const load=()=>{if(root.document.getElementById('lo253-script'))return;const el=root.document.createElement('script');el.id='lo253-script';el.src='/personal_activity_analytics_v253.js?v=250-followup';el.defer=true;root.document.head.appendChild(el)};
  if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',load,{once:true});else load();
 }
 if(root.document){const init=()=>{mount();root.setTimeout?.(mount,900)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',init,{once:true});else init()}

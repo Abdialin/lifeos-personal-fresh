@@ -1,0 +1,5 @@
+# Plan visual evidence
+
+Current synthetic captures: [overview](current/overview.png), [calendar](current/calendar.png), [tasks](current/tasks.png), [comparison](current/compare.png), [improve](current/improve.png), [review](current/review.png) and [more](current/more.png). They are implementation snapshots, not approved future designs. The prior capture showed a superseded Track workspace leaking into Plan; the current captures show that obsolete presentation hidden while its action adapters remain in the DOM.
+
+On 26 November 2026 the user supplied five desired Plan references in chat (Overview, Calendar, Tasks, Compare and Improve) and explicitly instructed implementation to proceed. The original image files are not available in the repository workspace, so the screenshots above remain current implementation evidence and cannot be treated as the approved references. Capture the supplied source files with their provenance when they become available. Implement and verify Overview first, then move to each next subsection only after the preceding visual and functional checks pass.
