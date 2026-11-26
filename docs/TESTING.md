@@ -38,6 +38,7 @@ PLAN_COMPARE_CAPTURE=1 node tests/plan-compare-chart.cjs
 node tests/plan-duration-evidence.cjs
 PLAN_IMPROVE_CAPTURE=1 node tests/plan-improve-evidence.cjs
 PLAN_SKIP_CAPTURE=1 node tests/plan-skip-consent.cjs
+REMINDER_CAPTURE=1 node tests/plan-reminder-skip.cjs
 node scripts/capture-design-baselines.cjs
 node test_goal_fitness_cross_section_v204.cjs
 node test_personal_goals_integration.cjs
@@ -71,6 +72,8 @@ The Calendar heading fixture checks that the day headings remain visible during 
 The Calendar clock-change fixture checks the 23- and 25-hour Stockholm days and a 24.5-hour Lord Howe day, missing and repeated local times, per-day scales, proportional interval geometry, exact offsets in activity details, the accessible list, single-day and three-day views, light-mode contrast, read-only browsing and rejection of an ambiguous recurring series in its preview. Model tests also cover ambiguous start and end times and half-hour transitions. `PLAN_DST_CAPTURE=1` saves synthetic screenshots; native device rendering has not been tested.
 
 The Plan skip fixture verifies cancellation and focus, rejected checkpoint writes, explicit approval and audit, preservation of the original plan without creating a session, a plan moved during confirmation, duplicate identifiers, malformed audit data, recovery visibility, exclusion from Today’s unverified commitments, reload persistence, the original schedule control and light/dark sheets. It blocks network requests and uses synthetic local records; native behavior is not established.
+
+The browser reminder fixture checks skipped, completed, linked and duplicate-ID commitments, a queued plan skipped while another reminder is visible, retraction of a visible reminder, continued reminders for eligible plans, snooze, and actual Start now timer creation. It verifies both on-screen prompts remain operable at 360×460 and captures a synthetic screenshot with `REMINDER_CAPTURE=1`. Browser notification calls are intercepted; this does not test Android system notifications or the lock screen.
 
 The Today V1 fixture checks record-based overview values and navigation into existing editors, partial-period union accounting, category drill-down, proportional overlap lanes, short interval access, cancelled-plan exclusion, task completion and reload persistence, light mode and browser viewport clearance. Review assertions verify category bars against raw duration, full accessible labels, touch target height, intelligence order and selected light-mode text contrast. With capture enabled it writes synthetic images under `docs/design/today/current/release-*.png`. Reference comparison notes and remaining discrepancies are in `docs/design/today/COMPARISON.md`.
 

@@ -50,6 +50,8 @@ Clock-change days now display their own local scale when adjacent days use a dif
 
 Explicitly marking a planned activity skipped now uses an in-app confirmation with stale-record and checkpoint guards, a retained original plan and an audit entry. It does not invent tracked time. The activity-details sheet also follows the selected light theme. These checks use synthetic browser data; device acceptance is open.
 
+The browser's planned-reminder queue rechecks a commitment before showing it and removes a visible reminder when that plan is skipped or started. A queued skipped, changed or duplicate-ID plan is not shown. When a reminder and the Start now dock appear together, the browser positions them so their controls remain reachable. Synthetic tests cover snoozing and starting a timer; native notification delivery remains unverified.
+
 Plan Improve's duration checks now compare active duration with the median of 3–20 eligible earlier same-named activities within 60 local calendar days, flagging a difference of at least 15 minutes and twice or half the median. Recorded activities over 24 hours are also presented for review. Sample, duplicate, future and inconsistent records do not supply evidence. A warning is a prompt to inspect the original, not a claim of an error. Explicitly skipped commitments now reach recovery review. Selecting a commitment and a recovery option opens the existing decision sheet; preview, in-app consent and a fresh conflict check precede any save. Synthetic browser tests cover cancellation, a conflict introduced during consent, failed storage and successful reload. Device acceptance remains open.
 
 ## Still open
