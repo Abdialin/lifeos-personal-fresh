@@ -22,6 +22,7 @@ jobs:
       - run: node tests/today-v250-precision.cjs
       - run: node tests/today-v250-volume.cjs
       - run: TODAY_V1_CAPTURE=1 node tests/today-release-v1.cjs
+      - run: TODAY_AGENDA_CAPTURE=1 node tests/today-agenda-habits.cjs
       - run: TODAY_HISTORY_CAPTURE=1 node tests/today-history-date.cjs
       - run: TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
       - run: node tests/track-live-controls.cjs
@@ -32,6 +33,7 @@ jobs:
       - run: node test_stage80_duration_profiles.cjs
       - run: node --test test_track_design_v126.test.cjs test_track_focus_v127.test.cjs test_track_polish_v128.test.cjs test_track_visual_v129.test.cjs
       - run: node test_plan_evidence_v250.cjs
+      - run: node test_personal_goals_integration.cjs
       - run: node tests/plan-overview-model.cjs
       - run: PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
       - run: node tests/plan-concept-a-model.cjs

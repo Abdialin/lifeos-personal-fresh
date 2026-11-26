@@ -157,7 +157,7 @@ function evidenceMarkup(def,check,day){
  if(!habitDue(def,day))return '<p class="lo32-muted">Not a scheduled habit day. Choose another date.</p>';
  const found=evidenceSources(def,day);
  if(!def.matchText)return '<p class="lo32-muted">To discover existing activities for this habit, set a matching word or phrase in the habit editor.</p>';
- if(check?.evidenceSourceId)
+ if(check?.done&&check?.evidenceSourceId&&check?.checkSource!=='manual')
   return '<p class="lo32-muted">Confirmed using a linked '+esc(check.evidenceType||'activity')+' record. No timer time was added.</p>';
  return '<div class="lo33-evidence-list">'+(found.length?found.map(x=>
   '<div class="lo33-evidence"><div><strong>'+esc(x.title)+'</strong><small>'+esc(x.origin)+(x.simulated?' · Assumed example':'')+' · '+esc(targetStatus(def,x))+'</small></div>'+
@@ -224,21 +224,37 @@ function saveHabit(form){
  if(!bridge()?.mutate('habitDefinitions','upsert',item))return alert('Habit could not be saved.');
  habitEditingId=null;habitUI();
 }
-function toggleHabit(idValue,evidence){
- const b=bridge()?.read()||{},def=b.habitDefinitions?.find(x=>x.id===idValue);if(!def)return;
- const current=b.habitChecks.find(c=>c.habitId===idValue&&c.date===habitSelectedDate);
- if(current?.done&&current.checkSource==='auto-linked-evidence'){
-  const dismissed={...current,done:false,checkSource:'auto-dismissed',updatedAt:Date.now()};
-  if(!bridge()?.mutate('habitChecks','upsert',dismissed))return alert('Could not undo automatic habit check.');
- }else if(current?.done){
-  if(!bridge()?.mutate('habitChecks','remove',current))return alert('Could not undo habit check.');
+function updateHabitCheck(idValue,day,evidence,expected){
+ const b=bridge()?.read()||{},def=b.habitDefinitions?.find(x=>String(x.id)===String(idValue));
+ if(!def)return {ok:false,error:'This habit no longer exists.'};
+ const current=(b.habitChecks||[]).find(c=>String(c.habitId)===String(idValue)&&c.date===day);
+ if(!current&&!habitDue(def,day))return {ok:false,error:'This habit is not scheduled for this day.'};
+ if(expected!==undefined&&JSON.stringify(current||null)!==expected)return {ok:false,error:'This habit changed. Review its current status and try again.'};
+ let next;
+ if(current?.done){
+  // Retain the existing check and evidence when a user undoes a completion.
+  // An explicit dismissal also prevents optional auto-completion from rechecking it.
+  next={...current,done:false,previousCheckSource:current.checkSource||null,checkSource:current.checkSource==='auto-linked-evidence'?'auto-dismissed':'manual-dismissed',updatedAt:Date.now()};
  }else{
-  const next={id:current?.id||id(),habitId:idValue,date:habitSelectedDate,done:true,createdAt:current?.createdAt||Date.now(),checkSource:evidence?'linked-evidence':'manual',
-   evidenceType:evidence?.sourceType||null,evidenceSourceId:evidence?.sourceId||null};
-  if(!bridge()?.mutate('habitChecks','upsert',next))return alert('Check could not be saved.');
+  next={...current,id:current?.id||id(),habitId:def.id,date:day,done:true,createdAt:current?.createdAt||Date.now(),checkSource:evidence?'linked-evidence':'manual',
+   evidenceType:evidence?.sourceType||current?.evidenceType||null,evidenceSourceId:evidence?.sourceId||current?.evidenceSourceId||null,updatedAt:Date.now()};
  }
- habitUI();
+ if(!bridge()?.mutate('habitChecks','upsert',next))return {ok:false,error:'Habit check could not be saved. Existing records were retained.'};
+ try{habitUI()}catch(error){console.warn('Habit check saved but its view could not refresh.',error)}
+ return {ok:true,done:next.done};
 }
+function toggleHabit(idValue,evidence){
+ const result=updateHabitCheck(idValue,habitSelectedDate,evidence);
+ if(!result.ok)alert(result.error);
+}
+// Today invokes the same saved-check workflow with an exact stale-state check.
+window.lifeosHabitToggleToday=(idValue,day,expected)=>{
+ if(day!==local(Date.now())||typeof expected!=='string')return {ok:false,error:'The selected day changed. Refresh Today and try again.'};
+ const records=bridge()?.read()||{},def=(records.habitDefinitions||[]).find(x=>String(x.id)===String(idValue));
+ if(!def||!habitDue(def,day))return {ok:false,error:'This habit is no longer scheduled for today.'};
+ if((records.habitChecks||[]).filter(c=>String(c.habitId)===String(idValue)&&c.date===day).length>1)return {ok:false,error:'Multiple checks exist for today. Review this habit in My Life.'};
+ return updateHabitCheck(idValue,day,null,expected);
+};
 function ownShare(){
  const w=read(),b=bridge()?.read()||{};
  const since=local(Date.now()-6*86400000),today=local(Date.now());
