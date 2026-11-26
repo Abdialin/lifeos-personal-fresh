@@ -33,6 +33,7 @@ function overview(){const d=all(),begin=startday(datekey(Date.now())),finish=sta
 function periodKeys(){if(range==='month'){const d=new Date(anchor+'T12:00:00');d.setDate(1);return Array.from({length:new Date(d.getFullYear(),d.getMonth()+1,0).getDate()},(_,i)=>datekey(new Date(d.getFullYear(),d.getMonth(),i+1)))}const n=range==='three'?3:range==='week'?7:1;const d=new Date(anchor+'T12:00:00');if(range==='week')d.setDate(d.getDate()-(d.getDay()+6)%7);return Array.from({length:n},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return datekey(x)})}
 function dateShift(dir){const d=new Date(anchor+'T12:00:00');if(range==='month'){d.setDate(1);d.setMonth(d.getMonth()+dir)}else d.setDate(d.getDate()+dir*(range==='week'?7:range==='three'?3:1));anchor=datekey(d);showAll=false;renderCalendar()}
 function renderCalendar(){
+ if(window.LifeOSPlanConcept){window.LifeOSPlanConcept.render('calendar');return}
  const d=all(),keys=periodKeys();$('v136PeriodTitle').textContent=range==='month'?new Date(anchor+'T12:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'}):range==='week'?'Week of '+new Date(keys[0]+'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):range==='three'?'Next three days':displayDate(anchor);
  host.querySelectorAll('[data-v136-range]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v136Range===range)));
  const grid=keys.map(k=>{const rows=getDayRows(d,k),today=k===datekey(Date.now());return '<button type="button" class="v136-day'+(today?' is-today':'')+(k===anchor?' is-selected':'')+'" data-v136-date="'+k+'"><strong>'+new Date(k+'T12:00:00').toLocaleDateString(undefined,{weekday:'short'})+'</strong><span>'+new Date(k+'T12:00:00').getDate()+'</span><i>'+rows.length+'</i></button>'}).join('');
@@ -82,6 +83,7 @@ function idealRows(x,from,to){
  return list;
 }
 function renderCompare(){
+ if(window.LifeOSPlanConcept){window.LifeOSPlanConcept.render('compare');return}
  const d=all(),now=Date.now(),today=startday(datekey(now)),n=compareWindow;
  const historical=compare==='reality',from=historical?today-n*86400000:today,to=historical?today:today+n*86400000;
  const raw=historical?d.real.filter(x=>+x.startAt<to&&+x.endAt>from):compare==='planned'?d.plans.filter(x=>+x.startAt<to&&+x.endAt>from):idealRows(d.x,from,to);
@@ -120,6 +122,7 @@ function renderCompare(){
  host.querySelectorAll('[data-v139-days]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v139Days===n)));
 }
 function renderImprove(){
+ if(window.LifeOSPlanConcept){window.LifeOSPlanConcept.render('improve');return}
  const d=all(),recent=d.real.filter(x=>+x.startAt>Date.now()-7*86400000),flag=recent.filter(suspicious),plans=d.plans.filter(x=>+x.startAt>Date.now()).sort((a,b)=>a.startAt-b.startAt),pairs=[];
  for(let i=0;i<plans.length;i++)for(let j=i+1;j<plans.length;j++)if(+plans[i].startAt<+plans[j].endAt&&+plans[j].startAt<+plans[i].endAt)pairs.push([plans[i],plans[j]]);
  const opportunities=[];
@@ -176,7 +179,7 @@ function makeAdvanced(){
   const panel=$(id),slot=$('v136Old-more');if(panel&&slot&&!slot.contains(panel))slot.append(panel);
  }
 }
-function screen(tab){selected=tab;tabs();if(tab==='overview')window.LifeOSPlanOverview?.render();if(tab==='calendar')renderCalendar();if(tab==='compare')renderCompare();if(tab==='improve')renderImprove();if(tab==='review')renderReview();const menu=host.querySelector('.pov-settings');if(menu)menu.open=false;host.scrollIntoView({block:'start',behavior:'instant'})}
+function screen(tab){selected=tab;tabs();if(tab==='overview')window.LifeOSPlanOverview?.render();if(tab==='calendar')renderCalendar();if(tab==='tasks')window.LifeOSPlanConcept?.render('tasks');if(tab==='compare')renderCompare();if(tab==='improve')renderImprove();if(tab==='review')renderReview();const add=host.querySelector('[data-v136-action="new"]');if(add)add.textContent=tab==='tasks'?'＋ Add task':'＋ Add';const menu=host.querySelector('.pov-settings');if(menu)menu.open=false;host.scrollIntoView({block:'start',behavior:'instant'})}
 function openForm(){screen('calendar');const box=$('v136PlanFormDetails');box.open=true;const form=$('scheduleForm'),toggle=$('v7TogglePlanForm');if(form?.hidden)toggle?.click();$('scheduleName')?.focus({preventScroll:true})}
 function init(){
  source=$('scheduleEditorPanel');if(!source||$('v136Workspace'))return;
@@ -226,7 +229,7 @@ function init(){
   if(b.id==='v136MoreRows'){showAll=!showAll;renderCalendar();return}
   if(b.dataset.v136Action==='today'){anchor=datekey(Date.now());range='day';showAll=false;renderCalendar();return}
   if(b.dataset.v136Action==='next'){const p=all().plans.filter(x=>+x.startAt>Date.now()).sort((a,b)=>a.startAt-b.startAt)[0];if(p){anchor=datekey(+p.startAt);range='day';showAll=false;renderCalendar();$('v136DaySummary')?.scrollIntoView({block:'center',behavior:'smooth'})}return}
-  if(b.dataset.v136Action==='new'){openForm();return}
+  if(b.dataset.v136Action==='new'){if(selected==='tasks'&&window.LifeOSPlanConcept)window.LifeOSPlanConcept.taskEditor();else openForm();return}
   if(b.dataset.v136Action==='tasks'){screen('tasks');const target=$('todoForm');if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),150);return}
  });
  const sheet=$('v136PlanFormDetails');

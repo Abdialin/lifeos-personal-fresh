@@ -14,6 +14,8 @@ node tests/today-v250-volume.cjs
 node test_plan_evidence_v250.cjs
 node tests/plan-overview-model.cjs
 PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
+node tests/plan-concept-a-model.cjs
+PLAN_CAPTURE=1 node tests/plan-concept-a.cjs
 node scripts/capture-design-baselines.cjs
 node test_goal_fitness_cross_section_v204.cjs
 node test_unified_analytics.cjs
@@ -30,3 +32,5 @@ The Plan tests cover local-week and daylight-saving boundaries, overnight and pa
 GitHub workflows: `.github/workflows/preview-runtime.yml`, `today-a-plus-browser.yml`, `today-aplus-mobile-visual.yml`, and `today-presentation-check.yml`. The mobile workflow captures multiple widths and themes and checks geometry; screenshots are evidence, not automatic approval against a missing mockup. The visual library contains synthetic prior/current captures and comparison notes.
 
 Browser tests cannot verify Samsung WebView system insets, native IME, gesture/three-button navigation, notifications, vibration, background execution or signing. Record those as device checks only after observing the actual device. Do not weaken time, persistence or geometry assertions to make CI pass.
+
+The Plan Concept A+ tests cover all four new subsection presentations, calendar views, individual activity details, task edits, recurring-series preview and approval, conflict revalidation, failed-storage rollback, reload persistence, aligned comparison windows and evidence cutoffs, paused time, DST recurrence rejection, empty and 132-record states, themes, navigation and reduced browser heights. Captures in `plan-verification/` are intercepted synthetic fixtures. See `docs/design/plan/COMPARISON.md` for visual differences and open device checks.

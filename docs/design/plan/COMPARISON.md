@@ -1,13 +1,17 @@
-# Plan Overview visual comparison
+# Plan Concept A+ visual comparison
 
-The user supplied the desired Overview reference in chat. Its original image file was not available in this workspace, so a pixel diff cannot be generated or stored. These captures use local, synthetic records at 393×780; they are not Android-device photographs or proof of user approval.
+The original images below were supplied by the user on 26 November 2026; their values are illustrations. Delivered captures use realistic synthetic records at 393×780 in an intercepted local browser. They do not show the user's history or establish Samsung/WebView behavior.
 
-| Before this work | Delivered dark | Delivered light | Bottom clearance |
+| Subsection | Approved reference | Delivered dark browser capture | Delivered light browser capture |
 | --- | --- | --- | --- |
-| ![Previous Plan](before/overview.png) | ![Populated Overview](current/overview-populated-dark.png) | ![Light Overview](current/overview-populated-light.png) | ![Overview at bottom](current/overview-bottom.png) |
+| Overview | ![Overview reference](reference/01_Plan_Overview.png) | ![Overview delivered](current/overview.png) | ![Overview light](current/overview-populated-light.png) |
+| Calendar | ![Calendar reference](reference/02_Plan_Calendar.png) | ![Calendar delivered](current/calendar.png) | ![Calendar light](current/calendar-light.png) |
+| Tasks | ![Tasks reference](reference/03_Plan_Tasks.png) | ![Tasks delivered](current/tasks.png) | ![Tasks light](current/tasks-light.png) |
+| Compare | ![Compare reference](reference/04_Plan_Compare.png) | ![Compare delivered](current/compare.png) | ![Compare light](current/compare-light.png) |
+| Improve | ![Improve reference](reference/05_Plan_Improve.png) | ![Improve delivered](current/improve.png) | ![Improve light](current/improve-light.png) |
 
-Compared with the supplied reference, the implementation uses the same five main tabs, paired commitments/tasks cards, seven-day workload chart, paired conflict/deadline cards and weekly summary. The secondary settings control preserves access to review, diagnostics, theme and account settings. Text and targets are sized for a mobile browser, so the complete populated page may require a short scroll instead of squeezing all controls into one viewport.
+The shared Plan header, five tabs, navy cards and mint selection follow the existing Overview. The Calendar week view uses horizontally scrollable day columns at narrow widths so text and controls remain usable; it displays the full local day, so more vertical scrolling is needed than in the illustrative cropped reference. Very short blocks also appear in an expandable list. On a week containing a daylight-saving transition, each day's geometry uses its actual length; the shared axis follows the first day and an explanatory note directs the user to exact item times.
 
-Recorded and planned bars show unique occupied time; overlapping intervals count once. “Plans confirmed” counts only explicitly completed plans or links to a finished session. Habit counts mean definitions with a recorded check, not assumed completion. The reference's illustrative completion rate and week-over-week changes are not shown without corresponding evidence. Colors, type rendering and proportions still need the user's device review; native Android insets and keyboard behavior remain unverified.
+Tasks retains a separate Anytime group for records without valid dates. The percentage is calculated from non-example tasks due or completed in the selected week. Its editor uses the original task form and controls. Compare shows real recorded and planned time, evidence-based pattern projections and existing ideal routines, with an accessible daily-values table. It does not present the reference's illustrative statistics as real results; the ideal ratio is withheld for a period that has not ended. Category bars sum durations and may count overlaps. Improve shows only supported findings and links to the existing review and approval flows. No plan changes are applied automatically.
 
-On 26 November 2026, `tests/plan-overview-model.cjs` and `tests/plan-overview.cjs` passed locally with synthetic data, including dark and light themes and 360×650, 393×460 and 412×780 browser viewports. The existing Today mobile visual workflow script passed all 39 local checks. These checks establish behavior and browser geometry; they do not establish pixel fidelity to the unavailable source image or Samsung system-inset behavior.
+The screenshots intentionally differ in content and numbers, may require scrolling, and omit unsupported ratios and suggestions. Calendar bulk editing of an entire recurring series is not implemented; each generated occurrence remains an ordinary plan. Device rendering, native system insets, keyboard behavior and final visual acceptance remain unverified.

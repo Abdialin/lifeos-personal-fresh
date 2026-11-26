@@ -30,13 +30,14 @@ function record(){return (read().sessions||[]).find(p=>String(p.id)===String(act
 function show(kind,id,trigger){
  activeId=id;activeKind=kind;closeFocus=trigger||document.activeElement;
  const item=kind==='plan'?plan():record();if(!item)return;
- const start=+item.startAt,end=+item.endAt;
- const status=kind==='plan'?(item.status==='planned'?'Planned':item.status||'Saved'):(item.status==='finished'?'Finished':'Recorded');
+ const start=+item.startAt,end=item.endAt==null?NaN:+item.endAt;
+ const status=kind==='plan'?(item.status?String(item.status).charAt(0).toUpperCase()+String(item.status).slice(1):'Saved'):(item.status==='finished'?'Finished':item.status==='running'?'Running':item.status==='paused'?'Paused':'Recorded');
  $('v137ActivityTitle').textContent=item.name||'Activity';
  $('v137ActivityEyebrow').textContent=kind==='plan'?'SCHEDULED ACTIVITY':'TRACKED ACTIVITY';
- const length=Number.isFinite(end)&&Number.isFinite(start)&&end>=start?mins(end-start):'Unknown';
+ const length=kind==='record'?mins(elapsed(item,Date.now())):Number.isFinite(end)&&Number.isFinite(start)&&end>=start?mins(end-start):'Unknown';
  const source=kind==='plan'?'Planned time is not proof that the activity happened.':'This session is a recorded activity. Verify its duration if it appears unusually long.';
- $('v137ActivityBody').innerHTML='<div class="v137-datetime"><span>Starts<strong>'+esc(fmt(start))+'</strong></span><span>Ends<strong>'+esc(fmt(end))+'</strong></span></div>'+
+ $('v137ActivityBody').innerHTML='<div class="v137-datetime"><span>Starts<strong>'+esc(fmt(start))+'</strong></span><span>Ends<strong>'+esc(Number.isFinite(end)?fmt(end):item.status==='running'?'Running':'Not finished')+'</strong></span></div>'+
+ '<div class="v137-detail-line"><span>Category</span><strong>'+esc(window.lifeosActivityClassification?.(item)?.group||'Other / review')+'</strong></div>'+
  '<div class="v137-detail-line"><span>Duration</span><strong>'+esc(length)+'</strong></div>'+
  '<div class="v137-detail-line"><span>Status</span><strong>'+esc(status)+'</strong></div>'+
  (item.notes?'<div class="v137-note">'+esc(item.notes)+'</div>':'')+
@@ -131,6 +132,6 @@ function init(){
  window.setInterval(()=>{if(document.hidden)return;timerAttention()},30000);
  timerAttention();
 }
-function boot(){if($('v136Workspace'))init();else setTimeout(boot,700)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,1200),{once:true});else setTimeout(boot,1200);
+function boot(){if($('v136Workspace'))init();else setTimeout(boot,100)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,100),{once:true});else setTimeout(boot,100);
 })();

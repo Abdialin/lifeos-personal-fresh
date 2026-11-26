@@ -12,7 +12,7 @@ The remote branch also received independent My Life overview changes in commits 
 
 The Today follow-up and activity-loader cache correction are in commits `8a69849584ebd0ffef1031157b886814000432b5` and `f3327e5b023478cced779462f1ac0890dcd8703c`. The four Today workflows passed for both commits, and Render reported the latter live on 26 November 2026. The authenticated deployed experience and Samsung device acceptance have not been independently checked.
 
-The current Plan work introduces the shared navigation and Overview, with synthetic browser screenshots and functional checks. Calendar, Tasks, Compare and Improve retain their previous presentations and do not yet implement the newly supplied references. Review Overview on the user's device before treating its visual design as accepted or advancing the subsection gate. The user's original reference image files were shown in chat but were not available as workspace files for a pixel comparison.
+The supplied Plan reference files are stored under `docs/design/plan/reference/`. The current work preserves Overview and implements the Calendar, Tasks, Compare and Improve presentations using the existing workspace and action bridges. Browser evidence and remaining design differences are recorded in `docs/design/plan/COMPARISON.md`. Device acceptance is pending for all five; the user requested a single focused review after the four remaining subsections are implemented. Verify the exact deployed revision and Actions results separately.
 
 ## Still open
 

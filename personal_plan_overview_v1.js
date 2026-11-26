@@ -63,7 +63,7 @@ function nativeTask(id,action){return [...(root.document?.querySelectorAll('#tod
 function init(){
  const workspace=root.document?.getElementById('v136Workspace');host=root.document?.getElementById('lifeosPlanOverview');if(!workspace||!host)return false;if(host.dataset.ready)return true;host.dataset.ready='true';
  workspace.addEventListener('click',event=>{
-  if(event.target.closest('[data-pov-search-toggle]')){const panel=workspace.querySelector('.pov-search');panel.hidden=!panel.hidden;if(!panel.hidden)workspace.querySelector('#povSearch')?.focus();else{query='';workspace.querySelector('#povSearch').value='';render()}return}
+  if(event.target.closest('[data-pov-search-toggle]')){if(workspace.querySelector('[data-v136-tab="overview"]')?.getAttribute('aria-selected')!=='true')workspace.querySelector('[data-v136-tab="overview"]')?.click();const panel=workspace.querySelector('.pov-search');panel.hidden=!panel.hidden;if(!panel.hidden)workspace.querySelector('#povSearch')?.focus();else{query='';workspace.querySelector('#povSearch').value='';render()}return}
   if(event.target.closest('[data-pov-theme]')){root.document.querySelector('.lifeos-theme-toggle')?.click();workspace.querySelector('.pov-settings').open=false;return}
   if(event.target.closest('[data-pov-settings]')){workspace.querySelector('.pov-settings').open=false;const button=root.document.getElementById('lo14SettingsButton')||root.document.querySelector('.lifeos-settings-action');if(button)button.click();else workspace.querySelector('[data-v136-tab="more"]')?.click();return}
   const edit=event.target.closest('[data-pov-task-edit]');if(edit){workspace.querySelector('[data-v136-tab="tasks"]')?.click();const native=nativeTask(edit.dataset.povTaskEdit,'edit');if(native)native.click();return}
