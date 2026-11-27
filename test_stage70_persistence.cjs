@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {verify,compareRecords,same}=require('./personal_persistence_validator_v70.js');
+const {verify,verifyAdditionalArrays,compareRecords,same}=require('./personal_persistence_validator_v70.js');
 const live={version:1,sessions:[{id:'s1',name:'Activity',status:'finished',startAt:100,endAt:200,segments:[{start:100,end:200}]}],schedule:[{id:'p1',name:'Plan',startAt:300,endAt:400,status:'planned'}],events:[{id:'e1',sessionId:'s1',type:'START',time:100}]};
 const encoded=JSON.stringify({format:1,workspace:live,journal:[]});
 assert.equal(verify(encoded,live).ok,true);
@@ -17,4 +17,18 @@ assert.equal(compareRecords({...live,events:[]},live).ok,false,'saved-only event
 assert.equal(compareRecords({...live,sessions:[...live.sessions,live.sessions[0]]},live).ok,false,'duplicate identifier detected');
 assert.equal(same({a:1,b:2},{b:2,a:1}),true,'key order irrelevant');
 assert.ok(verify(encoded,live).counts.sessions.saved===1);
-console.log('V70 strict checkpoint verification: 14/14 assertions passed');
+const withTasks={...live,todos:[{id:'t1',name:'Read',metadata:{kept:true}}]},tasksRaw=JSON.stringify({format:1,workspace:withTasks,journal:[]});
+assert.equal(verifyAdditionalArrays(tasksRaw,withTasks,['todos']).ok,true);
+const damaged=JSON.stringify({format:1,workspace:{...withTasks,todos:[]},journal:[]});
+assert.equal(verify(damaged,withTasks).ok,true,'Core activity checks alone do not compare tasks');
+assert.equal(verifyAdditionalArrays(damaged,withTasks,['todos']).ok,false,'Missing task is detected');
+assert.equal(verifyAdditionalArrays(encoded,withTasks,['todos']).ok,false,'A missing task array is detected');
+assert.equal(verifyAdditionalArrays(tasksRaw,withTasks,[]).ok,false);
+assert.equal(verifyAdditionalArrays(JSON.stringify({format:2,packed:true}),withTasks,['todos'],()=>({workspace:withTasks})).ok,true);
+assert.equal(verifyAdditionalArrays(JSON.stringify({format:2,packed:true}),withTasks,['todos'],()=>({workspace:{...withTasks,todos:[]}})).ok,false);
+require('./personal_recovery_compact_v19.js');
+const codec=globalThis.LifeOSCompactRecovery,compact=codec.pack(withTasks,[],{revision:null,dirty:false});
+assert.equal(verifyAdditionalArrays(JSON.stringify(compact),withTasks,['todos'],codec.unpack).ok,true,'Real compact checkpoint is supported');
+compact.workspace.todos=[];
+assert.equal(verifyAdditionalArrays(JSON.stringify(compact),withTasks,['todos'],codec.unpack).ok,false,'Missing task in a real compact checkpoint is detected');
+console.log('V70 strict checkpoint and additional-array verification passed');

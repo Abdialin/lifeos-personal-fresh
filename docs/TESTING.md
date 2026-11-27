@@ -23,6 +23,7 @@ TRACK_DETAIL_CAPTURE=1 node tests/track-record-details.cjs
 TRACK_TIMER_CAPTURE=1 node tests/track-timer-settings.cjs
 TRACK_DISTRACTION_CAPTURE=1 node tests/track-distraction-review.cjs
 node test_stage74_accountability.cjs
+node test_stage70_persistence.cjs
 node test_stage78_duration.cjs
 node test_stage80_duration_profiles.cjs
 node --test test_track_design_v126.test.cjs test_track_focus_v127.test.cjs test_track_polish_v128.test.cjs test_track_visual_v129.test.cjs
@@ -34,6 +35,7 @@ PLAN_CAPTURE=1 node tests/plan-concept-a.cjs
 PLAN_CALENDAR_CAPTURE=1 node tests/plan-calendar-sticky.cjs
 PLAN_DST_CAPTURE=1 node tests/plan-calendar-dst.cjs
 PLAN_TASK_CAPTURE=1 node tests/plan-task-editor.cjs
+node tests/plan-task-checkpoint.cjs
 PLAN_COMPARE_CAPTURE=1 node tests/plan-compare-chart.cjs
 node tests/plan-duration-evidence.cjs
 PLAN_IMPROVE_CAPTURE=1 node tests/plan-improve-evidence.cjs
@@ -57,6 +59,8 @@ The V250 tests cover selected map items, short intervals, full/partial/consecuti
 The Plan tests cover precise task-deadline ordering, local-week and daylight-saving boundaries, overnight and paused sessions, overlapping intervals and conflicts, explicit completion evidence, empty and high-volume models, search, editing/toggling tasks, adding a plan, Track-to-Plan refresh, reload persistence, dark/light themes, reduced viewports, bottom clearance, settings, and navigation. The browser fixture writes only to intercepted synthetic local storage. With capture enabled it writes `plan-verification/overview-dark.png`, `overview-light.png`, `overview-bottom.png` and `overview-dark-full.png`.
 
 The task-sheet fixture covers the four supported timing types, invalid dates, equal or reversed times and estimates, preservation of original timestamps and unrelated fields, cancellation, stale saves and deletes, in-app deletion confirmation, simulated checkpoint failures, successful retry, reload persistence, focus confinement, reduced viewports, both themes and a task created through the retained original manager. It uses synthetic local records and captures three screenshots under `docs/design/plan/current/`. It does not verify a native Android keyboard or cloud synchronization.
+
+The task-checkpoint fixture intercepts synthetic checkpoint reads to return a task array that differs from the actual saved one. It checks that both task creation and deletion report an unverified result and disable blind retries, then reloads the actual saved synthetic checkpoint to verify what was stored. The V70 model test covers matching and mismatched additional arrays for both checkpoint formats. No real account, backup or server is accessed.
 
 The comparison fixture checks the hour-axis labels and bar proportions against raw daily unique durations, recorded and planned averages and their denominators, unavailable predicted and ideal data, evidence-gated recorded-time insight cards and current-ideal ratios, the daily-values table, 7/14/30-day ranges, empty states, themes, reduced viewports, navigation clearance and read-only behavior. Captures use only synthetic offline records.
 

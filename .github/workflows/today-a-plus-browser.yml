@@ -33,6 +33,7 @@ jobs:
       - run: TRACK_TIMER_CAPTURE=1 node tests/track-timer-settings.cjs
       - run: TRACK_DISTRACTION_CAPTURE=1 node tests/track-distraction-review.cjs
       - run: node test_stage74_accountability.cjs
+      - run: node test_stage70_persistence.cjs
       - run: node test_stage75_debt_recovery.cjs
       - run: node test_stage78_duration.cjs
       - run: node test_stage80_duration_profiles.cjs
@@ -49,6 +50,7 @@ jobs:
       - run: PLAN_CALENDAR_CAPTURE=1 node tests/plan-calendar-sticky.cjs
       - run: PLAN_DST_CAPTURE=1 node tests/plan-calendar-dst.cjs
       - run: PLAN_TASK_CAPTURE=1 node tests/plan-task-editor.cjs
+      - run: node tests/plan-task-checkpoint.cjs
       - run: PLAN_COMPARE_CAPTURE=1 node tests/plan-compare-chart.cjs
       - run: node tests/plan-duration-evidence.cjs
       - run: PLAN_IMPROVE_CAPTURE=1 node tests/plan-improve-evidence.cjs

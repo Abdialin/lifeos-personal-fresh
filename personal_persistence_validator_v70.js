@@ -35,5 +35,17 @@ function verify(raw,active,unpack){
   return {...report,format:encoded.format};
  }catch(e){return {ok:false,issues:['Canonical recovery checkpoint could not be decoded.']}}
 }
-return {verify,compareRecords,same};
+/* Some editors persist additional arrays alongside the core activity records.
+ * Compare the actual canonical copy of each requested array before reporting
+ * that those edits have been verified. */
+function verifyAdditionalArrays(raw,active,keys,unpack){
+ const report=verify(raw,active,unpack);if(!report.ok)return report;
+ if(!Array.isArray(keys)||!keys.length||keys.some(k=>typeof k!=='string'||!k))return {...report,ok:false,issues:['Invalid additional checkpoint fields.']};
+ try{
+  const encoded=JSON.parse(raw),record=encoded.format===2?unpack(encoded):encoded,saved=record?.workspace;
+  const missing=keys.filter(k=>!Array.isArray(active?.[k])||!Array.isArray(saved?.[k])||!same(active[k],saved[k]));
+  return missing.length?{...report,ok:false,issues:['Additional workspace records do not match the checkpoint: '+missing.join(', ')+'.']}:report;
+ }catch(_){return {...report,ok:false,issues:['Additional workspace records could not be checked.']}}
+}
+return {verify,verifyAdditionalArrays,compareRecords,same};
 });
