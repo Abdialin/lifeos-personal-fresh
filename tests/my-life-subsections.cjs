@@ -55,6 +55,19 @@ const serve = route => {
         await page.locator(target).waitFor({ state: 'visible' });
         if (section !== 'overview') assert(!(await page.locator('#lo182-life-hub').isVisible()), 'General progress panel must not repeat on ' + section);
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'No horizontal page overflow in ' + section);
+        if (section === 'overview') {
+          const day = page.locator('#loLifeVisual [data-lo-routine-day]').first();
+          const key = await day.getAttribute('data-lo-routine-day');
+          await day.click();
+          await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+          assert(await page.evaluate(key => {
+            const day = document.querySelector('#loLifeVisual [data-lo-routine-day="' + key + '"]');
+            return day && document.activeElement === day && day.getAttribute('aria-pressed') === 'true';
+          }, key), 'Refreshing must retain focus and selected state on the routine day');
+          await page.locator('#lifeosNavigation [data-view="life"]').focus();
+          await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+          assert(await page.locator('#lifeosNavigation [data-view="life"]').evaluate(el => document.activeElement === el), 'Refreshing must not take focus from another control');
+        }
         if (section === 'routines') {
           await page.locator('#lo170-notes').waitFor({ state: 'attached' });
           assert(await page.evaluate(() => {

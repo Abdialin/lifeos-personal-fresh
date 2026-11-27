@@ -58,6 +58,10 @@ function renderGoals(ws){
 }
 function renderLife(ws){
  const target=byId('loLifeVisual');if(!target)return;
+ // Refreshes replace the visual dashboard. Keep keyboard focus on the same
+ // routine day when it was focused, without pulling focus from another control.
+ const active=document.activeElement;
+ const focusedDay=target.contains(active)?active.closest('[data-lo-routine-day]')?.dataset.loRoutineDay:null;
  const {sevenStart,sevenEnd}=ranges(),logs=(ws.personalLogs||[]).filter(x=>x&&typeof x.date==='string'&&x.date>=sevenStart&&x.date<=sevenEnd);
  const counts=new Map();for(const log of logs)counts.set(String(log.category||'Other'),(counts.get(String(log.category||'Other'))||0)+1);
  const top=[...counts].sort((a,b)=>b[1]-a[1]).slice(0,7),max=Math.max(1,...top.map(x=>x[1]));
@@ -90,6 +94,10 @@ function renderLife(ws){
  overviewCards+quick+'<div class="lo-kpi-row lo-kpi-actions"><button type="button" data-lo-life-jump="routines" aria-label="Open your routine records"><span>Personal logs</span><strong>'+logs.length+'</strong><small>View routines ↗</small></button><div><span>Days with logs</span><strong>'+uniqueDays+' <small>/ 7</small></strong></div><div><span>'+sleepLabel+'</span><strong>'+avg(measuredSleep)+'</strong></div></div>'+
  '<div class="lo-goal-card">'+rhythm+'<h3>Recorded routines by category</h3>'+(bar||'<p class="lo-no-data">No personal routine logs in the last seven dates. Add an entry below to populate this view.</p>')+
  '<p class="lo-small-note">Bars count log entries, not minutes or consistency. '+(estimatedSleep.length?'Estimated sleep average: '+avg(estimatedSleep)+'. ':'')+'Missing logs are unknown; this is not a recovery score.</p></div>';
+ if(focusedDay&&(document.activeElement===document.body||document.activeElement===document.documentElement)){
+  const replacement=[...target.querySelectorAll('[data-lo-routine-day]')].find(button=>button.dataset.loRoutineDay===focusedDay);
+  replacement?.focus({preventScroll:true});
+ }
 }
 function init(){
  const nav=byId('lifeosNavigation'),main=document.querySelector('main.wrap'),anchor=byId('todayOverview');
