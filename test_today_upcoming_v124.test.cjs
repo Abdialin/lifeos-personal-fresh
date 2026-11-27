@@ -31,5 +31,5 @@ test('touch friendly styling and no tiny wrapping sort button',()=>{
  assert.match(css,/@media\(max-width:480px\)/);
  assert.match(css,/focus-visible/);
  assert.match(server,/'personal_today_upcoming_v124\.css'/);
- assert.match(html,/href="personal_today_upcoming_v124\.css"/);
+ assert.match(html,/href="personal_today_upcoming_v124\.css(?:\?[^"\s]*)?"/);
 });

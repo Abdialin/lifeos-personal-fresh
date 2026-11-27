@@ -184,7 +184,8 @@ class PreviewMigration(unittest.TestCase):
         subprocess.run([dump, '--format=custom', '--no-owner', '--no-privileges', '--file', str(archive), self.url], check=True, capture_output=True, timeout=30)
         self.assertTrue(archive.read_bytes().startswith(b'PGDMP'))
         _, restore_url = self.create_database()
-        subprocess.run([restore, '--exit-on-error', '--no-owner', '--no-privileges', '--dbname', restore_url, str(archive)], check=True, capture_output=True, timeout=30)
+        restored = subprocess.run([restore, '--exit-on-error', '--no-owner', '--no-privileges', '--dbname', restore_url, str(archive)], capture_output=True, text=True, timeout=30)
+        self.assertEqual(restored.returncode, 0, 'Restoring synthetic data failed: ' + restored.stderr)
         self.assert_snapshot(restore_url)
         self.assert_server_restart(restore_url)
         with self.psycopg.connect(restore_url) as db:

@@ -30,6 +30,6 @@ test('mobile presentation includes a hero clock, other session cards and accessi
  assert.doesNotThrow(()=>new Function(s));
 });
 test('V130 assets wired for staging deployment',()=>{
- assert.match(html,/src="personal_active_cockpit_v130\.js"/);assert.match(html,/href="personal_active_cockpit_v130\.css"/);
+ assert.match(html,/src="personal_active_cockpit_v130\.js(?:\?[^"\s]*)?"/);assert.match(html,/href="personal_active_cockpit_v130\.css(?:\?[^"\s]*)?"/);
  assert.match(server,/'personal_active_cockpit_v130\.js'/);assert.match(server,/'personal_active_cockpit_v130\.css'/);
 });

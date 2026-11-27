@@ -30,6 +30,6 @@ test('mobile guided 3-step interface is concise and responsive',()=>{
  assert.doesNotThrow(()=>new Function(s));
 });
 test('stage scripts and styles are allowlisted',()=>{
- assert.match(html,/src="personal_device_journey_v131\.js"/);assert.match(html,/href="personal_device_journey_v131\.css"/);
+ assert.match(html,/src="personal_device_journey_v131\.js(?:\?[^"\s]*)?"/);assert.match(html,/href="personal_device_journey_v131\.css(?:\?[^"\s]*)?"/);
  assert.match(server,/'personal_device_journey_v131\.js'/);assert.match(server,/'personal_device_journey_v131\.css'/);
 });

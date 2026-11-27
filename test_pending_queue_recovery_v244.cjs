@@ -35,6 +35,6 @@ assert.match(ui,/queue:outbox,syncMeta,checkpointRaw/);
 assert.match(ui,/if\(!atomicCommit\(latest\.data,\[\],meta\)\)/);
 assert.match(ui,/await v244Confirm\(\)/);
 assert.match(ui,/latest\.revision!==review\.revision/);
-assert.doesNotMatch(ui,/requestState\('PUT'|fetch\('/api\/state'/,'V244 is strictly local-only');
+assert.doesNotMatch(ui,/requestState\s*\(\s*['"]PUT['"]|fetch\s*\(\s*['"]\/api\/state['"]/,'V244 is strictly local-only');
 assert.match(server,/'personal_pending_queue_recovery_v244\.js'/);
 console.log('PASS V244: read-only full-workspace stale-journal comparison and verified local-only update gates');

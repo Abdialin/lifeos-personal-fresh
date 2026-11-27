@@ -37,8 +37,8 @@ test('today page registers visual components and semantic buttons',()=>{
  const html=fs.readFileSync('index.html','utf8'),css=fs.readFileSync('personal_today_design_v122.css','utf8');
  const timeline=fs.readFileSync('personal_visual_intelligence_v4.js','utf8');
  const server=fs.readFileSync('server.py','utf8');
- assert.match(html,/src="personal_today_design_v122\.js"/);
- assert.match(html,/href="personal_today_design_v122\.css"/);
+ assert.match(html,/src="personal_today_design_v122\.js(?:\?[^"\s]*)?"/);
+ assert.match(html,/href="personal_today_design_v122\.css(?:\?[^"\s]*)?"/);
  assert.match(server,/'personal_today_design_v122\.js'/);
  assert.match(timeline,/data-lo122-interval/);
  assert.match(timeline,/class="v4-track lo122-timeline-button"/);

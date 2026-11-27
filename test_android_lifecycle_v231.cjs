@@ -17,6 +17,6 @@ assert.ok(exact>=0&&saved>exact,'Remember alarm after scheduling');
 const fallback=alarm.indexOf('manager.setAndAllowWhileIdle');
 assert.ok(alarm.indexOf('remember()',fallback)>fallback,'Remember fallback alarm after scheduling');
 assert.match(bridge,/if\(!Array\.isArray\(sessions\)\)sessions=\[\]/);
-assert.match(bridge,/root\.addEventListener\('focus',\(\)=>\{publish\(true\);publishAlarm\(true\)\}\)/);
+assert.match(bridge,/root\.addEventListener\('focus',\(\)=>\{publish\(true\);publishAlarm\(true\);publishPlanned\(true\)\}\)/);
 assert.doesNotThrow(()=>new Function(bridge));
 console.log('V231 lifecycle refresh, stale-control cleanup, alarm recovery ordering PASS');

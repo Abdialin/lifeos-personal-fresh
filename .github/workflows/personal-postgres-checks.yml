@@ -40,7 +40,8 @@ jobs:
       - name: Install PostgreSQL backup and restore clients
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y postgresql-client
+          sudo apt-get install -y postgresql-client-16
+          echo '/usr/lib/postgresql/16/bin' >> "$GITHUB_PATH"
       - name: Verify PostgreSQL concurrency, migration, backup and restore in disposable databases
         run: python -m unittest -v test_postgres_persistence_v217 test_preview_migration_postgres
       - name: Verify SQLite recovery and deployment regression checks

@@ -17,7 +17,7 @@ test('one primary action with compact Plan and Task navigation',()=>{
 });
 test('plan evidence is available inside native details without duplicating the hero',()=>{
  assert.match(html,/<details class="lo125-progress-details" id="lo125ProgressDetails">/);
- assert.match(html,/Progress & tracking details/);
+ assert.match(html,/<details class="lo125-progress-details" id="lo125ProgressDetails"><summary>[\s\S]*?<strong>Plan progress<\/strong>/);
  assert.match(html,/id="loTodayProgress"/);
  assert.match(html,/Unlogged time is unknown, not automatically a distraction/);
  assert.match(css,/lo125-progress-details\[open\]/);
@@ -27,6 +27,6 @@ test('mobile responsive styling and route are valid',()=>{
  assert.match(css,/@media\(max-width:375px\)/);
  assert.match(css,/prefers-reduced-motion/);
  assert.match(css,/:focus-visible/);
- assert.match(html,/href="personal_today_hero_v125\.css"/);
+ assert.match(html,/href="personal_today_hero_v125\.css(?:\?[^"\s]*)?"/);
  assert.match(server,/'personal_today_hero_v125\.css'/);
 });

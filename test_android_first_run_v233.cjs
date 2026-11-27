@@ -16,5 +16,7 @@ assert.match(html,/personal_android_first_run_v233\.css/);
 assert.match(html,/personal_android_first_run_v233\.js/);
 assert.match(android,/if \(Build\.VERSION\.SDK_INT >= 30\)/);
 assert.match(android,/WindowInsets\.Type\.statusBars/);
-assert.match(android,/setPadding\(0, bars\.top, 0, bars\.bottom\)/);
+assert.match(android,/maxOf\(bars\.bottom, ime\.bottom\)/);
+assert.match(android,/setMargins\(bars\.left, bars\.top, bars\.right, bottom\)/);
+assert.match(android,/WindowInsets\.CONSUMED/);
 console.log('V233 native-safe first run warning + mobile layout source checks PASS');

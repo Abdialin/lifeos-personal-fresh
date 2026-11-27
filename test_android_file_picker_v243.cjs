@@ -15,5 +15,5 @@ assert.match(kotlin,/web\.settings\.allowContentAccess = true/);
 assert.match(kotlin,/web\.settings\.allowFileAccess = false/);
 assert.match(html,/Sessions started on 17 November/);
 assert.match(html,/Sessions started on 18 November/);
-assert.match(gradle,/versionCode = 10/);
+assert.ok(Number(gradle.match(/versionCode = (\d+)/)?.[1]) >= 10,'File picker builds must not roll back their version code');
 console.log('V243 Android trusted JSON file picker and source date verification source regression PASS');

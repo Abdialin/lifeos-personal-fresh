@@ -26,12 +26,14 @@ assert.equal(tool.preview(merged,source).addedSessions,0,'Repeated imports idemp
 assert.throws(()=>tool.preview(local,{...source,workspace:{...source.workspace,sessions:[source.workspace.sessions[0],source.workspace.sessions[0]]}}),/duplicate record ID/);
 assert.throws(()=>tool.preview(local,{...source,exportType:'lifeos-v234-local-recovery'}),/Choose a V241 export/);
 assert.throws(()=>tool.apply({...local,sessions:[...local.sessions,{id:'new17'}]},plan),/Local records changed/);
-const ui=html.slice(html.indexOf('let v241Reviewed'),html.indexOf('async function push(){',html.indexOf('let v241Reviewed')));
+const start=html.indexOf('let v241Reviewed'),end=html.indexOf('let v242Review',start);
+assert.ok(start>=0&&end>start,'Locate the V241 import handlers separately from the V242 sync handlers');
+const ui=html.slice(start,end);
 assert.doesNotThrow(()=>new Function(ui));
 assert.match(ui,/await window\.LifeOSV234BackupBridge\.save/);
 assert.match(ui,/await v241ConfirmImport\(review\.plan\)/);
 assert.match(ui,/const nextMeta=\{revision:null,dirty:true\}/);
 assert.match(ui,/if\(!atomicCommit\(merged,\[\],nextMeta\)\)/);
-assert.doesNotMatch(ui,/requestState\('PUT'|fetch\('/api\/state'/,'Import must never write server data');
+assert.doesNotMatch(ui,/requestState\s*\(\s*['"]PUT['"]|fetch\s*\(\s*['"]\/api\/state['"]/,'Import must never write server data');
 assert.match(server,/'personal_browser_activity_recovery_v241\.js'/);
 console.log('PASS V241 browser activity transfer, conflict skip, timestamps, repeat safety and no server writes');

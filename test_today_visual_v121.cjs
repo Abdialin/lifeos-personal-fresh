@@ -10,7 +10,7 @@ const css=file('personal_today_visual_refresh_v121.css');
 const server=file('server.py');
 assert.doesNotThrow(()=>new Function(visual),'Timeline JavaScript should parse');
 assert.doesNotThrow(()=>new Function(reminders),'Reminder JavaScript should parse');
-assert.match(html,/href="personal_today_visual_refresh_v121\.css"/,'New stylesheet should load');
+assert.match(html,/href="personal_today_visual_refresh_v121\.css(?:\?[^"\s]*)?"/,'New stylesheet should load');
 assert.match(server,/'personal_today_visual_refresh_v121\.css'/,'Stylesheet should be served');
 assert.match(reminders,/lo124-next/,'Next-up area should be present');
 assert.match(reminders,/lo124-more/,'Additional reminders should use progressive disclosure');
