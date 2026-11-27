@@ -275,9 +275,70 @@ async function main() {
     await page.reload();
     await page.waitForFunction(() => window.lifeosReadOnlyWorkspace?.().todos.find(x => x.id === 'fixture-task')?.done);
     assert(await page.evaluate(() => window.lifeosReadOnlyWorkspace().sessions.some(x => x.name === 'Synthetic reading break')));
+
+    // Simulate a restarted service reporting an empty server while the device
+    // retains an acknowledged, populated workspace. Never modify the real
+    // temporary server for this scenario; only the page's API responses are
+    // intercepted and writes are counted and rejected.
+    await nav('schedule');
+    await page.locator('#v136Workspace [data-v136-tab="overview"]:visible').first().click();
+    await page.locator('#lifeosPlanOverview [data-pov-todo="fixture-task"]').uncheck();
+    await page.waitForFunction(() => {
+      const checkpoint = JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic') || 'null');
+      const journal = checkpoint?.journal || checkpoint?.journalCompact;
+      return checkpoint?.meta?.revision > 1 && Array.isArray(journal) && journal.length > 0;
+    });
+    const settings = page.locator('.pov-settings');
+    if (!(await settings.evaluate(element => element.open))) await settings.locator('summary').click();
+    await page.locator('[data-pov-settings]').click();
+    await page.waitForFunction(() => document.body.dataset.lifeosView === 'settings');
+    if (await cloud.locator('.lo-advanced-toggle').getAttribute('aria-expanded') === 'false') await cloud.locator('.lo-advanced-toggle').click();
+    let attemptedWrites = 0;
+    const reset = route => {
+      if (route.request().method() === 'GET') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ revision: 0, data: null }) });
+      attemptedWrites++;
+      return route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ error: 'Isolated reset simulation blocks writes' }) });
+    };
+    const queuedBeforeReset = await page.evaluate(() => window.lifeosReadOnlyWorkspace());
+    await page.route(origin + '/api/state', reset);
+    await page.locator('#syncToken').fill(token);
+    await page.locator('#connectSync').click();
+    await page.waitForFunction(() => document.querySelector('#syncStatus')?.textContent.includes('remote revision differs from queued changes'));
+    await page.locator('#pullSync').click();
+    await page.waitForFunction(() => document.querySelector('#syncStatus')?.textContent.includes('Server has no sessions'));
+    await page.locator('#pushSync').click();
+    await page.waitForFunction(() => document.querySelector('#syncStatus')?.textContent.includes('Pending changes already exist'));
+    assert.deepEqual(await page.evaluate(() => window.lifeosReadOnlyWorkspace()), queuedBeforeReset, 'An empty server must not replace a workspace with queued changes');
+    assert.equal(attemptedWrites, 0, 'A reset server must not receive queued or manual writes');
+
+    // Reconnect to the actual disposable server and acknowledge its queue;
+    // then repeat the reset with a clean, previously acknowledged workspace.
+    await page.unroute(origin + '/api/state', reset);
+    await page.locator('#connectSync').click();
+    await page.waitForFunction(() => {
+      const checkpoint = JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic') || 'null');
+      const journal = checkpoint?.journal || checkpoint?.journalCompact;
+      return checkpoint?.meta?.revision > 1 && !checkpoint.meta.dirty && Array.isArray(journal) && journal.length === 0;
+    });
+    const realBeforeReset = await (await context.request.get(origin + '/api/state', { headers })).json();
+    const localBeforeReset = await page.evaluate(() => window.lifeosReadOnlyWorkspace());
+    await page.route(origin + '/api/state', reset);
+    await page.locator('#connectSync').click();
+    await page.waitForFunction(() => document.querySelector('#syncStatus')?.textContent.includes('server empty'));
+    await page.locator('#pullSync').click();
+    await page.waitForFunction(() => document.querySelector('#syncStatus')?.textContent.includes('Server has no sessions'));
+    await page.locator('#pushSync').click();
+    await page.waitForFunction(() => document.querySelector('#syncStatus')?.textContent.includes('SYNC CONFLICT: server revision changed'));
+    assert.deepEqual(await page.evaluate(() => window.lifeosReadOnlyWorkspace()), localBeforeReset, 'Loading an empty server must preserve an acknowledged device workspace');
+    assert.equal(attemptedWrites, 0, 'A reset server must not receive a stale manual upload');
+    await page.reload();
+    await page.waitForFunction(() => window.lifeosReadOnlyWorkspace?.().sessions.some(x => x.name === 'Synthetic reading break'));
+    assert.deepEqual(await page.evaluate(() => window.lifeosReadOnlyWorkspace()), localBeforeReset, 'The preserved workspace must survive reload');
+    const realServer = await (await context.request.get(origin + '/api/state', { headers })).json();
+    assert.equal(realServer.revision, realBeforeReset.revision, 'The simulated reset must not modify the real temporary server');
     assert.deepEqual(errors, [], 'No uncaught browser errors');
     await context.close();
-    console.log('PASS: disposable login, authenticated SQLite sync, six-section mobile navigation, both themes and reload');
+    console.log('PASS: disposable login, authenticated SQLite sync, six-section mobile navigation, themes, reload and empty-server safety');
   } finally {
     if (browser) await browser.close();
     server.kill('SIGTERM');

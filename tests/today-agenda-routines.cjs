@@ -11,11 +11,23 @@ const serve = route => {
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const fixed = new Date('2026-11-26T16:00:00+01:00');
+  const scrollStable = async locator => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try { await locator.scrollIntoViewIfNeeded(); return; }
+      catch (error) { if (attempt === 2 || !error.message.includes('not attached')) throw error; }
+    }
+  };
   const capture = async (page, name) => {
     if (!process.env.TODAY_ROUTINES_CAPTURE) return;
     const dir = 'docs/design/today/current'; fs.mkdirSync(dir, { recursive: true });
-    await page.locator('#apPage2 .ap-v1-routines').scrollIntoViewIfNeeded();
+    await scrollStable(page.locator('#apPage2 .ap-v1-routines'));
     await page.screenshot({ path: path.join(dir, 'release-agenda-routines-' + name + '.png') });
+  };
+  const captureHistory = async (page, name) => {
+    if (!process.env.TODAY_ROUTINES_CAPTURE) return;
+    const dir = 'docs/design/my-life/current'; fs.mkdirSync(dir, { recursive: true });
+    await scrollStable(page.locator('#personalLogList [data-personal-page="more"]'));
+    await page.screenshot({ path: path.join(dir, 'v1-subsection-routine-history-' + name + '.png') });
   };
   async function setup(populated) {
     const context = await browser.newContext({ viewport: { width: 393, height: 780 }, isMobile: true, hasTouch: true, timezoneId: 'Europe/Stockholm' });
@@ -28,6 +40,8 @@ const serve = route => {
       const start = Date.parse('2026-11-26T09:00:00+01:00'), end = start + 3600000;
       const sessions = [{ id: 'study', name: 'Study', status: 'finished', createdAt: start, startAt: start, endAt: end, segments: [{ start, end }], precision: 'measured', notes: '' }];
       const personalLogs = populated ? [
+        ...Array.from({ length: 26 }, (_, i) => ({ id: 'archive-' + i, date: '2026-11-24', category: 'Family', minutes: 5, quantity: null, unit: '', precision: 'measured', notes: '' })),
+        { id: 'archive-0', date: '2026-11-24', category: 'Family', minutes: 7, quantity: null, unit: '', precision: 'measured', notes: 'Duplicate imported identifier' },
         { id: 'previous', date: '2026-11-25', category: 'Family', minutes: 60, quantity: null, unit: '', precision: 'measured', notes: 'Earlier day' },
         { id: 'reading', date: '2026-11-26', category: 'Quran', minutes: 20, quantity: 3, unit: 'pages', precision: 'measured', notes: 'Keep <calm>' },
         { id: 'unknown', date: '2026-11-26', category: 'Other', minutes: null, quantity: '<img src=x onerror=alert(1)>', unit: 'pages', precision: 'unknown', notes: '' },
@@ -66,6 +80,35 @@ const serve = route => {
     await page.locator('#personalLogList').waitFor({ state: 'visible' });
     assert((await page.locator('#personalLogList').innerText()).includes('Quran'));
     assert.equal(await page.locator('#personalLogList img').count(), 0, 'Imported routine values must not become HTML');
+    const history = page.locator('#personalLogList');
+    assert.equal(await history.locator('.item').count(), 12);
+    assert((await history.innerText()).includes('Showing 12 of 32 records'));
+    await history.locator('[data-personal-page="more"]').click();
+    assert.equal(await history.locator('.item').count(), 24);
+    assert((await history.innerText()).includes('Showing 24 of 32 records'));
+    assert(await history.locator('[data-personal-page="more"]').evaluate(element => document.activeElement === element));
+    await captureHistory(page, 'dark');
+    await history.locator('[data-personal-page="more"]').click();
+    assert.equal(await history.locator('.item').count(), 32);
+    assert.equal(await history.locator('[data-personal-delete="archive-0"]').count(), 2, 'Both records with the imported duplicate identifier must remain reachable');
+    assert.equal(await page.evaluate(() => JSON.stringify(window.lifeosReadOnlyWorkspace().personalLogs)), before.records, 'Browsing history must not change records');
+    await history.locator('[data-personal-delete="archive-0"]').first().click();
+    assert((await history.locator('[data-personal-error]').innerText()).includes('No record was deleted'));
+    assert.equal(await page.evaluate(() => JSON.stringify(window.lifeosReadOnlyWorkspace().personalLogs)), before.records, 'A duplicate identifier must not delete either record');
+    const target = history.locator('[data-personal-delete="archive-1"]');
+    const renderedSnapshot = await target.getAttribute('data-personal-snapshot');
+    await target.evaluate(element => { element.dataset.personalSnapshot = '{}'; });
+    await target.click();
+    assert.equal(await page.evaluate(() => JSON.stringify(window.lifeosReadOnlyWorkspace().personalLogs)), before.records, 'A stale displayed record must not be deleted');
+    await target.evaluate((element, snapshot) => { element.dataset.personalSnapshot = snapshot; }, renderedSnapshot);
+    page.once('dialog', dialog => dialog.dismiss());
+    await target.click();
+    assert.equal(await page.evaluate(() => JSON.stringify(window.lifeosReadOnlyWorkspace().personalLogs)), before.records, 'Cancelling deletion must preserve records');
+    page.once('dialog', dialog => dialog.accept());
+    await target.click();
+    assert.deepEqual(await page.evaluate(() => window.lifeosReadOnlyWorkspace().personalLogs), JSON.parse(before.records).filter(x => x.id !== 'archive-1'), 'Only the explicitly confirmed synthetic record is removed');
+    await history.locator('[data-personal-page="less"]').click();
+    assert.equal(await history.locator('.item').count(), 12);
     await agenda(page); if (!(await box.evaluate(element => element.open))) await summary.click();
     await box.locator('[data-ap-live-quick="routine"]').click();
     await page.locator('#personalLogForm').waitFor({ state: 'visible' });
@@ -80,11 +123,32 @@ const serve = route => {
     await page.waitForFunction(() => document.querySelector('#apPage2 .ap-v1-routines > summary')?.textContent.includes('routine records (4)'));
     if (!(await box.evaluate(element => element.open))) await summary.click();
     assert((await box.innerText()).includes('25m · 10 pages · measured'));
+    assert((await box.innerText()).includes('Showing 3 of 4 saved today.'));
+    assert.equal(await box.locator('.ap-v1-routine-record').count(), 3, 'Today remains compact when more records exist');
     await page.reload(); await page.waitForFunction(() => document.body.classList.contains('lo-ca-ready'));
     await agenda(page); if (!(await box.evaluate(element => element.open))) await summary.click();
     assert((await box.innerText()).includes('Reading'));
     assert.equal(await page.evaluate(() => window.lifeosReadOnlyWorkspace().personalLogs.filter(x => x.category === 'Reading').length), 1);
+    assert(await page.evaluate(() => window.lifeosReadOnlyWorkspace().personalLogs.every(x => x.id !== 'archive-1')), 'The confirmed synthetic deletion persists after reload');
     await page.locator('#todayAPlus .ap-header button').click(); await capture(page, 'light');
+    await box.locator('[data-ap-live-quick="routine-history"]').click();
+    await history.waitFor({ state: 'visible' });
+    await history.locator('[data-personal-page="more"]').click();
+    const lightContrast = await page.evaluate(() => {
+      const box = document.querySelector('.lo189-routine-history');
+      const luminance = color => {
+        const channels = color.match(/[\d.]+/g).slice(0, 3).map(Number).map(x => x / 255).map(x => x <= .04045 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4);
+        return .2126 * channels[0] + .7152 * channels[1] + .0722 * channels[2];
+      };
+      const ratio = (a, b) => { a = luminance(a); b = luminance(b); return (Math.max(a, b) + .05) / (Math.min(a, b) + .05); };
+      const background = getComputedStyle(box).backgroundColor;
+      const text = [...box.querySelectorAll(':scope > summary, #personalProgressSummary, #personalLogList .item strong, #personalLogList .sub')];
+      const buttons = [...box.querySelectorAll('#personalLogList button')];
+      return { text: text.map(el => ratio(getComputedStyle(el).color, background)), buttons: buttons.map(el => ratio(getComputedStyle(el).color, getComputedStyle(el).backgroundColor)) };
+    });
+    assert(lightContrast.text.length && lightContrast.buttons.length && [...lightContrast.text, ...lightContrast.buttons].every(value => value >= 4.5), 'Routine history text and buttons must be readable in light mode: ' + JSON.stringify(lightContrast));
+    await captureHistory(page, 'light');
+    await agenda(page); if (!(await box.evaluate(element => element.open))) await summary.click();
     for (const size of [{ width: 360, height: 650 }, { width: 393, height: 460 }, { width: 412, height: 780 }]) {
       await page.setViewportSize(size);
       await box.locator('[data-ap-live-quick="routine"]').scrollIntoViewIfNeeded();

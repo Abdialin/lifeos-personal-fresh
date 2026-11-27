@@ -7,6 +7,13 @@ html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .panel .lo190-head
 html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .panel .lo190-heading span{color:#405f73}
 html[data-lifeos-theme="light"] body[data-lifeos-view="life"] #lifeosNutritionDashboard .lo25-stat{background:#e6edf5;border-color:#cbdbe7;color:#183047}
 html[data-lifeos-theme="light"] body[data-lifeos-view="life"] #lifeosNutritionDashboard .lo25-stat small{color:#405f73}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .lo189-routine-history{background:#f5faf9;border-color:#b5d0ca;color:#183047}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .lo189-routine-history>summary{color:#075e54}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .lo189-routine-history #personalProgressSummary,
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .lo189-routine-history #personalLogList .sub{color:#405a70;opacity:1}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .lo189-routine-history #personalLogList .item strong{color:#183047}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .lo189-routine-history #personalLogList .item{border-color:#cbded8}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .lo189-routine-history #personalLogList button{background:#e9f2f1;color:#183047;border-color:#a7c5c0;opacity:1}
 body[data-lifeos-view="life"] .lo190-actions{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 1px}
 body[data-lifeos-view="life"] .lo190-actions button{flex:0 0 auto;min-height:42px;padding:9px 13px;border:1px solid #355d70;border-radius:12px;background:#10283a;color:#e7f5f8;font:650 13px system-ui;cursor:pointer}
 body[data-lifeos-view="life"] .lo190-actions button.lo190-primary{background:#006b54;border-color:#17826c;color:#fff}
