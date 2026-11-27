@@ -192,3 +192,43 @@ body[data-lifeos-view="goals"] #lo86-timer #lo86-toggle{min-width:29px!important
 body[data-lifeos-view="goals"] #lo86-timer:has(#lo86-details:not([hidden])){width:min(290px,calc(100vw - 20px))!important;max-width:290px!important}
 body[data-lifeos-view="goals"] #lo86-timer:has(#lo86-details:not([hidden])) #lo86-name{display:block!important}
 @media(max-width:360px){#gv161-app .gv165-reviewgrid .gv162-reviewhead span{display:none}#gv161-app .gv165-grid .gv161-ring{width:37px;height:37px}#gv161-app .gv165-grid .gv161-ring b{width:30px;height:30px}}
+
+/* Improve and History use readable single-row cards on phones. */
+@media(max-width:650px){
+ #gv161-app .gv165-reviewgrid{grid-template-columns:minmax(0,1fr)}
+ #gv161-app .gv165-reviewgrid .gv162-reviewhead{margin-bottom:5px}
+ #gv161-app .gv165-reviewgrid .gv162-reviewhead b{font-size:14px}
+ #gv161-app .gv165-reviewgrid .gv162-reviewhead span,
+ #gv161-app .gv165-reviewgrid .gv162-compare small,
+ #gv161-app .gv165-reviewgrid .gv162-reviewbottom span{font-size:12px}
+ #gv161-app .gv165-reviewgrid .gv162-reviewhead span{display:block}
+ #gv161-app .gv165-reviewgrid .gv162-compare strong{margin:3px 0}
+ #gv161-app .gv165-reviewgrid .gv161-bar{margin:4px 0}
+ #gv161-app .gv165-reviewgrid .gv162-reviewbottom{margin-top:4px;padding-top:2px}
+ #gv161-app .gv165-reviewgrid .gv162-reviewbottom button{min-height:44px;padding:8px;font-size:12px}
+}
+/* Keep the same components and evidence in light mode, with a coherent palette. */
+html[data-lifeos-theme="light"] #gv161-app :is(#gv161-improve,#gv161-history) .gv162-reviewcard{
+ background:#fff;color:#173246;border-color:#bfd3df;border-left-color:#166297
+}
+html[data-lifeos-theme="light"] #gv161-app :is(#gv161-improve,#gv161-history) .gv162-reviewcard.gv161-gym{border-left-color:#087256}
+html[data-lifeos-theme="light"] #gv161-app :is(#gv161-improve,#gv161-history) .gv162-reviewcard.gv161-personal{border-left-color:#6950a4}
+html[data-lifeos-theme="light"] #gv161-app :is(#gv161-improve,#gv161-history) .gv162-reviewcard.gv161-nutrition{border-left-color:#865605}
+html[data-lifeos-theme="light"] #gv161-app :is(#gv161-improve,#gv161-history) :is(.gv162-reviewhead span,.gv162-compare small,.gv162-compare em,.gv162-reviewbottom span){color:#3c596a}
+html[data-lifeos-theme="light"] #gv161-app :is(#gv161-improve,#gv161-history) .gv162-compare strong{color:#173246}
+html[data-lifeos-theme="light"] #gv161-app :is(#gv161-improve,#gv161-history) .gv162-reviewbottom{border-color:#d1e0e7}
+html[data-lifeos-theme="light"] #gv161-app :is(#gv161-improve,#gv161-history) .gv162-reviewbottom button{color:#006b55}
+html[data-lifeos-theme="light"] #gv161-app :is(#gv161-improve,#gv161-history) .gv161-bar{background:#dce8ee}
+html[data-lifeos-theme="light"] #gv161-app #gv161-improve .gv165-advice{background:linear-gradient(110deg,#e0f4ed,#f4faf8)!important;border-color:#9bcbbd!important;color:#173246}
+html[data-lifeos-theme="light"] #gv161-app #gv161-improve .gv165-advice b{color:#173246}
+html[data-lifeos-theme="light"] #gv161-app #gv161-improve .gv165-advice p{color:#365b69}
+html[data-lifeos-theme="light"] #gv161-app #gv161-history .gv161-controls select{background:#fff;color:#173246;border-color:#abc6d2}
+html[data-lifeos-theme="light"] #gv161-app #gv161-history .gv161-chart{background:#fff;color:#173246;border-color:#bfd3df}
+html[data-lifeos-theme="light"] #gv161-app #gv161-history .gv161-col small,
+html[data-lifeos-theme="light"] #gv161-app #gv161-history .gv161-muted{color:#3c596a}
+html[data-lifeos-theme="light"] body[data-lifeos-view="goals"] #gv161-app #gv161-history .gv168-emptystate{background:#edf6f2;color:#365b69}
+html[data-lifeos-theme="light"] #gv161-app #gv161-history .gv168-emptystate strong{color:#173246}
+html[data-lifeos-theme="light"] #gv161-app #gv161-history .gv168-emptystate small{color:#076351}
+html[data-lifeos-theme="light"] #gv161-app #gv161-history :is(.gv168-days,.gv169-nologs){background:#edf6f2!important;color:#173246;border-color:#badbd0}
+html[data-lifeos-theme="light"] #gv161-app #gv161-history :is(.gv167-dayshead b,.gv169-nologs strong,.gv168-day strong){color:#173246}
+html[data-lifeos-theme="light"] #gv161-app #gv161-history :is(.gv167-dayshead small,.gv169-nologs span,.gv168-day span,.gv167-note){color:#3c596a}

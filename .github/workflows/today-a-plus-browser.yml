@@ -82,6 +82,8 @@ jobs:
             docs/design/goals/current/release-reading*.png
             docs/design/goals/current/release-target-validity-*.png
             docs/design/goals/current/release-overview-v1-*.png
+            docs/design/goals/current/release-improve-v1-*.png
+            docs/design/goals/current/release-history-v1-*.png
             docs/design/insights/current/v1-prediction-evidence-*.png
             docs/design/plan/current/v1-task-editor-*.png
             docs/design/plan/current/v1-compare-*.png

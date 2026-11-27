@@ -110,9 +110,15 @@ const serve = route => {
         const background = 'rgb(241, 245, 249)';
         const heading = [...el.querySelectorAll('.gv165-title h2,.gv165-title p,.gv165-title small')].map(node => ratio(getComputedStyle(node).color, background));
         const card = el.querySelector('.gv162-reviewcard');
-        return { heading, card: ratio(getComputedStyle(card.querySelector('.gv162-reviewhead b')).color, getComputedStyle(card).backgroundColor) };
+        const backgroundColor = getComputedStyle(card).backgroundColor;
+        const cardText = [...card.querySelectorAll('.gv162-reviewhead b,.gv162-reviewhead span,.gv162-compare small,.gv162-compare strong,.gv162-reviewbottom span,.gv162-reviewbottom button')].map(node => ratio(getComputedStyle(node).color, backgroundColor));
+        return { heading, backgroundColor, cardText };
       });
-      assert(contrast.heading.length === 3 && contrast.heading.every(value => value >= 4.5) && contrast.card >= 4.5, tab + ' must retain legible headings and cards in light mode: ' + JSON.stringify(contrast));
+      assert(contrast.heading.length === 3 && contrast.heading.every(value => value >= 4.5) && contrast.backgroundColor === 'rgb(255, 255, 255)' && contrast.cardText.length >= 7 && contrast.cardText.every(value => value >= 4.5), tab + ' must retain legible light-mode headings and cards: ' + JSON.stringify(contrast));
+      const reviewCards = page.locator('#gv161-' + tab + ' .gv162-reviewcard');
+      const rows = await page.locator('#gv161-' + tab).evaluate(el => [...el.querySelectorAll('.gv162-reviewcard')].slice(0, 2).map(node => node.getBoundingClientRect().toJSON()));
+      assert(rows[1].y >= rows[0].y + rows[0].height - 1 && Math.abs(rows[0].x - rows[1].x) < 1, tab + ' cards need full-width readable phone rows');
+      assert((await reviewCards.first().locator('button').boundingBox()).height >= 44, tab + ' details need a usable touch target');
     }
     await page.locator('#gv161-app nav [data-v161-tab="overview"]').click();
     if (process.env.GOALS_TARGET_CAPTURE === '1') {
@@ -127,6 +133,16 @@ const serve = route => {
         return { card: el.getBoundingClientRect().toJSON(), metrics: box('.gv161-metrics'), actions: box('.gv161-foot') };
       });
       assert(layout.metrics.right <= layout.actions.left + 1 && layout.actions.right <= layout.card.right + 1, 'Recorded values and details must remain distinct and inside the card at ' + JSON.stringify(size));
+      for (const tab of ['improve', 'history']) {
+        await page.locator('#gv161-app nav [data-v161-tab="' + tab + '"]').click();
+        const cards = page.locator('#gv161-' + tab + ' .gv162-reviewcard');
+        const rows = await page.locator('#gv161-' + tab).evaluate(el => [...el.querySelectorAll('.gv162-reviewcard')].slice(0, 2).map(node => node.getBoundingClientRect().toJSON()));
+        assert(rows[1].y >= rows[0].y + rows[0].height - 1 && Math.abs(rows[0].x - rows[1].x) < 1, tab + ' stays in readable rows at ' + JSON.stringify(size));
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), tab + ' must not overflow at ' + JSON.stringify(size));
+        await cards.last().locator('button').click({ timeout: 7000 });
+        assert.equal(await page.locator('#gv161-app nav [data-v161-tab="overview"]').getAttribute('aria-selected'), 'true', tab + ' details remain usable above bottom navigation at ' + JSON.stringify(size));
+      }
+      await page.locator('#gv161-app nav [data-v161-tab="overview"]').click();
     }
     assert.equal(await page.evaluate(() => JSON.stringify(window.lifeosReadOnlyWorkspace())), before, 'Reading targets must not change saved records');
     await page.reload(); await page.waitForFunction(() => window.lifeosReadOnlyWorkspace);
@@ -150,6 +166,7 @@ const serve = route => {
           const make = (id, name, start, end) => ({ id, name, status: 'finished', startAt: Date.parse(start), endAt: Date.parse(end), createdAt: Date.parse(start), segments: [{ start: Date.parse(start), end: Date.parse(end) }], precision: 'measured' });
           const sessions = [
             make('gym', 'Gym workout', '2026-11-26T07:00:00+01:00', '2026-11-26T08:00:00+01:00'),
+            make('gym-last-week', 'Gym workout', '2026-11-19T07:00:00+01:00', '2026-11-19T08:00:00+01:00'),
             make('study', 'University study', '2026-11-26T09:00:00+01:00', '2026-11-26T10:30:00+01:00'),
             make('prayer', 'Prayer', '2026-11-26T12:00:00+01:00', '2026-11-26T12:15:00+01:00'),
             make('reading', 'Quran reading', '2026-11-26T13:00:00+01:00', '2026-11-26T13:30:00+01:00')
@@ -163,14 +180,33 @@ const serve = route => {
           localStorage.setItem('lifeos-live-v1', JSON.stringify({ version: 1, sessions, events: [], schedule: [], todos: [], goals, personalLogs: [] }));
         });
         await p.goto(origin + '/'); await p.waitForFunction(() => window.lifeosReadOnlyWorkspace);
+        const visualBefore = await p.evaluate(() => JSON.stringify(window.lifeosReadOnlyWorkspace()));
         await p.locator('#lifeosNavigation [data-view="goals"]').click();
         await p.locator('#gv161-overview .gv161-card').first().waitFor({ state: 'visible' });
-        if (process.env.GOALS_TARGET_CAPTURE === '1') for (const theme of ['dark', 'light']) {
+        for (const theme of ['dark', 'light']) {
           if (theme === 'light') await p.locator('.lifeos-theme-toggle').click();
-          await p.evaluate(() => window.scrollTo(0, 0));
-          await p.screenshot({ path: 'docs/design/goals/current/release-overview-v1-' + theme + '.png' });
-          await p.screenshot({ path: 'docs/design/goals/current/release-overview-v1-' + theme + '-full.png', fullPage: true });
+          for (const tab of ['overview', 'improve', 'history']) {
+            await p.locator('#gv161-app nav [data-v161-tab="' + tab + '"]').click();
+            await p.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+            if (process.env.GOALS_TARGET_CAPTURE === '1') {
+              await p.waitForTimeout(200);
+              await p.screenshot({ path: 'docs/design/goals/current/release-' + tab + '-v1-' + theme + '.png' });
+              await p.screenshot({ path: 'docs/design/goals/current/release-' + tab + '-v1-' + theme + '-full.png', fullPage: true });
+            }
+            if (tab === 'history' && theme === 'light') {
+              assert.equal(await p.locator('#gv161-history .gv161-chart').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(255, 255, 255)');
+              await p.locator('#gv161-select').selectOption('study');
+              await p.locator('#gv161-history .gv168-emptystate').waitFor({ state: 'visible' });
+              assert.equal(await p.locator('#gv161-history .gv168-emptystate').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(237, 246, 242)', 'Empty history follows the light palette');
+              await p.locator('#gv161-select').selectOption('gym');
+            }
+          }
         }
+        await p.locator('#gv161-app nav [data-v161-tab="improve"]').click();
+        await p.locator('#gv161-improve .gv162-reviewcard').first().locator('button').click();
+        assert.equal(await p.locator('#gv161-app nav [data-v161-tab="overview"]').getAttribute('aria-selected'), 'true', 'Explore opens the selected goal');
+        assert.equal(await p.locator('#gv161-overview .gv161-expand').count(), 1);
+        assert.equal(await p.evaluate(() => JSON.stringify(window.lifeosReadOnlyWorkspace())), visualBefore, 'Viewing Goals changes no records');
         await p.locator('#lifeosNavigation [data-view="analytics"]').click();
         await p.locator('#lo184-detail-toggle').click();
         const insight = p.locator('#lo257-insights .lo257-mix-row').first();
