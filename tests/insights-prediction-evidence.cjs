@@ -61,12 +61,20 @@ const serve = route => {
         const comparison = window.LifeOSDayIntelligenceV170.planComparison(report, workspace);
         return { planned: report.plannedMs, compared: comparison.scheduledMs, rows: comparison.rows.length };
       };
+      const sampleWork = { id: 'sample-work', name: 'Work shift', status: 'finished', notes: 'Synthetic Preview test record',
+        startAt: dayStart + 2 * 60 * minute, endAt: dayStart + 7 * 60 * minute,
+        segments: [{ start: dayStart + 2 * 60 * minute, end: dayStart + 7 * 60 * minute }] };
+      const samplePlan = { id: 'sample-plan', name: 'Work shift', status: 'planned', notes: 'Synthetic Preview test record', startAt: dayStart, endAt: dayStart + 5 * 60 * minute };
+      const mixed = { sessions: [daySession, sampleWork], schedule: [samplePlan] };
+      const sampleTypes = window.LifeOSInsightsDigestV184.getPersonalized(mixed, now).dayTypes.map(item => item.name);
+      const sampleDigest = window.LifeOSInsightsDigestV184.getData(mixed, now);
       return {
         tooLittle: get([a, b, c, future, fake, imported, duplicate1, duplicate2, noId, open, missing, endMismatch, startMismatch]),
         enough: get([a, b, c, d, future, fake, imported, duplicate1, duplicate2, noId, open, missing, endMismatch, startMismatch]),
         skipped: dayTypes('skipped'), skippedUpper: dayTypes(' SKIPPED '), cancelled: dayTypes('cancelled'), deleted: dayTypes('deleted'), planned: dayTypes('planned'),
         missingPlanStart: dayTypes('planned', null), emptyPlanStart: dayTypes('planned', ''), booleanPlanStart: dayTypes('planned', true),
-        reportMissing: planReport('planned', null), reportSkipped: planReport(' SKIPPED '), reportDeleted: planReport('deleted'), reportValid: planReport('planned')
+        reportMissing: planReport('planned', null), reportSkipped: planReport(' SKIPPED '), reportDeleted: planReport('deleted'), reportValid: planReport('planned'),
+        sampleTypes, sampleUnique: sampleDigest.unique, sampleActivities: sampleDigest.activities.map(item => item[0])
       };
     }, fixed.getTime());
     assert.deepEqual(result.tooLittle, [], 'Invalid, future, duplicate and example sessions must not manufacture a four-session pattern');
@@ -78,6 +86,8 @@ const serve = route => {
     assert(result.planned.includes('Workday evidence'), 'A still-planned shift remains labeled as planning evidence');
     for (const status of ['reportMissing', 'reportSkipped', 'reportDeleted']) assert.deepEqual(result[status], { planned: 0, compared: 0, rows: 0 }, status + ' must not create planned time');
     assert.deepEqual(result.reportValid, { planned: 5 * 3600000, compared: 5 * 3600000, rows: 1 });
+    assert(!result.sampleTypes.includes('Workday evidence'), 'Marked sample shifts do not establish behavioral patterns');
+    assert.equal(result.sampleUnique, 3600000); assert.deepEqual(result.sampleActivities, ['Study'], 'Sample sessions do not enter the evidence digest');
     await page.locator('#lifeosNavigation [data-view="analytics"]').click();
     const suggestion = page.locator('#lo186-recommendations .l186-card').filter({ hasText: 'Typical activity duration: Study' });
     await suggestion.waitFor({ state: 'visible' });

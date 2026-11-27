@@ -10,6 +10,7 @@ const start=t=>new Date(new Date(t).setHours(0,0,0,0)).getTime();
 const next=t=>new Date(new Date(t).setHours(24,0,0,0)).getTime();
 const read=()=>{try{return window.lifeosReadOnlyWorkspace?.()||{}}catch{return {}}};
 const real=s=>s&&!s.assumed&&!s.isExample&&!s.developmentExample&&!s.seedBatch&&!['development-starter','development-seed','assumed-demo'].includes(s.source);
+const insightEvidence=x=>real(x)&&x.notes!=='Synthetic Preview test record'&&x.source!=='imported-example';
 const timeMs=value=>value==null||!['number','string'].includes(typeof value)||(typeof value==='string'&&!value.trim())?NaN:Number(value);
 const scheduledPlan=p=>!!p&&!['cancelled','skipped','deleted'].includes(String(p.status||'').trim().toLowerCase());
 function spans(s,now=Date.now()){
@@ -256,7 +257,8 @@ function mountLifeHub(){
 
 function insightsDigestData(workspace,now=Date.now()){
  const today=start(now),days=[];
- for(let i=14;i>=1;i--){const date=new Date(today);date.setDate(date.getDate()-i);days.push(dailyReport(date.getTime(),now,workspace))}
+ const evidence={...workspace,sessions:(Array.isArray(workspace?.sessions)?workspace.sessions:[]).filter(insightEvidence),schedule:(Array.isArray(workspace?.schedule)?workspace.schedule:[]).filter(insightEvidence)};
+ for(let i=14;i>=1;i--){const date=new Date(today);date.setDate(date.getDate()-i);days.push(dailyReport(date.getTime(),now,evidence))}
  const older=days.slice(0,7),recent=days.slice(7);
  const total=(items,key)=>items.reduce((n,x)=>n+x[key],0);
  const unique=total(recent,'uniqueMs'),olderUnique=total(older,'uniqueMs');
@@ -301,7 +303,7 @@ function median186(xs){const a=xs.slice().sort((a,b)=>a-b),k=Math.floor(a.length
 function percentile186(xs,p){const a=xs.slice().sort((x,y)=>x-y);if(!a.length)return NaN;const position=(a.length-1)*p,low=Math.floor(position),high=Math.ceil(position);return a[low]+(a[high]-a[low])*(position-low)}
 function dayType186(day,workspace){
  const work=/\b(work|shift|security|job|väktare|arbete)\b/i;
- const intervals=(workspace.schedule||[]).filter(x=>scheduledPlan(x)&&work.test(String(x.name||''))).map(x=>[Math.max(day.a,timeMs(x.startAt)),Math.min(day.b,timeMs(x.endAt))]).filter(([a,b])=>Number.isFinite(a)&&Number.isFinite(b)&&b>a);
+ const intervals=(workspace.schedule||[]).filter(x=>insightEvidence(x)&&scheduledPlan(x)&&work.test(String(x.name||''))).map(x=>[Math.max(day.a,timeMs(x.startAt)),Math.min(day.b,timeMs(x.endAt))]).filter(([a,b])=>Number.isFinite(a)&&Number.isFinite(b)&&b>a);
  const planned=merge(intervals).reduce((n,[a,b])=>n+b-a,0);
  const recorded=merge(day.records.filter(r=>work.test(r.name)).map(r=>[r.start,r.end])).reduce((n,[a,b])=>n+b-a,0);
  if(Math.max(recorded,planned)>=4*3600000)return 'Workday evidence';
@@ -310,7 +312,7 @@ function dayType186(day,workspace){
 // Predictions need completed, identifiable evidence; a future finish, an
 // open/malformed segment or a labeled example cannot establish a pattern.
 function predictionRecord186(s,at){
- if(!real(s)||s.status!=='finished'||!String(s.id??'').trim()||s.notes==='Synthetic Preview test record'||s.source==='imported-example')return false;
+ if(!insightEvidence(s)||s.status!=='finished'||!String(s.id??'').trim())return false;
  const parts=Array.isArray(s.segments)&&s.segments.length?s.segments:[{start:s.startAt,end:s.endAt}];
  let first=null,last=-Infinity;
  for(const part of parts){const a=timeMs(part?.start),b=timeMs(part?.end);if(!Number.isFinite(a)||!Number.isFinite(b)||a<last||b<=a||b>at)return false;if(first===null)first=a;last=b}

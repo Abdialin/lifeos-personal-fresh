@@ -14,7 +14,7 @@ The offline migration guard now requires certificate and hostname verification f
 
 After a Focus pause, resume or break change is confirmed saved, Track now updates the visible status and control labels immediately. This addresses an observed browser test failure where the saved mode and label briefly disagreed; it does not establish native background or notification behavior.
 
-Insights' existing personalized-duration prediction now requires identifiable, complete, past-ended non-example sessions, rejects duplicated IDs and invalid intervals, and calculates its central range with interpolated quartiles. Skipped, cancelled, deleted or invalid shifts are excluded from inferred workday patterns and the shared daily report's planned-time comparison. Synthetic browser tests and [captures](design/insights/README.md) cover these safeguards; the specified Insights Live/History/Review redesign remains incomplete.
+Insights' existing personalized-duration prediction now requires identifiable, complete, past-ended non-example sessions, rejects duplicated IDs and invalid intervals, and calculates its central range with interpolated quartiles. Explicitly marked sample records are excluded from the behavioral digest. Skipped, cancelled, deleted or invalid shifts are excluded from inferred workday patterns and the shared daily report's planned-time comparison. Synthetic browser tests and [captures](design/insights/README.md) cover these safeguards; the specified Insights Live/History/Review redesign remains incomplete.
 
 ## 27 November: isolated authenticated replica and focused corrections
 
