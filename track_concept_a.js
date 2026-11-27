@@ -1456,7 +1456,9 @@ async function handleDialogClick(event){
    note.textContent='Could not save this Focus change. The previous session remains active.';return;
   }
   if(action==='end'){closeDialog();return}
-  window.setTimeout(updateRealFocusScreen,50);
+  // The engine has already confirmed the saved mode above. Reflect it before
+  // returning so controls and status do not briefly describe the prior state.
+  updateRealFocusScreen();
   return;
  }
  if(event.target.closest('[data-ca-stop-alarm]')){
