@@ -1,3 +1,5 @@
 # Insights visual evidence
 
 [Current synthetic overview](current/overview.png) records the earlier browser implementation. The user supplied the [V1 Insights references](../release-v1/05_Insights/), including a release board. The [authenticated local-replica comparison](../authenticated-replica/) shows the existing page against those targets. The required Live / History / Review structure and supporting screens are not yet fully implemented or accepted. Category and timing consistency must be verified before relying on recommendations.
+
+The existing personalized-duration card now excludes future, duplicated, malformed and explicitly marked example sessions from its prediction evidence; its central range uses interpolated 25th and 75th percentiles. Synthetic browser captures show the existing card in [dark](current/v1-prediction-evidence-dark.png) and [light](current/v1-prediction-evidence-light.png). It remains a long-form layout and retains dark cards in light mode, so it does not match the release board's compact navigation or establish visual acceptance.

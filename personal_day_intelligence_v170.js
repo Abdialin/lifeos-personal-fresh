@@ -10,10 +10,12 @@ const start=t=>new Date(new Date(t).setHours(0,0,0,0)).getTime();
 const next=t=>new Date(new Date(t).setHours(24,0,0,0)).getTime();
 const read=()=>{try{return window.lifeosReadOnlyWorkspace?.()||{}}catch{return {}}};
 const real=s=>s&&!s.assumed&&!s.isExample&&!s.developmentExample&&!s.seedBatch&&!['development-starter','development-seed','assumed-demo'].includes(s.source);
+const timeMs=value=>value==null||!['number','string'].includes(typeof value)||(typeof value==='string'&&!value.trim())?NaN:Number(value);
+const scheduledPlan=p=>!!p&&!['cancelled','skipped','deleted'].includes(String(p.status||'').trim().toLowerCase());
 function spans(s,now=Date.now()){
  const raw=Array.isArray(s.segments)?s.segments:[];
- if(raw.length)return raw.map(z=>[Number(z.start),z.end==null?(s.status==='running'?now:NaN):Number(z.end)]).filter(([a,b])=>Number.isFinite(a)&&Number.isFinite(b)&&b>a);
- let a=Number(s.startAt),b=s.status==='running'?now:Number(s.endAt);
+ if(raw.length)return raw.map(z=>[timeMs(z?.start),z?.end==null?(s.status==='running'?now:NaN):timeMs(z.end)]).filter(([a,b])=>Number.isFinite(a)&&Number.isFinite(b)&&b>a);
+ let a=timeMs(s.startAt),b=s.status==='running'?now:timeMs(s.endAt);
  return Number.isFinite(a)&&Number.isFinite(b)&&b>a?[[a,b]]:[];
 }
 function merge(xs){const out=[];for(const [a,b] of xs.slice().sort((x,y)=>x[0]-y[0])){const last=out[out.length-1];if(last&&a<=last[1])last[1]=Math.max(b,last[1]);else out.push([a,b])}return out}
@@ -137,8 +139,8 @@ function dailyReport(day,at=Date.now(),workspace=read()){
  const summedMs=records.reduce((n,x)=>n+x.ms,0),occupied=merge(records.map(x=>[x.start,x.end])),uniqueMs=occupied.reduce((n,[x,y])=>n+y-x,0);
  const gaps=[];let cursor=a;for(const [x,y] of occupied){if(cursor<x)gaps.push([cursor,x]);cursor=y}if(cursor<end)gaps.push([cursor,end]);
  const gapDetails=gaps.map(([x,y])=>({start:x,end:y,ms:y-x,before:records.filter(r=>r.end<=x).sort((a,b)=>b.end-a.end)[0]||null,after:records.filter(r=>r.start>=y).sort((a,b)=>a.start-b.start)[0]||null}));
- const planned=(workspace.schedule||[]).filter(p=>p?.status!=='cancelled'&&p?.status!=='skipped').flatMap(p=>{
-  const x=Math.max(a,Number(p.startAt)),y=Math.min(end,Number(p.endAt));
+ const planned=(workspace.schedule||[]).filter(scheduledPlan).flatMap(p=>{
+  const x=Math.max(a,timeMs(p.startAt)),y=Math.min(end,timeMs(p.endAt));
   return Number.isFinite(x)&&Number.isFinite(y)&&y>x?[{name:String(p.name||'Plan'),start:x,end:y}]:[];
  });
  const planUnion=merge(planned.map(p=>[p.start,p.end])),plannedMs=planUnion.reduce((n,[x,y])=>n+y-x,0);
@@ -146,8 +148,8 @@ function dailyReport(day,at=Date.now(),workspace=read()){
  return {a,b,end,records,occupied,gaps,gapDetails,planned,summedMs,uniqueMs,overlapMs:Math.max(0,summedMs-uniqueMs),unloggedMs:end-a-uniqueMs,plannedMs,recordedAgainstPlanMs};
 }
 function planComparison(report,workspace){
- const plans=(workspace.schedule||[]).filter(p=>p&&p.status!=='cancelled'&&p.status!=='skipped').flatMap(p=>{
-  const from=Math.max(report.a,Number(p.startAt)),to=Math.min(report.end,Number(p.endAt));
+ const plans=(workspace.schedule||[]).filter(scheduledPlan).flatMap(p=>{
+  const from=Math.max(report.a,timeMs(p.startAt)),to=Math.min(report.end,timeMs(p.endAt));
   return Number.isFinite(from)&&Number.isFinite(to)&&to>from?[{id:String(p.id||''),name:String(p.name||'Planned activity'),linkedId:String(p.sessionId||''),start:from,end:to}]:[];
  });
  const intersect=(left,right)=>{let total=0;for(const [a,b] of left)for(const [x,y] of right)total+=Math.max(0,Math.min(b,y)-Math.max(a,x));return total};
@@ -296,20 +298,34 @@ function insightRecommendations(workspace,now=Date.now()){
 
 const FB186='lifeos.personal.insight-feedback.v186';
 function median186(xs){const a=xs.slice().sort((a,b)=>a-b),k=Math.floor(a.length/2);return a.length?(a.length%2?a[k]:(a[k-1]+a[k])/2):NaN}
+function percentile186(xs,p){const a=xs.slice().sort((x,y)=>x-y);if(!a.length)return NaN;const position=(a.length-1)*p,low=Math.floor(position),high=Math.ceil(position);return a[low]+(a[high]-a[low])*(position-low)}
 function dayType186(day,workspace){
  const work=/\b(work|shift|security|job|väktare|arbete)\b/i;
- const intervals=(workspace.schedule||[]).filter(x=>work.test(String(x.name||''))&&x.status!=='cancelled').map(x=>[Math.max(day.a,Number(x.startAt)),Math.min(day.b,Number(x.endAt))]).filter(([a,b])=>Number.isFinite(a)&&Number.isFinite(b)&&b>a);
+ const intervals=(workspace.schedule||[]).filter(x=>scheduledPlan(x)&&work.test(String(x.name||''))).map(x=>[Math.max(day.a,timeMs(x.startAt)),Math.min(day.b,timeMs(x.endAt))]).filter(([a,b])=>Number.isFinite(a)&&Number.isFinite(b)&&b>a);
  const planned=merge(intervals).reduce((n,[a,b])=>n+b-a,0);
  const recorded=merge(day.records.filter(r=>work.test(r.name)).map(r=>[r.start,r.end])).reduce((n,[a,b])=>n+b-a,0);
  if(Math.max(recorded,planned)>=4*3600000)return 'Workday evidence';
  const dow=new Date(day.a).getDay();return dow===0||dow===6?'Weekend, no shift evidence':'Weekday, no shift evidence';
+}
+// Predictions need completed, identifiable evidence; a future finish, an
+// open/malformed segment or a labeled example cannot establish a pattern.
+function predictionRecord186(s,at){
+ if(!real(s)||s.status!=='finished'||!String(s.id??'').trim()||s.notes==='Synthetic Preview test record'||s.source==='imported-example')return false;
+ const parts=Array.isArray(s.segments)&&s.segments.length?s.segments:[{start:s.startAt,end:s.endAt}];
+ let first=null,last=-Infinity;
+ for(const part of parts){const a=timeMs(part?.start),b=timeMs(part?.end);if(!Number.isFinite(a)||!Number.isFinite(b)||a<last||b<=a||b>at)return false;if(first===null)first=a;last=b}
+ if(s.startAt!=null&&timeMs(s.startAt)!==first)return false;
+ if(s.endAt!=null){const end=timeMs(s.endAt);if(!Number.isFinite(end)||end<last||end>at)return false}
+ return true;
 }
 function newInsights186(workspace,now=Date.now()){
  const d=insightsDigestData(workspace,now),complete=d.days,types=new Map();
  for(const day of complete){if(!day.uniqueMs)continue;const name=dayType186(day,workspace);if(!types.has(name))types.set(name,[]);types.get(name).push(day.uniqueMs)}
  const dayTypes=[...types].map(([name,ms])=>({name,count:ms.length,medianMs:median186(ms)}));
  const predictionRows=[];
- const candidates=(workspace.sessions||[]).filter(s=>real(s)&&s.status==='finished');
+ const sessions=Array.isArray(workspace.sessions)?workspace.sessions:[],ids=new Map();
+ for(const s of sessions){const id=String(s?.id??'').trim();if(id)ids.set(id,(ids.get(id)||0)+1)}
+ const candidates=sessions.filter(s=>predictionRecord186(s,now)&&ids.get(String(s.id).trim())===1);
  const byName=new Map();
  for(const item of candidates){
   const name=String(item.name||'').trim(),duration=spans(item,now).reduce((n,[a,b])=>n+b-a,0);
@@ -320,7 +336,7 @@ function newInsights186(workspace,now=Date.now()){
  for(const group of byName.values()){
   const selected=group.sort((a,b)=>b.end-a.end).slice(0,14);
   if(selected.length<4)continue;
-  const values=selected.map(x=>x.duration),med=median186(values),p25=median186(values.filter(x=>x<=med)),p75=median186(values.filter(x=>x>=med));
+  const values=selected.map(x=>x.duration),med=median186(values),p25=percentile186(values,.25),p75=percentile186(values,.75);
   if(!Number.isFinite(med)||med<5*60000)continue;
   const spread=(p75-p25)/med;
   const confidence=selected.length>=8&&spread<=0.35?'Moderate':'Limited';
@@ -331,7 +347,7 @@ function newInsights186(workspace,now=Date.now()){
  const suggestions=[];
  if(predictionRows.length){
   const x=predictionRows[0];
-  suggestions.push({id:'duration:'+x.name.toLowerCase(),kind:'duration',confidence:x.confidence,title:'Typical activity duration: '+x.name,detail:'The median of '+x.count+' completed sessions is '+fmt(x.medianMs/M)+'. Observed central range: '+fmt(x.lowMs/M)+'–'+fmt(x.highMs/M)+'.',why:'Calculated from completed, non-example active timer segments (last 14 sessions). Paused periods do not count. Wide variation lowers confidence.',action:'Compare this range with your next planned duration; only change your plan if it fits your circumstances.'});
+  suggestions.push({id:'duration:'+x.name.toLowerCase(),kind:'duration',confidence:x.confidence,title:'Typical activity duration: '+x.name,detail:'The median of '+x.count+' completed sessions is '+fmt(x.medianMs/M)+'. Central range (25th–75th percentile): '+fmt(x.lowMs/M)+'–'+fmt(x.highMs/M)+'.',why:'Calculated from completed, non-example active timer segments (last 14 sessions). Paused periods do not count. Percentiles use linear interpolation; wide variation lowers confidence.',action:'Compare this range with your next planned duration; only change your plan if it fits your circumstances.'});
  }
  if(typeSummaries.length>=2){
   typeSummaries.sort((a,b)=>b.count-a.count);

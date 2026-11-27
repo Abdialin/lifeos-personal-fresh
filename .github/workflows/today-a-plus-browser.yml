@@ -49,6 +49,7 @@ jobs:
       - run: node test_cross_section_integrity_v206.cjs
       - run: GOALS_READING_CAPTURE=1 node tests/goals-reading-evidence.cjs
       - run: GOALS_TARGET_CAPTURE=1 node tests/goals-target-validity.cjs
+      - run: INSIGHTS_PREDICTION_CAPTURE=1 node tests/insights-prediction-evidence.cjs
       - run: MY_LIFE_CAPTURE=1 node tests/my-life-subsections.cjs
       - run: node tests/plan-overview-model.cjs
       - run: PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
@@ -79,6 +80,7 @@ jobs:
             docs/design/goals/current/release-reading*.png
             docs/design/goals/current/release-target-validity-*.png
             docs/design/goals/current/release-overview-v1-*.png
+            docs/design/insights/current/v1-prediction-evidence-*.png
             docs/design/plan/current/v1-task-editor-*.png
             docs/design/plan/current/v1-compare-*.png
             docs/design/plan/current/v1-improve-*.png

@@ -55,6 +55,7 @@ node test_personal_goals_integration.cjs
 node test_cross_section_integrity_v206.cjs
 GOALS_READING_CAPTURE=1 node tests/goals-reading-evidence.cjs
 GOALS_TARGET_CAPTURE=1 node tests/goals-target-validity.cjs
+INSIGHTS_PREDICTION_CAPTURE=1 node tests/insights-prediction-evidence.cjs
 MY_LIFE_CAPTURE=1 node tests/my-life-subsections.cjs
 AUTH_V1_CAPTURE_DIR=authenticated-verification node tests/authenticated-isolated-v1.cjs
 node test_unified_analytics.cjs
@@ -117,6 +118,8 @@ The synthetic Goals reading fixture checks that the daily chart uses the same go
 The Goals target fixture checks missing, empty, zero, negative and non-finite targets, a numeric-string target, and a valid target exceeded by recorded evidence. Invalid targets are shown as unavailable, while valid percentages can exceed 100% and chart geometry remains bounded. It checks Overview, Improve and History labels, the existing detail disclosure, an empty state, no record changes after reload, selected light-theme contrast, mobile row geometry, touch targets and reduced browser heights. It checks that My Life activity analytics is absent from Goals and that the existing advanced Insights action can still open it in My Life. `GOALS_TARGET_CAPTURE=1` writes synthetic viewport evidence; the fixture does not establish the complete Goals design, Android behavior or device acceptance.
 
 The goal duration model fixture verifies unioned elapsed time for concurrent matching timers, separate raw recorded minutes and session counts, paused segments, rejection of missing segment starts, linked workout/log deduplication, independent untimed manual evidence, overnight day boundaries, a daylight-saving transition and manually entered quantities. An overnight timer counts once as a session within a multi-day goal period. It also checks that the Insights and activity-intelligence goal summaries consume the same result. Since untimed entries have no interval, their overlap with timers or other untimed entries cannot be calculated; those entries remain separate recorded evidence and are not silently discarded.
+
+The Insights prediction fixture verifies that future-finished, duplicate-ID, missing-ID, malformed and explicitly marked example records cannot create a four-session duration pattern. It checks paused duration, valid legacy closed segments, the median and interpolated quartiles, and that skipped, cancelled, deleted or invalid shifts do not create inferred workday evidence or planned time in the shared daily report and comparison. It confirms that reading recommendations does not alter the workspace. `INSIGHTS_PREDICTION_CAPTURE=1` captures the existing synthetic card in both browser themes; the Insights redesign and Android verification remain open.
 
 The historical Today timeline test covers date-picker and previous/next-day navigation, future-date rejection, overnight session identity, full and partial gap logging on earlier days, a second writer invalidating a selected gap, exact local-midnight boundaries, reload persistence, restored Track History record clicks and correct overnight day-portion details, and 23-/25-hour days. Requests are intercepted and storage is synthetic.
 
