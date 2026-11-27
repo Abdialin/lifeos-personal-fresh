@@ -53,6 +53,7 @@ jobs:
       - run: node tests/plan-duration-evidence.cjs
       - run: PLAN_IMPROVE_CAPTURE=1 node tests/plan-improve-evidence.cjs
       - run: PLAN_SKIP_CAPTURE=1 node tests/plan-skip-consent.cjs
+      - run: SERIES_CAPTURE=1 node tests/plan-series-consent.cjs
       - run: REMINDER_CAPTURE=1 node tests/plan-reminder-skip.cjs
       - uses: actions/upload-artifact@v4
         if: always()
@@ -70,4 +71,5 @@ jobs:
             docs/design/plan/current/v1-calendar-sticky-*.png
             docs/design/plan/current/v1-calendar-dst-*.png
             docs/design/plan/current/v1-skip-*.png
+            docs/design/plan/current/v1-series-consent-*.png
             docs/design/plan/current/v1-reminder-*.png

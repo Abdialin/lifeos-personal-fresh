@@ -30,6 +30,11 @@ The planned-activity details sheet uses the selected theme and asks for explicit
 ![Skip confirmation, dark browser capture](current/v1-skip-dark.png)
 ![Skip confirmation, light browser capture](current/v1-skip-light.png)
 
+Repeating a planned activity shows the occurrence list and asks for in-app confirmation before saving; the approved dates and conflicts are rechecked. The reference does not depict this confirmation, and its native-device presentation remains unverified.
+
+![Recurring-plan confirmation, dark browser capture](current/v1-series-consent-dark.png)
+![Recurring-plan confirmation, light browser capture](current/v1-series-consent-light.png)
+
 The browser can show a planned reminder and the Start now dock at once. This synthetic capture shows their positions; notification delivery and layout on an Android device are not established.
 
 ![Reminder and Start now dock, browser capture](current/v1-reminder-activation.png)

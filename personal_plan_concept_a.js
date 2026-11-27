@@ -97,6 +97,8 @@ function series(request,existing,now){
  }
  if(!rows.length)throw Error('No activities fall within this period.');return rows;
 }
+// Only stable, user-reviewed occurrence fields belong in the preview fingerprint.
+function seriesSignature(rows){return JSON.stringify(rows.map(r=>({id:r.id,name:r.name,startAt:r.startAt,endAt:r.endAt,reminder:r.reminder,notes:r.notes,seriesFrequency:r.seriesFrequency})))}
 function ideal(workspace,from,to){
  const rows=[];for(let t=day(from);t<to;t=shift(t,1))for(const r of workspace.idealRoutines||[]){
   if(sample(r)||+r.dayOfWeek!==new Date(t).getDay())continue;const m=/^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(r.start||''));const minutes=+r.durationMinutes;if(!m||!Number.isFinite(minutes)||minutes<=0||minutes>1440)continue;
@@ -273,8 +275,15 @@ function init(){
  let proposedSeries=null;const seriesForm=$('paSeriesForm'),seriesStatus=$('paSeriesStatus'),seriesSave=seriesForm.querySelector('[data-pa-series-save]');
  const seriesPreview=$('paSeriesPreview');const invalidateSeries=()=>{proposedSeries=null;seriesSave.disabled=true;seriesPreview.hidden=true};
  seriesForm.addEventListener('input',invalidateSeries);seriesForm.addEventListener('change',invalidateSeries);
- seriesForm.addEventListener('submit',e=>{e.preventDefault();const f=new FormData(seriesForm),id=root.crypto?.randomUUID?.()||('series-'+Date.now()+'-'+Math.random().toString(36).slice(2));const candidate={seriesId:id,name:f.get('name'),startAt:new Date(f.get('start')).getTime(),endAt:new Date(f.get('end')).getTime(),until:f.get('until'),frequency:f.get('frequency'),reminder:f.has('reminder')};try{const rows=series(candidate,read().schedule||[],Date.now());proposedSeries=candidate;seriesStatus.textContent=rows.length+' activities: '+labelPeriod(rows[0].startAt,rows[rows.length-1].endAt)+'. Approve to save these plans.';seriesPreview.querySelector('ol').innerHTML=rows.map(x=>'<li>'+esc(new Date(x.startAt).toLocaleString(undefined,{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))+' – '+esc(clock(x.endAt))+'</li>').join('');seriesPreview.hidden=false;seriesPreview.open=true;seriesSave.disabled=false}catch(err){invalidateSeries();seriesStatus.textContent=err.message}});
- seriesSave.addEventListener('click',()=>{if(!proposedSeries)return;const detail={...proposedSeries,result:{ok:false}};root.document.dispatchEvent(new CustomEvent('lifeos-plan-create-series',{detail}));seriesStatus.textContent=detail.result.message||'The series was not saved.';if(detail.result.ok){invalidateSeries();seriesForm.reset();render('calendar')}});
+ seriesForm.addEventListener('submit',e=>{e.preventDefault();const f=new FormData(seriesForm),id=root.crypto?.randomUUID?.()||('series-'+Date.now()+'-'+Math.random().toString(36).slice(2));const candidate={seriesId:id,name:f.get('name'),startAt:new Date(f.get('start')).getTime(),endAt:new Date(f.get('end')).getTime(),until:f.get('until'),frequency:f.get('frequency'),reminder:f.has('reminder')};try{const rows=series(candidate,read().schedule||[],Date.now());proposedSeries={...candidate,preview:seriesSignature(rows)};seriesStatus.textContent=rows.length+' activities: '+labelPeriod(rows[0].startAt,rows[rows.length-1].endAt)+'. Approve to save these plans.';seriesPreview.querySelector('ol').innerHTML=rows.map(x=>'<li>'+esc(new Date(x.startAt).toLocaleString(undefined,{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))+' – '+esc(clock(x.endAt))+'</li>').join('');seriesPreview.hidden=false;seriesPreview.open=true;seriesSave.disabled=false}catch(err){invalidateSeries();seriesStatus.textContent=err.message}});
+ seriesSave.addEventListener('click',async()=>{
+  if(!proposedSeries||seriesSave.disabled)return;const reviewed=proposedSeries;
+  const isCurrent=()=>{const f=new FormData(seriesForm);return proposedSeries===reviewed&&f.get('name')===reviewed.name&&new Date(f.get('start')).getTime()===reviewed.startAt&&new Date(f.get('end')).getTime()===reviewed.endAt&&f.get('frequency')===reviewed.frequency&&f.get('until')===reviewed.until&&f.has('reminder')===reviewed.reminder};
+  const detail={...reviewed,isCurrent,result:{ok:false}};
+  seriesSave.disabled=true;seriesStatus.textContent='Confirmation opened. No plans have been added.';
+  try{root.document.dispatchEvent(new CustomEvent('lifeos-plan-create-series',{detail}));const result=detail.promise?await detail.promise:detail.result;seriesStatus.textContent=result?.message||'The series was not saved.';if(result?.ok){invalidateSeries();seriesForm.reset();render('calendar')}else if(result?.stale||result?.committed){invalidateSeries();seriesForm.querySelector('button[type=submit]')?.focus({preventScroll:true})}else if(proposedSeries===reviewed){seriesSave.disabled=false;seriesSave.focus({preventScroll:true})}}
+  catch(error){seriesStatus.textContent='The series could not be confirmed: '+String(error?.message||error);if(proposedSeries===reviewed)seriesSave.disabled=false}
+ });
  host.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.paRange){state.range=b.dataset.paRange;calendar();return}
@@ -295,5 +304,5 @@ function init(){
  return true;
 }
 if(root.document){const boot=()=>{if(!init())root.setTimeout(boot,250)};if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',boot,{once:true});else boot()}
-return {init,render,calendar,tasks,compare,improve,taskEditor,taskGroups,compareModel,chartScale,durationFlags,durationFlagDetail,rowsForDay,lanes,ideal,forecasts,series,day,shift,week};
+return {init,render,calendar,tasks,compare,improve,taskEditor,taskGroups,compareModel,chartScale,durationFlags,durationFlagDetail,rowsForDay,lanes,ideal,forecasts,series,seriesSignature,day,shift,week};
 });

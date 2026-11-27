@@ -48,6 +48,8 @@ Plan Calendar's day headings stay visible while the map scrolls vertically and s
 
 Clock-change days now display their own local scale when adjacent days use a different length. Repeated local times are marked a/b, and activity details show the applicable UTC offset on a clock-change day. New recurring series reject nonexistent or ambiguous clock-change times rather than silently choosing an occurrence. Synthetic browser tests cover 23-, 25- and 24.5-hour days; physical-device rendering remains unverified.
 
+Recurring-plan creation now uses an in-app confirmation after the occurrence preview. Form changes, a newly introduced conflict and checkpoint failures are handled before any series is added; the reviewed series is saved together and checked after persistence. Synthetic dark/light browser captures are available, but Android WebView behavior and recurring-task support remain unverified or unimplemented respectively.
+
 Explicitly marking a planned activity skipped now uses an in-app confirmation with stale-record and checkpoint guards, a retained original plan and an audit entry. It does not invent tracked time. The activity-details sheet also follows the selected light theme. These checks use synthetic browser data; device acceptance is open.
 
 The browser's planned-reminder queue rechecks a commitment before showing it and removes a visible reminder when that plan is skipped or started. A queued skipped, changed or duplicate-ID plan is not shown. When a reminder and the Start now dock appear together, the browser positions them so their controls remain reachable. Synthetic tests cover snoozing and starting a timer; native notification delivery remains unverified.
