@@ -19,6 +19,7 @@ const w={
 };
 const result=api.measure({category:'fitness',unit:'sessions'},w,a,b);
 assert.equal(result.value,2,'linked training timer plus walking timer, without double count or demo');
-assert.equal(result.minutes,120);
+assert.equal(result.minutes,60,'two concurrent timers remain two sessions but contribute one hour of elapsed goal time');
+assert.equal(result.rawMinutes,120,'the two original recorded durations are still available');
 assert.ok(result.excluded>=1,'demo should be excluded');
 console.log('V204 Goals ↔ My Life fitness evidence: pass');

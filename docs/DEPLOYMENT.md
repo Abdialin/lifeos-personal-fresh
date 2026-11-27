@@ -18,4 +18,6 @@ A disposable local-server test simulates an empty server response against a popu
 
 The [Preview storage runbook](PREVIEW_STORAGE_RUNBOOK.md) records the ephemeral filesystem risk, known recovery limits, a private PostgreSQL proposal, costs and locally rehearsed migration. Free-service files may also disappear on idle spin-down or restart. No Preview database has been provisioned or connected, no current server backup has been obtained, and the deployment and recovery cutover remain blocked. Test branches must not target an auto-deploy service.
 
+[Free Neon and Supabase alternatives](PREVIEW_FREE_POSTGRES_EVALUATION.md) have been researched without provisioning. Their backup, network and migration constraints require review; no provider has been selected and user approval is required before creating one or migrating data.
+
 `android-companion/` uses distinct beta/Preview package identities and a permanent signing workflow described in `android-companion/SIGNING_AND_SAFE_UPDATES_V238.md`. A web-only commit should not trigger an APK build; the Android workflow is path-filtered. Never rotate signing keys, alter application identity, or uninstall/clear an existing app as a routine fix. Production promotion requires separate user approval.

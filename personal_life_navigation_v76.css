@@ -17,4 +17,6 @@ body:not([data-lifeos-view="dashboard"]) #todayOverview{display:none!important}
 /* V77: My Life-only sections must never occupy the Track tab even when another UI module moved them. */
 body:not([data-lifeos-view="life"]) #personalActivityPanel,
 body:not([data-lifeos-view="life"]) #lo32HabitHub,
-body:not([data-lifeos-view="life"]) #lo32FriendHub{display:none!important}
+body:not([data-lifeos-view="life"]) #lo32FriendHub,
+body:not([data-lifeos-view="life"]) #lo253-activity-analytics,
+body:not([data-lifeos-view="life"]) #lo254-prayer-history{display:none!important}

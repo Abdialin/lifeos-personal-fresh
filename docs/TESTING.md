@@ -19,6 +19,7 @@ node tests/today-review-categories.cjs
 TODAY_REVIEW_HISTORY_CAPTURE=1 node tests/today-review-history.cjs
 TODAY_AGENDA_CAPTURE=1 node tests/today-agenda-habits.cjs
 TODAY_ROUTINES_CAPTURE=1 node tests/today-agenda-routines.cjs
+TODAY_AGENDA_COVERAGE_CAPTURE=1 node tests/today-agenda-coverage.cjs
 node tests/today-history-date.cjs
 TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
 node tests/track-live-controls.cjs
@@ -49,9 +50,11 @@ SERIES_CAPTURE=1 node tests/plan-series-consent.cjs
 REMINDER_CAPTURE=1 node tests/plan-reminder-skip.cjs
 node scripts/capture-design-baselines.cjs
 node test_goal_fitness_cross_section_v204.cjs
+node test_goal_unique_durations.cjs
 node test_personal_goals_integration.cjs
 node test_cross_section_integrity_v206.cjs
 GOALS_READING_CAPTURE=1 node tests/goals-reading-evidence.cjs
+GOALS_TARGET_CAPTURE=1 node tests/goals-target-validity.cjs
 MY_LIFE_CAPTURE=1 node tests/my-life-subsections.cjs
 AUTH_V1_CAPTURE_DIR=authenticated-verification node tests/authenticated-isolated-v1.cjs
 node test_unified_analytics.cjs
@@ -101,11 +104,17 @@ The Today V1 fixture checks record-based overview values and navigation into exi
 
 The Today Agenda habit fixture checks scheduled and unscheduled habits, completion and undo from Today and My Life, retention of linked evidence, opt-in automatic-check dismissal, stale and duplicate checks, failed checkpoint writes, reload persistence, light-mode controls and reduced browser heights. It uses only synthetic, offline records. `TODAY_AGENDA_CAPTURE=1` saves dark and light browser screenshots; it does not verify Android input or system insets.
 
+The Agenda coverage fixture checks that an existing commitment which started before the selected window, linked and concurrent commitments, adjacent plans, completed plans, overnight plans and cancelled/skipped plans are reflected correctly in unscheduled windows, without assuming attendance. It checks details, the window toggle, Show/Hide disclosure state, saved Plan edits and reload, empty 23- and 25-hour local days, both themes, usable mobile touch targets and a reduced browser height. With `TODAY_AGENDA_COVERAGE_CAPTURE=1` it writes synthetic, offline viewport captures. It does not verify Android behavior or a live Preview account.
+
 The synthetic Review category fixture checks an empty day and a ten-category day, including disclosure labels, raw-duration bar widths and individual category drill-down. The fixture does not connect to a real Preview account.
 
 The historical Review fixture checks local-day date navigation and future-date rejection, previous-day totals and overlaps, unverified commitment details, partial gap logging and persistence, category drill-down to the same Timeline day, a midnight transition, 23- and 25-hour days and reduced browser viewports. `TODAY_REVIEW_HISTORY_CAPTURE=1` saves a synthetic previous-day screenshot.
 
 The synthetic Goals reading fixture checks that the daily chart uses the same goal evidence rules as weekly totals, does not infer a daily target, excludes assumed and future-dated entries, preserves date-only logs entered today, deduplicates linked sessions, and handles pauses, overnight sessions and a daylight-saving change. It also checks the affected light-mode heading contrast. Capture mode writes browser screenshots; it does not establish completion or approval of the Goals redesign.
+
+The Goals target fixture checks missing, empty, zero, negative and non-finite targets, a numeric-string target, and a valid target exceeded by recorded evidence. Invalid targets are shown as unavailable, while valid percentages can exceed 100% and chart geometry remains bounded. It checks Overview, Improve and History labels, the existing detail disclosure, an empty state, no record changes after reload, selected light-theme contrast, mobile row geometry, touch targets and reduced browser heights. It checks that My Life activity analytics is absent from Goals and that the existing advanced Insights action can still open it in My Life. `GOALS_TARGET_CAPTURE=1` writes synthetic viewport evidence; the fixture does not establish the complete Goals design, Android behavior or device acceptance.
+
+The goal duration model fixture verifies unioned elapsed time for concurrent matching timers, separate raw recorded minutes and session counts, paused segments, rejection of missing segment starts, linked workout/log deduplication, independent untimed manual evidence, overnight day boundaries, a daylight-saving transition and manually entered quantities. An overnight timer counts once as a session within a multi-day goal period. It also checks that the Insights and activity-intelligence goal summaries consume the same result. Since untimed entries have no interval, their overlap with timers or other untimed entries cannot be calculated; those entries remain separate recorded evidence and are not silently discarded.
 
 The historical Today timeline test covers date-picker and previous/next-day navigation, future-date rejection, overnight session identity, full and partial gap logging on earlier days, a second writer invalidating a selected gap, exact local-midnight boundaries, reload persistence, restored Track History record clicks and correct overnight day-portion details, and 23-/25-hour days. Requests are intercepted and storage is synthetic.
 

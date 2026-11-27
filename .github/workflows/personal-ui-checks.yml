@@ -23,6 +23,8 @@ jobs:
         run: node test_unified_navigation_reuse.cjs
       - name: Validate Fitness to Goals evidence
         run: node test_goal_fitness_cross_section_v204.cjs
+      - name: Validate unique elapsed goal durations
+        run: node test_goal_unique_durations.cjs
       - name: Validate cross-section record integrity
         run: node test_cross_section_integrity_v206.cjs
       - name: Validate strict whole-workspace cloud parity

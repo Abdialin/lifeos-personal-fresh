@@ -26,6 +26,7 @@ jobs:
       - run: node tests/today-review-categories.cjs
       - run: TODAY_REVIEW_HISTORY_CAPTURE=1 node tests/today-review-history.cjs
       - run: TODAY_AGENDA_CAPTURE=1 node tests/today-agenda-habits.cjs
+      - run: TODAY_AGENDA_COVERAGE_CAPTURE=1 node tests/today-agenda-coverage.cjs
       - run: TODAY_ROUTINES_CAPTURE=1 node tests/today-agenda-routines.cjs
       - run: TODAY_HISTORY_CAPTURE=1 node tests/today-history-date.cjs
       - run: TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
@@ -44,8 +45,10 @@ jobs:
       - run: node test_plan_evidence_v250.cjs
       - run: node test_personal_goals_integration.cjs
       - run: node test_goal_fitness_cross_section_v204.cjs
+      - run: node test_goal_unique_durations.cjs
       - run: node test_cross_section_integrity_v206.cjs
       - run: GOALS_READING_CAPTURE=1 node tests/goals-reading-evidence.cjs
+      - run: GOALS_TARGET_CAPTURE=1 node tests/goals-target-validity.cjs
       - run: MY_LIFE_CAPTURE=1 node tests/my-life-subsections.cjs
       - run: node tests/plan-overview-model.cjs
       - run: PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
@@ -74,6 +77,8 @@ jobs:
             docs/design/track/current/v1-*.png
             docs/design/my-life/current/v1-subsection-*.png
             docs/design/goals/current/release-reading*.png
+            docs/design/goals/current/release-target-validity-*.png
+            docs/design/goals/current/release-overview-v1-*.png
             docs/design/plan/current/v1-task-editor-*.png
             docs/design/plan/current/v1-compare-*.png
             docs/design/plan/current/v1-improve-*.png
