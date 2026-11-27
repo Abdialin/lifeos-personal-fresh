@@ -10,6 +10,9 @@ function mount(){
  const style=document.createElement('style');style.textContent=`
  #lo86-timer{position:fixed;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:min(350px,calc(100vw - 24px));z-index:750;background:#152138;color:#edf4ff;border:1px solid #537296;box-shadow:0 7px 28px #0008;border-radius:15px;padding:10px;font:14px system-ui;box-sizing:border-box}
  #lo86-timer[hidden],#lo86-details[hidden]{display:none!important}
+ /* Today and Track can already present this timer. Restore the floating
+    control as soon as its matching in-page clock leaves the viewport. */
+ #lo86-timer.lo86-inline-visible{visibility:hidden;pointer-events:none}
  /* Only one floating timer: preserve the original control as fallback when V86 is hidden. */
  body:has(#lo86-timer:not([hidden])) #lo32ActiveTimer{display:none!important}
  body:has(#lo86-timer:not([hidden])) #todayTimerSignal{display:none!important}
@@ -37,7 +40,34 @@ function mount(){
  document.body.append(box);
  const get=id=>box.querySelector('#'+id),pick=get('lo86-select'),details=get('lo86-details'),toggle=get('lo86-toggle'),status=get('lo86-status');
  const sessions=()=>{try{return root.lifeosReadOnlyWorkspace?.()?.sessions||[]}catch{return []}};
- let current=null,previous='';
+ let current=null,currentSession=null,previous='';
+ let visibilityFrame=0;
+ function updateInlineVisibility(){
+  visibilityFrame=0;
+  let row=null,shownId=null;
+  if(details.hidden&&document.body.dataset.lifeosView==='tracking'){
+   row=document.querySelector('#caLive:not([hidden]) .ca-live-primary-row');
+   shownId=row?.closest('.ca-primary')?.querySelector('[data-ca-act][data-ca-id]')?.dataset.caId;
+  }else if(details.hidden&&document.body.dataset.lifeosView==='dashboard'){
+   row=document.querySelector('#apPage0:not([hidden]) .ap-v1-live-row');
+   shownId=row?.querySelector('[data-ap-live-clock]')?.dataset.apLiveClock;
+  }
+  const selected=currentSession,now=Date.now(),day=new Date(now);day.setHours(0,0,0,0);
+  const segments=selected?.segments;
+  const priorDay=Array.isArray(segments)&&segments.some(part=>{
+   const start=Number(part.start),end=part.end==null?(selected.status==='running'?now:start):Number(part.end);
+   return Number.isFinite(start)&&Number.isFinite(end)&&start<day.getTime()&&Math.min(end,day.getTime())>start;
+  });
+  const rect=row?.getBoundingClientRect(),viewport=root.visualViewport;
+  const top=viewport?.offsetTop||0,viewportBottom=top+(viewport?.height||root.innerHeight);
+  const nav=document.getElementById('lifeosNavigation');
+  const bottom=nav&&getComputedStyle(nav).position==='fixed'?Math.min(viewportBottom,nav.getBoundingClientRect().top):viewportBottom;
+  // The floating clock shows today's portion. For overnight activities keep
+  // it visible, since the in-page clock shows a different full duration.
+  const visible=!!(rect&&rect.width>0&&rect.height>0&&rect.top>=top&&rect.bottom<=bottom&&String(shownId)===String(current)&&Array.isArray(segments)&&segments.length&&!priorDay);
+  box.classList.toggle('lo86-inline-visible',visible);
+ }
+ function queueInlineVisibility(){if(!visibilityFrame)visibilityFrame=root.requestAnimationFrame(updateInlineVisibility)}
  function elapsed(s,now){return root.LifeOSTimerFocusV77?.duration?.(s,now)||0}
  function dayDuration(s,now){
  const d=new Date(now);d.setHours(0,0,0,0);const midnight=d.getTime();
@@ -49,8 +79,8 @@ function mount(){
 
  function clock(ms){return root.LifeOSTimerFocusV77?.clock?.(ms)||'00:00:00'}
  function render(){
-  const all=active(sessions()),s=choose(all,current);
-  if(!s){current=null;box.hidden=true;return}
+  const all=active(sessions()),s=choose(all,current);currentSession=s;
+  if(!s){current=null;box.hidden=true;box.classList.remove('lo86-inline-visible');return}
   box.hidden=false;current=String(s.id);
   get('lo86-name').textContent=(s.status==='paused'?'Paused: ':'')+String(s.name||'Activity');
   get('lo86-clock').textContent=clock(dayDuration(s,Date.now()));
@@ -62,9 +92,10 @@ function mount(){
   pick.value=current;
   box.querySelector('[data-lo86="pause"]').textContent=s.status==='paused'?'Resume':'Pause';
   box.querySelector('[data-lo86="break"]').hidden=s.status==='paused';
+  queueInlineVisibility();
  }
  pick.addEventListener('change',()=>{current=pick.value;render()});
- toggle.addEventListener('click',()=>{details.hidden=!details.hidden;toggle.setAttribute('aria-expanded',String(!details.hidden));toggle.textContent=details.hidden?'⌃':'⌄'});
+ toggle.addEventListener('click',()=>{details.hidden=!details.hidden;toggle.setAttribute('aria-expanded',String(!details.hidden));toggle.textContent=details.hidden?'⌃':'⌄';queueInlineVisibility()});
  details.addEventListener('click',e=>{
   const button=e.target.closest('[data-lo86]');if(!button)return;
   const s=choose(sessions(),current);if(!s)return;
@@ -78,6 +109,11 @@ function mount(){
   render();
  });
  root.addEventListener('lifeos-v77-tracking-changed',render);
+ root.addEventListener('scroll',queueInlineVisibility,{passive:true});
+ root.addEventListener('resize',queueInlineVisibility,{passive:true});
+ root.visualViewport?.addEventListener('resize',queueInlineVisibility,{passive:true});
+ root.visualViewport?.addEventListener('scroll',queueInlineVisibility,{passive:true});
+ document.addEventListener('click',e=>{if(e.target.closest('#lifeosNavigation [data-view],#loTrackConceptA [data-ca-tab],#todayAPlus [data-ap-tab]'))queueInlineVisibility()});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
  root.addEventListener('pageshow',render);root.addEventListener('focus',render);
  root.setInterval(()=>{if(!document.hidden)render()},1000);render();

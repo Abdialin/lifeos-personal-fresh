@@ -2,6 +2,8 @@
 
 All browser fixtures in `tests/today-v250*.cjs`, `tests/plan-overview.cjs` and `scripts/capture-design-baselines.cjs` intercept requests: local repository assets are served to an isolated Preview-origin browser context, and other requests are blocked/fulfilled offline. They never need a real account or user history.
 
+`tests/authenticated-isolated-v1.cjs` is different: it starts a temporary local Python server with a new random login and sync token and a new temporary SQLite file, blocks nonlocal browser requests, and uses real login, recovery and sync HTTP endpoints with synthetic records. It verifies the recovery downloads before explicitly restoring the fixture, then exercises a partial gap, History, a task change, server readback and reload. It captures all current primary tabs in dark/light when `AUTH_V1_CAPTURE_DIR` is set. The temporary database and files are removed in `finally`. This is not the Render database, a production account, a native-device test or a complete cross-device sync certification. Some behavior guarded by the Preview hostname is not exercised on localhost.
+
 With Node and Playwright/Chromium installed, from the repository root:
 
 ```sh
@@ -12,12 +14,14 @@ node tests/today-v250-colors.cjs
 node tests/today-v250-precision.cjs
 node tests/today-v250-volume.cjs
 TODAY_V1_CAPTURE=1 node tests/today-release-v1.cjs
+TODAY_THEME_CAPTURE=1 node tests/today-theme-sync.cjs
 node tests/today-review-categories.cjs
 TODAY_REVIEW_HISTORY_CAPTURE=1 node tests/today-review-history.cjs
 TODAY_AGENDA_CAPTURE=1 node tests/today-agenda-habits.cjs
 node tests/today-history-date.cjs
 TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
 node tests/track-live-controls.cjs
+TRACK_INLINE_CAPTURE=1 node tests/track-inline-timer.cjs
 TRACK_FOCUS_CAPTURE=1 node tests/track-focus-mode.cjs
 TRACK_DETAIL_CAPTURE=1 node tests/track-record-details.cjs
 TRACK_TIMER_CAPTURE=1 node tests/track-timer-settings.cjs
@@ -47,12 +51,16 @@ node test_goal_fitness_cross_section_v204.cjs
 node test_personal_goals_integration.cjs
 node test_cross_section_integrity_v206.cjs
 GOALS_READING_CAPTURE=1 node tests/goals-reading-evidence.cjs
+MY_LIFE_CAPTURE=1 node tests/my-life-subsections.cjs
+AUTH_V1_CAPTURE_DIR=authenticated-verification node tests/authenticated-isolated-v1.cjs
 node test_unified_analytics.cjs
 node test_tracking_recovery.cjs
 node test_android_bridge_v231.cjs
 node test_static_asset_routes.cjs
 python3 test_frontend_static_assets_v236.py
 ```
+
+The shared-theme test changes the preference from Today and Plan, navigates all six sections and reloads. The timer-visibility test covers matching and different concurrent timers, scroll, tabs, expanded controls, overnight day portions and reduced browser heights without editing sessions. The My Life test checks subsection visibility, no repeated general panel, routine control ordering, access to the local challenge editor and legacy sharing, preserved records, both themes, three mobile viewport sizes and WCAG contrast for the visible Fitness/Nutrition headings and nutrition metric text. It is a targeted check, not an audit of every My Life component.
 
 The V250 tests cover selected map items, short intervals, full/partial/consecutive gap saves, invalid/stale boundaries, exact unedited millisecond endpoints, reload persistence, overlapping/overnight/paused records, explicit and ambiguous categories, representative Goals/Insights category paths, empty and 132-record states, 23/25-hour days, themes, six navigation sections and reduced browser heights. To recreate the synthetic high-volume image, run `LIFEOS_CAPTURE_VOLUME=1 node tests/today-v250-volume.cjs` and copy `today-verification/high-volume.png` to `docs/design/today/current/timeline-high-volume.png`.
 

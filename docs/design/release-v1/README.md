@@ -12,4 +12,4 @@ These are the user's illustrative V1 release references, preserved for future de
 
 The package's Goals and Insights `Original_references` images are byte-identical to their corresponding primary images; duplicates are omitted here. The earlier Plan `Original_references` are already in `docs/design/plan/reference/`. Android device screenshots shipped under `03_Plan/Current_implementation_not_targets/` are not included here: they are evidence of the earlier implementation, not approved targets, and have not been redacted for repository publication.
 
-Status: these files establish design direction, not proof that any section has been implemented or accepted. Track and the other sections still need fresh comparisons and verification against these V1 references.
+Status: these files establish design direction, not proof that any section has been accepted. A [six-section comparison with synthetic authenticated local captures](../authenticated-replica/) records substantial outstanding differences and does not establish native or deployed-account behavior.

@@ -1,0 +1,19 @@
+# V1 acceptance evidence: 27 November 2026
+
+This is a progress record, not release certification. Use GitHub Actions and Render to verify the exact tested and deployed commit. The [release checklist](RELEASE_CHECKLIST.md) remains open.
+
+| Checklist area | Evidence and outstanding work |
+| --- | --- |
+| Baseline, isolation and signing | Development continues on `today-a-plus-rebuild`; check both heads before each push. This change does not alter Android package identity, signing material or build an APK. The authenticated test creates only a temporary local SQLite database and random credentials. Long-term Preview durability and its connection to any staging database are not established. |
+| Screens and references | The [six-section local comparison](../../design/authenticated-replica/) links the 42 current dark/light browser captures to the supplied primary references and boards. Supporting sheets and all reference states have not yet been mapped or compared. |
+| Mobile presentation | Captures use 393 × 780 CSS pixels. Targeted tests cover 360/393/412 widths and a 460-pixel browser height for the changed controls, plus selected light-mode contrasts. This does not verify native Android insets, keyboard or every control. |
+| Today | Existing V250 regression tests cover the time map, full/partial gaps, overlaps, categories, persistence and navigation. The authenticated local test adds a real-server partial-gap save and Track History check. Complete V1 visual fidelity, every light-mode component and focused device acceptance remain open. |
+| Track | Existing synthetic tests cover Live, History, Review, pauses, overlaps, Focus and distractions. The duplicate floating timer is suppressed only when its matching same-day in-page timer is visible; overnight and different-session clocks remain available. Native background timing, alarm permissions, notifications and full V1 Focus behavior remain open. |
+| Plan | The current browser implementations cover five subsections and have separate regressions, including conflict checks, task editing, comparison and consent. Recurring tasks, bulk series editing and parts of the specified recovery flow remain open; visual and device acceptance remain pending. |
+| Goals | Existing evidence-based goal calculations have synthetic tests, but the V1 lifecycle, milestone and history requirements and visual redesign are incomplete. |
+| Insights | The existing page is not the specified Live / History / Review design. Full drill-downs, calculations and reference fidelity require implementation and verification. |
+| My Life | Existing subsection navigation, no repeated general panel, selected light-mode contrasts and preserved fixture records have browser tests. The eight-module hub and associated V1 features remain incomplete; the current long-form presentation differs from the reference. |
+| Integration and persistence | The temporary local server test confirms one guarded restore, one partial gap, a task change, server readback and a browser reload. It does not certify deployed Render persistence, offline/reconnect, a second device, migration or every backup/restore scenario. Existing separate regressions remain applicable. |
+| Native Samsung and approval | Not verified in this run. Device insets, keyboard, notifications, background timers and a signed install/update require a later controlled native test. User acceptance and production approval remain pending. |
+
+No mockup percentages or claims of success have been substituted for missing records. The full V1 release must not be declared ready while the open items above remain.

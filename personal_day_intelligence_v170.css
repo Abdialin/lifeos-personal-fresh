@@ -125,7 +125,7 @@
 
 /* V184 — Insights is interpretation first, detailed evidence on demand. */
 #lo182-life-hub{display:none!important}
-body[data-lifeos-view="life"] #lo182-life-hub{display:block!important}
+body[data-lifeos-view="life"][data-lo-life-section="overview"] #lo182-life-hub{display:block!important}
 #lo184-insights-digest{display:none}
 body[data-lifeos-view="analytics"] #lo184-insights-digest{display:block}
 .l184-digest{color:#e5f6f2;background:linear-gradient(155deg,#092837,#071728);border:1px solid #286577;border-radius:18px;padding:20px;margin:13px 0 26px}

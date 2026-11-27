@@ -20,6 +20,10 @@ Preview startup reports SQLite and no persistent disk is visible in service meta
 
 Authenticated deployed-app behavior, real Samsung keyboard/gesture navigation, notification delivery, long-term background tracking, cross-device sync and user acceptance are not established by the offline browser suite. Some goal rules intentionally match a specific name/keyword; full taxonomy consistency across every historical analytics path remains to be audited.
 
+On 27 November an authenticated local replica with its own disposable SQLite database verified login, guarded recovery, one partial gap, task synchronization and reload using synthetic records. This does not establish authenticated Render behavior or long-term persistence. The live six-section app has one shared workspace; the separate beta registration does not provide an isolated account for it. See `docs/DEPLOYMENT.md` before attempting any live seeding.
+
+Today shares the global saved theme, and the floating timer avoids duplicating a visible matching same-day clock on Today Overview and Track Live. It can still cover content on other views; overnight and different-session clocks remain visible because they carry distinct information. My Life's general progress panel no longer repeats in its subsections. Fitness/Nutrition heading and nutrition metric contrast has targeted light-mode tests, but the whole section's themes, navigation and V1 design remain incomplete.
+
 Browser tests verify that the planned-reminder panel and Start now dock can be operated together in reduced viewports, and that skipped plans are not shown from the reminder queue. System-notification removal, locked-screen behavior and native Android layout remain device checks; the web test does not prove those behaviors.
 
 The fixed 90-minute threshold has been removed from the Goals reading chart; it now shows recorded time rather than implying an unsupported daily target. Configurable daily-target rules and the broader Goals redesign still require implementation and verification. The existing Goals interface also retains dark cards in light mode and differs substantially from the supplied V1 reference.

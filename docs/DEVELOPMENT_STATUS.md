@@ -1,6 +1,14 @@
 # Development status
 
-Last reviewed: 26 November 2026. Use `git rev-parse HEAD` and GitHub Actions for the exact current revision and run status; do not infer deployment from this file.
+Last reviewed: 27 November 2026. Use `git rev-parse HEAD` and GitHub Actions for the exact current revision and run status; do not infer deployment from this file.
+
+## 27 November: isolated authenticated replica and focused corrections
+
+The live Preview's full app uses a shared workspace login; its separately registered beta accounts open a different dashboard and cannot safely supply an isolated workspace for the six-section app. A new local end-to-end test starts this checkout with random disposable credentials and a temporary SQLite database, signs in, saves a synthetic fixture through the real HTTP sync API, verifies the two recovery copies, restores it locally, and checks a Today gap save, Track History, Plan task update, server readback and reload. It also captures all currently exposed primary subsection screens at a 393 × 780 browser viewport in both themes. [Screenshots and comparison](design/authenticated-replica/) document remaining release differences. This is not an authenticated Render test or a claim that all actions or supporting screens have been verified.
+
+Today now uses the shared stored theme when changed from either Today or another section. The duplicate floating timer no longer obscures Today Overview or Track Live when their matching same-day in-page clock is visible; it returns for a different selected timer, a scrolled-away clock, another tab or an overnight day-portion clock. My Life's general progress panel is no longer repeated in its other subsections, notes/community tools follow the routine controls, and the local challenges panel remains outside collapsed legacy sharing. The Fitness/Nutrition headings and visible nutrition figures have targeted light-mode contrast corrections. These are browser-tested web changes; Samsung safe areas, keyboard and device behavior remain open.
+
+The V1 release remains incomplete. Goals, Insights and My Life still differ substantially from their supplied targets; Plan has outstanding recurrence/recovery gaps and native/device acceptance remains pending. Verify the exact commit, workflow status and Render deployment separately.
 
 ## V1 release package and active work
 

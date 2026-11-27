@@ -2,6 +2,8 @@
 
 The isolated Preview service is `lifeos-today-aplus-preview`, linked to `Abdialin/lifeos-personal-fresh` branch `today-a-plus-rebuild` with automatic deployment on commit. Verify the remote branch before pushing; inspect the exact deploy commit and `live` status in Render, then check the workload. The sign-in page can be checked anonymously, but authenticated behavior requires the isolated Preview account.
 
+The six-section app's current login is a shared workspace, so adding a second login or seeding it would not isolate records. `/account/register` belongs to the separate beta dashboard and does not authenticate the six-section app. Local authenticated testing now uses an independently created temporary server, credentials and SQLite database; it does not prove signed-in behavior on Render. A truly isolated deployed-account check needs a separate disposable service/database or a reviewed per-account workspace implementation. Do not upload the synthetic fixture to the existing shared Preview workspace.
+
 Useful read-only checks after a push:
 
 ```sh
