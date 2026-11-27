@@ -24,7 +24,10 @@ class Stage40Deployment(unittest.TestCase):
     def test_docker_context_excludes_backups_and_secrets(self):
         ignored = [line.strip() for line in (ROOT / '.dockerignore').read_text().splitlines()
                    if line.strip() and not line.lstrip().startswith('#')]
-        for name in ['.git', '.env', 'personal.sqlite3', 'recovery-backup.json', 'archive.zip', 'signing.keystore']:
+        for name in ['.git', '.env', 'personal.sqlite3', 'recovery-backup.json',
+                     'LifeOS_v234_android_local_before_adoption.json', 'LifeOS_v234_server_revision_1.json',
+                     'LifeOS_v244_local_pending_2026-11-27.json', 'personal-notes.json',
+                     'archive.zip', 'signing.keystore']:
             self.assertTrue(any(fnmatch.fnmatch(name, pattern) for pattern in ignored), name)
 
     def test_postgres_schema_is_additive(self):

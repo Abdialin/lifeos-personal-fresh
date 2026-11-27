@@ -19,14 +19,10 @@ data
 **/*.bak
 *.zip
 **/*.zip
-*backup*.json
-**/*backup*.json
-*[Bb]ackup*.json
-**/*[Bb]ackup*.json
-*recovery*.json
-**/*recovery*.json
-*[Rr]ecovery*.json
-**/*[Rr]ecovery*.json
+# Browser exports can have arbitrary names and contain private records.
+# There are currently no tracked JSON assets; explicitly allowlist any needed in future.
+*.json
+**/*.json
 .env
 .env.*
 **/.env
