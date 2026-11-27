@@ -18,6 +18,7 @@ TODAY_THEME_CAPTURE=1 node tests/today-theme-sync.cjs
 node tests/today-review-categories.cjs
 TODAY_REVIEW_HISTORY_CAPTURE=1 node tests/today-review-history.cjs
 TODAY_AGENDA_CAPTURE=1 node tests/today-agenda-habits.cjs
+TODAY_ROUTINES_CAPTURE=1 node tests/today-agenda-routines.cjs
 node tests/today-history-date.cjs
 TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
 node tests/track-live-controls.cjs
@@ -90,7 +91,7 @@ The repeated-plan consent fixture exercises the visible occurrence preview, canc
 
 The browser reminder fixture checks skipped, completed, linked and duplicate-ID commitments, a queued plan skipped while another reminder is visible, retraction of a visible reminder, continued reminders for eligible plans, snooze, and actual Start now timer creation. It verifies both on-screen prompts remain operable at 360×460 and captures a synthetic screenshot with `REMINDER_CAPTURE=1`. Browser notification calls are intercepted; this does not test Android system notifications or the lock screen.
 
-The Today V1 fixture checks record-based overview values and navigation into existing editors, partial-period union accounting, category drill-down, proportional overlap lanes, short interval access, cancelled-plan exclusion, task completion and reload persistence, light mode and browser viewport clearance. Review assertions verify category bars against raw duration, full accessible labels, touch target height, intelligence order and selected light-mode text contrast. With capture enabled it writes synthetic images under `docs/design/today/current/release-*.png`. Reference comparison notes and remaining discrepancies are in `docs/design/today/COMPARISON.md`.
+The Today V1 fixture checks record-based overview values and navigation into existing editors, partial-period union accounting, category drill-down, proportional overlap lanes, short interval access, cancelled-plan exclusion, task completion and reload persistence, light mode and browser viewport clearance. Review assertions verify category bars against raw duration, full accessible labels, touch target height, intelligence order and selected light-mode text contrast. The Agenda routines fixture checks local-day selection and rollover, empty and explicitly marked example records, safe display of malformed imported values, existing form and history navigation, a single save and reload, unchanged time-accounting metrics and several browser viewport sizes. The separate authenticated replica also checks routine history after the guarded server restore. With capture enabled these write synthetic images under `docs/design/today/current/release-*.png`. Reference comparison notes and remaining discrepancies are in `docs/design/today/COMPARISON.md`.
 
 The Today Agenda habit fixture checks scheduled and unscheduled habits, completion and undo from Today and My Life, retention of linked evidence, opt-in automatic-check dismissal, stale and duplicate checks, failed checkpoint writes, reload persistence, light-mode controls and reduced browser heights. It uses only synthetic, offline records. `TODAY_AGENDA_CAPTURE=1` saves dark and light browser screenshots; it does not verify Android input or system insets.
 

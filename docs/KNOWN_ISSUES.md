@@ -10,7 +10,7 @@ Next native investigation: collect device/API level, gesture versus three-button
 
 The user supplied a V1 release package with individual Today Overview and Timeline targets, Track references, all five Plan targets, remaining-section references and supporting boards. They are indexed in `docs/design/release-v1/` and `docs/design/today/reference/`. Agenda and Review are represented on supporting boards rather than individual Today reference files. The original historical approval provenance remains unconfirmed. Reference availability does not establish visual or device acceptance; see `docs/design/today/COMPARISON.md` and the remaining sections’ comparisons.
 
-Today Agenda's scheduled habit checklist can now be operated inline, but separate routine logs still open My Life. Agenda and Review remain longer than the supplied section-board designs. Their compact layout, full light-theme contrast and physical-device presentation need further work and review.
+Today Agenda's scheduled habit checklist can be operated inline. Saved routine logs are now shown separately with links to the existing My Life logging form and recent history; that history currently displays at most the latest 12 records. A scheduled routine checklist has not been implemented. Agenda and Review remain longer than the supplied section-board designs. Their compact layout, full light-theme contrast and physical-device presentation need further work and review.
 
 ## Storage
 

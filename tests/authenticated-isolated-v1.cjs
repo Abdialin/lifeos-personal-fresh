@@ -215,7 +215,10 @@ async function main() {
         await page.waitForFunction(value => document.body.dataset.loLifeSection === value, name);
         if (name !== 'overview') assert(!(await page.locator('#lo182-life-hub').isVisible()));
         if (name === 'friends') await page.locator('#lo197-challenges').waitFor({ state: 'visible' });
-        if (name === 'routines') await page.locator('#lo170-notes').waitFor({ state: 'attached' });
+        if (name === 'routines') {
+          await page.locator('#lo170-notes').waitFor({ state: 'attached' });
+          await page.waitForFunction(() => document.getElementById('personalLogList')?.textContent.includes('Quran'));
+        }
         await capture('my-life-' + name + '-' + theme);
       }
     }

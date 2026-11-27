@@ -38,6 +38,8 @@ History now groups a session's same-day segments without altering its saved reco
 
 ## Today: current work
 
+Agenda can now show the selected day's saved routine logs separately from scheduled habit checks, with links to the existing My Life log form and recent history. Empty and malformed values remain unknown or unavailable; example records are labeled where the source marks them. The change does not add routine duration to tracked time or infer missed routines. Routine history also refreshes after workspace restoration. Synthetic dark/light browser captures and local regression coverage are documented in `docs/design/today/COMPARISON.md`; the specified scheduled routine checklist, full visual acceptance and device checks remain open.
+
 The V250 foundation added interactive recorded, planned, active and gap details, gap logging through Track's existing form, overlap review and separate raw-time metrics. A follow-up restored known Preview sample categories without changing saved sample records. The user reported that timeline entries are selectable and the gap form opens on Android; that is not acceptance of all V250 requirements.
 
 This follow-up addresses category aliases and explicit-category precedence, compact details, minute-level gap controls with exact untouched boundaries, live remaining-time guidance, local-day timeline boundaries on daylight-saving transitions, and a superseded Track presentation leaking into other sections. Automated checks and synthetic screenshots are documented in `docs/TESTING.md` and `docs/design/today/`. Device and user acceptance remain pending.
