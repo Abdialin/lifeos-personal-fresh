@@ -45,7 +45,7 @@ class OfflineReconnect(unittest.TestCase):
                     page.route('**/api/state',respond)
                     page.goto('http://127.0.0.1:'+str(server.server_address[1])+'/index.html',wait_until='load',timeout=45000)
                     page.locator('#lifeosNavigation button[data-view="tracking"]').click()
-                    page.locator('#quick button[data-name="Work"]').click()
+                    page.locator('#caLive [data-ca-quick-start="Work"]').click()
                     def atomic():
                         return page.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'))""")
                     first=atomic()
@@ -74,7 +74,9 @@ class OfflineReconnect(unittest.TestCase):
                     # device updating the server before local reconnection.
                     previous=remote['revision']
                     mode['offline']=True
-                    page.locator('#quick button[data-name="Shopping"]').click()
+                    page.locator('#caLive [data-ca-sheet="start"]').first.click()
+                    page.locator('#caCustomName').fill('Shopping')
+                    page.locator('#loCADialog [data-ca-custom-start]').click()
                     queued=atomic();self.assertGreaterEqual(len(queued['journal']),1)
                     self.assertTrue(any(s['name']=='Shopping' for s in queued['workspace']['sessions']))
                     server_copy=json.loads(json.dumps(remote['data']))

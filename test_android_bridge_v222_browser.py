@@ -28,11 +28,18 @@ class NativeBridgeBrowser(unittest.TestCase):
      errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
      page.goto(f'http://127.0.0.1:{server.server_address[1]}/index.html',wait_until='load',timeout=45000)
      page.locator('#lifeosNavigation button[data-view="tracking"]').click()
-     page.locator('#quick button[data-name="Work"]').click()
+     page.locator('#caLive [data-ca-quick-start="Work"]').click()
      page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='timer-status'&&x.status==='running'&&x.name==='Work')",timeout=6000)
      states=page.evaluate('window.__nativeMessages')
      self.assertFalse(any('syncToken' in x or 'workspace' in x or 'email' in x for x in states))
-     self.assertTrue(all(set(x.keys()).issubset({'kind','id','name','status','elapsedMs','endMs','activeCount'}) for x in states))
+     allowed={
+       'timer-status':{'kind','id','name','status','elapsedMs','activeCount','snapshotAtMs','segmentsCount','runningSegmentStartMs','requiresForegroundService','notificationType'},
+       'alarm-status':{'kind','status','name','endMs'},
+       'planned-reminder':{'kind','status','id','name','atMs'},
+       'token-restore':{'kind'},
+     }
+     unexpected=[(x.get('kind'),sorted(x)) for x in states if x.get('kind') not in allowed or not set(x.keys()).issubset(allowed[x['kind']])]
+     self.assertEqual(unexpected,[],f'Unexpected native message fields: {unexpected}')
      self.assertTrue(any(x.get('activeCount',0)>=1 for x in states if x['kind']=='timer-status' and x.get('status')=='running'))
      # Exercise real authoritative pause/resume handler through the native bridge.
      session_id=page.evaluate("""() => String(window.lifeosReadOnlyWorkspace().sessions.find(
@@ -42,20 +49,23 @@ class NativeBridgeBrowser(unittest.TestCase):
      self.assertEqual(page.evaluate("(id) => window.lifeosReadOnlyWorkspace().sessions.find(x=>String(x.id)===id).status",session_id),'paused')
      self.assertTrue(page.evaluate("(id) => window.LifeOSAndroidBridgeV222.nativeTimerAction(id,'resume')",session_id))
      self.assertEqual(page.evaluate("(id) => window.lifeosReadOnlyWorkspace().sessions.find(x=>String(x.id)===id).status",session_id),'running')
-     page.locator('#lo86-toggle').click()
-     page.locator('#lo86-details [data-lo86="pause"]').click()
+     page.locator(f'#caLive [data-ca-act="pause"][data-ca-id="{session_id}"]').click()
      page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='timer-status'&&x.status==='paused'&&x.name==='Work')",timeout=6000)
-     page.locator('#lo207-focus summary').click()
+     page.locator('#lifeosNavigation button[data-view="dashboard"]').click()
+     page.get_by_role('button',name='Open app settings and actions').click()
+     page.locator('#lo14SettingsButton').click()
      page.locator('#lo227-native-test').click()
      page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='alarm-test')",timeout=6000)
      page.locator('#lo230-diagnostics').click()
      page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='settings-request'&&x.target==='diagnostics')",timeout=6000)
-     page.locator('#lo207-focus-minutes').fill('5')
-     page.locator('#lo207-start-focus').click()
+     page.locator('#lifeosNavigation button[data-view="tracking"]').click()
+     page.locator('#caLive [data-ca-sheet="focus"]').click()
+     page.locator('#caFocusDuration').select_option('25')
+     page.locator('#loCADialog [data-ca-focus-start]').click()
      page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='alarm-status'&&x.status==='scheduled'&&x.endMs>Date.now())",timeout=6000)
-     page.locator('#lo221-layer-break').click()
+     page.locator('#caFocusBreak').click()
      page.wait_for_function("() => window.__nativeMessages.some(x=>x.kind==='alarm-status'&&x.status==='cancelled')",timeout=6000)
-     page.locator('#lo207-cancel-focus').click()
+     page.locator('#loCADialog [data-ca-focus-control="end"]').click()
      # Native snooze must resume only an expired/ringing focus alarm.
      result=page.evaluate("""() => {
        const key='lifeos.personal.focus.v207',now=Date.now();

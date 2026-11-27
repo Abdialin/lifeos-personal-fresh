@@ -700,6 +700,13 @@ function readRealFocusState(){
   return value&&value.kind==='focus'&&['running','paused','break','ringing'].includes(value.mode)?value:null;
  }catch{return null}
 }
+function readRunningAlarm(){
+ try{
+  const raw=window.localStorage.getItem('lifeos.personal.focus.v207');
+  const value=raw?JSON.parse(raw):null;
+  return value&&value.kind==='alarm'&&value.mode==='running'&&Number.isFinite(Number(value.end))&&Number(value.end)>Date.now()?value:null;
+ }catch{return null}
+}
 function focusRemainingMs(value){
  return Math.max(0,value?.mode==='running'?Number(value.end)-Date.now():Number(value?.remainingMs)||0);
 }
@@ -1040,6 +1047,16 @@ function sheet(type,id,dayKey){
   const running=readRealFocusState();
   if(running&&running.kind==='focus'&&running.mode!=='ringing'){
    showRealFocus();
+   return;
+  }
+  const alarm=readRunningAlarm();
+  if(alarm){
+   const when=new Date(Number(alarm.end)).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+   const content='<div class="ca-focus-hero"><div class="ca-focus-icon">◷</div><h3>'+htmlEscape(alarm.label||'Alarm')+'</h3><p>Scheduled · '+htmlEscape(when)+'</p></div>'
+    +'<p class="ca-feature-footnote">Alert delivery depends on browser and device settings.</p><p id="caSnoozedAlarmError" class="ca-inline-error" role="alert"></p>'
+    +'<div class="ca-preview-actions"><button type="button" class="ca-sheet-secondary" data-ca-close>Keep alarm</button><button type="button" class="ca-sheet-primary" data-ca-stop-alarm>End alarm</button></div>';
+   openDialog('Active alarm','Review your active alarm',content);
+   dialog.dataset.caContext='focus-alarm';dialog.dataset.caAlarmSnapshot=JSON.stringify(alarm);
    return;
   }
   const choices=live.length?live:[{id:'',name:'Studying'}];
@@ -1441,6 +1458,15 @@ async function handleDialogClick(event){
   if(action==='end'){closeDialog();return}
   window.setTimeout(updateRealFocusScreen,50);
   return;
+ }
+ if(event.target.closest('[data-ca-stop-alarm]')){
+  const current=readRunningAlarm(),error=$('caSnoozedAlarmError'),stop=$('lo221-end');
+  if(!current||JSON.stringify(current)!==dialog.dataset.caAlarmSnapshot){if(error)error.textContent='The alarm changed. Close and review it again.';return}
+  if(!stop){if(error)error.textContent='Alarm controls are unavailable. The alarm is still active.';return}
+  stop.click();
+  let stillSaved=true;try{stillSaved=window.localStorage.getItem('lifeos.personal.focus.v207')!==null}catch{}
+  if(stillSaved){if(error)error.textContent='Could not end the alarm. It remains active.';return}
+  closeDialog();return;
  }
  const limit=event.target.closest('[data-ca-limit]');
  if(limit){

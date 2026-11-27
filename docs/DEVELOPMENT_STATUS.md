@@ -10,6 +10,8 @@ Today now uses the shared stored theme when changed from either Today or another
 
 On Today mobile views, the collapsed fallback timer now occupies less horizontal space, retains a 44-pixel touch control and supplies the selected activity name to assistive technology. It can still overlay content. The [storage runbook](PREVIEW_STORAGE_RUNBOOK.md) documents an isolated PostgreSQL proposal, migration and local backup/restore rehearsal, plus a fix for concurrent calendar/workspace saves. These changes require review and safe Preview deployment; the current server records and recovery status remain unknown.
 
+Track Focus now exposes an existing running alarm after snooze, with an explicit End action and stale-state and failed-save checks. A [synthetic capture](design/track/current/v1-focus-snoozed-alarm.png) shows the added state. Browser tests use the visible Concept A controls; native alarm delivery and device acceptance remain open.
+
 The V1 release remains incomplete. Goals, Insights and My Life still differ substantially from their supplied targets; Plan has outstanding recurrence/recovery gaps and native/device acceptance remains pending. Verify the exact commit, workflow status and Render deployment separately.
 
 ## V1 release package and active work

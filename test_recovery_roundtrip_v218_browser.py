@@ -27,7 +27,7 @@ class RecoveryRoundtrip(unittest.TestCase):
                     url=f'http://127.0.0.1:{server.server_address[1]}/index.html'
                     p=source.new_page();p.goto(url,wait_until='load',timeout=45000)
                     p.locator('#lifeosNavigation button[data-view="tracking"]').click()
-                    p.locator('#quick button[data-name="Work"]').click()
+                    p.locator('#caLive [data-ca-quick-start="Work"]').click()
                     before=p.evaluate("""() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic'))""")
                     id=next(s['id'] for s in before['workspace']['sessions'] if s['name']=='Work')
                     # Synthetic token, never saved into a file.
