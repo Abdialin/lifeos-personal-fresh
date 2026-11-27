@@ -31,6 +31,7 @@ jobs:
       - run: TODAY_HISTORY_CAPTURE=1 node tests/today-history-date.cjs
       - run: TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
       - run: node tests/track-live-controls.cjs
+      - run: node tests/track-background-clock.cjs
       - run: TRACK_INLINE_CAPTURE=1 TODAY_COMPACT_TIMER_CAPTURE=1 node tests/track-inline-timer.cjs
       - run: TRACK_FOCUS_CAPTURE=1 node tests/track-focus-mode.cjs
       - run: TRACK_DETAIL_CAPTURE=1 node tests/track-record-details.cjs
