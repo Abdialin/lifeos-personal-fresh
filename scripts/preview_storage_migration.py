@@ -153,12 +153,16 @@ def checked_target(url, expected_host, expected_database, expected_user):
     if not expected_user or unquote(parsed.username or '') != expected_user:
         raise Refused('Target user does not match the reviewed Preview database user')
     parameters = parse_qs(parsed.query, keep_blank_values=True)
-    if set(parameters) - {'sslmode', 'connect_timeout', 'application_name'} or any(len(values) != 1 for values in parameters.values()):
+    if set(parameters) - {'sslmode', 'connect_timeout', 'application_name', 'channel_binding', 'sslrootcert'} or any(len(values) != 1 for values in parameters.values()):
         raise Refused('Target URL contains unsupported or repeated connection parameters')
+    if 'channel_binding' in parameters and parameters['channel_binding'][0] != 'require':
+        raise Refused('Channel binding, when supplied, must be required')
+    if 'sslrootcert' in parameters and parameters['sslrootcert'][0] != 'system':
+        raise Refused('Only the system TLS trust store may be selected in the target URL')
     if parsed.hostname not in ('localhost', '127.0.0.1', '::1'):
         mode = parameters.get('sslmode', [''])[0]
-        if mode not in ('require', 'verify-ca', 'verify-full'):
-            raise Refused('Remote Preview database connections must require TLS')
+        if mode != 'verify-full':
+            raise Refused('Remote Preview database connections must verify the TLS certificate and hostname')
     return actual_database
 
 
