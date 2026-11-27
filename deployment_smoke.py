@@ -26,11 +26,17 @@ def run():
         env = {**os.environ, 'PORT': str(port), 'LIFEOS_DB': str(Path(directory) / 'test.sqlite3'),
                'LIFEOS_DATABASE_URL': '', 'LIFEOS_USERNAME': username,
                'LIFEOS_PASSWORD': password, 'LIFEOS_TOKEN': token,
+               'LIFEOS_ACCOUNT_API_ENABLED': '0', 'LIFEOS_ACCOUNT_DB_PATH': '',
                'GOOGLE_CLIENT_ID': '', 'GOOGLE_CLIENT_SECRET': ''}
         process = subprocess.Popen([sys.executable, str(ROOT / 'server.py')], cwd=ROOT,
                                    env=env, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         base = f'http://127.0.0.1:{port}'
         basic = 'Basic ' + base64.b64encode(f'{username}:{password}'.encode()).decode()
+
+        class NoRedirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self, req, fp, code, msg, headers, newurl):
+                return None
+        opener = urllib.request.build_opener(NoRedirect)
 
         def request(path, method='GET', body=None, authenticated=True, token_auth=False):
             headers = {}
@@ -43,7 +49,7 @@ def run():
             payload = json.dumps(body).encode() if body is not None else None
             req = urllib.request.Request(base + path, data=payload, headers=headers, method=method)
             try:
-                with urllib.request.urlopen(req, timeout=2) as response:
+                with opener.open(req, timeout=2) as response:
                     return response.status, response.read(), response.headers
             except urllib.error.HTTPError as exc:
                 return exc.code, exc.read(), exc.headers
@@ -60,7 +66,9 @@ def run():
                     time.sleep(.1)
             else:
                 raise RuntimeError('Server did not become ready')
-            assert request('/', authenticated=False)[0] == 401
+            status, raw, headers = request('/', authenticated=False)
+            assert status == 303 and headers.get('Location') == '/login' and not raw
+            assert request('/calendar.js', authenticated=False)[0] == 401
             assert request('/')[0] == 200
             assert request('/calendar.html')[0] == 200
             assert request('/calendar.js')[0] == 200

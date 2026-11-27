@@ -21,6 +21,7 @@ const serve = route => {
     const active = (id, name, start) => ({ id, name, status: 'running', startAt: start, createdAt: start, endAt: null,
       segments: [{ start, end: null }], precision: 'measured', notes: '' });
     localStorage.setItem('lifeos-live-v1', JSON.stringify({ version: 1, events: [], schedule: [], todos: [],
+      habitDefinitions: [{ id: 'habit-1', title: 'Read', everyDays: 1, startDate: '2026-11-20' }], habitChecks: [],
       sessions: [active('study', 'Study', Date.parse('2026-11-26T15:00:00+01:00')),
         active('work', 'Work project', Date.parse('2026-11-26T15:15:00+01:00'))] }));
   });
@@ -47,6 +48,37 @@ const serve = route => {
     await waitVisibility(false);
     await page.locator('#apTab1').click();
     await waitVisibility(true);
+    await page.locator('#apTab2').click();
+    await waitVisibility(true);
+    const timer = page.locator('#lo86-timer'), timerButton = page.locator('#lo86-toggle');
+    const selectedName = (await page.locator('#lo86-select').inputValue()) === 'study' ? 'Study' : 'Work project';
+    assert((await timer.getAttribute('aria-label')).includes(selectedName), 'The collapsed timer must identify its selected activity to assistive technology');
+    const footprint = await timer.boundingBox(), control = await timerButton.boundingBox();
+    assert(footprint.width <= 160, 'The collapsed Today timer should not occupy half the mobile screen');
+    assert(control.width >= 44 && control.height >= 44, 'The timer control needs a usable touch target');
+    await page.locator('#apPage2 [data-ap-live-habit="habit-1"]').check();
+    assert(await page.locator('#apPage2 [data-ap-live-habit="habit-1"]').isChecked(), 'Agenda controls remain usable with a timer visible');
+    if (process.env.TODAY_COMPACT_TIMER_CAPTURE) {
+      fs.mkdirSync('docs/design/today/current', { recursive: true });
+      await page.screenshot({ path: 'docs/design/today/current/release-compact-timer-dark.png' });
+      await page.locator('#todayAPlus .ap-header button').click();
+      await page.screenshot({ path: 'docs/design/today/current/release-compact-timer-light.png' });
+      await page.locator('#todayAPlus .ap-header button').click();
+    }
+    await timerButton.click();
+    assert.equal(await timerButton.getAttribute('aria-expanded'), 'true');
+    assert(await page.locator('#lo86-name').isVisible(), 'Expanded timer controls show the selected activity name');
+    await timerButton.click();
+    for (const size of [{ width: 360, height: 650 }, { width: 393, height: 460 }, { width: 412, height: 780 }]) {
+      await page.setViewportSize(size);
+      await page.waitForTimeout(300);
+      const compact = await timer.boundingBox(), toggle = await timerButton.boundingBox();
+      const viewport = await page.evaluate(() => ({ height: window.visualViewport.height, top: window.visualViewport.offsetTop }));
+      assert(compact.width <= 160, 'Today timer remains compact at ' + JSON.stringify(size));
+      assert(toggle.width >= 44 && toggle.height >= 44, 'Today timer remains touch accessible at ' + JSON.stringify(size));
+      assert(compact.y + compact.height <= viewport.top + viewport.height + 1, 'Today timer remains within the viewport at ' + JSON.stringify(size));
+    }
+    await page.setViewportSize({ width: 393, height: 780 });
     await page.locator('#apTab0').click();
     await waitVisibility(false);
     await page.locator('#lifeosNavigation [data-view="tracking"]').click();

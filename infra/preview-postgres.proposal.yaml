@@ -1,0 +1,21 @@
+# Proposal only. Do not apply until the user approves costs and recovery is reviewed.
+# No existing services or databases are adopted by this Blueprint.
+previews:
+  generation: 'off'
+
+projects:
+  - name: lifeos-preview-isolated
+    environments:
+      - name: preview
+        networking:
+          isolation: enabled
+        databases:
+          - name: lifeos-personal-preview-database
+            databaseName: lifeos_preview
+            user: lifeos_preview_app
+            postgresMajorVersion: '17'
+            region: frankfurt
+            plan: 0.1c-256mb
+            diskSizeGB: 1
+            storageAutoscalingEnabled: false
+            ipAllowList: []

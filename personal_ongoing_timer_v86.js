@@ -32,7 +32,12 @@ function mount(){
  #lo86-select{grid-column:1/-1;width:100%;min-width:0}
  #lo86-details{grid-template-columns:repeat(2,minmax(0,1fr))}
  #lo86-status{grid-column:1/-1;font-size:12px;min-height:0;margin:0;color:#bbd7f4}
- @media(max-width:520px){#lo86-timer{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
+ @media(max-width:520px){
+  #lo86-timer{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  body[data-lifeos-view="dashboard"] #lo86-timer:has(#lo86-details[hidden]){width:max-content!important;max-width:min(160px,calc(100vw - 16px))!important}
+  body[data-lifeos-view="dashboard"] #lo86-timer #lo86-toggle{min-width:44px!important;min-height:44px!important}
+  body[data-lifeos-view="dashboard"] #lo86-timer:has(#lo86-details:not([hidden])) #lo86-name{display:block!important}
+ }
  `;document.head.append(style);
  const box=document.createElement('aside');box.id='lo86-timer';box.hidden=true;
  box.setAttribute('aria-label','Ongoing LifeOS activity timer');
@@ -82,6 +87,7 @@ function mount(){
   const all=active(sessions()),s=choose(all,current);currentSession=s;
   if(!s){current=null;box.hidden=true;box.classList.remove('lo86-inline-visible');return}
   box.hidden=false;current=String(s.id);
+  box.setAttribute('aria-label',(s.status==='paused'?'Paused activity timer: ':'Running activity timer: ')+String(s.name||'Activity'));
   get('lo86-name').textContent=(s.status==='paused'?'Paused: ':'')+String(s.name||'Activity');
   get('lo86-clock').textContent=clock(dayDuration(s,Date.now()));
   const sig=all.map(x=>String(x.id)+'|'+x.status+'|'+x.name).join(';');

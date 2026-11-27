@@ -1,7 +1,7 @@
 name: LifeOS Personal disposable PostgreSQL reliability
 on:
   push:
-    branches: [main]
+    branches: [main, today-a-plus-rebuild]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -37,5 +37,11 @@ jobs:
           python-version: '3.11'
       - name: Install PostgreSQL adapter
         run: python -m pip install 'psycopg[binary]>=3.2,<4' 'cryptography>=43,<47' 'pypdf>=5,<7' 'openpyxl>=3.1,<4'
-      - name: Verify real PostgreSQL CAS and restart persistence in disposable database
-        run: python -m unittest -v test_postgres_persistence_v217
+      - name: Install PostgreSQL backup and restore clients
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+      - name: Verify PostgreSQL concurrency, migration, backup and restore in disposable databases
+        run: python -m unittest -v test_postgres_persistence_v217 test_preview_migration_postgres
+      - name: Verify SQLite recovery and deployment regression checks
+        run: python -m unittest -v test_stage32 test_stage34 test_stage36_http test_stage37_recovery test_stage40_deployment
