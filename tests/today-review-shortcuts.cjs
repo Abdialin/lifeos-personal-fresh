@@ -39,6 +39,8 @@ const origin = 'https://lifeos-today-aplus-preview.onrender.com';
     const todayReview = async () => {
       await page.locator('#lifeosNavigation [data-view="dashboard"]').click();
       await page.waitForFunction(() => document.body.dataset.lifeosView === 'dashboard');
+      // Today deliberately refreshes its contents 100 ms after section navigation.
+      await page.waitForTimeout(180);
       await page.locator('#apTab3').click();
       await page.locator('#apPage3 [data-ap-review-link="averages"]').waitFor({ state: 'visible' });
     };
@@ -59,14 +61,14 @@ const origin = 'https://lifeos-today-aplus-preview.onrender.com';
               target = await button.evaluate(node => {
                 const rect = node.getBoundingClientRect();
                 const hit = document.elementFromPoint((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
-                return { height: rect.height, focused: document.activeElement === node, hit: hit === node || node.contains(hit) };
+                return { connected: node.isConnected, height: rect.height, focused: document.activeElement === node, hit: hit === node || node.contains(hit) };
               });
-              break;
+              if (target.connected) break;
             } catch (error) {
               if (!/not attached|detached/i.test(error.message) || attempt === 4) throw error;
             }
           }
-          assert(target.height >= 44 && target.focused && target.hit, 'Review shortcut is reachable: ' + JSON.stringify({ theme, size, kind, target }));
+          assert(target.connected && target.height >= 44 && target.focused && target.hit, 'Review shortcut is reachable: ' + JSON.stringify({ theme, size, kind, target }));
         }
         if (process.env.TODAY_REVIEW_SHORTCUT_CAPTURE && size.height === 780) {
           fs.mkdirSync('docs/design/today/current', { recursive: true });

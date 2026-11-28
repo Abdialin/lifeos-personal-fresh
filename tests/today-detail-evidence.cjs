@@ -136,6 +136,30 @@ const root = process.cwd(), origin = 'https://lifeos-today-aplus-preview.onrende
       await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('ca-x')), true, 'Tab wraps to the sheet close control');
       if (theme === 'light') await assertContrast([['#loCADialog .ca-sheet-head h2', '#loCADialog .ca-sheet'], ['#caGapContext', '#caGapContext'], ['#caDialogBody .ca-form-label', '#loCADialog .ca-sheet'], ['#caPastName', '#caPastName'], ['#caPastName', '#caPastName', '::placeholder'], ['#caPastCategory', '#caPastCategory'], ['#caGapSummary', '#loCADialog .ca-sheet'], ['#caDialogBody .ca-sheet-primary', '#caDialogBody .ca-sheet-primary']]);
       else await assertContrast([['#loCADialog .ca-sheet-head h2', 'literal:rgb(26,48,70)'], ['#caGapContext', '#caGapContext'], ['#caDialogBody .ca-form-label', 'literal:rgb(26,48,70)'], ['#caPastName', '#caPastName'], ['#caPastName', '#caPastName', '::placeholder'], ['#caPastCategory', '#caPastCategory'], ['#caGapSummary', 'literal:rgb(26,48,70)'], ['#caDialogBody .ca-sheet-primary', '#caDialogBody .ca-sheet-primary']]);
+      if (theme === 'dark') {
+        // Moving focus quickly must not let an older delayed keyboard scroll move
+        // the newly focused control out of the sheet's visible area.
+        await page.waitForTimeout(400);
+        await page.evaluate(() => {
+          window.__focusScrollCalls = [];
+          window.__originalFocusScroll = Element.prototype.scrollIntoView;
+          Element.prototype.scrollIntoView = function(...args) {
+            if (this.matches('#caPastName, #caPastEnd')) window.__focusScrollCalls.push({ target: this.id, active: document.activeElement?.id });
+            return window.__originalFocusScroll.apply(this, args);
+          };
+        });
+        await page.locator('#caPastName').focus();
+        await page.locator('#caPastEnd').focus();
+        await page.waitForTimeout(450);
+        const calls = await page.evaluate(() => {
+          const result = window.__focusScrollCalls;
+          Element.prototype.scrollIntoView = window.__originalFocusScroll;
+          delete window.__focusScrollCalls; delete window.__originalFocusScroll;
+          return result;
+        });
+        assert(calls.some(x => x.target === 'caPastEnd'), 'The current focused input is brought into view');
+        assert(calls.every(x => x.target === x.active), 'A delayed scroll must not act on an input that lost focus: ' + JSON.stringify(calls));
+      }
       await assertSheetSizes(['#caPastName', '#caPastStart', '#caPastEnd', '#caPastCategory', '#caPastNotes', '[data-ca-save-past]'], theme + ' gap');
       await capture('gap-' + theme);
       if (theme === 'light') {
