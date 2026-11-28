@@ -1,6 +1,16 @@
 # Development status
 
-Last reviewed: 27 November 2026. Use `git rev-parse HEAD` and GitHub Actions for the exact current revision and run status; do not infer deployment from this file.
+Last reviewed: 28 November 2026. Use `git rev-parse HEAD` and GitHub Actions for the exact current revision and run status; do not infer deployment from this file.
+
+## 28 November: isolated data-preservation and Agenda follow-up
+
+Opening a fresh workspace no longer silently saves illustrative nutrition comparison targets. Explicitly saved targets still persist, and previously stored settings are retained unchanged. Some older settings carry an example marker but may also contain values entered by the user, so affected comparisons identify their uncertain origin rather than deleting or claiming ownership of any value. The selected-day nutrition panel now has readable goal text and inputs in light mode; [synthetic screenshots](design/my-life/README.md) show its remaining visual differences.
+
+Today Agenda now places task and habit counts in their card headings and exposes a second upcoming commitment, with both commitments opening the existing details and the original actions retained. This reduces some repeated content, but adds a row and does not meet the full compact reference. See [the comparison](design/today/COMPARISON.md).
+
+The [subsection acceptance matrix](release/v1/SUBSECTION_ACCEPTANCE.md) records remaining visual, functional and device work across all six sections. The [historical diagnostic triage](release/v1/HISTORICAL_DIAGNOSTIC_TRIAGE.md) identifies the first failing step of every old-layout failure and error without claiming full coverage. New synthetic tests cover a read-only backend probe, uncertain synchronization acknowledgement, and two browser UIs against a disposable SQLite server with stale-conflict preservation. Reconciliation on a deployed service and the other diagnostic gaps remain open.
+
+A separate loopback PostgreSQL rehearsal also exercises certificate and hostname rejection, channel binding, migration, database restart and dump/restore with synthetic data. It does not establish Neon compatibility, recover the existing Preview or authorize provisioning or deployment.
 
 ## Current isolated follow-up
 

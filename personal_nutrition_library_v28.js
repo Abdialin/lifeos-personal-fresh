@@ -74,7 +74,7 @@ function mealInsights(meals,water,entries,goals){
  '<h4>Recorded macro-energy proportions</h4>'+macro+
  '<p class="lo28-hint">Distribution uses '+complete.length+' of '+count+' meals with all three macros recorded, using 4/4/9 kcal per gram. It is an approximation, not a health assessment.</p>'+
  '<div class="lo30-evidence"><strong>Daily comparison evidence</strong><p>'+completeDays.length+' of '+entries.length+' days had meals with complete calorie values. '+hydrationDays+' days have a water log.'+
- (target>0?' '+targetDays+' complete days were within ±10% of your chosen '+target+' kcal target.':' Set a calorie target to compare recorded days.')+'</p>'+
+ (target>0?' '+targetDays+' complete days were within ±10% of '+(goals?.exampleComparisonPreset?'the saved '+target+' kcal comparison target (may include examples)':'your chosen '+target+' kcal target')+'.':' Set a calorie target to compare recorded days.')+'</p>'+
  '<p>Incomplete days are excluded from the calorie-target comparison. Not logging a meal or water does not prove zero intake.</p></div></details>';
 }
 function trends(s){

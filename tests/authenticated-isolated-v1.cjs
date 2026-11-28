@@ -126,6 +126,17 @@ async function main() {
     await page.waitForFunction(() => document.body?.classList.contains('lo-ca-ready'));
     assert.equal((await context.request.get(origin + '/api/state')).status(), 401, 'Sync must also require its token');
 
+    // Recreate the one initialization-only operation left by older builds so
+    // this test continues to cover reviewed fresh-device adoption. Current
+    // builds must not create the illustrative nutrition targets on their own.
+    assert.equal(await page.evaluate(() => localStorage.getItem('lifeos-v4-stage21-atomic')), null, 'A fresh app does not silently create a nutrition checkpoint');
+    const legacyInitialization = await page.evaluate(() => window.lifeosNutritionV25.saveSettings({
+      meals: 3, calories: 2100, protein: 110, carbs: 260, fat: 70, waterMl: 2100,
+      exampleComparisonInitialized: true, exampleComparisonPreset: 'illustrative-six-week-preview'
+    }));
+    assert(legacyInitialization, 'A synthetic legacy initialization fixture must be saved');
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('lifeos-v4-stage21-atomic')).journal.length), 1);
+
     // Seed through the same authenticated API as cloud sync. This database is
     // unique to this process; it cannot contain or replace an existing account.
     const headers = { 'X-LifeOS-Token': token };
@@ -141,9 +152,8 @@ async function main() {
     if (await cloud.locator('.lo-advanced-toggle').getAttribute('aria-expanded') === 'false') await cloud.locator('.lo-advanced-toggle').click();
     await page.locator('#syncToken').fill(token);
     await page.locator('#connectSync').click();
-    // A new installation writes one initialization-only journal entry. The
-    // normal load correctly refuses to overwrite it; exercise the existing
-    // explicitly reviewed fresh-device recovery path instead.
+    // A legacy initialization-only journal is not overwritten by normal load;
+    // exercise the existing explicitly reviewed fresh-device recovery path.
     await page.waitForFunction(() => document.querySelector('#syncStatus')?.textContent.includes('queue has no trusted base revision'));
     const downloads = [];
     page.on('download', download => downloads.push(download));

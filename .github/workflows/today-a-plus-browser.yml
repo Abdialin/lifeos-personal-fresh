@@ -26,13 +26,16 @@ jobs:
       - run: node tests/today-review-categories.cjs
       - run: TODAY_REVIEW_HISTORY_CAPTURE=1 node tests/today-review-history.cjs
       - run: TODAY_AGENDA_CAPTURE=1 node tests/today-agenda-habits.cjs
-      - run: TODAY_AGENDA_COVERAGE_CAPTURE=1 node tests/today-agenda-coverage.cjs
+      - run: TODAY_AGENDA_COMPACT_CAPTURE=1 node tests/today-agenda-coverage.cjs
       - run: TODAY_ROUTINES_CAPTURE=1 node tests/today-agenda-routines.cjs
       - run: TODAY_HISTORY_CAPTURE=1 node tests/today-history-date.cjs
       - run: TRACK_PERIOD_CAPTURE=1 node tests/track-calendar-periods.cjs
       - run: node tests/track-live-controls.cjs
       - run: node tests/track-background-clock.cjs
       - run: node tests/recovery-reviewed-merge.cjs
+      - run: node tests/sync-uncertain-ack.cjs
+      - run: node tests/two-browser-ui-conflict.cjs
+      - run: NUTRITION_TARGET_CAPTURE=1 node tests/nutrition-user-targets.cjs
       - run: TRACK_INLINE_CAPTURE=1 TODAY_COMPACT_TIMER_CAPTURE=1 node tests/track-inline-timer.cjs
       - run: TRACK_FOCUS_CAPTURE=1 node tests/track-focus-mode.cjs
       - run: TRACK_DETAIL_CAPTURE=1 node tests/track-record-details.cjs
@@ -79,6 +82,7 @@ jobs:
             docs/design/today/current/release-*.png
             docs/design/track/current/v1-*.png
             docs/design/my-life/current/v1-subsection-*.png
+            docs/design/my-life/current/v1-nutrition-targets-*.png
             docs/design/goals/current/release-reading*.png
             docs/design/goals/current/release-target-validity-*.png
             docs/design/goals/current/release-overview-v1-*.png

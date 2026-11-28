@@ -50,9 +50,10 @@ const serve = route => {
   const t = value => Date.parse(value + '+01:00');
   const gaps = () => page.locator('#apPage2 [data-ap-unscheduled-start]').evaluateAll(nodes => nodes.map(node => [Number(node.dataset.apUnscheduledStart), Number(node.dataset.apUnscheduledEnd)]));
   const capture = async name => {
-    if (!process.env.TODAY_AGENDA_COVERAGE_CAPTURE) return;
+    if (!process.env.TODAY_AGENDA_COVERAGE_CAPTURE && !process.env.TODAY_AGENDA_COMPACT_CAPTURE) return;
     fs.mkdirSync('docs/design/today/current', { recursive: true });
-    await page.screenshot({ path: 'docs/design/today/current/release-agenda-coverage-' + name + '.png' });
+    const prefix = process.env.TODAY_AGENDA_COMPACT_CAPTURE ? 'release-agenda-compact-' : 'release-agenda-coverage-';
+    await page.screenshot({ path: 'docs/design/today/current/' + prefix + name + '.png' });
   };
   try {
     await page.goto(origin + '/');
@@ -69,11 +70,22 @@ const serve = route => {
     assert((await ongoing.innerText()).includes('unverified'), 'An untracked ongoing commitment is not assumed to have been attended or missed');
     assert.equal(await ongoing.locator('xpath=..').getAttribute('data-ap-journey-overlap'), 'false', 'A commitment started before now is not automatically an overlap');
     assert.equal(await agenda.locator('[data-ap-detail="plan"][data-ap-key="started"]').locator('xpath=..').getAttribute('data-ap-journey-overlap'), 'true');
-    assert.equal(await agenda.locator('[data-ap-detail="plan"][data-ap-key="adjacent"]').locator('xpath=..').getAttribute('data-ap-journey-overlap'), 'false');
+    assert.equal(await agenda.locator('.ap-journey [data-ap-detail="plan"][data-ap-key="adjacent"]').locator('xpath=..').getAttribute('data-ap-journey-overlap'), 'false');
     assert.equal(await agenda.locator('[data-ap-detail="plan"][data-ap-key="cancelled"]').count(), 0);
     assert.equal(await agenda.locator('[data-ap-detail="plan"][data-ap-key="skipped"]').count(), 0);
     assert((await agenda.locator('[data-ap-key="overnight"]').innerText()).includes('ends 25 Nov'));
-    assert((await agenda.locator('[data-ap-key="future"]').innerText()).includes('<Dinner>'));
+    const nextCard = agenda.locator('.ap-v1-next-card');
+    assert((await nextCard.locator('[data-ap-key="adjacent"]').innerText()).includes('Review notes'));
+    assert((await nextCard.locator('[data-ap-key="future"]').innerText()).includes('<Dinner>'));
+    assert.equal(await agenda.locator('.ap-v1-agenda-compact h3').first().locator('.ap-v1-agenda-count').getAttribute('aria-label'), '1 of 2 tasks completed');
+    assert.equal(await agenda.locator('.ap-v1-agenda-compact h3').last().locator('.ap-v1-agenda-count').getAttribute('aria-label'), '1 of 2 habits completed');
+    for (const [id, name] of [['adjacent', 'Review notes'], ['future', '<Dinner>']]) {
+      const button = nextCard.locator('[data-ap-key="' + id + '"]');
+      assert((await button.boundingBox()).height >= 44, 'Upcoming commitment details need a usable touch target');
+      await button.click();
+      assert((await page.locator('#caDialogBody').innerText()).includes(name));
+      await page.locator('#loCADialog [data-ca-close]').last().click();
+    }
     assert.equal(await agenda.locator('svg dinner, dinner').count(), 0, 'Names must remain text');
     assert((await agenda.innerText()).includes('Work · Running'));
     await page.evaluate(() => window.scrollTo(0, 0)); await capture('top-dark');
@@ -104,12 +116,24 @@ const serve = route => {
     await agenda.locator('[data-ap-live-day="0"]').click();
     for (const size of [{ width: 360, height: 650 }, { width: 393, height: 460 }, { width: 412, height: 780 }]) {
       await page.setViewportSize(size);
+      for (const id of ['adjacent', 'future']) {
+        const button = nextCard.locator('[data-ap-key="' + id + '"]');
+        await button.scrollIntoViewIfNeeded();
+        await button.click({ timeout: 7000 });
+        assert(await page.locator('#loCADialog').isVisible(), 'Upcoming commitment details remain reachable at ' + JSON.stringify(size));
+        await page.locator('#loCADialog [data-ca-close]').last().click();
+      }
       const item = agenda.locator('[data-ap-key="ongoing"]'); await item.scrollIntoViewIfNeeded();
       const box = await item.boundingBox(); assert(box.height >= 44, 'Commitment detail needs a usable touch target at ' + JSON.stringify(size));
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'No horizontal overflow at ' + JSON.stringify(size));
     }
     await page.setViewportSize({ width: 393, height: 780 });
     await page.locator('#todayAPlus .ap-header button').click();
+    const countContrast = await agenda.locator('.ap-v1-agenda-compact').evaluateAll(cards => {
+      const luminance = color => color.match(/[\d.]+/g).slice(0, 3).map(Number).map(n => n / 255).map(n => n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4).reduce((sum, n, i) => sum + n * [0.2126, 0.7152, 0.0722][i], 0);
+      return cards.map(card => { const a = luminance(getComputedStyle(card.querySelector('.ap-v1-agenda-count')).color), b = luminance(getComputedStyle(card).backgroundColor); return (Math.max(a, b) + .05) / (Math.min(a, b) + .05); });
+    });
+    assert(countContrast.length === 2 && countContrast.every(value => value >= 4.5), 'Inline completion counts need readable light-mode contrast: ' + JSON.stringify(countContrast));
     await page.evaluate(() => window.scrollTo(0, 0)); await capture('top-light');
     await agenda.locator('[data-ap-unscheduled-start]').first().scrollIntoViewIfNeeded(); await capture('journey-light');
     assert.equal(await page.evaluate(() => JSON.stringify(window.lifeosReadOnlyWorkspace())), before, 'Viewing Agenda does not change records');

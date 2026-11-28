@@ -7,6 +7,13 @@ html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .panel .lo190-head
 html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .panel .lo190-heading span{color:#405f73}
 html[data-lifeos-theme="light"] body[data-lifeos-view="life"] #lifeosNutritionDashboard .lo25-stat{background:#e6edf5;border-color:#cbdbe7;color:#183047}
 html[data-lifeos-theme="light"] body[data-lifeos-view="life"] #lifeosNutritionDashboard .lo25-stat small{color:#405f73}
+/* The selected-day panel needs its own light surface and readable labels. */
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] #lifeosNutritionDashboard .lo25-day-panel{background:#f6fafc;border-color:#c3d4df;color:#183047}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] #lifeosNutritionDashboard .lo25-day-panel :is(summary,label,.lo25-goal strong,.lo25-goal span){color:#183047}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] #lifeosNutritionDashboard .lo25-day-panel :is(.lo25-muted,.lo25-goal small,.lo25-day-header small,.lo25-water-summary small,.lo25-meal-body small,.lo25-meal-body p){color:#405f73}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] #lifeosNutritionDashboard .lo25-day-panel :is(.lo25-panel,.lo25-goal,.lo25-meal){border-color:#c3d4df}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] #lifeosNutritionDashboard .lo25-day-panel input{background:#fff;color:#183047;border-color:#91aab9}
+html[data-lifeos-theme="light"] body[data-lifeos-view="life"] #lifeosNutritionDashboard .lo25-day-panel input::placeholder{color:#526d80;opacity:1}
 html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .lo189-routine-history{background:#f5faf9;border-color:#b5d0ca;color:#183047}
 html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .lo189-routine-history>summary{color:#075e54}
 html[data-lifeos-theme="light"] body[data-lifeos-view="life"] .lo189-routine-history #personalProgressSummary,

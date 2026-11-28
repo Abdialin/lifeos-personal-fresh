@@ -39,12 +39,17 @@ jobs:
         run: python -m unittest -v test_preview_target_security
       - name: Install PostgreSQL adapter
         run: python -m pip install 'psycopg[binary]>=3.2,<4' 'cryptography>=43,<47' 'pypdf>=5,<7' 'openpyxl>=3.1,<4'
-      - name: Install PostgreSQL backup and restore clients
+      - name: Install disposable PostgreSQL server and backup tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y postgresql-client-16
+          sudo apt-get install -y postgresql-16 postgresql-client-16 openssl
           echo '/usr/lib/postgresql/16/bin' >> "$GITHUB_PATH"
       - name: Verify PostgreSQL concurrency, migration, backup and restore in disposable databases
         run: python -m unittest -v test_postgres_persistence_v217 test_preview_migration_postgres
+      - name: Verify TLS identity, channel binding and synthetic migration locally
+        env:
+          LIFEOS_TEST_DISPOSABLE_TLS_POSTGRES: '1'
+          LIFEOS_TEST_PG_BINDIR: /usr/lib/postgresql/16/bin
+        run: python -m unittest -v test_preview_tls_postgres
       - name: Verify SQLite recovery and deployment regression checks
         run: python -m unittest -v test_stage32 test_stage34 test_stage36_http test_stage37_recovery test_stage40_deployment

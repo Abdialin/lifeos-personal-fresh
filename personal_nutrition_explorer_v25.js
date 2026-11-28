@@ -10,18 +10,6 @@ const api=()=>window.lifeosNutritionV25;
 const state={day:null,initialized:false};
 const settingsDefault={calories:null,protein:null,carbs:null,fat:null,meals:null,waterMl:null,reminder:false,servingMl:300,intervalHours:3,from:'08:00',until:'21:00'};
 const cleanSetting=s=>({...settingsDefault,...(s||{})});
-const illustrativeGoals={meals:3,calories:2100,protein:110,carbs:260,fat:70,waterMl:2100};
-function ensureComparisonExamples(){
- const a=api();if(!a)return;const old=a.get().nutritionSettings||{};
- if(old.exampleComparisonInitialized===true)return;
- const next={...old};let filled=0;
- for(const [key,value] of Object.entries(illustrativeGoals)){
-  if(next[key]===undefined||next[key]===null||next[key]===''){next[key]=value;filled++}
- }
- next.exampleComparisonInitialized=true;
- if(filled)next.exampleComparisonPreset='illustrative-six-week-preview';
- a.saveSettings(next);
-}
 const sum=(rows,key)=>rows.reduce((v,x)=>v+(n(x[key])??0),0);
 const known=(rows,key)=>rows.filter(x=>n(x[key])!==null);
 const val=(rows,key,unit)=>{const k=known(rows,key);return k.length?Math.round(sum(k,key)*10)/10+' '+unit:'Unknown'};
@@ -73,7 +61,7 @@ function show(){
  '<details class="lo25-panel" id="lo25GoalDetails" '+(goalWasOpen?'open':'')+'><summary>Goals vs. recorded nutrition</summary>'+(goals.exampleComparisonPreset?'<p class="lo25-muted"><strong>Example comparison targets</strong> · Filled only where no goal existed. Illustrative, not personalized recommendations. Edit or clear the values below.</p>':'')+dayProgress(selected,water,goals)+'<p class="lo25-muted">The goals are yours to set. Incomplete meal values remain unknown rather than being treated as zero. Macro rings use approximate energy proportions, not clinical estimates.</p><form id="lo25GoalsForm" class="lo25-grid-fields">'+[
  ['calories','Calories (kcal/day)'],['protein','Protein (g/day)'],['carbs','Carbs (g/day)'],['fat','Fat (g/day)'],['meals','Meals (per day)'],['waterMl','Water (ml/day)']
  ].map(([key,label])=>'<label>'+esc(label)+'<input name="'+key+'" type="number" min="0" max="10000" step="1" placeholder="Not set" value="'+esc(goals[key]??'')+'"></label>').join('')+'<button class="btn primary" type="submit">Save my goals</button></form></details>'+
- '<section class="lo25-panel"><h4>Water intake · '+esc(pretty(day))+'</h4><div class="lo25-water-summary"><b>'+esc(water.length?Math.round(sum(water,'ml'))+' ml':'Not logged')+'</b><small>'+esc(n(goals.waterMl)?'Your goal: '+goals.waterMl+' ml':'No water goal set')+'</small></div>'+
+ '<section class="lo25-panel"><h4>Water intake · '+esc(pretty(day))+'</h4><div class="lo25-water-summary"><b>'+esc(water.length?Math.round(sum(water,'ml'))+' ml':'Not logged')+'</b><small>'+esc(n(goals.waterMl)?(goals.exampleComparisonPreset?'Saved comparison goal (may include examples): ':'Your goal: ')+goals.waterMl+' ml':'No water goal set')+'</small></div>'+
  '<div class="lo25-water-days">'+daily.map(d=>{const dayWater=waterEntries.filter(w=>w.date===d.day);const total=dayWater.length?Math.round(sum(dayWater,'ml')):null;return '<button type="button" data-lo25-day="'+d.day+'" class="'+(day===d.day?'selected':'')+'"><small>'+esc(d.short)+'</small><strong>'+esc(total===null?'—':(total/1000).toFixed(2)+' L')+'</strong></button>'}).join('')+'</div>'+'<div class="lo25-quick"><button type="button" class="btn outline" data-lo25-water="200">+ 200 ml</button><button type="button" class="btn outline" data-lo25-water="300">+ 300 ml</button><button type="button" class="btn outline" data-lo25-water="500">+ 500 ml</button></div>'+
  '<form id="lo25WaterForm" class="lo25-water-form"><label>Custom amount (ml)<input type="number" name="ml" required min="1" max="3000" placeholder="e.g. 250"></label><button class="btn primary">Log water</button></form>'+waterCards(water)+
  '<details class="lo25-reminders" '+(reminderWasOpen?'open':'')+'><summary>Water reminder settings · optional</summary><form id="lo25RemindersForm" class="lo25-grid-fields"><label class="lo25-checkbox"><input type="checkbox" name="reminder" '+(goals.reminder?'checked':'')+'> Enable reminders</label>'+
@@ -117,7 +105,6 @@ function checkReminder(){
 }
 function bind(){
  const root=$('lifeosNutritionDashboard');if(!root||state.initialized)return;state.initialized=true;
- ensureComparisonExamples();
  root.addEventListener('click',e=>{
   const b=e.target.closest('[data-lo25-day]');if(b){state.day=b.dataset.lo25Day;show();return}
   const w=e.target.closest('[data-lo25-water]');if(w){logWater(Number(w.dataset.lo25Water));return}

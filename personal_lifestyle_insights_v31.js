@@ -30,7 +30,8 @@ function source(m){return Boolean(m.seedBatch||m.source==='assumed-demo')?' · A
 function selectedDetail(d,w){
  const goal=number(w.nutritionSettings?.calories);
  const validCal=d.calorieKnown===d.meals.length&&d.meals.length>0;
- const comparison=goal!==null&&goal>0&&validCal?' · '+Math.round(d.calorieTotal/goal*100)+'% of your '+goal+' kcal target':goal!==null&&goal>0?' · Goal comparison unavailable until all meals have calorie data':'';
+ const targetLabel=w.nutritionSettings?.exampleComparisonPreset?'saved '+goal+' kcal comparison target (may include examples)':'your '+goal+' kcal target';
+ const comparison=goal!==null&&goal>0&&validCal?' · '+Math.round(d.calorieTotal/goal*100)+'% of '+targetLabel:goal!==null&&goal>0?' · Goal comparison unavailable until all meals have calorie data':'';
  const workoutNames=d.workouts.map(x=>'<li>'+esc(x.type||'Workout')+(number(x.minutes)===null?'':' · '+esc(x.minutes)+' min')+esc(source(x))+'</li>').join('');
  const mealNames=d.meals.map(x=>'<li>'+esc(x.name||'Meal')+(number(x.calories)===null?' · calories unknown':' · '+esc(x.calories)+' kcal')+esc(source(x))+'</li>').join('');
  return '<div class="lo31-detail"><h4>'+esc(dayLabel(d.date))+'</h4><div class="lo31-metrics">'+
