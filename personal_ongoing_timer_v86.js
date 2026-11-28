@@ -74,7 +74,7 @@ function mount(){
    row=document.querySelector('#caLive:not([hidden]) .ca-live-primary-row');
    shownId=row?.closest('.ca-primary')?.querySelector('[data-ca-act][data-ca-id]')?.dataset.caId;
   }else if(details.hidden&&document.body.dataset.lifeosView==='dashboard'){
-   row=document.querySelector('#apPage0:not([hidden]) .ap-v1-live-row');
+   row=document.querySelector('#apPage0:not([hidden]) .ap-v1-live-row')||document.querySelector('#apPage1:not([hidden]) .ap-v1-timeline-live>summary');
    shownId=row?.querySelector('[data-ap-live-clock]')?.dataset.apLiveClock;
   }
   const selected=currentSession,now=Date.now(),day=new Date(now);day.setHours(0,0,0,0);
@@ -125,7 +125,7 @@ function mount(){
   queueInlineVisibility();
  }
  pick.addEventListener('change',()=>{current=pick.value;render()});
- toggle.addEventListener('click',()=>{details.hidden=!details.hidden;toggle.setAttribute('aria-expanded',String(!details.hidden));toggle.textContent=details.hidden?'⌃':'⌄';queueInlineVisibility()});
+ toggle.addEventListener('click',()=>{details.hidden=!details.hidden;toggle.setAttribute('aria-expanded',String(!details.hidden));toggle.setAttribute('aria-label',details.hidden?'Show timer controls':'Hide timer controls');toggle.textContent=details.hidden?'⌃':'⌄';queueInlineVisibility()});
  details.addEventListener('click',e=>{
   const button=e.target.closest('[data-lo86]');if(!button)return;
   const s=choose(sessions(),current);if(!s)return;

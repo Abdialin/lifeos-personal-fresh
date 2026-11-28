@@ -37,17 +37,23 @@ const root = process.cwd(), origin = 'https://lifeos-today-aplus-preview.onrende
             const desired = nav.getBoundingClientRect().top - item.getBoundingClientRect().height - 12;
             window.scrollTo({ top: Math.max(0, window.scrollY + item.getBoundingClientRect().top - desired), behavior: 'instant' });
           }, selector);
-          await page.waitForTimeout(200);
+          await page.waitForFunction(() => {
+            const timer = document.querySelector('#lo86-timer'), nav = document.querySelector('#lifeosNavigation');
+            const inline = document.querySelector('#apPage0:not([hidden]) .ap-v1-live-row, #apPage1:not([hidden]) .ap-v1-timeline-live > summary');
+            const r = inline?.getBoundingClientRect(), n = nav?.getBoundingClientRect();
+            return (timer && getComputedStyle(timer).visibility !== 'hidden' && getComputedStyle(timer).display !== 'none') ||
+              (r && n && r.width > 0 && r.height > 0 && r.top >= 0 && r.bottom <= n.top);
+          }, null, { timeout: 3000 });
           const geometry = await page.evaluate(selector => {
             const item = document.querySelector(selector), timer = document.querySelector('#lo86-timer'), nav = document.querySelector('#lifeosNavigation');
             const r = item.getBoundingClientRect(), t = timer.getBoundingClientRect(), n = nav.getBoundingClientRect();
             const visible = getComputedStyle(timer).visibility !== 'hidden' && getComputedStyle(timer).display !== 'none';
-            const inline = document.querySelector('#apPage0:not([hidden]) .ap-v1-live-row');
+            const inline = document.querySelector('#apPage0:not([hidden]) .ap-v1-live-row, #apPage1:not([hidden]) .ap-v1-timeline-live > summary');
             const ir = inline?.getBoundingClientRect();
             const inlineVisible = !!(ir && ir.width > 0 && ir.height > 0 && ir.top >= 0 && ir.bottom <= n.top);
             const overlap = visible && r.left < t.right && r.right > t.left && r.top < t.bottom && r.bottom > t.top;
             const hit = document.elementFromPoint(Math.max(r.left + 2, Math.min(r.right - 8, innerWidth - 2)), (r.top + r.bottom) / 2);
-            return { visible, inlineVisible, overlap, target: { top: r.top, bottom: r.bottom }, timer: { top: t.top, bottom: t.bottom, display: getComputedStyle(timer).display, visibility: getComputedStyle(timer).visibility, classes: timer.className, hidden: timer.hidden, inlineStyle: timer.getAttribute('style'), parent: timer.parentElement?.id || timer.parentElement?.className, view: document.body.dataset.lifeosView }, nav: n.top, hitTarget: item === hit || item.contains(hit) };
+            return { visible, inlineVisible, inline: ir && {top:ir.top,bottom:ir.bottom,height:ir.height}, scrollY, overlap, target: { top: r.top, bottom: r.bottom }, timer: { top: t.top, bottom: t.bottom, display: getComputedStyle(timer).display, visibility: getComputedStyle(timer).visibility, classes: timer.className, hidden: timer.hidden, inlineStyle: timer.getAttribute('style'), parent: timer.parentElement?.id || timer.parentElement?.className, view: document.body.dataset.lifeosView }, nav: n.top, hitTarget: item === hit || item.contains(hit) };
           }, selector);
           assert(geometry.visible || geometry.inlineVisible, 'A live timer remains visible on Today tab ' + JSON.stringify({ tab, theme, size, geometry }));
           assert(!geometry.overlap && geometry.hitTarget && geometry.target.bottom <= geometry.nav + 1, 'The timer or navigation must not cover an action at ' + JSON.stringify({ theme, size, tab, geometry }));

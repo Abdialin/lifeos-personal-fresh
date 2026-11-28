@@ -47,7 +47,34 @@ const serve = route => {
     }
     await waitVisibility(false);
     await page.locator('#apTab1').click();
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await waitVisibility(false);
+    assert(await page.locator('#apTimelineLiveDetails > summary').isVisible(), 'Timeline supplies the matching in-page clock');
+    if (process.env.TODAY_TIMELINE_INLINE_CAPTURE) {
+      fs.mkdirSync('docs/design/today/current', { recursive: true });
+      await page.screenshot({ path: 'docs/design/today/current/v1-timeline-inline-dark.png' });
+      await page.locator('#todayAPlus .ap-header button').click();
+      await page.screenshot({ path: 'docs/design/today/current/v1-timeline-inline-light.png' });
+      await page.locator('#todayAPlus .ap-header button').click();
+    }
+    await page.locator('#apTimelineLiveDetails > summary').click();
+    await page.locator('#apTimelineLiveDetails [data-ap-live-action="timer-controls"]').click();
     await waitVisibility(true);
+    assert.equal(await page.locator('#lo86-toggle').getAttribute('aria-expanded'), 'true', 'The compact Timeline still opens the complete timer controls');
+    assert.equal(await page.locator('#lo86-toggle').getAttribute('aria-label'), 'Hide timer controls');
+    const timelineOther = todayPrimary === 'study' ? 'work' : 'study';
+    await page.locator('#lo86-select').selectOption(timelineOther);
+    await page.locator('#lo86-toggle').click(); await waitVisibility(true);
+    assert.equal(await page.locator('#lo86-toggle').getAttribute('aria-label'), 'Show timer controls');
+    assert.equal(await page.locator('#lo86-select').inputValue(), timelineOther, 'A different concurrent timer must remain visible');
+    await page.locator('#lo86-toggle').click(); await page.locator('#lo86-select').selectOption(todayPrimary);
+    await page.locator('#lo86-toggle').click(); await waitVisibility(false);
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+    await waitVisibility(true);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await waitVisibility(false);
+    await page.locator('#apPage1 [data-ap-live-date="-1"]').click(); await waitVisibility(true);
+    await page.locator('#apPage1 [data-ap-live-date="1"]').click(); await waitVisibility(false);
     await page.locator('#apTab2').click();
     await waitVisibility(true);
     const timer = page.locator('#lo86-timer'), timerButton = page.locator('#lo86-toggle');
@@ -147,6 +174,8 @@ const serve = route => {
     });
     await nightPage.goto(origin + '/'); await nightPage.waitForFunction(() => document.body.classList.contains('lo-ca-ready'));
     assert(await nightPage.locator('#lo86-timer').isVisible(), 'Keep today\'s elapsed portion visible for an overnight activity');
+    await nightPage.locator('#apTab1').click();
+    assert(await nightPage.locator('#lo86-timer').isVisible(), 'Timeline retains a distinct day-portion clock for overnight activity');
     await nightPage.locator('#lifeosNavigation [data-view="tracking"]').click();
     await nightPage.locator('#caMainClock').waitFor({ state: 'visible' });
     assert(await nightPage.locator('#lo86-timer').isVisible(), 'Track must also retain the distinct overnight day-portion clock');

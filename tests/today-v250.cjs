@@ -79,6 +79,8 @@ const local=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*6
   await page.locator('#loCADialog [data-ca-gap]').click();await confirmSave('Second partial');await page.locator('[data-ca-view-past]').click();
   await page.waitForFunction(()=>document.body.dataset.lifeosView==='tracking');assert(await page.locator('#caHistory').isVisible());await nav('dashboard');await page.locator('#apTab1').click();
   d=await snap();assert(!d.gaps.some(g=>g.a<gap.b&&g.b>gap.a));assert.equal(d.metrics.unique,217*60000+30*60000);
+  assert.equal(d.recorded.find(x=>x.name==='First partial').category,'Other / review','An ambiguous automatically classified entry remains reviewable');
+  assert.equal(await page.evaluate(()=>Object.hasOwn(window.lifeosReadOnlyWorkspace().sessions.find(s=>s.name==='First partial'),'activityDetailsV252')),false,'The default does not write an explicit category');
   await page.locator('[data-ap-live-period="2"]').click();
   await page.locator('svg [data-ap-detail="record"][data-ap-key="live"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Running'));await close();
   const plan1=page.locator('svg [data-ap-detail="plan"][data-ap-key="plan"]'),plan2=page.locator('svg [data-ap-detail="plan"][data-ap-key="plan-overlap"]');

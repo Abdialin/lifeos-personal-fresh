@@ -257,6 +257,7 @@ async function main() {
     await page.locator('#caPastName').fill('Synthetic reading break');
     await page.locator('#caPastStart').fill('2026-11-26T14:00');
     await page.locator('#caPastEnd').fill('2026-11-26T14:30');
+    await page.locator('#caPastCategory').selectOption({ label: 'Study' });
     await page.locator('[data-ca-save-past]').click();
     await page.getByText('Activity saved', { exact: true }).waitFor({ state: 'visible' });
     await page.locator('#loCADialog [data-ca-close]').last().click();
@@ -264,12 +265,16 @@ async function main() {
     assert.equal(afterGap.metrics.unique - beforeGap.metrics.unique, 30 * 60000);
     assert.equal(beforeGap.metrics.unlogged - afterGap.metrics.unlogged, 30 * 60000);
     assert.equal(afterGap.metrics.unique + afterGap.metrics.unlogged + afterGap.metrics.remaining, afterGap.metrics.dayLength);
+    assert.equal(afterGap.recorded.find(x => x.name === 'Synthetic reading break').category, 'Study');
     await nav('tracking');
     await page.locator('[data-ca-tab="history"]').click();
     await page.locator('[data-ca-period="today"]').click();
     const todayDetails = page.locator('#caHistory details.ca-day[data-ca-day="2026-11-26"]');
     if (!(await todayDetails.evaluate(element => element.open))) await todayDetails.locator('summary').click();
     assert(await todayDetails.getByRole('button', { name: /Synthetic reading break/ }).isVisible());
+    await todayDetails.getByRole('button', { name: /Synthetic reading break/ }).click();
+    assert((await page.locator('#caDialogBody').innerText()).includes('Study'));
+    await page.locator('#loCADialog [data-ca-close]').last().click();
 
     // Change a synthetic task and verify both edits reached the real server.
     await nav('schedule');
@@ -281,10 +286,10 @@ async function main() {
     const remote = await saved.json();
     assert(remote.revision > 1, 'A task change must be sent to the isolated server');
     assert.equal(remote.data.todos.find(x => x.id === 'fixture-task').done, true);
-    assert(remote.data.sessions.some(x => x.name === 'Synthetic reading break'));
+    assert.equal(remote.data.sessions.find(x => x.name === 'Synthetic reading break')?.activityDetailsV252?.category, 'Study', 'The explicit category reaches the isolated server');
     await page.reload();
     await page.waitForFunction(() => window.lifeosReadOnlyWorkspace?.().todos.find(x => x.id === 'fixture-task')?.done);
-    assert(await page.evaluate(() => window.lifeosReadOnlyWorkspace().sessions.some(x => x.name === 'Synthetic reading break')));
+    assert.equal(await page.evaluate(() => window.lifeosReadOnlyWorkspace().sessions.find(x => x.name === 'Synthetic reading break')?.activityDetailsV252?.category), 'Study', 'The saved category survives reload');
 
     // Simulate a restarted service reporting an empty server while the device
     // retains an acknowledged, populated workspace. Never modify the real

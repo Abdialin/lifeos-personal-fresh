@@ -848,11 +848,30 @@ window.lifeosTrackOpenGap=function(gap){
   const input=$(id);input.step=precision===19?'1':'60';input.value=localInput(value).slice(0,precision);
   input.dataset.gapInitial=input.value;input.dataset.gapExact=String(value);
  }
+ const categoryLabel=e('label','ca-form-label');categoryLabel.htmlFor='caPastCategory';categoryLabel.textContent='Category (optional)';
+ const category=e('select','ca-input');category.id='caPastCategory';
+ category.add(new Option('Automatic / review',''));
+ for(const name of activityCategories())category.add(new Option(name,name));
+ const notesLabel=dialogBody.querySelector('label[for="caPastNotes"]');notesLabel.before(categoryLabel,category);
  const summary=e('p','ca-gap-summary');summary.id='caGapSummary';summary.setAttribute('role','status');
  $('caPastEnd').after(summary);$('caPastNotes').rows=2;updateGapSummary();
  $('caDialogSubtitle').textContent='Record all or part of this unlogged interval.';
  return true;
 };
+// A concurrent session may have several pause/resume segments. Summarize its
+// elapsed intersection once without changing or rounding the source segments.
+function todayConcurrentSessions(own,recorded,id){
+ const intersect=window.LifeOSUnifiedAnalytics?.intersectionDuration;if(typeof intersect!=='function')return null;
+ const groups=new Map();
+ recorded.forEach((z,index)=>{
+  if(String(z.id)===String(id))return;
+  if(!own.some(x=>z.a<x.end&&z.b>x.start))return;
+  const key=z.id==null?'missing:'+index:'id:'+String(z.id);
+  let group=groups.get(key);if(!group){group={z,intervals:[]};groups.set(key,group)}
+  group.intervals.push({start:z.a,end:z.b});
+ });
+ return [...groups.values()].map(group=>({z:group.z,ms:intersect(own,group.intervals)})).filter(x=>x.ms>=60000).sort((a,b)=>b.ms-a.ms);
+}
 // Today details use the same accessible Track sheet and existing history/review actions.
 window.lifeosTrackOpenTodayItem=function(kind,key,at){
  if(!dialog)build();
@@ -861,6 +880,8 @@ window.lifeosTrackOpenTodayItem=function(kind,key,at){
  const d=window.lifeosTodayAPlusSnapshot(Date.now(),Number.isFinite(selectionAt)?selectionAt:Date.now());
  const time=(v,seconds=false)=>new Date(v).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',...(seconds?{second:'2-digit'}:{})});
  const line=(label,value)=>'<div class="ca-record-detail"><span>'+htmlEscape(label)+'</span><strong>'+htmlEscape(value)+'</strong></div>';
+ const notes=value=>typeof value==='string'&&value.trim()?'<details class="ca-today-notes"><summary>Notes</summary><p>'+htmlEscape(value)+'</p></details>':'';
+ const concurrent=(items,noun)=>items===null?'<p class="ca-editor-footnote">Concurrent details are unavailable.</p>':items.length?items.map(({z,ms})=>z.id==null?'<p class="ca-editor-footnote">'+htmlEscape(z.name)+' · '+htmlEscape(exactDuration(ms))+' · Details unavailable</p>':'<button type="button" class="ca-sheet-secondary" data-ca-today-kind="record" data-ca-today-id="'+htmlEscape(z.id)+'" data-ca-today-at="'+z.a+'">'+htmlEscape(z.name)+' · '+htmlEscape(exactDuration(ms))+'</button>').join(''):'<p class="ca-editor-footnote">No concurrent '+noun+' of one minute or longer.</p>';
  let content='';
  if(kind==='gap'){
   const [a,b]=String(key).split(':').map(Number);
@@ -877,11 +898,10 @@ window.lifeosTrackOpenTodayItem=function(kind,key,at){
   const lastEnd=original.segments?.at(-1)?.end;
   const endLabel=active.status==='running'?'In progress':Number.isFinite(lastEnd)?time(lastEnd):'Paused';
   const category=window.lifeosActivityClassification?.(original)?.group||'Other / review';
-  content=line('Activity',active.name)+line('Category',category)+line('Start',time(active.startAt))+line('End',endLabel)+line('Duration',exactDuration(active.elapsedMs))+line('Status',active.status==='paused'?'Paused':'Running');
+  content=line('Activity',active.name)+line('Category',category)+line('Start',time(active.startAt))+line('End',endLabel)+line('Duration',exactDuration(active.elapsedMs))+line('Status',active.status==='paused'?'Paused':'Running')+notes(original.notes);
   const own=d.recorded.filter(z=>String(z.id)===String(active.id));
-  const overlaps=[];
-  for(const x of own)for(const z of d.recorded){const ms=Math.min(x.b,z.b)-Math.max(x.a,z.a);if(String(z.id)!==String(x.id)&&ms>=60000)overlaps.push({z,ms})}
-  content+='<h3 class="ca-detail-heading">Concurrent activities</h3>'+(overlaps.length?overlaps.map(({z,ms})=>'<button type="button" class="ca-sheet-secondary" data-ca-today-kind="record" data-ca-today-id="'+htmlEscape(z.id)+'" data-ca-today-at="'+z.a+'">'+htmlEscape(z.name)+' · '+htmlEscape(exactDuration(ms))+'</button>').join(''):'<p class="ca-editor-footnote">No concurrent activities of one minute or longer.</p>');
+  const overlaps=todayConcurrentSessions(own.map(z=>({start:z.a,end:z.b})),d.recorded,active.id);
+  content+='<h3 class="ca-detail-heading">Concurrent activities today</h3>'+concurrent(overlaps,'activities');
   content+='<button type="button" class="ca-sheet-primary" data-ca-today-record="'+htmlEscape(active.id)+'" data-ca-today-status="'+htmlEscape(active.status)+'">Open in Track</button><button type="button" class="ca-sheet-secondary" data-ca-close>Close</button>';
   openDialog('Activity in progress','Recorded activity details',content);dialog.dataset.caContext='details';return true;
  }
@@ -889,15 +909,27 @@ window.lifeosTrackOpenTodayItem=function(kind,key,at){
  const x=planned?d.plans.find(z=>String(z.id)===String(key)):d.recorded.find(z=>String(z.id)===String(key)&&z.a===Number(at));
  if(!x)return false;
  const a=planned?x.startAt:x.a,b=planned?x.endAt:x.b;
+ const workspace=window.lifeosReadOnlyWorkspace?.()||{},source=planned?workspace.schedule:workspace.sessions,original=Array.isArray(source)?source.find(z=>String(z.id)===String(x.id)):null;
  const status=String(planned?(x.status||'planned'):(x.status||'finished'));
  const statusLabel=status.charAt(0).toUpperCase()+status.slice(1);
- content=line('Activity',x.name)+line('Category',planned?'Not classified':x.category)+line('Start',time(a,b-a<60000))+line('End',time(b,b-a<60000))+line('Duration',exactDuration(b-a))+line('Status',statusLabel);
- const others=(planned?d.plans:d.recorded).filter(z=>String(z.id)!==String(x.id)).map(z=>({z,ms:Math.max(0,Math.min(b,planned?z.endAt:z.b)-Math.max(a,planned?z.startAt:z.a))})).filter(z=>z.ms>=60000);
- content+='<h3 class="ca-detail-heading">Concurrent '+(planned?'commitments':'activities')+'</h3>'+(others.length?others.map(({z,ms})=>'<button type="button" class="ca-sheet-secondary" data-ca-today-kind="'+(planned?'plan':'record')+'" data-ca-today-id="'+htmlEscape(z.id)+'" data-ca-today-at="'+(planned?z.startAt:z.a)+'">'+htmlEscape(z.name)+' · '+htmlEscape(exactDuration(ms))+'</button>').join(''):'<p class="ca-editor-footnote">No concurrent '+(planned?'commitments':'activities')+' of one minute or longer.</p>');
+ const category=planned?(original?(window.lifeosActivityClassification?.(original)?.group||'Other / review'):'Unavailable'):x.category;
+ content=line('Activity',x.name)+line('Category',category)+line(planned?'Start':'Interval start',time(a,b-a<60000))+line(planned?'End':'Interval end',time(b,b-a<60000))+line(planned?'Duration':'Interval duration',exactDuration(b-a))+line('Status',statusLabel);
+ if(!planned&&original){
+  const facts=historyRecordFacts(x.id),different=facts.intervals.length&&(facts.start!==a||facts.end!==b||facts.recorded!==b-a);
+  if(different){const fullEnd=original.status==='running'?'In progress':original.status==='paused'?'Paused':Number.isFinite(facts.end)?time(facts.end):'Unavailable';
+   content+=line('Full start',Number.isFinite(facts.start)?time(facts.start):'Unavailable')+line('Full end',fullEnd)+line('Full duration',exactDuration(facts.recorded));}
+ }
+ content+=notes(original?.notes);
+ if(planned){
+  const others=d.plans.filter(z=>String(z.id)!==String(x.id)&&!['cancelled','skipped'].includes(z.status)).map(z=>({z,ms:Math.max(0,Math.min(b,z.endAt)-Math.max(a,z.startAt))})).filter(z=>z.ms>=60000);
+  content+='<h3 class="ca-detail-heading">Concurrent commitments</h3>'+(others.length?others.map(({z,ms})=>'<button type="button" class="ca-sheet-secondary" data-ca-today-kind="plan" data-ca-today-id="'+htmlEscape(z.id)+'" data-ca-today-at="'+z.startAt+'">'+htmlEscape(z.name)+' · '+htmlEscape(exactDuration(ms))+'</button>').join(''):'<p class="ca-editor-footnote">No concurrent commitments of one minute or longer.</p>');
+ }else{
+  const own=d.recorded.filter(z=>String(z.id)===String(x.id)).map(z=>({start:z.a,end:z.b}));
+  content+='<h3 class="ca-detail-heading">Concurrent activities on this day</h3>'+concurrent(todayConcurrentSessions(own,d.recorded,x.id),'activities');
+ }
  if(planned){
   content+='<button type="button" class="ca-sheet-primary" data-ca-today-nav="schedule">Open planning</button>';
  }else{
-  const original=window.lifeosReadOnlyWorkspace?.().sessions.find(z=>String(z.id)===String(x.id));
   const locked=original&&(original.seedBatch||['development-starter','assumed-demo'].includes(original.source));
   const categories=activityCategories(x.category);
   content+='<label class="ca-form-label" for="caTodayCategory">Review category</label><select id="caTodayCategory" class="ca-input" '+(locked?'disabled':'')+'>'+categories.map(c=>'<option '+(c===x.category?'selected':'')+'>'+htmlEscape(c)+'</option>').join('')+'</select>';
@@ -1361,6 +1393,8 @@ async function handleDialogClick(event){
    if(error)error.textContent='The unlogged interval changed or your times are outside it. Close this form and select a remaining gap.';
    return;
   }
+  const category=selectedGap?($('caPastCategory')?.value||''):'';
+  if(category&&!activityCategories().includes(category)){if(error)error.textContent='Choose a valid activity category.';return}
   if(!original||typeof window.lifeosReadOnlyWorkspace!=='function'){
    if(error)error.textContent='The original LifeOS save system is unavailable. No record was added.';
    return;
@@ -1379,7 +1413,7 @@ async function handleDialogClick(event){
    }
    // The native submit handler persists the session and rolls back on failure.
    // Dispatching a validated submit event avoids focus errors in the hidden original form.
-   const gapGuard=selectedGap?{...selectedGap,startAt:start,endAt:end}:null;
+   const gapGuard=selectedGap?{...selectedGap,startAt:start,endAt:end,category}:null;
    original.lifeosGapGuard=gapGuard;
    try{original.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))}finally{delete original.lifeosGapGuard}
    const after=window.lifeosReadOnlyWorkspace();
