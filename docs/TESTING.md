@@ -10,6 +10,8 @@ All browser fixtures in `tests/today-v250*.cjs`, `tests/plan-overview.cjs` and `
 
 `test_starter_data_preservation.cjs` verifies synthetic starter repair/removal leave unrelated records unchanged and refuse untagged linked events, workouts, plans, sessions, nested ID lists and duplicate IDs. `tests/starter-data-safety.cjs` exercises the current advanced Plan UI with intercepted files: explicit confirmation and backup requests for adding, repairing and removing samples, persistence after reload, and refusal without a write when an untagged event is linked to a sample. These fixtures do not open any real backup or account; arbitrary external schemas and links without recognizable ID names remain unverified.
 
+`tests/insights-history-navigation.cjs` exercises the existing Insights shortcut into the current Track History tab, including a recorded synthetic activity, an empty workspace, light mode and a reduced browser height. It checks that navigation leaves the workspace and atomic checkpoint unchanged. It does not validate all Insights drill-downs or native scrolling.
+
 With Node and Playwright/Chromium installed, from the repository root:
 
 ```sh

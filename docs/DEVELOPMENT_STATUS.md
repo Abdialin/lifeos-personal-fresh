@@ -12,6 +12,8 @@ The [subsection acceptance matrix](release/v1/SUBSECTION_ACCEPTANCE.md) records 
 
 The optional generated-starter repair previously modified or removed untagged events, plans or workouts that referred to a generated session. Repair and removal now refuse if a saved untagged record links to the generated batch, rather than rewriting it or leaving a dangling link. Current Plan tools have synthetic browser coverage for explicit sample add/remove, backup requests, refusal and reload; no user workspace was touched. Other imported schemas and arbitrary custom relationships remain unverified.
 
+The existing Insights “View Track history” shortcut now selects Track Concept A's History tab instead of scrolling to the hidden legacy history panel. Synthetic populated and empty browser workspaces, a shorter viewport and light mode verify the navigation is read-only; the full Insights redesign is still open.
+
 A separate loopback PostgreSQL rehearsal also exercises certificate and hostname rejection, channel binding, migration, database restart and dump/restore with synthetic data. It does not establish Neon compatibility, recover the existing Preview or authorize provisioning or deployment.
 
 ## Current isolated follow-up

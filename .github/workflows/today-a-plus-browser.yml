@@ -57,6 +57,7 @@ jobs:
       - run: GOALS_READING_CAPTURE=1 node tests/goals-reading-evidence.cjs
       - run: GOALS_TARGET_CAPTURE=1 node tests/goals-target-validity.cjs
       - run: INSIGHTS_PREDICTION_CAPTURE=1 node tests/insights-prediction-evidence.cjs
+      - run: node tests/insights-history-navigation.cjs
       - run: MY_LIFE_CAPTURE=1 node tests/my-life-subsections.cjs
       - run: node tests/plan-overview-model.cjs
       - run: PLAN_OVERVIEW_CAPTURE=1 node tests/plan-overview.cjs
