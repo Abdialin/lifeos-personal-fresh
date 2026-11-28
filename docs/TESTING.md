@@ -24,6 +24,7 @@ node tests/today-v250-volume.cjs
 TODAY_V1_CAPTURE=1 node tests/today-release-v1.cjs
 TODAY_SECTION_ACCEPTANCE_CAPTURE=1 node tests/today-overview-acceptance.cjs
 TODAY_TIMER_CLEARANCE_CAPTURE=1 node tests/today-timer-clearance.cjs
+python3 scripts/today_reference_comparison.py  # Pillow; combines the saved synthetic captures with supplied reference images
 TODAY_THEME_CAPTURE=1 node tests/today-theme-sync.cjs
 node tests/today-review-categories.cjs
 TODAY_REVIEW_HISTORY_CAPTURE=1 node tests/today-review-history.cjs
@@ -88,7 +89,7 @@ The shared-theme test changes the preference from Today and Plan, navigates all 
 
 `test_preview_tls_postgres.py` additionally requires `LIFEOS_TEST_DISPOSABLE_TLS_POSTGRES=1`, local PostgreSQL server binaries and OpenSSL. It creates a new temporary loopback-only cluster, temporary CA and synthetic SQLite backup; it checks TLS and required channel binding, refuses a wrong hostname or CA and non-TLS connection, verifies a guarded migration, refuses a populated target, performs a TLS `pg_dump`/restore and restarts the local app against both copies. It also checks `sslrootcert=system` with an `SSL_CERT_FILE` override for a temporary trusted or untrusted CA. This does not establish Render's actual system trust store, Neon/Supabase compatibility, managed recovery, real redeploys or any provider's policies. Never aim this test at an existing server.
 
-The V250 tests cover selected map items, short intervals, full/partial/consecutive gap saves, invalid/stale boundaries, exact unedited millisecond endpoints, reload persistence, overlapping/overnight/paused records, explicit and ambiguous categories, representative Goals/Insights category paths, empty and 132-record states, 23/25-hour days, themes, six navigation sections and reduced browser heights. To recreate the synthetic high-volume image, run `LIFEOS_CAPTURE_VOLUME=1 node tests/today-v250-volume.cjs` and copy `today-verification/high-volume.png` to `docs/design/today/current/timeline-high-volume.png`.
+The V250 tests cover selected map items, keyboard activation of a recorded SVG interval and a very short item in the alternative list, full/partial/consecutive gap saves, invalid/stale boundaries, exact unedited millisecond endpoints, reload persistence, overlapping/overnight/paused records, explicit and ambiguous categories, representative Goals/Insights category paths, empty and 132-record states, 23/25-hour days, themes, six navigation sections and reduced browser heights. To recreate the synthetic high-volume image, run `LIFEOS_CAPTURE_VOLUME=1 node tests/today-v250-volume.cjs` and copy `today-verification/high-volume.png` to `docs/design/today/current/timeline-high-volume.png`.
 
 The Plan tests cover precise task-deadline ordering, local-week and daylight-saving boundaries, overnight and paused sessions, overlapping intervals and conflicts, explicit completion evidence, empty and high-volume models, search, editing/toggling tasks, adding a plan, Track-to-Plan refresh, reload persistence, dark/light themes, reduced viewports, bottom clearance, settings, and navigation. The browser fixture writes only to intercepted synthetic local storage. With capture enabled it writes `plan-verification/overview-dark.png`, `overview-light.png`, `overview-bottom.png` and `overview-dark-full.png`.
 

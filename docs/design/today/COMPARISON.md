@@ -2,6 +2,10 @@
 
 The supplied design screenshots are targets, with illustrative numbers. Current captures use a synthetic, network-intercepted fixture at 393×780; fixed navigation and timer overlays appear at viewport coordinates in full-page captures. They are browser evidence, not Android device screenshots or visual approval.
 
+For a direct visual review, compare the supplied reference with both synthetic themes: [Overview](current/v1-comparison-overview.png), [Timeline](current/v1-comparison-timeline.png), [Agenda](current/v1-comparison-agenda.png) and [Review](current/v1-comparison-review.png). Agenda and Review use crops of the supplied section board. Images are scaled without stretching, so different original reference proportions are visible. Generate these comparisons with `python3 scripts/today_reference_comparison.py` after capturing the current fixture.
+
+The comparisons show material remaining differences: the current Overview fits fewer information groups above navigation; the Timeline header and live rows leave only the beginning of the six-hour map in the first viewport; Agenda's next-up card is much taller and the scheduled-routine checklist is missing; and Review shows fewer distribution rows and takeaways at once. The fixtures and references have different example records, so differences in values or the number of populated rows are not by themselves visual defects. These observations are not a visual pass.
+
 | Subsection | User-supplied reference | Current implementation | Findings |
 | --- | --- | --- | --- |
 | Overview | [Individual overview](reference/Overview.png) | [Dark](current/v1-overview-acceptance-dark-393.png) · [Light](current/v1-overview-acceptance-light-393.png) · [Full page](current/v1-overview-acceptance-dark-full.png) | Paired day progress and glance cards, live controls, plan progress, distribution and quick actions are present. Life-area rows use saved activity, habit and routine evidence. The reference uses more compact controls and more iconography; scores with no defined evidence source are not invented. |

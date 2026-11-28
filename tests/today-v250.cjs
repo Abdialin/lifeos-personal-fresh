@@ -53,12 +53,16 @@ const local=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*6
   assert.equal(d.recorded.filter(x=>x.id==='paused').reduce((n,x)=>n+x.b-x.a,0),45*60000);
   await page.locator('#apTab1').click();await page.locator('[data-ap-live-period="1"]').click();
   await page.locator('#apTimelineLiveDetails > summary').click();await page.locator('#apPage1 [data-ap-detail="active"][data-ap-key="paused-yesterday"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Paused'));await close();
+  const keyboardBlock=page.locator('svg [data-ap-detail="record"][data-ap-key="paused"]').first();
+  assert.equal(await keyboardBlock.getAttribute('role'),'button');assert.equal(await keyboardBlock.getAttribute('tabindex'),'0');assert((await keyboardBlock.getAttribute('aria-label')).includes('Study with pause'));
+  for(const key of ['Enter','Space']){await keyboardBlock.focus();await page.keyboard.press(key);assert((await page.locator('#caDialogBody').innerText()).includes('Study with pause'));await close()}
   await page.locator('svg [data-ap-detail="record"][data-ap-key="paused"]').first().click();
   assert((await page.locator('#caDialogBody').innerText()).includes('Study with pause'));
   assert((await page.locator('#caDialogBody').innerText()).includes('Reading together'));
   assert(!(await page.locator('#caDialogBody').innerText()).includes('Brief interval'));
   await page.locator('[data-ca-today-id="concurrent"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Reading together'));await close();
-  await page.locator('.ap-v250-access summary').click();
+  await page.locator('.ap-v250-access summary').focus();await page.keyboard.press('Enter');assert(await page.locator('.ap-v250-access').evaluate(el=>el.open));
+  await page.locator('.ap-v250-access [data-ap-key="short"]').focus();await page.keyboard.press('Space');assert((await page.locator('#caDialogBody').innerText()).includes('Brief interval'));await close();
   await page.locator('.ap-v250-access [data-ap-key="short"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Brief interval'));assert((await page.locator('#caDialogBody').innerText()).includes('30s'));await close();
   const gap=d.gaps.find(g=>g.a===Date.parse('2026-11-24T09:00:00+01:00')&&g.b===Date.parse('2026-11-24T10:00:00+01:00'));assert(gap);
   await page.locator('.ap-v250-access [data-ap-detail="gap"][data-ap-key="'+gap.a+':'+gap.b+'"]').click();

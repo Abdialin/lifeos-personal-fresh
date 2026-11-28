@@ -2,6 +2,8 @@
 
 Reviewed against the complete log for [UI workflow 46059658203](https://github.com/Abdialin/lifeos-personal-fresh/actions/runs/46059658203) on application commit `fc37371a38c2145d61a8d874436b45fd66f1ca5c`: **6 failures and 21 errors out of 31 tests**. The workflow deliberately continues after this old-layout diagnostic, so its green status is not a pass for these cases. This table identifies the **first observed failing step**, not every possible failure later in each test. Do not disable the diagnostic, remove assertions, or infer that an old scenario is fully covered solely because a newer test has a similar name.
 
+The [28 November rerun on application revision `0399a68`](https://github.com/Abdialin/lifeos-personal-fresh/actions/runs/46096786862) again reported 6 failures and 21 errors in the same named tests; the workflow itself completed successfully because this historical step is non-gating. The table below has not been replaced by an assumption that the scenarios all pass.
+
 `Current evidence` means a current-interface test exercises at least part of the underlying behavior with synthetic records. It does not certify every old assertion, an Android device, or the deployed Preview. `Open` means the underlying scenario still needs a targeted current-interface check or implementation.
 
 ## Errors
