@@ -36,6 +36,8 @@ jobs:
       - run: node tests/sync-uncertain-ack.cjs
       - run: node tests/two-browser-ui-conflict.cjs
       - run: NUTRITION_TARGET_CAPTURE=1 node tests/nutrition-user-targets.cjs
+      - run: node test_starter_data_preservation.cjs
+      - run: node tests/starter-data-safety.cjs
       - run: TRACK_INLINE_CAPTURE=1 TODAY_COMPACT_TIMER_CAPTURE=1 node tests/track-inline-timer.cjs
       - run: TRACK_FOCUS_CAPTURE=1 node tests/track-focus-mode.cjs
       - run: TRACK_DETAIL_CAPTURE=1 node tests/track-record-details.cjs

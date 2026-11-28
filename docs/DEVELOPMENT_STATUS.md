@@ -10,6 +10,8 @@ Today Agenda now places task and habit counts in their card headings and exposes
 
 The [subsection acceptance matrix](release/v1/SUBSECTION_ACCEPTANCE.md) records remaining visual, functional and device work across all six sections. The [historical diagnostic triage](release/v1/HISTORICAL_DIAGNOSTIC_TRIAGE.md) identifies the first failing step of every old-layout failure and error without claiming full coverage. New synthetic tests cover a read-only backend probe, uncertain synchronization acknowledgement, and two browser UIs against a disposable SQLite server with stale-conflict preservation. Reconciliation on a deployed service and the other diagnostic gaps remain open.
 
+The optional generated-starter repair previously modified or removed untagged events, plans or workouts that referred to a generated session. Repair and removal now refuse if a saved untagged record links to the generated batch, rather than rewriting it or leaving a dangling link. Current Plan tools have synthetic browser coverage for explicit sample add/remove, backup requests, refusal and reload; no user workspace was touched. Other imported schemas and arbitrary custom relationships remain unverified.
+
 A separate loopback PostgreSQL rehearsal also exercises certificate and hostname rejection, channel binding, migration, database restart and dump/restore with synthetic data. It does not establish Neon compatibility, recover the existing Preview or authorize provisioning or deployment.
 
 ## Current isolated follow-up

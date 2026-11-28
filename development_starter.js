@@ -138,6 +138,28 @@ function generate(anchor=new Date()){
 const keys=['sessions','events','todos','schedule','workouts','meals','goals','personalLogs','idealRoutines'];
 function summary(seed){return Object.fromEntries(keys.map(k=>[k,(seed[k]||[]).length]))}
 function hasBatch(workspace){return keys.some(k=>(workspace[k]||[]).some(x=>x.seedBatch===BATCH))}
+// A user may have linked a normal record to a sample after importing it. Do
+// not leave such links dangling, delete their records, or rewrite their times.
+// Check all ID-shaped references, including nested and future workspace data.
+function assertNoExternalReferences(workspace){
+ const generated=new Set();
+ for(const key of keys)for(const row of (Array.isArray(workspace?.[key])?workspace[key]:[])){
+  if(row?.seedBatch===BATCH&&row.id!==null&&row.id!==undefined&&String(row.id))generated.add(String(row.id));
+ }
+ const visited=new WeakSet();
+ function refers(value){
+  if(Array.isArray(value))return value.some(refers);
+  return (typeof value==='string'||typeof value==='number')&&generated.has(String(value));
+ }
+ function scan(value){
+  if(!value||typeof value!=='object'||visited.has(value))return false;
+  visited.add(value);
+  if(value!==workspace&&value.seedBatch===BATCH)return false;
+  if(Array.isArray(value))return value.some(scan);
+  return Object.entries(value).some(([key,child])=>(/id(?:s)?$/i.test(key)&&refers(child))||scan(child));
+ }
+ if(generated.size&&scan(workspace))throw Error('Saved records are linked to generated samples. Review those links before changing or removing samples; nothing was changed.');
+}
 function merge(workspace,seed){
  if(!workspace||workspace.version!==1||hasBatch(workspace))throw Error('Starter records already exist or workspace invalid');
  const result=JSON.parse(JSON.stringify(workspace));
@@ -145,10 +167,11 @@ function merge(workspace,seed){
  return result;
 }
 function remove(workspace){
+ assertNoExternalReferences(workspace);
  const result=JSON.parse(JSON.stringify(workspace));
  const ids=new Set((result.sessions||[]).filter(s=>s.seedBatch===BATCH).map(s=>s.id));
  for(const k of keys)result[k]=(result[k]||[]).filter(x=>x.seedBatch!==BATCH&&(k!=='events'||!ids.has(x.sessionId)));
  return result;
 }
-return {BATCH,generate,summary,hasBatch,merge,remove};
+return {BATCH,generate,summary,hasBatch,assertNoExternalReferences,merge,remove};
 });

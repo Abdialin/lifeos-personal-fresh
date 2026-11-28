@@ -1,7 +1,7 @@
 /* LifeOS development-data repair. Pure transformations; no storage, network or UI.
    Only explicitly tagged generated records can be adjusted. Existing untagged
    tracking remains byte-for-byte unchanged. All timestamps are local dates. */
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.LifeOSStarterRepair=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){const starter=typeof module==='object'&&module.exports?require('./development_starter.js'):root?.LifeOSDevelopmentStarter;const api=factory(starter);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.LifeOSStarterRepair=api;})(typeof globalThis!=='undefined'?globalThis:this,function(starter){
 'use strict';
 const BATCH='lifeos-development-seed-v1', MIN=60000, HOUR=3600000;
 const pad=v=>String(v).padStart(2,'0');
@@ -55,6 +55,8 @@ function idealRoutines(){
 function change(ws,anchor=Date.now()){
  if(!hasBatch(ws))throw Error('No generated starter history in this workspace');
  if(!Number.isFinite(anchor))throw Error('Invalid reference time');
+ if(typeof starter?.assertNoExternalReferences!=='function')throw Error('Sample-data safety check is unavailable; nothing was changed.');
+ starter.assertNoExternalReferences(ws);
  const next=JSON.parse(JSON.stringify(ws));
  const original=analyze(next);
  const scheduled=new Map((next.schedule||[]).filter(p=>p.seedBatch===BATCH).map(x=>[x.id,x]));

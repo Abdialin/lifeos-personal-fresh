@@ -8,6 +8,8 @@ All browser fixtures in `tests/today-v250*.cjs`, `tests/plan-overview.cjs` and `
 
 `tests/sync-uncertain-ack.cjs` uses intercepted synthetic responses through current Settings & data. It verifies that a storage probe is read-only, an unsuccessful atomic acknowledgement keeps the full local journal, and a confirmed prior snapshot is removed without discarding later operations after a simulated interrupted upload and reload. `tests/two-browser-ui-conflict.cjs` signs two browser contexts into a fresh temporary SQLite server, saves one synthetic record offline and another on the server, and checks that stale synchronization retains both rather than overwriting either. It does not exercise a full reviewed UI merge or an actual external service. `tests/nutrition-user-targets.cjs` checks that opening or reloading a fresh workspace does not create illustrative nutrition targets, explicit saves persist, and existing user and previously marked example settings remain unchanged. It checks example provenance in nutrition and Insights views.
 
+`test_starter_data_preservation.cjs` verifies synthetic starter repair/removal leave unrelated records unchanged and refuse untagged linked events, workouts, plans, sessions, nested ID lists and duplicate IDs. `tests/starter-data-safety.cjs` exercises the current advanced Plan UI with intercepted files: explicit confirmation and backup requests for adding, repairing and removing samples, persistence after reload, and refusal without a write when an untagged event is linked to a sample. These fixtures do not open any real backup or account; arbitrary external schemas and links without recognizable ID names remain unverified.
+
 With Node and Playwright/Chromium installed, from the repository root:
 
 ```sh
