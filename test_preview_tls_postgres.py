@@ -205,6 +205,20 @@ class PreviewTLSRehearsal(unittest.TestCase):
             self.assertNotIn(self.password, refused.stdout + refused.stderr, 'Connection errors must not expose credentials')
             with self.connect(database) as db:
                 self.assertIsNone(db.execute("SELECT to_regnamespace('lifeos')").fetchone()[0], 'A refused connection must not create a schema')
+        # Exercise the provider-style system trust option without modifying the
+        # machine trust store. OpenSSL reads this temporary, synthetic CA file.
+        system_url = self.url(database, options='sslmode=verify-full&channel_binding=require&sslrootcert=system')
+        system_env = dict(os.environ, SSL_CERT_FILE=str(self.ca), LIFEOS_PREVIEW_MIGRATION_TARGET=system_url)
+        system_env.pop('PGSSLROOTCERT', None)
+        trusted_system = subprocess.run(cli, cwd=ROOT, env=system_env, text=True, capture_output=True, timeout=30)
+        self.assertEqual(trusted_system.returncode, 0, trusted_system.stderr)
+        self.assertIn('Inspection only', trusted_system.stdout)
+        bad_system_env = dict(system_env, SSL_CERT_FILE=str(self.other_ca))
+        untrusted_system = subprocess.run(cli + flags, cwd=ROOT, env=bad_system_env, text=True, capture_output=True, timeout=30)
+        self.assertNotEqual(untrusted_system.returncode, 0, 'System trust must refuse an untrusted CA')
+        self.assertNotIn(self.password, untrusted_system.stdout + untrusted_system.stderr)
+        with self.connect(database) as db:
+            self.assertIsNone(db.execute("SELECT to_regnamespace('lifeos')").fetchone()[0])
         inspected = subprocess.run(cli, cwd=ROOT, env=env, text=True, capture_output=True, timeout=30)
         self.assertEqual(inspected.returncode, 0, inspected.stderr)
         self.assertIn('Inspection only', inspected.stdout)
