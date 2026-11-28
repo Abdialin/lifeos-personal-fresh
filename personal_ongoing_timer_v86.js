@@ -32,17 +32,37 @@ function mount(){
  #lo86-select{grid-column:1/-1;width:100%;min-width:0}
  #lo86-details{grid-template-columns:repeat(2,minmax(0,1fr))}
  #lo86-status{grid-column:1/-1;font-size:12px;min-height:0;margin:0;color:#bbd7f4}
- @media(max-width:520px){
-  #lo86-timer{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
-  body[data-lifeos-view="dashboard"] #lo86-timer:has(#lo86-details[hidden]){width:max-content!important;max-width:min(160px,calc(100vw - 16px))!important}
+ @media(max-width:750px){
+  /* In Today the timer occupies its own sticky row rather than covering a
+     control above the bottom navigation. Other sections retain their layout. */
+  body.ap-today[data-lifeos-view="dashboard"]:not(.lo200-modal-open):not(.lo-track-dialog-open){overflow-x:clip}
+  body[data-lifeos-view="dashboard"] .wrap>#lo86-timer{position:sticky;top:0;right:auto!important;bottom:auto;width:100%!important;max-width:none!important;margin:0 0 8px;padding:4px 8px!important;border-radius:11px}
+  body.ap-today[data-lifeos-view="dashboard"] .wrap>#lo86-timer:not(#todayAPlus):not(#lifeosNavigation):not([hidden]):not(.lo86-inline-visible){display:block!important}
+  body[data-lifeos-view="dashboard"] .wrap>#lo86-timer.lo86-inline-visible{display:none!important}
+  body[data-lifeos-view="dashboard"] .wrap>#lo86-timer #lo86-name{display:block!important;max-width:none;font-size:12px}
   body[data-lifeos-view="dashboard"] #lo86-timer #lo86-toggle{min-width:44px!important;min-height:44px!important}
   body[data-lifeos-view="dashboard"] #lo86-timer:has(#lo86-details:not([hidden])) #lo86-name{display:block!important}
+  body[data-lifeos-view="dashboard"]:has(#todayAPlus.ap-light) .wrap>#lo86-timer{background:#eaf4f1;color:#183047;border-color:#a3c7c0;box-shadow:0 4px 14px #274f4a33}
+  body[data-lifeos-view="dashboard"]:has(#todayAPlus.ap-light) .wrap>#lo86-timer :is(button,select){background:#fff;color:#183047;border-color:#a3c7c0}
+  body[data-lifeos-view="dashboard"]:has(#todayAPlus.ap-light) .wrap>#lo86-timer #lo86-status{color:#405f73}
+  html:has(body[data-lifeos-view="dashboard"] .wrap>#lo86-timer:not([hidden]):not(.lo86-inline-visible)){scroll-padding-top:calc(var(--lo86-timer-height,54px) + 8px)}
+  body[data-lifeos-view="dashboard"] #todayAPlus :is(button,summary,input,select,textarea){scroll-margin-top:calc(var(--lo86-timer-height,54px) + 8px)}
  }
+ @media(max-width:520px){#lo86-timer{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
  `;document.head.append(style);
  const box=document.createElement('aside');box.id='lo86-timer';box.hidden=true;
  box.setAttribute('aria-label','Ongoing LifeOS activity timer');
  box.innerHTML='<div id="lo86-summary"><span aria-hidden="true">⏱</span><strong id="lo86-name">Active timer</strong><span id="lo86-clock" role="timer">00:00:00</span><button id="lo86-toggle" type="button" aria-controls="lo86-details" aria-expanded="false" aria-label="Show timer controls">⌃</button></div><div id="lo86-details" hidden><select id="lo86-select" aria-label="Choose active or paused activity"></select><button type="button" data-lo86="review">Review</button><button type="button" data-lo86="pause">Pause</button><button type="button" data-lo86="break">Break</button><button type="button" data-lo86="finish">Finish</button><p id="lo86-status" role="status"></p></div>';
- document.body.append(box);
+ const header=document.querySelector('main.wrap > header.top');
+ // Only Today uses the in-flow row. Keeping the original body placement on
+ // other screens avoids inheriting their view-specific content-hiding rules.
+ function placeTimer(){
+  const row=header&&document.body.dataset.lifeosView==='dashboard'&&root.matchMedia('(max-width:750px)').matches;
+  if(row){if(box.parentElement!==header.parentElement||box.previousElementSibling!==header)header.insertAdjacentElement('afterend',box)}
+  else if(box.parentElement!==document.body)document.body.append(box);
+ }
+ placeTimer();
+ if(root.ResizeObserver)new root.ResizeObserver(()=>document.documentElement.style.setProperty('--lo86-timer-height',Math.ceil(box.getBoundingClientRect().height)+'px')).observe(box);
  const get=id=>box.querySelector('#'+id),pick=get('lo86-select'),details=get('lo86-details'),toggle=get('lo86-toggle'),status=get('lo86-status');
  const sessions=()=>{try{return root.lifeosReadOnlyWorkspace?.()?.sessions||[]}catch{return []}};
  let current=null,currentSession=null,previous='';
@@ -65,11 +85,15 @@ function mount(){
   });
   const rect=row?.getBoundingClientRect(),viewport=root.visualViewport;
   const top=viewport?.offsetTop||0,viewportBottom=top+(viewport?.height||root.innerHeight);
+  // When the sticky Today timer is displayed it occupies the top of the
+  // visible area. Account for that area before hiding it as a duplicate.
+  const timerStyle=getComputedStyle(box),stickyToday=timerStyle.position==='sticky'&&timerStyle.display!=='none';
+  const visibleTop=top+(stickyToday?box.getBoundingClientRect().height:0);
   const nav=document.getElementById('lifeosNavigation');
   const bottom=nav&&getComputedStyle(nav).position==='fixed'?Math.min(viewportBottom,nav.getBoundingClientRect().top):viewportBottom;
   // The floating clock shows today's portion. For overnight activities keep
   // it visible, since the in-page clock shows a different full duration.
-  const visible=!!(rect&&rect.width>0&&rect.height>0&&rect.top>=top&&rect.bottom<=bottom&&String(shownId)===String(current)&&Array.isArray(segments)&&segments.length&&!priorDay);
+  const visible=!!(rect&&rect.width>0&&rect.height>0&&rect.top>=visibleTop&&rect.bottom<=bottom&&String(shownId)===String(current)&&Array.isArray(segments)&&segments.length&&!priorDay);
   box.classList.toggle('lo86-inline-visible',visible);
  }
  function queueInlineVisibility(){if(!visibilityFrame)visibilityFrame=root.requestAnimationFrame(updateInlineVisibility)}
@@ -116,11 +140,12 @@ function mount(){
  });
  root.addEventListener('lifeos-v77-tracking-changed',render);
  root.addEventListener('scroll',queueInlineVisibility,{passive:true});
- root.addEventListener('resize',queueInlineVisibility,{passive:true});
+ root.addEventListener('resize',()=>{placeTimer();queueInlineVisibility()},{passive:true});
  root.visualViewport?.addEventListener('resize',queueInlineVisibility,{passive:true});
  root.visualViewport?.addEventListener('scroll',queueInlineVisibility,{passive:true});
  document.addEventListener('click',e=>{if(e.target.closest('#lifeosNavigation [data-view],#loTrackConceptA [data-ca-tab],#todayAPlus [data-ap-tab]'))queueInlineVisibility()});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
+ if(root.MutationObserver)new root.MutationObserver(()=>{placeTimer();queueInlineVisibility()}).observe(document.body,{attributes:true,attributeFilter:['data-lifeos-view']});
  root.addEventListener('pageshow',render);root.addEventListener('focus',render);
  root.setInterval(()=>{if(!document.hidden)render()},1000);render();
 }

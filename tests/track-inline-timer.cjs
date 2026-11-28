@@ -54,7 +54,8 @@ const serve = route => {
     const selectedName = (await page.locator('#lo86-select').inputValue()) === 'study' ? 'Study' : 'Work project';
     assert((await timer.getAttribute('aria-label')).includes(selectedName), 'The collapsed timer must identify its selected activity to assistive technology');
     const footprint = await timer.boundingBox(), control = await timerButton.boundingBox();
-    assert(footprint.width <= 160, 'The collapsed Today timer should not occupy half the mobile screen');
+    assert(footprint.width <= 393 && footprint.height <= 64, 'The Today timer occupies a compact dedicated row');
+    assert.equal(await timer.evaluate(el => getComputedStyle(el).position), 'sticky', 'The Today timer should not float over bottom actions');
     assert(control.width >= 44 && control.height >= 44, 'The timer control needs a usable touch target');
     await page.locator('#apPage2 [data-ap-live-habit="habit-1"]').check();
     assert(await page.locator('#apPage2 [data-ap-live-habit="habit-1"]').isChecked(), 'Agenda controls remain usable with a timer visible');
@@ -74,7 +75,7 @@ const serve = route => {
       await page.waitForTimeout(300);
       const compact = await timer.boundingBox(), toggle = await timerButton.boundingBox();
       const viewport = await page.evaluate(() => ({ height: window.visualViewport.height, top: window.visualViewport.offsetTop }));
-      assert(compact.width <= 160, 'Today timer remains compact at ' + JSON.stringify(size));
+      assert(compact.width <= size.width && compact.height <= 64, 'Today timer remains a compact row at ' + JSON.stringify(size));
       assert(toggle.width >= 44 && toggle.height >= 44, 'Today timer remains touch accessible at ' + JSON.stringify(size));
       assert(compact.y + compact.height <= viewport.top + viewport.height + 1, 'Today timer remains within the viewport at ' + JSON.stringify(size));
     }

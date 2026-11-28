@@ -52,7 +52,7 @@ const local=ms=>{const d=new Date(ms);return new Date(ms-d.getTimezoneOffset()*6
   assert.equal(d.recorded.find(x=>x.id==='night').b-d.recorded.find(x=>x.id==='night').a,20*60000);
   assert.equal(d.recorded.filter(x=>x.id==='paused').reduce((n,x)=>n+x.b-x.a,0),45*60000);
   await page.locator('#apTab1').click();await page.locator('[data-ap-live-period="1"]').click();
-  await page.locator('#apPage1 [data-ap-detail="active"][data-ap-key="paused-yesterday"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Paused'));await close();
+  await page.locator('#apTimelineLiveDetails > summary').click();await page.locator('#apPage1 [data-ap-detail="active"][data-ap-key="paused-yesterday"]').click();assert((await page.locator('#caDialogBody').innerText()).includes('Paused'));await close();
   await page.locator('svg [data-ap-detail="record"][data-ap-key="paused"]').first().click();
   assert((await page.locator('#caDialogBody').innerText()).includes('Study with pause'));
   assert((await page.locator('#caDialogBody').innerText()).includes('Reading together'));

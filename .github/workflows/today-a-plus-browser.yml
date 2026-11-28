@@ -22,6 +22,8 @@ jobs:
       - run: node tests/today-v250-precision.cjs
       - run: node tests/today-v250-volume.cjs
       - run: TODAY_V1_CAPTURE=1 node tests/today-release-v1.cjs
+      - run: TODAY_SECTION_ACCEPTANCE_CAPTURE=1 node tests/today-overview-acceptance.cjs
+      - run: TODAY_TIMER_CLEARANCE_CAPTURE=1 node tests/today-timer-clearance.cjs
       - run: TODAY_THEME_CAPTURE=1 node tests/today-theme-sync.cjs
       - run: node tests/today-review-categories.cjs
       - run: TODAY_REVIEW_HISTORY_CAPTURE=1 node tests/today-review-history.cjs
@@ -83,6 +85,9 @@ jobs:
             plan-verification/
             authenticated-verification/
             docs/design/today/current/release-*.png
+            docs/design/today/current/v1-overview-acceptance-*.png
+            docs/design/today/current/v1-section-acceptance-*.png
+            docs/design/today/current/v1-timer-clearance-*.png
             docs/design/track/current/v1-*.png
             docs/design/my-life/current/v1-subsection-*.png
             docs/design/my-life/current/v1-nutrition-targets-*.png
